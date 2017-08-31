@@ -22,4 +22,5 @@
 hs_err_pid*
 
 .idea
-misc.xml
+.idea/misc.xml
+.idea/vcs.xml
