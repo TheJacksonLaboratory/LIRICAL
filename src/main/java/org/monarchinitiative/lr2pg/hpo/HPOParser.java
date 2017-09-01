@@ -15,6 +15,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * This class uses the <a href="https://github.com/phenomics/ontolib">ontolb</a> library to
+ * parse both the {@code hp.obo} file and the phenotype annotation file
+ * {@code phenotype_annotation.tab}
+ * (see <a href="http://human-phenotype-ontology.github.io/">HPO Homepage</a>).
+ * @author Peter Robinson
+ * @author Vida Ravanmehr
+ * @version 0.0.1
+ */
 public class HPOParser {
     static Logger logger = Logger.getLogger(HPOParser.class.getName());
 
@@ -40,11 +50,12 @@ public class HPOParser {
 
 
     /**
-     *
      * @param annotationPath Path to the phenotype_annotation.tab file
+     * @return A list of disease-HPO phenotype annotations.
      */
     public List<HpoDiseaseAnnotation> parseAnnotation(String annotationPath) {
         File inputFile = new File(annotationPath);
+        logger.trace(String.format("Parsing annotations at %s (%s)",annotationPath,inputFile));
         List<HpoDiseaseAnnotation> annotList = new ArrayList<>();
         try {
             HpoDiseaseAnnotationParser parser = new HpoDiseaseAnnotationParser(inputFile);
