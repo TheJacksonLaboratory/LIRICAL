@@ -25,3 +25,5 @@ hs_err_pid*
 .idea/misc.xml
 .idea/vcs.xml
 target/
+/.idea/
+*.log

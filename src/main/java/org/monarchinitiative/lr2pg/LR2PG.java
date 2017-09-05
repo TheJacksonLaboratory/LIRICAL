@@ -19,6 +19,8 @@ public class LR2PG {
     /** List of all annotations parsed from phenotype_annotation.tab  */
     private List<HpoDiseaseAnnotation> annotList=null;
 
+    private static final double DEFAULT_FREQUENCY=0.5;
+
 
     static public void main(String [] args) {
         CommandParser parser= new CommandParser(args);
@@ -85,7 +87,10 @@ public class LR2PG {
                 if(hpoID_temp.equals(hopID)) {
                     Optional<Float> freq_temp = hpoa_temp.getFrequency();
                     if(freq_temp.isPresent()) {
+                        logger.trace(String.format("Got frequency of %.1f",freq_temp.get() ));
                         SumOfFreq += freq_temp.get();
+                    } else {
+                        SumOfFreq += DEFAULT_FREQUENCY; /* HPO term is present in disease but qwe do not have freqeuncy data--use defualt*/
                     }
                 }
                 ++Counter;
@@ -103,6 +108,7 @@ public class LR2PG {
         String md =hpoa.getFrequencyModifier();
         if ( md !=null) {
             System.out.println("do something with modifiers");
+            logger.trace(String.format("got modifier \"%s\" ",md));
             //Added by Vida
             SumOfFreq = 0;
             LR = 0;
