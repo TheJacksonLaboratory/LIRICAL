@@ -28,7 +28,7 @@ public class CommandParser {
             if (commandLine.hasOption("o")) {
                 hpoPath=commandLine.getOptionValue("o");
             } else {
-                System.err.println("[ERROR] hp.obo file (-o) required.");
+                System.err.println("[ERROR] hp.obo file (-og) required.");
                 printUsage();
                 System.exit(1);
             }
