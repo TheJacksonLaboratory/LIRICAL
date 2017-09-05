@@ -65,7 +65,7 @@ public class LR2PG {
 
     private void debugPrintAssociations() {
         logger.trace(annotList.size() + " annotations");
-        HpoDiseaseAnnotation hpoa = annotList.get(1000);
+        HpoDiseaseAnnotation hpoa = annotList.get(0);
         logger.trace(hpoa);
         //Vida
         double SumOfFreq = 0; //Sum of frequencies of an HPO term in diseases//
