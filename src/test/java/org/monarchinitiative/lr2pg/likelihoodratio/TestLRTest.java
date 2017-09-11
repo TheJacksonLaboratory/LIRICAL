@@ -85,7 +85,27 @@ public class TestLRTest {
 
         // We now do a second test. The pretest probability of the second test
         // is now equal to the posttest probability of the first test!
+        prevalence=0.1602563;
+        //Test sensitivity is 60% sensitivity and test specifity is 97%
+        TestResult result_test2 = new TestResult(0.60,0.97);
+        LRTest lrtest_test2 = new LRTest(result_test2,prevalence);
 
+        //pretest odds = pretest probability / (1-pretest probability)
+        // pretest odds are 0.1602563/0.8397437=0.19083954
+        expectedPretestOdds=0.19083954;
+        Assert.assertEquals(expectedPretestOdds,lrtest_test2.getPretestOdds(),EPSILON);
+        //The likelihood ratio of the test is still the same (20)
+        //LR= sensitivity / (1-specifity)=0.6/(1-0.7)=20
+        double expectedLikelihoodRatio=20;
+        Assert.assertEquals(expectedLikelihoodRatio,lrtest_test2.getLikelihoodRatio(),EPSILON);
+        //PosttestOdds = LR * PretestOdds
+        //PosttestOdds = 20 * 0.19083954 = 3.8167908
+        expected=3.8167908;
+        Assert.assertEquals(expected,lrtest_test2.getPosttestOdds(),EPSILON);
+        //PosttestProbability = PosttestOdds / (1+PosttestProbability)
+        //PosttestProbability = 3.8167908 / 4.8167908
+        expected=0.792392;
+        Assert.assertEquals(expected,lrtest_test2.getPosttestProbability(),EPSILON);
 
 
     }

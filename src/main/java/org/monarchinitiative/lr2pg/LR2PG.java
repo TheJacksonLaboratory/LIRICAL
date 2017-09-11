@@ -16,7 +16,7 @@ import java.util.*;
 public class LR2PG {
     static Logger logger = Logger.getLogger(LR2PG.class.getName());
     private Ontology<HpoTerm, HpoTermRelation> ontology=null;
-    /** List of all annotations parsed from phenotype_annotation.tab  */
+    /** List of all annotations parsed from phenotype_annotation.tab. */
     private List<HpoDiseaseAnnotation> annotList=null;
 
     private static final double DEFAULT_FREQUENCY=0.5;
