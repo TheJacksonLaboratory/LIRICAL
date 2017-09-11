@@ -27,8 +27,15 @@ public class TestResult {
     public TestResult(double sens, double spec) {
         this.sensitivity=sens;
         this.specificity=spec;
+    }
 
 
+    /**
+     * TODO what is specificity is 100%?
+     * @return
+     */
+    public double likelihoodRatio() {
+        return sensitivity /( 1- specificity);
     }
 
 

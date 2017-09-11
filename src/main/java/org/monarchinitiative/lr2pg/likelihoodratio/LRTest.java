@@ -1,25 +1,23 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
+import java.util.List;
+
 public class LRTest {
 
     private double pretestProbability;
-    private double sensitivity;
-    private double specificity;
+    //private double sensitivity;
+//    private double specificity;
+
+    private List<TestResult> testResults;
 
 
-    public LRTest(TestResult result, double pretestprob) {
+    public LRTest(List<TestResult> results, double pretestprob) {
         this.pretestProbability=pretestprob;
-        this.sensitivity=result.getSensitivity();
-        this.specificity=result.getSpecificity();
+        this.testResults=results;
+//        this.sensitivity=result.getSensitivity();
+//        this.specificity=result.getSpecificity();
     }
 
-    /**
-     * TODO what is specificity is 100%?
-     * @return
-     */
-    public double getLikelihoodRatio() {
-        return sensitivity /( 1- specificity);
-    }
 
     /**
      * TODO what if pretest prob is 100% ?
@@ -29,8 +27,18 @@ public class LRTest {
         return pretestProbability/(1-pretestProbability);
     }
 
+
+    public double getCompositeLikelihoodRatio() {
+        double lr=1.0;
+        for (TestResult tres:testResults) {
+            lr *= tres.likelihoodRatio();
+        }
+        return lr;
+    }
+
+
     public double getPosttestOdds() {
-        return getLikelihoodRatio() * getPretestOdds();
+        return getCompositeLikelihoodRatio() * getPretestOdds();
     }
 
     public double getPosttestProbability() {

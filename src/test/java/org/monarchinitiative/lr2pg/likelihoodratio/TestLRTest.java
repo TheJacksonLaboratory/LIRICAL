@@ -3,6 +3,9 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Some of this test class is based on the data and cases presented in
  * https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2683447/
@@ -20,10 +23,12 @@ public class TestLRTest {
         double prevalence=0.025;
         // we obtain a test result with 60% sensitivity and 97% specifity
         TestResult result = new TestResult(0.60,0.97);
+        List<TestResult> results = new ArrayList<>();
+        results.add(result);
         // There should be a LR of 20
-        LRTest lrtest = new LRTest(result,prevalence);
+        LRTest lrtest = new LRTest(results,prevalence);
         double expectedLikelihoodRatio=20;
-        Assert.assertEquals(expectedLikelihoodRatio,lrtest.getLikelihoodRatio(),EPSILON);
+        Assert.assertEquals(expectedLikelihoodRatio,lrtest.getCompositeLikelihoodRatio(),EPSILON);
         //pretest odds = pretest probability / (1-pretest probability)
         // pretest odds are 0.025/0.975=0.02564103
         double expectedPretestOdds=0.02564103;
@@ -43,11 +48,14 @@ public class TestLRTest {
         // We now do two tests. The first test is the same as above
         double prevalence=0.025;
         TestResult result = new TestResult(0.60,0.97);
-        LRTest lrtest = new LRTest(result,prevalence);
+        List<TestResult> results = new ArrayList<>();
+        results.add(result);
+        LRTest lrtest = new LRTest(results,prevalence);
         // The other test is intraocular pressure (IOP)
         // IOP: (50% sensitivity and 92% specificity[9])
         TestResult iopResult = new TestResult(0.50,0.92);
-        LRTest iopTest = new LRTest(iopResult,prevalence);
+        List<TestResult> iopresults = new ArrayList<>();
+        LRTest iopTest = new LRTest(iopresults,prevalence);
         // the pretest odds are the same as with the first test because they are based only on
         // the population prevalence.
         double expectedPretestOdds=0.02564103;
@@ -55,7 +63,7 @@ public class TestLRTest {
         //Positive LR of IOP: = sensitivity / 1- specificity =
         // //0.5/ 100 − 92 = 0.5 /.08 = 6.25
         double expected=6.25;
-        Assert.assertEquals(expected,iopTest.getLikelihoodRatio(),EPSILON);
+        Assert.assertEquals(expected,iopTest.getCompositeLikelihoodRatio(),EPSILON);
         // Posttest odds  = pretest odds * LR for IOP
         //posttest odds = 0.02564103 * 6.25 = 0.1602564
         expected=0.1602564;
@@ -68,12 +76,14 @@ public class TestLRTest {
         // we obtain a test result with 60% sensitivity and 97% specifity
         // THe pretest probability is now the posttest probability after the IOP test!
         TestResult gdxResult = new TestResult(0.60,0.97);
-        LRTest gdxTest = new LRTest(gdxResult,iopTest.getPosttestProbability());
+        List<TestResult> results2 = new ArrayList<>();
+        results2.add(gdxResult);
+        LRTest gdxTest = new LRTest(results2,iopTest.getPosttestProbability());
         //Pretest odds: 0.1381215 / (1-0.1381215) = 0.1602563
         expected =0.1602563;
         Assert.assertEquals(expected,gdxTest.getPretestOdds(),EPSILON);
         // The likelihood ratio of the GDX test is still the same (20)
-        Assert.assertEquals(20.0,lrtest.getLikelihoodRatio(),EPSILON);
+        Assert.assertEquals(20.0,lrtest.getCompositeLikelihoodRatio(),EPSILON);
         // Posttest odds = 0.1602563 * 20 = 3.205126
         expected=3.205126;
         Assert.assertEquals(expected,gdxTest.getPosttestOdds(),EPSILON);
@@ -83,31 +93,37 @@ public class TestLRTest {
 
 
 
+
+
+
+    }
+
+    @Test
+    public void testGlaucomaLR3() {
         // We now do a second test. The pretest probability of the second test
         // is now equal to the posttest probability of the first test!
-        prevalence=0.1602563;
+        double prevalence=0.1602563;
         //Test sensitivity is 60% sensitivity and test specifity is 97%
         TestResult result_test2 = new TestResult(0.60,0.97);
-        LRTest lrtest_test2 = new LRTest(result_test2,prevalence);
+        List<TestResult> results = new ArrayList<>();
+        LRTest lrtest_test2 = new LRTest(results,prevalence);
 
         //pretest odds = pretest probability / (1-pretest probability)
         // pretest odds are 0.1602563/0.8397437=0.19083954
-        expectedPretestOdds=0.19083954;
+        double expectedPretestOdds=0.19083954;
         Assert.assertEquals(expectedPretestOdds,lrtest_test2.getPretestOdds(),EPSILON);
         //The likelihood ratio of the test is still the same (20)
         //LR= sensitivity / (1-specifity)=0.6/(1-0.7)=20
         double expectedLikelihoodRatio=20;
-        Assert.assertEquals(expectedLikelihoodRatio,lrtest_test2.getLikelihoodRatio(),EPSILON);
+        Assert.assertEquals(expectedLikelihoodRatio,lrtest_test2.getCompositeLikelihoodRatio(),EPSILON);
         //PosttestOdds = LR * PretestOdds
         //PosttestOdds = 20 * 0.19083954 = 3.8167908
-        expected=3.8167908;
+        double expected=3.8167908;
         Assert.assertEquals(expected,lrtest_test2.getPosttestOdds(),EPSILON);
         //PosttestProbability = PosttestOdds / (1+PosttestProbability)
         //PosttestProbability = 3.8167908 / 4.8167908
         expected=0.792392;
         Assert.assertEquals(expected,lrtest_test2.getPosttestProbability(),EPSILON);
-
-
     }
 
 
