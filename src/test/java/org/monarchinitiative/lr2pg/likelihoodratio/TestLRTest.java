@@ -186,11 +186,11 @@ public class TestLRTest {
             double prevalence = 0.95;
             //IOP test
             TestResult result1 = new TestResult(0.5, 0.92);
-           //List<TestResult> results = new ArrayList<>();
-           results.add(result1);
-           //NegativeLR = Specifity/ (1-Sensitivity) = 0.92 / 0.5 = 1.84
-           double expectedLikelihoodRatio = 1.84;
-           Assert.assertEquals(expectedLikelihoodRatio, result1.NegativelikelihoodRatio(), EPSILON);
+            //List<TestResult> results = new ArrayList<>();
+            results.add(result1);
+            //NegativeLR = Specifity/ (1-Sensitivity) = 0.92 / 0.5 = 1.84
+            double expectedLikelihoodRatio = 1.84;
+            Assert.assertEquals(expectedLikelihoodRatio, result1.NegativelikelihoodRatio(), EPSILON);
 
             //Optic disc:
             TestResult result2 = new TestResult(0.72, 0.79);
@@ -200,11 +200,11 @@ public class TestLRTest {
             Assert.assertEquals(expectedLikelihoodRatio, result2.NegativelikelihoodRatio(), EPSILON);
 
             //GDx VCC (for NFI score >20)
-           TestResult result3 = new TestResult(0.905, 0.529);
-           results.add(result3);
-           //NegativeLR = Specifity/ (1-Sensitivity) = 0.529 / (1-0.905) = 5.5868421
-           expectedLikelihoodRatio = 5.568421;
-           Assert.assertEquals(expectedLikelihoodRatio, result3.NegativelikelihoodRatio(), EPSILON);
+            TestResult result3 = new TestResult(0.905, 0.529);
+            results.add(result3);
+            //NegativeLR = Specifity/ (1-Sensitivity) = 0.529 / (1-0.905) = 5.5868421
+            expectedLikelihoodRatio = 5.568421;
+            Assert.assertEquals(expectedLikelihoodRatio, result3.NegativelikelihoodRatio(), EPSILON);
 
             LRTest lrtest = new LRTest(results, prevalence, SignTest);
 
@@ -225,8 +225,6 @@ public class TestLRTest {
             Assert.assertEquals(expected, lrtest.getPosttestProbability(), EPSILON);
 
         }
-
-
 
     }
 
