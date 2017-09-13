@@ -3,6 +3,7 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.security.Signature;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class TestLRTest {
 
     private static final double EPSILON=0.00001;
     private static char SignTest = 'N';
-
+    public List<TestResult> results = new ArrayList<>();
 
 
     @Test
@@ -25,7 +26,7 @@ public class TestLRTest {
             double prevalence = 0.025;
             // we obtain a test result with 60% sensitivity and 97% specifity
             TestResult result = new TestResult(0.60, 0.97);
-            List<TestResult> results = new ArrayList<>();
+            //List<TestResult> results = new ArrayList<>();
             results.add(result);
             // There should be a LR of 20
             LRTest lrtest = new LRTest(results, prevalence, SignTest);
@@ -53,7 +54,7 @@ public class TestLRTest {
             // We now do two tests. The first test is the same as above
             double prevalence = 0.025;
             TestResult result = new TestResult(0.60, 0.97);
-            List<TestResult> results = new ArrayList<>();
+            //List<TestResult> results = new ArrayList<>();
             results.add(result);
             LRTest lrtest = new LRTest(results, prevalence, SignTest);
             // The other test is intraocular pressure (IOP)
@@ -62,6 +63,8 @@ public class TestLRTest {
             List<TestResult> iopresults = new ArrayList<>();
             iopresults.add(iopResult);
             LRTest iopTest = new LRTest(iopresults, prevalence, SignTest);
+
+
             // the pretest odds are the same as with the first test because they are based only on
             // the population prevalence.
             double expectedPretestOdds = 0.02564103;
@@ -108,7 +111,7 @@ public class TestLRTest {
             double prevalence = 0.1602563;
             //Test sensitivity is 60% sensitivity and test specifity is 97%
             TestResult result = new TestResult(0.60, 0.97);
-            List<TestResult> results = new ArrayList<>();
+           // List<TestResult> results = new ArrayList<>();
             results.add(result);
             LRTest lrtest = new LRTest(results, prevalence, SignTest);
 
@@ -131,36 +134,41 @@ public class TestLRTest {
         }
     }
 
+
+
     @Test
-    public void testLR4(){
+    public void testCompositeNegativeLR(){
         if (SignTest == 'N') {
             double prevalence = 0.95;
             //IOP test
             TestResult result1 = new TestResult(0.5, 0.92);
-            List<TestResult> results = new ArrayList<>();
-            results.add(result1);
-            double expectedLikelihoodRatio = 1.84;
-            Assert.assertEquals(expectedLikelihoodRatio, result1.NegativelikelihoodRatio(), EPSILON);
+           //List<TestResult> results = new ArrayList<>();
+           results.add(result1);
+           //NegativeLR = Specifity/ (1-Sensitivity) = 0.92 / 0.5 = 1.84
+           double expectedLikelihoodRatio = 1.84;
+           Assert.assertEquals(expectedLikelihoodRatio, result1.NegativelikelihoodRatio(), EPSILON);
 
             //Optic disc:
             TestResult result2 = new TestResult(0.72, 0.79);
             results.add(result2);
-             expectedLikelihoodRatio = 2.821428;
+            //NegativeLR = Specifity/ (1-Sensitivity) = 0.79 / 0.28 = 2.821428
+            expectedLikelihoodRatio = 2.821428;
             Assert.assertEquals(expectedLikelihoodRatio, result2.NegativelikelihoodRatio(), EPSILON);
 
             //GDx VCC (for NFI score >20)
-            TestResult result3 = new TestResult(0.905, 0.529);
-            results.add(result3);
-            expectedLikelihoodRatio = 5.568421;
-            Assert.assertEquals(expectedLikelihoodRatio, result3.NegativelikelihoodRatio(), EPSILON);
+           TestResult result3 = new TestResult(0.905, 0.529);
+           results.add(result3);
+           //NegativeLR = Specifity/ (1-Sensitivity) = 0.529 / (1-0.905) = 5.5868421
+           expectedLikelihoodRatio = 5.568421;
+           Assert.assertEquals(expectedLikelihoodRatio, result3.NegativelikelihoodRatio(), EPSILON);
 
             LRTest lrtest = new LRTest(results, prevalence, SignTest);
 
-            //Compositelikelihoodrattio= LR1 * LR2 * LR3 = 1.84 * 2.821428 * 5.568421
+            //Compositelikelihoodratio = LR1 * LR2 * LR3 = 1.84 * 2.821428 * 5.568421
             expectedLikelihoodRatio = 28.90806015;
             Assert.assertEquals(expectedLikelihoodRatio, lrtest.getCompositeLikelihoodRatio(), EPSILON);
 
-            //PretestOdds = pretest prob / (1-pretest prob) = 0.95 / 0.05 =19.0
+            //PretestOdds = pretest prob / (1-pretest prob) = 0.95 / 0.05 = 19.0
             double expectedPretestOdds = 19.0;
             Assert.assertEquals(expectedPretestOdds, lrtest.getPretestOdds(), EPSILON);
 
