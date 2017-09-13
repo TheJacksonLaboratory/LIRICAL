@@ -31,14 +31,16 @@ public class TestResult {
 
 
     /**
-     * TODO what is specificity is 100%?
+     * TODO what if specificity and/or sensitivity is 100%?
      * @return
      */
-    public double likelihoodRatio() {
+    public double PositivelikelihoodRatio() {
         return sensitivity /( 1- specificity);
     }
 
-
+    public double NegativelikelihoodRatio() {
+        return specificity /( 1- sensitivity);
+    }
 
 
 }

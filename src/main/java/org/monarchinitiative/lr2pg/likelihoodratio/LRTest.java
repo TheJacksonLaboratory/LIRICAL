@@ -10,10 +10,13 @@ public class LRTest {
 
     private List<TestResult> testResults;
 
+    private char S;
 
-    public LRTest(List<TestResult> results, double pretestprob) {
-        this.pretestProbability=pretestprob;
-        this.testResults=results;
+
+    public LRTest(List<TestResult> results, double pretestprob, char TestSign) {
+        this.pretestProbability = pretestprob;
+        this.testResults = results;
+        this.S=TestSign;
 //        this.sensitivity=result.getSensitivity();
 //        this.specificity=result.getSpecificity();
     }
@@ -21,20 +24,36 @@ public class LRTest {
 
     /**
      * TODO what if pretest prob is 100% ?
+     *
      * @return
      */
     public double getPretestOdds() {
-        return pretestProbability/(1-pretestProbability);
+        return pretestProbability / (1 - pretestProbability);
     }
 
 
     public double getCompositeLikelihoodRatio() {
-        double lr=1.0;
-        for (TestResult tres:testResults) {
-            lr *= tres.likelihoodRatio();
+        if (S == 'P') {
+            double Poslr = 1.0;
+            for (TestResult tres : testResults) {
+                Poslr *= tres.PositivelikelihoodRatio();
+            }
+            return Poslr;
         }
-        return lr;
+        else if (S == 'N') {
+            double Neglr = 1.0;
+            for (TestResult tres : testResults) {
+                Neglr *= tres.NegativelikelihoodRatio();
+            }
+            return Neglr;
+        }
+        else {
+            System.out.println("Wrong sign is entered. S is either 'N' or 'P'! ");
+            return 0;
+        }
     }
+
+
 
 
     public double getPosttestOdds() {
