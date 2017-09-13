@@ -15,7 +15,7 @@ import java.util.List;
 public class TestLRTest {
 
     private static final double EPSILON=0.00001;
-    private static char SignTest = 'N';
+    private static char SignTest = 'P';
     public List<TestResult> results = new ArrayList<>();
 
 
@@ -134,6 +134,50 @@ public class TestLRTest {
         }
     }
 
+    @Test
+    public void testCompositepositiveLR(){
+        if (SignTest == 'P') {
+            double prevalence = 0.025;
+            //IOP test
+            TestResult result1 = new TestResult(0.5, 0.92);
+            //List<TestResult> results = new ArrayList<>();
+            results.add(result1);
+            //PositiveLR = Sensitivity/ (1-Specifity) = 0.5 / 0.08 = 6.25
+            double expectedLikelihoodRatio = 6.25;
+            Assert.assertEquals(expectedLikelihoodRatio, result1.PositivelikelihoodRatio(), EPSILON);
+
+            //Dic
+            TestResult result2 = new TestResult(0.60, 0.97);
+            //List<TestResult> results = new ArrayList<>();
+            results.add(result2);
+
+            expectedLikelihoodRatio = 20;
+            Assert.assertEquals(expectedLikelihoodRatio, result2.PositivelikelihoodRatio(), EPSILON);
+
+            //GDx
+            TestResult result3 = new TestResult(0.60, 0.97);
+            // List<TestResult> results = new ArrayList<>();
+            results.add(result3);
+            expectedLikelihoodRatio = 20;
+            Assert.assertEquals(expectedLikelihoodRatio, result3.PositivelikelihoodRatio(), EPSILON);
+
+            LRTest lrtest = new LRTest(results, prevalence, SignTest);
+
+            //PretestOdds = pretest prob / (1-pretest prob) = 0.95 / 0.05 = 19.0
+            double expectedPretestOdds = 0.0256410;
+            Assert.assertEquals(expectedPretestOdds, lrtest.getPretestOdds(), EPSILON);
+
+            //PosttestOdds = PrestestOdds * Compositelikelihoodratio = 0.03 * 6.25 * 20 * 20
+
+            double expected = 64.102564;
+            Assert.assertEquals(expected, lrtest.getPosttestOdds(), EPSILON);
+
+            //PosttestProb = PosttestOdds / (1+ PosttestOdds)
+            expected = 0.9846396;
+            Assert.assertEquals(expected, lrtest.getPosttestProbability(), EPSILON);
+
+        }
+    }
 
 
     @Test
