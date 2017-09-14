@@ -1,6 +1,7 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.security.Signature;
@@ -16,11 +17,12 @@ public class TestLRTest {
 
     private static final double EPSILON=0.00001;
     private static char SignTest = 'P';
-    public List<TestResult> results = new ArrayList<>();
+
 
 
     @Test
     public void testGlaucomaLR1() {
+        List<TestResult> results = new ArrayList<>();
         if (SignTest == 'P') {
             // The prevalence of glaucoma is 2.5%
             double prevalence = 0.025;
@@ -50,6 +52,7 @@ public class TestLRTest {
 
     @Test
     public void testGlaucomaLR2() {
+        List<TestResult> results = new ArrayList<>();
         if (SignTest == 'P') {
             // We now do two tests. The first test is the same as above
             double prevalence = 0.025;
@@ -105,6 +108,7 @@ public class TestLRTest {
 
     @Test
     public void testGlaucomaLR3() {
+        List<TestResult> results = new ArrayList<>();
         if (SignTest == 'P') {
             // We now do a second test. The pretest probability of the second test
             // is now equal to the posttest probability of the first test!
@@ -136,6 +140,7 @@ public class TestLRTest {
 
     @Test
     public void testCompositepositiveLR(){
+        List<TestResult> results = new ArrayList<>();
         if (SignTest == 'P') {
             double prevalence = 0.025;
             //IOP test
@@ -182,6 +187,7 @@ public class TestLRTest {
 
     @Test
     public void testCompositeNegativeLR(){
+        List<TestResult> results = new ArrayList<>();
         if (SignTest == 'N') {
             double prevalence = 0.95;
             //IOP test

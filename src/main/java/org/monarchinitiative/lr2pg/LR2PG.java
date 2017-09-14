@@ -10,6 +10,8 @@ import com.github.phenomics.ontolib.ontology.data.TermId;
 import org.apache.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.HPOParser;
 import org.monarchinitiative.lr2pg.io.CommandParser;
+import org.monarchinitiative.lr2pg.likelihoodratio.HPO2LR;
+import org.monarchinitiative.lr2pg.prototype.Disease;
 
 import java.util.*;
 
@@ -18,6 +20,8 @@ public class LR2PG {
     private Ontology<HpoTerm, HpoTermRelation> ontology=null;
     /** List of all annotations parsed from phenotype_annotation.tab. */
     private List<HpoDiseaseAnnotation> annotList=null;
+
+    private Map<String,Disease> diseaseMap=null;
 
     private static final double DEFAULT_FREQUENCY=0.5;
 
@@ -31,6 +35,8 @@ public class LR2PG {
         lr2pg.parseHPOData(hpopath,annotpath);
         lr2pg.debugPrintOntology();
         lr2pg.debugPrintAssociations();
+        lr2pg.createDiseaseModels();
+
 
 
     }
@@ -39,6 +45,35 @@ public class LR2PG {
     public LR2PG(String hpo, String annotation) {
         parseHPOData(hpo,annotation);
     }
+
+
+    private void createDiseaseModels() {
+        diseaseMap = new HashMap<>();
+        logger.trace("createDiseaseModels");
+        for (HpoDiseaseAnnotation annot: annotList) {
+            String database=annot.getDb(); /* e.g., OMIM, ORPHA, DECIPHER */
+            String diseaseName=annot.getDbName(); /* e.g., Marfan syndrome */
+            String diseaseId = annot.getDbObjectId(); /* e.g., OMIM:100543 */
+            TermId hpoId  = annot.getHpoId();
+            /* Filter database to just get OMIM */
+            Disease disease=null;
+            if (diseaseMap.containsKey(diseaseId)) {
+                disease=diseaseMap.get(diseaseId);
+            } else {
+                disease = new Disease(database,diseaseName,diseaseId); //String database, String name,String id
+                diseaseMap.put(diseaseId,disease);
+            }
+            disease.addHpo(hpoId);
+        }
+
+    }
+
+
+    private void setUpHpo2Lr() {
+        HPO2LR h2l = new HPO2LR( this.ontology,this.diseaseMap);
+    }
+
+
 
 
     private void parseHPOData(String hpo, String annotation) {
