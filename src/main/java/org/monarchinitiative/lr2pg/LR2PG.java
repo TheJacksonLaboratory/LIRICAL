@@ -54,7 +54,7 @@ public class LR2PG {
             String diseaseName=annot.getDbName(); /* e.g., Marfan syndrome */
             String diseaseId = annot.getDbObjectId(); /* e.g., OMIM:100543 */
             TermId hpoId  = annot.getHpoId();
-            /* Filter database to just get OMIM ????????*/
+            /* Filter database to just get OMIM */
             Disease disease=null;
             if (diseaseMap.containsKey(diseaseId)) {
                 disease=diseaseMap.get(diseaseId);
