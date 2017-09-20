@@ -23,7 +23,7 @@ public class LR2PG {
 
     private Map<String,Disease> diseaseMap=null;
 
-    private static final double DEFAULT_FREQUENCY=0.5;
+    private static final double DEFAULT_FREQUENCY=0.9;
 
 
     static public void main(String [] args) {
@@ -31,13 +31,12 @@ public class LR2PG {
         String hpopath=parser.getHpoPath();
         String annotpath=parser.getAnnotationPath();
         logger.trace("starting");
-        LR2PG lr2pg = new LR2PG(hpopath,annotpath);
+        LR2PG lr2pg = new LR2PG(hpopath,annotpath);//Error at parsing files???
         lr2pg.parseHPOData(hpopath,annotpath);
         lr2pg.debugPrintOntology();
-        lr2pg.debugPrintAssociations();
+        //lr2pg.debugPrintAssociations();
         lr2pg.createDiseaseModels();
-
-
+        lr2pg.setUpHpo2Lr();
 
     }
 
@@ -55,7 +54,7 @@ public class LR2PG {
             String diseaseName=annot.getDbName(); /* e.g., Marfan syndrome */
             String diseaseId = annot.getDbObjectId(); /* e.g., OMIM:100543 */
             TermId hpoId  = annot.getHpoId();
-            /* Filter database to just get OMIM */
+            /* Filter database to just get OMIM ????????*/
             Disease disease=null;
             if (diseaseMap.containsKey(diseaseId)) {
                 disease=diseaseMap.get(diseaseId);
@@ -65,6 +64,7 @@ public class LR2PG {
             }
             disease.addHpo(hpoId);
         }
+      //  System.out.print(diseaseMap);
 
     }
 
@@ -79,7 +79,7 @@ public class LR2PG {
     private void parseHPOData(String hpo, String annotation) {
         HPOParser parser = new HPOParser();
        logger.trace("About to parse OBO file");
-        this.ontology = parser.parseOntology(hpo);
+       this.ontology = parser.parseOntology(hpo);
         logger.trace("About to parse annot file");
         this.annotList = parser.parseAnnotation(annotation);
         logger.trace("number of non obsolete terms: " + ontology.getNonObsoleteTermIds().size());
