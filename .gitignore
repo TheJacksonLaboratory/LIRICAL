@@ -28,3 +28,4 @@ target/
 /.idea/
 *.log
 /lr2pg.iml
+/.idea/misc.xml

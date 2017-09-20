@@ -8,11 +8,18 @@ import com.github.phenomics.ontolib.ontology.data.TermId;
 import org.monarchinitiative.lr2pg.prototype.Disease;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.counting;
+
+
+/**
+ * Retrieves data needed to perform a likelihood ratio test with HPO Phenotype data.
+ * TODO description
+ * @author Vida Ravanmehr
+ * @version 0.0.2 (09/20/2017)
+ */
 public class HPO2LR {
 
     Ontology<HpoTerm, HpoTermRelation> hpoOntology;
@@ -29,33 +36,41 @@ public class HPO2LR {
     }
 
 
+    /**
+     * This function counts the number of diseases that are annotated to each HPO term, including
+     * implicited (inherited) annotations, and places the result in {@link #hpoTerm2DiseaseCount}.
+     * TODO convert into Java8 stream
+     */
     private void initializeTerm2DiseaseMap() {
         hpoTerm2DiseaseCount = new HashMap<>();
-        // todo
-        int CounterHPOTerms = 0; //Counter for counting HPO terms of a disease
-        int NumberOfHpoDiseases = 0;//Number of diseases with the HPO term (HPOID)
-        TermId HPOID = null;
-        Disease disease = null;
         logger.trace("start creating the map hpoTerm, Disease Count");
-        for(String Disease_ID: diseaseMap.keySet()){ //search among all diseases
-            disease = diseaseMap.get(Disease_ID);
-            for(CounterHPOTerms = 0; CounterHPOTerms < disease.getHpoIds().size(); ++CounterHPOTerms) {//Search among all HPO terms of a disease
-                HPOID = disease.getHpoIds().get(CounterHPOTerms); // Get an HPOID
-                if(!hpoTerm2DiseaseCount.containsKey(HPOID)) { // If the HPOID does not exist in the hpoTem2DiseaseCount, which means that it is the first time that tha the HPO term appears in a disease
-                    hpoTerm2DiseaseCount.put(HPOID, 1);
-                }
-                    else{ //increase the number of diseases that has the HPO term by one
-                     NumberOfHpoDiseases =  hpoTerm2DiseaseCount.get(HPOID);
-                     hpoTerm2DiseaseCount.put(HPOID, ++NumberOfHpoDiseases);
+        for(Disease disease: diseaseMap.values()){
+            Set<TermId> ancestors = hpoOntology.getAllAncestorTermIds(disease.getHpoIds());
+            for(TermId hpoid : ancestors) {
+                if(!hpoTerm2DiseaseCount.containsKey(hpoid)) {
+                    hpoTerm2DiseaseCount.put(hpoid, 1);
+                } else {
+                     hpoTerm2DiseaseCount.put(hpoid, 1+hpoTerm2DiseaseCount.get(hpoid));
                 }
             }
         }
-       // System.out.print(hpoTerm2DiseaseCount);
+
+//        Map<TermId, Long> m =diseaseMap.values().
+//                stream().
+//                map( disease -> hpoOntology.getAllAncestorTermIds(disease.getHpoIds())).
+//                collect(Collectors.groupingBy(t -> t, counting()));
+
+
     }
 
 
+    /**
+     * Returns the frequency of an HPO annotation among all diseases of our corpus, i.e., in {@link #diseaseMap}.
+     * @param hpoId The HPO Term whose frequency we want to know
+     * @return frequency of hpoId among all diseases
+     */
     public double getBackgroundFrequency(TermId hpoId) {
-        int NumberOfDiseases = 7000;// fix the number of diseases or it should be equal to the size of diseaseMap???//
+        int NumberOfDiseases = diseaseMap.size();
         logger.trace("return number of disease that have the HPO term");
         if (hpoTerm2DiseaseCount.containsKey(hpoId)) { // If the hpoTerm2DiseaseCount contains the HPO term
             return hpoTerm2DiseaseCount.get(hpoId) / NumberOfDiseases; //return number of diseases wit HPO term divided by total number of diseases
@@ -64,11 +79,16 @@ public class HPO2LR {
         }
     }
 
-
+    /**
+     *  If disease has the HPO term, return 0.9; else return 0 (initial approach/simplification)
+     *  TODO later calculate the actual frequency if possible
+     * @param diseaseID
+     * @param hpoId
+     * @return The frequency of HPO feature (hpoId) in patients with the given disease
+     */
     public double getFrequency(String diseaseID, TermId hpoId) {
-        Disease disease1 = null;
-        disease1 = diseaseMap.get(diseaseID);
-        if (disease1 != null && disease1.getHpoIds().contains(hpoId)) // If disease has the HPO term, return 0.9; else return 0
+        Disease disease1 = diseaseMap.get(diseaseID);
+        if (disease1 != null && disease1.getHpoIds().contains(hpoId))
             return 0.9;
         else
             return 0.0;
