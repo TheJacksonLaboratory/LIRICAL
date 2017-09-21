@@ -14,6 +14,7 @@ import org.monarchinitiative.lr2pg.likelihoodratio.HPO2LR;
 import org.monarchinitiative.lr2pg.prototype.Disease;
 
 import java.util.*;
+import java.io.*;
 
 public class LR2PG {
     static Logger logger = Logger.getLogger(LR2PG.class.getName());
@@ -31,7 +32,7 @@ public class LR2PG {
         String hpopath=parser.getHpoPath();
         String annotpath=parser.getAnnotationPath();
         logger.trace("starting");
-        LR2PG lr2pg = new LR2PG(hpopath,annotpath);//Error at parsing files???
+        LR2PG lr2pg = new LR2PG(hpopath,annotpath);
         lr2pg.parseHPOData(hpopath,annotpath);
         lr2pg.debugPrintOntology();
         //lr2pg.debugPrintAssociations();
@@ -67,6 +68,7 @@ public class LR2PG {
       //  System.out.print(diseaseMap);
 
     }
+
 
 
     private void setUpHpo2Lr() {

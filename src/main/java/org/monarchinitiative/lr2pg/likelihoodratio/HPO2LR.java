@@ -9,6 +9,7 @@ import org.monarchinitiative.lr2pg.prototype.Disease;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.io.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.counting;
@@ -45,6 +46,24 @@ public class HPO2LR {
         hpoTerm2DiseaseCount = new HashMap<>();
         logger.trace("start creating the map hpoTerm, Disease Count");
         for(Disease disease: diseaseMap.values()){
+            System.err.println(String.format("Disease %s", disease.getName()));
+            for (TermId termId : disease.getHpoIds()) {
+                System.err.println(String.format("Term %s Status %s",
+                        termId.getIdWithPrefix(), hpoOntology.getAllTermIds().contains(termId)));
+            }
+            Set<TermId> ancestors = hpoOntology.getAllAncestorTermIds(disease.getHpoIds());
+            for(TermId hpoid : ancestors) {
+                if(!hpoTerm2DiseaseCount.containsKey(hpoid)) {
+                    hpoTerm2DiseaseCount.put(hpoid, 1);
+                } else {
+                    hpoTerm2DiseaseCount.put(hpoid, 1+hpoTerm2DiseaseCount.get(hpoid));
+                }
+            }
+        }
+
+
+        /*for(Disease disease: diseaseMap.values()){
+                System.err.println(String.format("Trying to get HPO id %s", disease.getHpoIds()));
             Set<TermId> ancestors = hpoOntology.getAllAncestorTermIds(disease.getHpoIds());
             for(TermId hpoid : ancestors) {
                 if(!hpoTerm2DiseaseCount.containsKey(hpoid)) {
@@ -53,7 +72,7 @@ public class HPO2LR {
                      hpoTerm2DiseaseCount.put(hpoid, 1+hpoTerm2DiseaseCount.get(hpoid));
                 }
             }
-        }
+        }*/
 
 //        Map<TermId, Long> m =diseaseMap.values().
 //                stream().
@@ -62,6 +81,38 @@ public class HPO2LR {
 
 
     }
+
+
+    /**
+     * This function reads a disease name and the HPO terms from a file
+     */
+    private void getHPOTerms(){
+
+
+        String fileName = "/Users/ravanv/Documents/HPO_LR1/LR2PG/HPOTerms.txt";
+        String line =null;
+
+        try {
+            FileReader fileReader = new FileReader(fileName);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            line =  bufferedReader.readLine();
+
+            while((line= bufferedReader.readLine()) != null) {
+
+                System.out.println(line);
+            }
+
+            bufferedReader.close();
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println("Unable to open file '" + fileName + "'");
+        }
+        catch(IOException ex) {
+            System.out.println("Error reading file '" + fileName + "'");
+        }
+    }
+
+
 
 
     /**
@@ -93,4 +144,6 @@ public class HPO2LR {
         else
             return 0.0;
     }
+
+
 }
