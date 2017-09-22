@@ -26,6 +26,7 @@ public class HPO2LR {
     Ontology<HpoTerm, HpoTermRelation> hpoOntology;
     Map<String, Disease> diseaseMap;
 
+
     Map<TermId, Integer> hpoTerm2DiseaseCount = null;
 
     static Logger logger = Logger.getLogger(HPO2LR.class.getName());
@@ -45,22 +46,47 @@ public class HPO2LR {
     private void initializeTerm2DiseaseMap() {
         hpoTerm2DiseaseCount = new HashMap<>();
         logger.trace("start creating the map hpoTerm, Disease Count");
+        int good=0,bad=0;
         for(Disease disease: diseaseMap.values()){
             System.err.println(String.format("Disease %s", disease.getName()));
             for (TermId termId : disease.getHpoIds()) {
                 System.err.println(String.format("Term %s Status %s",
                         termId.getIdWithPrefix(), hpoOntology.getAllTermIds().contains(termId)));
             }
-            Set<TermId> ancestors = hpoOntology.getAllAncestorTermIds(disease.getHpoIds());
-            for(TermId hpoid : ancestors) {
-                if(!hpoTerm2DiseaseCount.containsKey(hpoid)) {
-                    hpoTerm2DiseaseCount.put(hpoid, 1);
-                } else {
-                    hpoTerm2DiseaseCount.put(hpoid, 1+hpoTerm2DiseaseCount.get(hpoid));
+            try {
+                Collection<TermId> ids = disease.getHpoIds();
+                if (ids==null) {
+                    System.err.println("TermIds NULL");
+                    System.exit(1);
+                } else if (ids.size()==0) {
+                    System.err.println("TermIds zero size");
+                    System.exit(1);
                 }
-            }
-        }
+                ids.remove(null);
+                Set<TermId> ancestors = hpoOntology.getAllAncestorTermIds(ids);
+                ancestors.remove(null);
+                for (TermId hpoid : ancestors) {
+                    if (hpoid==null) continue;
+                    if (!hpoTerm2DiseaseCount.containsKey(hpoid)) {
+                        hpoTerm2DiseaseCount.put(hpoid, 1);
+                    } else {
+                        hpoTerm2DiseaseCount.put(hpoid, 1 + hpoTerm2DiseaseCount.get(hpoid));
+                    }
+                }
+                good++;
+            } catch (Exception e) {
+                logger.error("Could not get terms for disease "+ disease.getName());
+                Collection<TermId> ids = disease.getHpoIds();
 
+
+
+                logger.error(e,e);
+                bad++;
+                System.exit(1);
+            }
+
+        }
+        logger.trace("Good disease parses "+good+"' bad="+bad);
 
         /*for(Disease disease: diseaseMap.values()){
                 System.err.println(String.format("Trying to get HPO id %s", disease.getHpoIds()));

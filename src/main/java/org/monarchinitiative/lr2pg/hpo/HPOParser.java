@@ -7,13 +7,12 @@ import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.io.base.TermAnnotationParserException;
 import com.github.phenomics.ontolib.io.obo.hpo.HpoDiseaseAnnotationParser;
 import com.github.phenomics.ontolib.io.obo.hpo.HpoOboParser;
-import com.github.phenomics.ontolib.ontology.data.Ontology;
+import com.github.phenomics.ontolib.ontology.data.*;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -27,19 +26,36 @@ import java.util.List;
  */
 public class HPOParser {
     static Logger logger = Logger.getLogger(HPOParser.class.getName());
+    Ontology<HpoTerm, HpoTermRelation> inheritance=null;
+    Ontology<HpoTerm, HpoTermRelation> abnormalPhenoSubOntology=null;
+
+
 
     public HPOParser() {
 
     }
 
 
+
+
+    public Map<TermId,HpoTerm> extractStrictPhenotypeTermMap() {
+        Map<TermId,HpoTerm> map = new HashMap<>();
+        Set<TermId> phenoTermIds = this.abnormalPhenoSubOntology.getNonObsoleteTermIds();
+        for (TermId id : phenoTermIds) {
+            map.put(id,abnormalPhenoSubOntology.getTermMap().get(id));
+        }
+        return map;
+    }
+
     public Ontology<HpoTerm, HpoTermRelation>  parseOntology(String HPOpath) {
         HpoOntology hpo;
-        Ontology<HpoTerm, HpoTermRelation> abnormalPhenoSubOntology =null;
+        TermPrefix pref = new ImmutableTermPrefix("HP");
+        TermId inheritId = new ImmutableTermId(pref,"0000005");
         try {
             HpoOboParser hpoOboParser = new HpoOboParser(new File(HPOpath));
             hpo = hpoOboParser.parse();
-            abnormalPhenoSubOntology = hpo.getPhenotypicAbnormalitySubOntology();
+            this.abnormalPhenoSubOntology = hpo.getPhenotypicAbnormalitySubOntology();
+            this.inheritance = hpo.subOntology(inheritId);
         } catch (IOException e) {
             logger.error(String.format("Unable to parse HPO OBO file at %s", HPOpath ));
             logger.error(e,e);
@@ -47,6 +63,17 @@ public class HPOParser {
         }
         return abnormalPhenoSubOntology;
     }
+
+
+    public Ontology<HpoTerm, HpoTermRelation> getInheritanceSubontology() {
+        Map<TermId,HpoTerm> submap = inheritance.getTermMap();
+        Set<TermId> actual = inheritance.getNonObsoleteTermIds();
+        for (TermId t:actual) {
+            System.out.println("INHERITANCE GOT TERM "+ submap.get(t).getName());
+        }
+        return this.inheritance;
+    }
+
 
 
     /**

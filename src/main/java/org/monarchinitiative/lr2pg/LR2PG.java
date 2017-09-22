@@ -19,6 +19,9 @@ import java.io.*;
 public class LR2PG {
     static Logger logger = Logger.getLogger(LR2PG.class.getName());
     private Ontology<HpoTerm, HpoTermRelation> ontology=null;
+    /** Map of all of the Phenotypic abnormality terms (i.e., not the inheritance terms). */
+    private Map<TermId,HpoTerm> termmap=null;
+    Ontology<HpoTerm, HpoTermRelation> inheritance=null;
     /** List of all annotations parsed from phenotype_annotation.tab. */
     private List<HpoDiseaseAnnotation> annotList=null;
 
@@ -63,7 +66,11 @@ public class LR2PG {
                 disease = new Disease(database,diseaseName,diseaseId); //String database, String name,String id
                 diseaseMap.put(diseaseId,disease);
             }
-            disease.addHpo(hpoId);
+            if ( this.termmap.containsKey(hpoId)) { // restrict to clinical terms, i.e., not inheritance.
+                disease.addHpo(hpoId);
+            } else {
+                logger.trace("Not adding term "+ hpoId.getId());
+            }
         }
       //  System.out.print(diseaseMap);
 
@@ -78,13 +85,18 @@ public class LR2PG {
 
 
 
+
+
     private void parseHPOData(String hpo, String annotation) {
         HPOParser parser = new HPOParser();
        logger.trace("About to parse OBO file");
        this.ontology = parser.parseOntology(hpo);
+
         logger.trace("About to parse annot file");
         this.annotList = parser.parseAnnotation(annotation);
         logger.trace("number of non obsolete terms: " + ontology.getNonObsoleteTermIds().size());
+        this.inheritance=parser.getInheritanceSubontology();
+        this.termmap = parser.extractStrictPhenotypeTermMap();
     }
 
 
@@ -98,8 +110,6 @@ public class LR2PG {
         }
         Term root = termmap.get(rootID);
         logger.trace("Root: " + root.toString());
-
-
     }
 
     private void debugPrintAssociations() {
