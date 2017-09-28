@@ -25,9 +25,10 @@ public class LR2PG {
     /** List of all annotations parsed from phenotype_annotation.tab. */
     private List<HpoDiseaseAnnotation> annotList=null;
 
+
     private Map<String,Disease> diseaseMap=null;
 
-    private static final double DEFAULT_FREQUENCY=0.9;
+    private static final double DEFAULT_FREQUENCY=0.5;
 
 
     static public void main(String [] args) {
@@ -72,7 +73,6 @@ public class LR2PG {
                 logger.trace("Not adding term "+ hpoId.getId());
             }
         }
-      //  System.out.print(diseaseMap);
 
     }
 

@@ -110,43 +110,11 @@ public class HPO2LR {
 
 
     /**
-     * This function reads a disease name and the HPO terms from a file
-     */
-    private void getHPOTerms(){
-
-
-        String fileName = "/Users/ravanv/Documents/HPO_LR1/LR2PG/HPOTerms.txt";
-        String line =null;
-
-        try {
-            FileReader fileReader = new FileReader(fileName);
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            line =  bufferedReader.readLine();
-
-            while((line= bufferedReader.readLine()) != null) {
-
-                System.out.println(line);
-            }
-
-            bufferedReader.close();
-        }
-        catch(FileNotFoundException ex) {
-            System.out.println("Unable to open file '" + fileName + "'");
-        }
-        catch(IOException ex) {
-            System.out.println("Error reading file '" + fileName + "'");
-        }
-    }
-
-
-
-
-    /**
      * Returns the frequency of an HPO annotation among all diseases of our corpus, i.e., in {@link #diseaseMap}.
      * @param hpoId The HPO Term whose frequency we want to know
      * @return frequency of hpoId among all diseases
      */
-    public double getBackgroundFrequency(TermId hpoId) {
+    private double getBackgroundFrequency(TermId hpoId) {
         int NumberOfDiseases = diseaseMap.size();
         logger.trace("return number of disease that have the HPO term");
         if (hpoTerm2DiseaseCount.containsKey(hpoId)) { // If the hpoTerm2DiseaseCount contains the HPO term
@@ -163,7 +131,7 @@ public class HPO2LR {
      * @param hpoId
      * @return The frequency of HPO feature (hpoId) in patients with the given disease
      */
-    public double getFrequency(String diseaseID, TermId hpoId) {
+    private double getFrequency(String diseaseID, TermId hpoId) {
         Disease disease1 = diseaseMap.get(diseaseID);
         if (disease1 != null && disease1.getHpoIds().contains(hpoId))
             return 0.9;

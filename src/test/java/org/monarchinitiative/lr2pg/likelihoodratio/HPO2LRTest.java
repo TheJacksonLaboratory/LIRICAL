@@ -16,8 +16,8 @@ import java.io.IOException;
 import java.util.*;
 
 public class HPO2LRTest {
-    private String path = "/home/robinp/data/hpo/phenotype_annotation.tab";
-    private String hpopath="/home/robinp/data/hpo/hp.obo";
+    private String path = "/Users/ravanv/Documents/HPO_LR1/LR2PG/HPO/phenotype_annotation.tab";
+    private String hpopath="/Users/ravanv/Documents/HPO_LR1/LR2PG/HPO/hp.obo";
     private Ontology<HpoTerm, HpoTermRelation> ontology=null;
     /** Map of all of the Phenotypic abnormality terms (i.e., not the inheritance terms). */
     private Map<TermId,HpoTerm> termmap=null;
@@ -97,7 +97,7 @@ public class HPO2LRTest {
         List<TermId> idlist = new ArrayList<>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(path));
-            String line=null;
+            String line = null;
 
             while ((line=br.readLine())!=null) {
                 if (! line.startsWith("OMIM"))
