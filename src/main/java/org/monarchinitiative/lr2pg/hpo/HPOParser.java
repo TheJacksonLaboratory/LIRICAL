@@ -9,6 +9,7 @@ import com.github.phenomics.ontolib.io.obo.hpo.HpoDiseaseAnnotationParser;
 import com.github.phenomics.ontolib.io.obo.hpo.HpoOboParser;
 import com.github.phenomics.ontolib.ontology.data.*;
 import org.apache.log4j.Logger;
+import org.monarchinitiative.lr2pg.prototype.Disease;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,11 @@ public class HPOParser {
     static Logger logger = Logger.getLogger(HPOParser.class.getName());
     Ontology<HpoTerm, HpoTermRelation> inheritance=null;
     Ontology<HpoTerm, HpoTermRelation> abnormalPhenoSubOntology=null;
+    /** Map of all of the Phenotypic abnormality terms (i.e., not the inheritance terms). */
+    private Map<TermId,HpoTerm> termmap=null;
+    /** List of all annotations parsed from phenotype_annotation.tab. */
+    private List<HpoDiseaseAnnotation> annotList=null;
+
 
 
 
@@ -36,6 +42,31 @@ public class HPOParser {
     }
 
 
+
+    public Map<String,Disease> createDiseaseModels() {
+        Map<String,Disease> diseaseMap = new HashMap<>();
+        logger.trace("createDiseaseModels");
+        for (HpoDiseaseAnnotation annot: annotList) {
+            String database=annot.getDb(); /* e.g., OMIM, ORPHA, DECIPHER */
+            String diseaseName=annot.getDbName(); /* e.g., Marfan syndrome */
+            String diseaseId = annot.getDbObjectId(); /* e.g., OMIM:100543 */
+            TermId hpoId  = annot.getHpoId();
+            /* Filter database to just get OMIM */
+            Disease disease=null;
+            if (diseaseMap.containsKey(diseaseId)) {
+                disease=diseaseMap.get(diseaseId);
+            } else {
+                disease = new Disease(database,diseaseName,diseaseId); //String database, String name,String id
+                diseaseMap.put(diseaseId,disease);
+            }
+            if ( this.termmap.containsKey(hpoId)) { // restrict to clinical terms, i.e., not inheritance.
+                disease.addHpo(hpoId);
+            } else {
+                logger.trace("Not adding term "+ hpoId.getId());
+            }
+        }
+        return diseaseMap;
+    }
 
 
     public Map<TermId,HpoTerm> extractStrictPhenotypeTermMap() {
@@ -65,6 +96,11 @@ public class HPOParser {
     }
 
 
+
+
+
+
+
     public Ontology<HpoTerm, HpoTermRelation> getInheritanceSubontology() {
         Map<TermId,HpoTerm> submap = inheritance.getTermMap();
         Set<TermId> actual = inheritance.getNonObsoleteTermIds();
@@ -75,15 +111,18 @@ public class HPOParser {
     }
 
 
+    public List<HpoDiseaseAnnotation> getAnnotList() {
+        return annotList;
+    }
 
     /**
      * @param annotationPath Path to the phenotype_annotation.tab file
      * @return A list of disease-HPO phenotype annotations.
      */
-    public List<HpoDiseaseAnnotation> parseAnnotation(String annotationPath) {
+    public void  parseAnnotation(String annotationPath) {
         File inputFile = new File(annotationPath);
         logger.trace(String.format("Parsing annotations at %s (%s)",annotationPath,inputFile));
-        List<HpoDiseaseAnnotation> annotList = new ArrayList<>();
+        annotList = new ArrayList<>();
         try {
             HpoDiseaseAnnotationParser parser = new HpoDiseaseAnnotationParser(inputFile);
             while (parser.hasNext()) {
@@ -95,9 +134,15 @@ public class HPOParser {
         } catch (TermAnnotationParserException e) {
             System.err.println("Problem parsing file.");
         }
-        return annotList;
 
     }
+
+
+    public void initializeTermMap() {
+        this.termmap = extractStrictPhenotypeTermMap();
+    }
+
+
 
 
 

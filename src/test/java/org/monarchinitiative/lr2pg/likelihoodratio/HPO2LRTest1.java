@@ -61,8 +61,9 @@ public class HPO2LRTest1 {
     private void parseHPOData(String hpopath, String annotpath) {
         HPOParser parser = new HPOParser();
         this.ontology = parser.parseOntology(hpopath);
-        this.annotList = parser.parseAnnotation(annotpath);
-        this.inheritance = parser.getInheritanceSubontology();
+        parser.parseAnnotation(annotpath);
+        this.annotList =parser.getAnnotList();
+                this.inheritance = parser.getInheritanceSubontology();
         this.termmap = parser.extractStrictPhenotypeTermMap();
     }
 

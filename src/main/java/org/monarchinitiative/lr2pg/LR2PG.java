@@ -93,7 +93,7 @@ public class LR2PG {
        this.ontology = parser.parseOntology(hpo);
 
         logger.trace("About to parse annot file");
-        this.annotList = parser.parseAnnotation(annotation);
+        parser.parseAnnotation(annotation);
         logger.trace("number of non obsolete terms: " + ontology.getNonObsoleteTermIds().size());
         this.inheritance=parser.getInheritanceSubontology();
         this.termmap = parser.extractStrictPhenotypeTermMap();
