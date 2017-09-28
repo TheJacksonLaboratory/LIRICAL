@@ -11,12 +11,11 @@ import com.github.phenomics.ontolib.ontology.data.Ontology;
 import com.github.phenomics.ontolib.ontology.data.TermId;
 import org.monarchinitiative.lr2pg.hpo.HPOParser;
 import org.monarchinitiative.lr2pg.prototype.Disease;
-import org.monarchinitiative.lr2pg.likelihoodratio.HPOLRTest;
-import org.monarchinitiative.lr2pg.likelihoodratio.HPOTestResult;
+import org.monarchinitiative.lr2pg.prototype.MapUtil;
 import com.github.phenomics.ontolib.ontology.data.*;
-import org.junit.Test;
 import java.io.*;
 import java.util.*;
+import org.junit.*;
 
 
 
@@ -36,10 +35,14 @@ public class HPO2LRTest1 {
      * List of all annotations parsed from phenotype_annotation.tab.
      */
     private List<HpoDiseaseAnnotation> annotList = null;
-    List<String> HPOTermsPatient = new ArrayList<>();
-    List<TermId> ListOfTermIdsOfHPOTerms = new ArrayList<>();
     private Map<String, Disease> diseaseMap = null;
     Map<TermId, Integer> hpoTerm2DiseaseCount = null;
+    //Map to store likelihood ratio for each disease
+    Map<String,Double> Disease2LR = null;
+    //List to store list of HPO terms of a patient
+    List<String> HPOTermsPatient = new ArrayList<>();
+    //List to store TermIds of HPO terms of a patient
+    List<TermId> ListOfTermIdsOfHPOTerms = new ArrayList<>();
 
     /**
      * List of likelihood ratios, pretest odds, posttest odds and posttest prob. for each disease
@@ -48,12 +51,15 @@ public class HPO2LRTest1 {
     List<Double> PretestOdds = null;
     List<Double> PostTestOdds = null;
     List<Double> PostTestProb = null;
+    /**
+     * sign of the Likelihood ratio, 'P' for positive, 'N' for negative
+     */
     char TestSign = 'P';
+
     double PretestProb = 0.5;
 
     private void parseHPOData(String hpopath, String annotpath) {
         HPOParser parser = new HPOParser();
-
         this.ontology = parser.parseOntology(hpopath);
         this.annotList = parser.parseAnnotation(annotpath);
         this.inheritance = parser.getInheritanceSubontology();
@@ -219,6 +225,8 @@ public class HPO2LRTest1 {
      * This function gets HPO IDs of a patient and calculates the likelihood ratio, Pretest odds,
      * Posttest odds and Posttest Probabilities for each disease.
      */
+
+
     @Test
     public void ResultsLrOddProb() {
         getHPOIds();
@@ -234,14 +242,23 @@ public class HPO2LRTest1 {
             }
             HPOLRTest hpolrtest = new HPOLRTest(results, PretestProb, TestSign);
             LikelihoodRatios.add(hpolrtest.getCompositeLikelihoodRatio());
+            Disease2LR.put(disease,hpolrtest.getCompositeLikelihoodRatio());
             PretestOdds.add(hpolrtest.getPretestOdds());
             PostTestOdds.add(hpolrtest.getPosttestOdds());
             PostTestProb.add(hpolrtest.getPosttestProbability());
 
+
         }
     }
 
-
+    @Test
+    /**
+     * Function for sorting the Disease2LR map based on likelihood ratios
+     * ToDo not complete! needs to be completed!
+     */
+    public void testSortByValue() {
+        Disease2LR = MapUtil.sortByValue(Disease2LR);
+    }
 
 }
 
