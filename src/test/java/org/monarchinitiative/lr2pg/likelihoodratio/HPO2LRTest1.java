@@ -21,9 +21,10 @@ import org.junit.*;
 
 public class HPO2LRTest1 {
 
-    private String annotpath = "/Users/ravanv/Documents/HPO_LR1/LR2PG/HPO/phenotype_annotation.tab";
-    private String hpopath = "/Users/ravanv/Documents/HPO_LR1/LR2PG/HPO/hp.obo";
-    private String fileName = "/Users/ravanv/Documents/HPO_LR1/LR2PG/HPOTerms_1.txt";
+   // private String annotpath = "/Users/ravanv/Documents/HPO_LR1/LR2PG/HPO/phenotype_annotation.tab";
+   private String annotpath = "/Users/ravanv/Documents/HPO_LRTest/LR2PG/HPO/phenotype_annotation.tab";
+    private String hpopath = "/Users/ravanv/Documents/HPO_LRTest/LR2PG/HPO/hp.obo";
+    private String fileName = "/Users/ravanv/Documents/HPO_LRTest/LR2PG/HPOTerms.txt";
     private Ontology<HpoTerm, HpoTermRelation> ontology = null;
     /**
      * Map of all of the Phenotypic abnormality terms (i.e., not the inheritance terms).
@@ -38,7 +39,7 @@ public class HPO2LRTest1 {
     private Map<String, Disease> diseaseMap = null;
     Map<TermId, Integer> hpoTerm2DiseaseCount = null;
     //Map to store likelihood ratio for each disease
-    Map<String,Double> Disease2LR = null;
+    Map<String,Double> Disease2LR = new HashMap<>();
     //List to store list of HPO terms of a patient
     List<String> HPOTermsPatient = new ArrayList<>();
     //List to store TermIds of HPO terms of a patient
@@ -47,10 +48,10 @@ public class HPO2LRTest1 {
     /**
      * List of likelihood ratios, pretest odds, posttest odds and posttest prob. for each disease
      */
-    List<Double> LikelihoodRatios = null;
-    List<Double> PretestOdds = null;
-    List<Double> PostTestOdds = null;
-    List<Double> PostTestProb = null;
+    List<Double> LikelihoodRatios = new ArrayList<Double>();
+    List<Double> PretestOdds = new ArrayList<Double>();
+    List<Double> PostTestOdds = new ArrayList<Double>();
+    List<Double> PostTestProb = new ArrayList<Double>();
     /**
      * sign of the Likelihood ratio, 'P' for positive, 'N' for negative
      */
@@ -75,6 +76,14 @@ public class HPO2LRTest1 {
             termmap.put(term.getId(), term);
         }
         Term root = termmap.get(rootID);
+    }
+    public void debugPrintDiseaseMap() {
+        for (String d: diseaseMap.keySet()) {
+            Disease disease = diseaseMap.get(d);
+            System.err.println(String.format("Disease: %s: HPO ids: %d",disease.getName(),disease.getHpoIds().size()));
+        }
+
+
     }
 
     private void createDiseaseModels() {
@@ -133,7 +142,7 @@ public class HPO2LRTest1 {
      * @return List of TermIds of HPO terms.
      */
 
-    public void getHPOIds() {
+    public void getHPOIdFile() {
         TermPrefix pref = new ImmutableTermPrefix("HP");
         getHPOTermsfromFile();
         for (int i = 0; i < HPOTermsPatient.size(); ++i) {
@@ -152,7 +161,7 @@ public class HPO2LRTest1 {
      * implicited (inherited) annotations, and places the result in {@link #hpoTerm2DiseaseCount}.
      * TODO convert into Java8 stream
      */
-    private void initializeTerm2DiseaseMap() {
+    /*private void initializeTerm2DiseaseMap() {
         hpoTerm2DiseaseCount = new HashMap<>();
         int good = 0, bad = 0;
         for (Disease disease : diseaseMap.values()) {
@@ -190,7 +199,49 @@ public class HPO2LRTest1 {
             }
 
         }
+    }*/
+
+    private void initializeTerm2DiseaseMap() throws Exception {
+        hpoTerm2DiseaseCount = new HashMap<>();
+        int good=0,bad=0;
+        for(Disease disease: diseaseMap.values()){
+            System.err.println(String.format("Disease %s", disease.getName()));
+            for (TermId termId : disease.getHpoIds()) {
+                System.err.println(String.format("Term %s Status %s",
+                        termId.getIdWithPrefix(), ontology.getAllTermIds().contains(termId)));
+            }
+
+            Collection<TermId> ids = disease.getHpoIds();
+            if (ids==null) {
+                String msg="TermIds NULL";
+                throw new Exception(msg);
+            } else if (ids.size()==0) {
+                System.err.println("TermIds zero size");
+                System.err.println("disease: " + disease.getName());
+                debugPrintDiseaseMap();
+                //System.exit(17);
+                String msg = String.format("Disease %s had zero HpoIds",disease.getName());
+                throw new Exception(msg);
+            }
+            ids.remove(null);
+            Set<TermId> ancestors = ontology.getAllAncestorTermIds(ids);
+            ancestors.remove(null);
+            for (TermId hpoid : ancestors) {
+                if (hpoid==null) continue;
+                if (!hpoTerm2DiseaseCount.containsKey(hpoid)) {
+                    hpoTerm2DiseaseCount.put(hpoid, 1);
+                } else {
+                    hpoTerm2DiseaseCount.put(hpoid, 1 + hpoTerm2DiseaseCount.get(hpoid));
+                }
+            }
+            good++;
+
+
+        }
+
+
     }
+
 
     /**
      * Returns the frequency of an HPO annotation among all diseases of our corpus, i.e., in {@link #diseaseMap}.
@@ -200,7 +251,7 @@ public class HPO2LRTest1 {
     private double getBackgroundFrequency(TermId hpoId) {
         int NumberOfDiseases = diseaseMap.size();
         if (hpoTerm2DiseaseCount.containsKey(hpoId)) { // If the hpoTerm2DiseaseCount contains the HPO term
-            return hpoTerm2DiseaseCount.get(hpoId) / NumberOfDiseases; //return number of diseases wit HPO term divided by total number of diseases
+            return hpoTerm2DiseaseCount.get(hpoId)*(1.0) / NumberOfDiseases; //return number of diseases wit HPO term divided by total number of diseases
         } else {
             return 0;
         }
@@ -230,11 +281,16 @@ public class HPO2LRTest1 {
 
     @Test
     public void ResultsLrOddProb() {
-        getHPOIds();
+        getHPOIdFile();
         parseHPOData(hpopath, annotpath);
         debugPrintOntology();
         createDiseaseModels();
-        initializeTerm2DiseaseMap();
+        try {
+            initializeTerm2DiseaseMap();
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+
         for (String disease : diseaseMap.keySet()) {
             List<HPOTestResult> results = new ArrayList<>();
             for (TermId id : ListOfTermIdsOfHPOTerms) {
@@ -243,23 +299,21 @@ public class HPO2LRTest1 {
             }
             HPOLRTest hpolrtest = new HPOLRTest(results, PretestProb, TestSign);
             LikelihoodRatios.add(hpolrtest.getCompositeLikelihoodRatio());
-            Disease2LR.put(disease,hpolrtest.getCompositeLikelihoodRatio());
+            Disease2LR.put(disease,(-1)*hpolrtest.getCompositeLikelihoodRatio());
             PretestOdds.add(hpolrtest.getPretestOdds());
             PostTestOdds.add(hpolrtest.getPosttestOdds());
             PostTestProb.add(hpolrtest.getPosttestProbability());
 
+        }
+        Disease2LR = MapUtil.sortByValue(Disease2LR);
+        for(String disease: Disease2LR.keySet()){
+            double LR =  Disease2LR.get(disease);
+            Disease2LR.put(disease, (-1)*LR);
 
         }
     }
 
-    @Test
-    /**
-     * Function for sorting the Disease2LR map based on likelihood ratios
-     * ToDo not complete! needs to be completed!
-     */
-    public void testSortByValue() {
-        Disease2LR = MapUtil.sortByValue(Disease2LR);
-    }
+
 
 }
 

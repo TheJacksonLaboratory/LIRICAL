@@ -29,7 +29,26 @@ public class HPOTestResult {
          * TODO what if specificity and/or sensitivity is 100%?
          * @return
          */
-        public double PositivelikelihoodRatio() {return FreqHPOTermDisease /FreqHPOTermAllDiseases;}
+        public double PositivelikelihoodRatio() {
+
+            double LR = 0;
+            if(FreqHPOTermDisease == 0)
+                return 0;
+            try{
+                LR = FreqHPOTermDisease /FreqHPOTermAllDiseases;
+                return LR;
+            }
+            catch (ArithmeticException e) {
+                System.err.println(e);
+                return 0;
+            }
+            catch (Exception e){
+                System.err.println(e);
+                return 0;
+            }
+
+            }
+
 
         public double NegativelikelihoodRatio() {return (1-FreqHPOTermAllDiseases) /( 1- FreqHPOTermDisease);}
 

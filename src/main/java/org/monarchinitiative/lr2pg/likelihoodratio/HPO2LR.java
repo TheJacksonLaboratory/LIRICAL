@@ -34,7 +34,11 @@ public class HPO2LR {
     public HPO2LR(Ontology<HpoTerm, HpoTermRelation> ontology, Map<String, Disease> diseaseMp) {
         hpoOntology = ontology;
         diseaseMap = diseaseMp;
-        initializeTerm2DiseaseMap();
+        try {
+            initializeTerm2DiseaseMap();
+        } catch (Exception e) {
+            System.err.println(e);
+        }
     }
 
 
@@ -43,7 +47,7 @@ public class HPO2LR {
      * implicited (inherited) annotations, and places the result in {@link #hpoTerm2DiseaseCount}.
      * TODO convert into Java8 stream
      */
-    private void initializeTerm2DiseaseMap() {
+    /*private void initializeTerm2DiseaseMap() {
         hpoTerm2DiseaseCount = new HashMap<>();
         logger.trace("start creating the map hpoTerm, Disease Count");
         int good=0,bad=0;
@@ -104,6 +108,57 @@ public class HPO2LR {
 //                stream().
 //                map( disease -> hpoOntology.getAllAncestorTermIds(disease.getHpoIds())).
 //                collect(Collectors.groupingBy(t -> t, counting()));
+
+
+    //}
+
+    public void debugPrintDiseaseMap() {
+        for (String d: diseaseMap.keySet()) {
+            Disease disease = diseaseMap.get(d);
+            System.err.println(String.format("Disease: %s: HPO ids: %d",disease.getName(),disease.getHpoIds().size()));
+        }
+
+
+    }
+
+
+    private void initializeTerm2DiseaseMap() throws Exception {
+        hpoTerm2DiseaseCount = new HashMap<>();
+        int good=0,bad=0;
+        for(Disease disease: diseaseMap.values()){
+            System.err.println(String.format("Disease %s", disease.getName()));
+            for (TermId termId : disease.getHpoIds()) {
+                System.err.println(String.format("Term %s Status %s",
+                        termId.getIdWithPrefix(), hpoOntology.getAllTermIds().contains(termId)));
+            }
+
+            Collection<TermId> ids = disease.getHpoIds();
+            if (ids==null) {
+                String msg="TermIds NULL";
+                throw new Exception(msg);
+            } else if (ids.size()==0) {
+                System.err.println("TermIds zero size");
+                System.err.println("disease: " + disease.getName());
+                debugPrintDiseaseMap();
+                //System.exit(17);
+                String msg = String.format("Disease %s had zero HpoIds",disease.getName());
+                throw new Exception(msg);
+            }
+            ids.remove(null);
+            Set<TermId> ancestors = hpoOntology.getAllAncestorTermIds(ids);
+            ancestors.remove(null);
+            for (TermId hpoid : ancestors) {
+                if (hpoid==null) continue;
+                if (!hpoTerm2DiseaseCount.containsKey(hpoid)) {
+                    hpoTerm2DiseaseCount.put(hpoid, 1);
+                } else {
+                    hpoTerm2DiseaseCount.put(hpoid, 1 + hpoTerm2DiseaseCount.get(hpoid));
+                }
+            }
+            good++;
+
+
+        }
 
 
     }

@@ -37,9 +37,8 @@ public class HPOParser {
 
 
 
-    public HPOParser() {
 
-    }
+
 
 
 
@@ -100,7 +99,6 @@ public class HPOParser {
 
 
 
-
     public Ontology<HpoTerm, HpoTermRelation> getInheritanceSubontology() {
         Map<TermId,HpoTerm> submap = inheritance.getTermMap();
         Set<TermId> actual = inheritance.getNonObsoleteTermIds();
@@ -142,8 +140,88 @@ public class HPOParser {
         this.termmap = extractStrictPhenotypeTermMap();
     }
 
+    /**
+     * Returns the frequency of an HPO annotation among all diseases of our corpus, i.e., in {@link # Map diseaseMap}.
+     * @param hpoId The HPO Term whose frequency we want to know
+     * @return frequency of hpoId among all diseases
+     */
+    public double getBackgroundFrequency(TermId hpoId, Map<String,Disease>diseaseMap, Map<TermId, Integer> hpoTerm2DiseaseCount) {
+        int NumberOfDiseases = diseaseMap.size();
+        // If the hpoTerm2DiseaseCount contains the HPO term
+        if (hpoTerm2DiseaseCount.containsKey(hpoId))
+            //return number of diseases wit HPO term divided by total number of diseases
+        {
+            return ((int) hpoTerm2DiseaseCount.get(hpoId) * 1.0 /NumberOfDiseases);
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * If disease has the HPO term, return 0.9; else return 0 (initial approach/simplification)
+     * TODO later calculate the actual frequency if possible
+     *
+     * @param diseaseID
+     * @param hpoId
+     * @return The frequency of HPO feature (hpoId) in patients with the given disease
+     */
+    public double getFrequency(String diseaseID, TermId hpoId,Map<String,Disease>diseaseMap) {
+        Disease disease1 = (Disease) diseaseMap.get(diseaseID);
+        if (disease1 != null && disease1.getHpoIds().contains(hpoId))
+            return 0.9;
+        else
+            return 0.0;
+    }
+
+    public void initializeTerm2DiseaseMap(Map<TermId, Integer> hpoTerm2DiseaseCount, Map<String, Disease> diseaseMap, Ontology<HpoTerm, HpoTermRelation> hpoOntology) throws Exception {
+        //hpoTerm2DiseaseCount = new HashMap<>();
+        int good=0,bad=0;
+        for(Disease disease: diseaseMap.values()){
+            System.err.println(String.format("Disease %s", disease.getName()));
+            for (TermId termId : disease.getHpoIds()) {
+                System.err.println(String.format("Term %s Status %s",
+                        termId.getIdWithPrefix(), hpoOntology.getAllTermIds().contains(termId)));
+            }
+
+            Collection<TermId> ids = disease.getHpoIds();
+            if (ids==null) {
+                String msg="TermIds NULL";
+                throw new Exception(msg);
+            } else if (ids.size()==0) {
+                System.err.println("TermIds zero size");
+                System.err.println("disease: " + disease.getName());
+                debugPrintDiseaseMap(diseaseMap);
+                //System.exit(17);
+                String msg = String.format("Disease %s had zero HpoIds",disease.getName());
+                throw new Exception(msg);
+            }
+            ids.remove(null);
+            Set<TermId> ancestors = hpoOntology.getAllAncestorTermIds(ids);
+            ancestors.remove(null);
+            for (TermId hpoid : ancestors) {
+                if (hpoid==null) continue;
+                if (!hpoTerm2DiseaseCount.containsKey(hpoid)) {
+                    hpoTerm2DiseaseCount.put(hpoid, 1);
+                } else {
+                    hpoTerm2DiseaseCount.put(hpoid, 1 + hpoTerm2DiseaseCount.get(hpoid));
+                }
+            }
+            good++;
 
 
+        }
+
+
+    }
+
+    public void debugPrintDiseaseMap(Map <String, Disease>diseaseMap) {
+        for (String d: diseaseMap.keySet()) {
+            Disease disease = diseaseMap.get(d);
+            System.err.println(String.format("Disease: %s: HPO ids: %d",disease.getName(),disease.getHpoIds().size()));
+        }
+
+
+    }
 
 
 
