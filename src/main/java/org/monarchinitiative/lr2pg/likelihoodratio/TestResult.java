@@ -35,11 +35,46 @@ public class TestResult {
      * @return
      */
     public double PositivelikelihoodRatio() {
-        return sensitivity /( 1- specificity);
+        double LR = 0;
+        //Put a threshold |sensitivity|<\epsilon
+        if(sensitivity == 0)
+            return 0;
+        try{
+            LR = sensitivity /(1-specificity);
+            return LR;
+        }
+        catch (ArithmeticException e) {
+            System.err.println(e);
+            return 0;
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return 0;
+        }
+
+
     }
 
     public double NegativelikelihoodRatio() {
-        return specificity /( 1- sensitivity);
+
+        double LR = 0;
+        //Put a threshold, if |sensitivity-1|<\epsilon
+        if(sensitivity == 1)
+            return 0;
+        try{
+            LR = specificity /(1-sensitivity);
+            return LR;
+        }
+        catch (ArithmeticException e) {
+            System.err.println(e);
+            return 0;
+        }
+        catch (Exception e){
+            System.err.println(e);
+            return 0;
+        }
+
+
     }
 
 

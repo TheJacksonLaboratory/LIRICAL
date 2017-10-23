@@ -29,11 +29,23 @@ import java.util.Map;
                 writer.write("disease id");
                 writer.write("  ");
                 writer.write("Likelihood ratio");
+                writer.write("  ");
+                writer.write("PretestOdds");
+                writer.write("  ");
+                writer.write("PosttestOdds");
+                writer.write("  ");
+                writer.write("PosttestProb");
                 writer.newLine();
                 for (String disease : Disease2LR.keySet()) {
                     writer.write(disease);
                     writer.write("  ");
                     writer.write(String.valueOf(Disease2LR.get(disease)));
+                    writer.write("  ");
+                    writer.write(String.valueOf(Disease2PretestOdds.get(disease)));
+                    writer.write("  ");
+                    writer.write(String.valueOf(Disease2PosttestOdds.get(disease)));
+                    writer.write("  ");
+                    writer.write(String.valueOf(Disease2PosttestProb.get(disease)));
                     writer.newLine();
                 }
 
@@ -42,7 +54,7 @@ import java.util.Map;
             }
         }
 
-        public void WritingPretestOdds(String WriteFileName) {
+        /*public void WritingPretestOdds(String WriteFileName) {
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(WriteFileName, false))) {
                 writer.write("disease id");
                 writer.write("  ");
@@ -94,7 +106,7 @@ import java.util.Map;
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             }
-        }
+        }*/
 
 
     }

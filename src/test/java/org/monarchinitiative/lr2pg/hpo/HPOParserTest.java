@@ -4,7 +4,6 @@ import com.github.phenomics.ontolib.formats.hpo.HpoDiseaseAnnotation;
 import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.*;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.monarchinitiative.lr2pg.likelihoodratio.HPOLRTest;

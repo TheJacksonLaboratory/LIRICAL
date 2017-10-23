@@ -150,8 +150,9 @@ public class HPOParser {
         // If the hpoTerm2DiseaseCount contains the HPO term
         if (hpoTerm2DiseaseCount.containsKey(hpoId))
             //return number of diseases wit HPO term divided by total number of diseases
+            //Needs to be completed!!! i should include getFrequency in this formula!!
         {
-            return ((int) hpoTerm2DiseaseCount.get(hpoId) * 1.0 /NumberOfDiseases);
+            return ((int) hpoTerm2DiseaseCount.get(hpoId)* 1.0 /NumberOfDiseases);
         } else {
             return 0;
         }

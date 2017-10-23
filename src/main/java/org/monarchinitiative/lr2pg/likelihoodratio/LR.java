@@ -51,7 +51,7 @@ public class LR {
             List<HPOTestResult> results = new ArrayList<>();
             for (TermId id : listOfTermIdsOfHPOTerms) {
                 if(hpoTerm2DiseaseCount.containsKey(id)) {
-                   HPOTestResult result = new HPOTestResult(parserHPO.getFrequency(disease, id, diseaseMap), parserHPO.getBackgroundFrequency(id,diseaseMap, hpoTerm2DiseaseCount));
+                   HPOTestResult result = new HPOTestResult(parserHPO.getFrequency(disease, id, diseaseMap), 1-parserHPO.getBackgroundFrequency(id,diseaseMap, hpoTerm2DiseaseCount));
                    results.add(result);
                 }
             }
@@ -65,22 +65,32 @@ public class LR {
         //Sorting the LR, Pretest Odds, Posttest Odds and Posttest Prob lists
         Disease2LR = MapUtil.sortByValue(Disease2LR);
         Disease2PretestOdds = MapUtil.sortByValue(Disease2PretestOdds);
-        Disease2PosttestOdds = MapUtil.sortByValue(Disease2PretestOdds);
-       //there is an issue in sorting Posttest odds?
         Disease2PosttestOdds = MapUtil.sortByValue(Disease2PosttestOdds);
         Disease2PosttestProb = MapUtil.sortByValue(Disease2PosttestProb);
     }
 
     public void WritingLikelihood(String WriteFileNameLR) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(WriteFileNameLR, false))) {
-            writer.write("disease id");
+            writer.write("disease_id");
             writer.write("  ");
-            writer.write("Likelihood ratio");
+            writer.write("Likelihood_Ratio");
+            writer.write("  ");
+            writer.write("PretestOdds");
+            writer.write("  ");
+            writer.write("PosttestOdds");
+            writer.write("  ");
+            writer.write("PosttestProb");
             writer.newLine();
             for (String disease : Disease2LR.keySet()) {
                 writer.write(disease);
                 writer.write("  ");
                 writer.write(String.valueOf(Disease2LR.get(disease)));
+                writer.write("  ");
+                writer.write(String.valueOf(Disease2PretestOdds.get(disease)));
+                writer.write("  ");
+                writer.write(String.valueOf(Disease2PosttestOdds.get(disease)));
+                writer.write("  ");
+                writer.write(String.valueOf(Disease2PosttestProb.get(disease)));
                 writer.newLine();
             }
 
@@ -89,7 +99,7 @@ public class LR {
         }
     }
 
-    public void WritingPretestOdds(String WriteFileName) {
+   /* public void WritingPretestOdds(String WriteFileName) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(WriteFileName, false))) {
             writer.write("disease id");
             writer.write("  ");
@@ -141,7 +151,7 @@ public class LR {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-    }
+    }*/
 
 
 

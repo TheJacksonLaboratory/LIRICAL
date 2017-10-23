@@ -49,11 +49,9 @@ public class LR2PG {
     private static Map<String,Double> Disease2PretestOdds = new HashMap<>();
     private static Map<String, Double> Disease2PosttestOdds = new HashMap<>();
     private static Map<String, Double> Disease2PosttestProb = new HashMap<>();
-    /** File Name for the results of the Likelihood ratio */
-    private static String WriteFileNameLR = "ResultsLR.txt";
-    private static String WriteFileNamePretestOdds = "ResultsPretestOdds.txt";
-    private static String WriteFileNamePosttesOdds = "ResultsPosttestOdds.txt";
-    private static String WriteFileNamePosttesProb = "ResultsPosttestProb.txt";
+    /** File Name for the results of the Likelihood ratio, PretestOdds, Posttest Odds and PosttestProb */
+    private static String WriteFileNameLR = "Results.txt";
+
 
     static public void main(String [] args) {
         CommandParser parser= new CommandParser(args);
@@ -77,30 +75,15 @@ public class LR2PG {
         HPTerms hpTerm = new HPTerms();
         //Reading HPO terms form a file and storing HPO ids in a list
         hpTerm.getHPOIdFile(ListOfTermIdsOfHPOTerms);
-
+        logger.trace("Creating disease map and calculating Likelihood ratio, PretestOdds, Posttest Odds and PosttestProb");
         //Calculating LR, PretestOdds, Posttest Odds and PosttestProb
         LR HPLikelihood = new LR(diseaseMap, ListOfTermIdsOfHPOTerms, hpoTerm2DiseaseCount,  Disease2LR,  Disease2PretestOdds, Disease2PosttestOdds, Disease2PosttestProb, PretestProb,TestSign);
         HPLikelihood.LikelihoodRatios();
 
        // Writing results of Likelihood ratio, Pretest odds, posttest odds and posttest prob in a file. The results are sorted in a descending order
         HPLikelihood.WritingLikelihood(WriteFileNameLR);
-        HPLikelihood.WritingPretestOdds(WriteFileNamePretestOdds);
-        HPLikelihood.WritingPosttestOdds(WriteFileNamePosttesOdds);
-        HPLikelihood.WritingPosttestProb(WriteFileNamePosttesProb);
 
 
-/*        WriteResults WriteResults = new WriteResults(Disease2LR, Disease2PretestOdds, Disease2PosttestOdds, Disease2PosttestProb);
-        //Writing results of Likelihood ratio in a file
-        WriteResults.WritingLikelihood(WriteFileNameLR);
-
-        //Writing results of PretestOdds in a file
-        WriteResults.WritingPretestOdds(WriteFileNamePretestOdds);
-
-        //Writing results of PosttestOdds in a file
-        WriteResults.WritingPosttestOdds(WriteFileNamePosttesOdds);
-
-        //Writing results of PosttestProb in a file
-        WriteResults.WritingPosttestProb(WriteFileNamePosttesProb);*/
 
     }
 
@@ -111,30 +94,6 @@ public class LR2PG {
     //}
 
 
-  /*  private void createDiseaseModels() {
-        diseaseMap = new HashMap<>();
-        logger.trace("createDiseaseModels");
-        for (HpoDiseaseAnnotation annot: annotList) {
-            String database=annot.getDb(); /* e.g., OMIM, ORPHA, DECIPHER */
-           // String diseaseName=annot.getDbName(); /* e.g., Marfan syndrome */
-           // String diseaseId = annot.getDbObjectId(); /* e.g., OMIM:100543 */
-           // TermId hpoId  = annot.getHpoId();
-            /* Filter database to just get OMIM */
-           /* Disease disease=null;
-            if (diseaseMap.containsKey(diseaseId)) {
-                disease=diseaseMap.get(diseaseId);
-            } else {
-                disease = new Disease(database,diseaseName,diseaseId); //String database, String name,String id
-                diseaseMap.put(diseaseId,disease);
-            }
-            if ( this.termmap.containsKey(hpoId)) { // restrict to clinical terms, i.e., not inheritance.
-                disease.addHpo(hpoId);
-            } else {
-                logger.trace("Not adding term "+ hpoId.getId());
-            }
-        }
-
-    }*/
 
 
 

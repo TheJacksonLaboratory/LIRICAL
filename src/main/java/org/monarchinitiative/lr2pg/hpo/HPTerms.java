@@ -17,7 +17,7 @@ import java.util.List;
  * Created by ravanv on 10/3/17.
  */
 public class HPTerms {
-    private static String fileName = "/Users/ravanv/Documents/HPO_LRTest/LR2PG/HPOTerms.txt";
+    private static String fileName = "/Users/ravanv/Documents/IntelliJ_projects/HPO_LRTest/LR2PG/HPOTerms.txt";
     //List to store list of HPO terms of a patient
     List<String> HPOTermsPatient = new ArrayList<>();
     //List to store TermIds of HPO terms of a patient
