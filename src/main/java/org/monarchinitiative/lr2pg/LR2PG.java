@@ -28,22 +28,26 @@ public class LR2PG {
     Ontology<HpoTerm, HpoTermRelation> inheritance=null;
     /** List of all annotations parsed from phenotype_annotation.tab. */
     private List<HpoDiseaseAnnotation> annotList=null;
-    private static HPOParser parserHPO=null;
+    //private static HPOParser parserHPO=null;
     private static WriteResults writeResults = null;
     private static LR HPLikelihood = null;
-    private static List<HpoDiseaseAnnotation> annotations=null;
+    private List<HpoDiseaseAnnotation> annotations=null;
     /** Map of HPO Term Ids and the number of diseases that has the HPO term */
-    private static Map<TermId, Integer> hpoTerm2DiseaseCount = new HashMap<>();
+    private Map<TermId, Integer> hpoTerm2DiseaseCount = new HashMap<>();
     /** List of TermIds of the patient */
-    private static List<TermId> ListOfTermIdsOfHPOTerms = new ArrayList<>();
+    private List<TermId> ListOfTermIdsOfHPOTerms = new ArrayList<>();
     /** Sign for calculating LR (Positive='P', Negative = 'N') */
     private static char TestSign = 'P';
     /** Pretest Probability */
     private static final double PretestProb = 0.5;
 
-    private static Ontology<HpoTerm, HpoTermRelation> hpoOntology=null;
+    private static String fileName = "/Users/ravanv/Documents/IntelliJ_projects/HPO_LRTest/LR2PG/HPOTerms.txt";
 
-    private static Map<String,Disease> diseaseMap= new HashMap<>();
+    private String pathToPatientData=null;
+
+    private Ontology<HpoTerm, HpoTermRelation> hpoOntology=null;
+
+    private Map<String,Disease> diseaseMap= new HashMap<>();
 
     private static Map<String,Double> Disease2LR = new HashMap<>();
     private static Map<String,Double> Disease2PretestOdds = new HashMap<>();
@@ -52,79 +56,57 @@ public class LR2PG {
     /** File Name for the results of the Likelihood ratio, PretestOdds, Posttest Odds and PosttestProb */
     private static String WriteFileNameLR = "Results.txt";
 
-
-    static public void main(String [] args) {
+    public LR2PG(String args[]) {
         CommandParser parser= new CommandParser(args);
         String hpopath=parser.getHpoPath();
         String annotpath=parser.getAnnotationPath();
-        logger.trace("starting");
-        parserHPO = new HPOParser();
+        String pathToPatientData = parser.getPatientAnnotations();
+        HPOParser parserHPO = new HPOParser();
         hpoOntology = parserHPO.parseOntology(hpopath);
         parserHPO.parseAnnotation(annotpath);
-        annotations = parserHPO.getAnnotList();
+        this.annotations = parserHPO.getAnnotList();
         parserHPO.initializeTermMap();
-        diseaseMap = parserHPO.createDiseaseModels();
-
+        this.diseaseMap = parserHPO.createDiseaseModels();
         try {
             parserHPO.initializeTerm2DiseaseMap(hpoTerm2DiseaseCount,  diseaseMap, hpoOntology);
         } catch (Exception e) {
             System.err.println(e);
         }
+        // etc
+    }
 
-        logger.trace("reading HPO terms from a file");
-        HPTerms hpTerm = new HPTerms();
+
+    public void getPatientHPOTermsFromFile(String filename) {
+        if (this.pathToPatientData != null) {
+            filename = this.pathToPatientData;
+        }
+
+        HPTerms hpTerm = new HPTerms(filename);
         //Reading HPO terms form a file and storing HPO ids in a list
-        hpTerm.getHPOIdFile(ListOfTermIdsOfHPOTerms);
-        logger.trace("Creating disease map and calculating Likelihood ratio, PretestOdds, Posttest Odds and PosttestProb");
+        hpTerm.getHPOIdFile(this.ListOfTermIdsOfHPOTerms);
+    }
+
+
+    public void calculateLikelihoodRatio() {
         //Calculating LR, PretestOdds, Posttest Odds and PosttestProb
-        LR HPLikelihood = new LR(diseaseMap, ListOfTermIdsOfHPOTerms, hpoTerm2DiseaseCount,  Disease2LR,  Disease2PretestOdds, Disease2PosttestOdds, Disease2PosttestProb, PretestProb,TestSign);
+        LR HPLikelihood = new LR(diseaseMap, ListOfTermIdsOfHPOTerms, hpoTerm2DiseaseCount, PretestProb,TestSign);
         HPLikelihood.LikelihoodRatios();
-
-       // Writing results of Likelihood ratio, Pretest odds, posttest odds and posttest prob in a file. The results are sorted in a descending order
+        // Writing results of Likelihood ratio, Pretest odds, posttest odds and posttest prob in a file. The results are sorted in a descending order
         HPLikelihood.WritingLikelihood(WriteFileNameLR);
-
-
-
     }
 
 
 
- //   public LR2PG(String hpo, String annotation) {
-       // parseHPOData(hpo,annotation);
-    //}
+    static public void main(String [] args) {
+        LR2PG lr2pg = new LR2PG(args);
+        logger.trace("starting");
+        logger.trace("reading HPO terms from a file");
+        lr2pg.getPatientHPOTermsFromFile(fileName);
+        logger.trace("Creating disease map and calculating Likelihood ratio, PretestOdds, Posttest Odds and PosttestProb");
+        lr2pg.calculateLikelihoodRatio();
 
+    }
 
-
-
-
-    //private void setUpHpo2Lr() {
-        //HPO2LR h2l = new HPO2LR( this.ontology,this.diseaseMap);
-   // }
-
-
-    /*private void parseHPOData(String hpo, String annotation) {
-        HPOParser parser = new HPOParser();
-       logger.trace("About to parse OBO file");
-      // this.ontology = parser.parseOntology(hpo);
-       logger.trace("About to parse annot file");
-        parser.parseAnnotation(annotation);
-        logger.trace("number of non obsolete terms: " + ontology.getNonObsoleteTermIds().size());
-        this.inheritance=parser.getInheritanceSubontology();
-        this.termmap = parser.extractStrictPhenotypeTermMap();
-    }*/
-
-
-    /*private void debugPrintOntology() {
-        logger.trace(this.ontology.getTerms().size() + " terms found in HPO");
-        TermId rootID=ontology.getRootTermId();
-        Collection<HpoTerm> termlist=ontology.getTerms();
-        Map<TermId,HpoTerm> termmap=new HashMap<>();
-        for (HpoTerm term:termlist) {
-            termmap.put(term.getId(),term);
-        }
-        Term root = termmap.get(rootID);
-        logger.trace("Root: " + root.toString());
-    }*/
 
 
 }

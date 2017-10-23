@@ -30,14 +30,14 @@ public class LR {
      char testSign;
     // String WriteFileNameLR;
 
-    public LR (Map<String,Disease>diseaseMp, List<TermId>ListOfTermIds, Map<TermId,Integer>hpoTerm2DisCount, Map<String, Double> disease2LR, Map<String, Double> Disease2PretestOdd, Map<String, Double>Disease2PosttestOdd, Map<String, Double>Disease2PostProb, Double PreProb, char Sign ){
+    public LR (Map<String,Disease>diseaseMp, List<TermId>ListOfTermIds, Map<TermId,Integer>hpoTerm2DisCount,    Double PreProb, char Sign ){
         diseaseMap = diseaseMp;
         listOfTermIdsOfHPOTerms = ListOfTermIds;
         hpoTerm2DiseaseCount = hpoTerm2DisCount;
-        Disease2LR = disease2LR;
-        Disease2PretestOdds = Disease2PretestOdd;
-        Disease2PosttestOdds = Disease2PosttestOdd;
-        Disease2PosttestProb = Disease2PostProb;
+        Disease2LR = new HashMap<>();
+        Disease2PretestOdds = new HashMap<>();
+        Disease2PosttestOdds = new HashMap<>();
+        Disease2PosttestProb = new HashMap<>();
         PretestProb = PreProb;
         testSign = Sign;
        // WriteFileNameLR = FileName;

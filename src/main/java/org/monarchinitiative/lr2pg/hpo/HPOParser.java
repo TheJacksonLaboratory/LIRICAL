@@ -50,6 +50,15 @@ public class HPOParser {
             String diseaseName=annot.getDbName(); /* e.g., Marfan syndrome */
             String diseaseId = annot.getDbObjectId(); /* e.g., OMIM:100543 */
             TermId hpoId  = annot.getHpoId();
+            // TODO ADD FREQUENCY
+            //annot.getFrequency();
+            Optional<Float> fr = annot.getFrequency();
+            if (fr.isPresent()) {
+                float f = fr.get();
+            } else {
+                // not there
+            }
+            //annot.getFrequencyModifier();
             /* Filter database to just get OMIM */
             Disease disease=null;
             if (diseaseMap.containsKey(diseaseId)) {

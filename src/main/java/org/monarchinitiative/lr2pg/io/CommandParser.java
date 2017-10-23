@@ -7,6 +7,7 @@ public class CommandParser {
 
     private String hpoPath=null;
     private String annotationPath=null;
+    private String patientAnnotations=null;
 
     public String getHpoPath() {
         return hpoPath;
@@ -15,6 +16,8 @@ public class CommandParser {
     public String getAnnotationPath() {
         return annotationPath;
     }
+
+    public String getPatientAnnotations() { return patientAnnotations; }
 
     public CommandParser(String args[]) {
         final CommandLineParser cmdLineGnuParser = new DefaultParser();
@@ -39,6 +42,9 @@ public class CommandParser {
                 printUsage();
                 System.exit(1);
             }
+            if (commandLine.hasOption("i")) {
+                patientAnnotations=commandLine.getOptionValue("i");
+            }
         }
         catch (ParseException parseException)  // checked exception
         {
@@ -61,6 +67,7 @@ public class CommandParser {
     {
         final Options gnuOptions = new Options();
         gnuOptions.addOption("o", "hpo", true, "HPO OBO file path")
+                .addOption("i","patient-hpo-terms",true, "list of HPO terms for the patient")
                 .addOption("a", "annotations", true, "Annotation file path");
         return gnuOptions;
     }

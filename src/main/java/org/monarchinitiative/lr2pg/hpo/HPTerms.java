@@ -17,10 +17,16 @@ import java.util.List;
  * Created by ravanv on 10/3/17.
  */
 public class HPTerms {
-    private static String fileName = "/Users/ravanv/Documents/IntelliJ_projects/HPO_LRTest/LR2PG/HPOTerms.txt";
+
+    private String pathToHpFile=null;
     //List to store list of HPO terms of a patient
     List<String> HPOTermsPatient = new ArrayList<>();
     //List to store TermIds of HPO terms of a patient
+
+
+    public HPTerms(String path) {
+        pathToHpFile=path;
+    }
 
 
 
@@ -33,7 +39,7 @@ public class HPTerms {
     public void getHPOTermsfromFile() {
         String line = null;
         try {
-            FileReader fileReader = new FileReader(fileName);
+            FileReader fileReader = new FileReader(pathToHpFile);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             //The first line of the file is the name of disease. In this case, the disease is chosen from OMIM database
             line = bufferedReader.readLine();
@@ -43,9 +49,9 @@ public class HPTerms {
 
             bufferedReader.close();
         } catch (FileNotFoundException ex) {
-            System.out.println("Unable to open file '" + fileName + "'");
+            System.out.println("Unable to open file '" + pathToHpFile + "'");
         } catch (IOException ex) {
-            System.out.println("Error reading file '" + fileName + "'");
+            System.out.println("Error reading file '" + pathToHpFile + "'");
         }
 
     }
@@ -56,7 +62,7 @@ public class HPTerms {
      * @return List of TermIds of HPO terms.
      **/
 
-    public void  getHPOIdFile(List<TermId>ListOfTermIdsOfHPOTerms) {
+    public  void getHPOIdFile(List<TermId>ListOfTermIdsOfHPOTerms) {
         TermPrefix pref = new ImmutableTermPrefix("HP");
         getHPOTermsfromFile();
         for (int i = 0; i < HPOTermsPatient.size(); ++i) {
@@ -67,7 +73,6 @@ public class HPTerms {
                 ListOfTermIdsOfHPOTerms.add(tid);
             }
         }
-
     }
 
 
