@@ -1,4 +1,4 @@
-package org.monarchinitiative.lr2pg.hpo;
+package org.monarchinitiative.lr2pg.old;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

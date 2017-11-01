@@ -1,9 +1,9 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.github.phenomics.ontolib.ontology.data.TermId;
-import org.monarchinitiative.lr2pg.prototype.MapUtil;
-import org.monarchinitiative.lr2pg.prototype.Disease;
-import org.monarchinitiative.lr2pg.hpo.HPOParser;
+import org.monarchinitiative.lr2pg.old.MapUtil;
+import org.monarchinitiative.lr2pg.old.Disease;
+import org.monarchinitiative.lr2pg.old.HPOParser;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

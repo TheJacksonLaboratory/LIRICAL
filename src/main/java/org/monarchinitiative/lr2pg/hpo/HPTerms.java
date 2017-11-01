@@ -4,7 +4,6 @@ import com.github.phenomics.ontolib.ontology.data.ImmutableTermId;
 import com.github.phenomics.ontolib.ontology.data.ImmutableTermPrefix;
 import com.github.phenomics.ontolib.ontology.data.TermId;
 import com.github.phenomics.ontolib.ontology.data.TermPrefix;
-import org.monarchinitiative.lr2pg.prototype.Disease;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

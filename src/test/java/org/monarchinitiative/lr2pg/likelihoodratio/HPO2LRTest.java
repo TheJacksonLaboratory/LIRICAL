@@ -7,7 +7,7 @@ import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.io.obo.hpo.HpoOboParser;
 import com.github.phenomics.ontolib.ontology.data.*;
 import org.junit.Test;
-import org.monarchinitiative.lr2pg.prototype.Disease;
+import org.monarchinitiative.lr2pg.old.Disease;
 
 import java.io.BufferedReader;
 import java.io.File;

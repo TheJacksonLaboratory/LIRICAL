@@ -1,4 +1,4 @@
-package org.monarchinitiative.lr2pg.hpo;
+package org.monarchinitiative.lr2pg.old;
 
 import com.github.phenomics.ontolib.formats.hpo.HpoDiseaseAnnotation;
 import com.github.phenomics.ontolib.formats.hpo.HpoOntology;
@@ -9,7 +9,6 @@ import com.github.phenomics.ontolib.io.obo.hpo.HpoDiseaseAnnotationParser;
 import com.github.phenomics.ontolib.io.obo.hpo.HpoOboParser;
 import com.github.phenomics.ontolib.ontology.data.*;
 import org.apache.log4j.Logger;
-import org.monarchinitiative.lr2pg.prototype.Disease;
 
 import java.io.File;
 import java.io.IOException;

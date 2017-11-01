@@ -8,8 +8,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.monarchinitiative.lr2pg.likelihoodratio.HPOLRTest;
 import org.monarchinitiative.lr2pg.likelihoodratio.HPOTestResult;
-import org.monarchinitiative.lr2pg.prototype.Disease;
-import org.monarchinitiative.lr2pg.prototype.MapUtil;
+import org.monarchinitiative.lr2pg.old.Disease;
+import org.monarchinitiative.lr2pg.old.HPOParser;
+import org.monarchinitiative.lr2pg.old.MapUtil;
 
 
 import java.io.*;

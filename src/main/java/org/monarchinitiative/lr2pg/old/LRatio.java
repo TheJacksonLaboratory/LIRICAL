@@ -1,4 +1,4 @@
-package org.monarchinitiative.lr2pg.prototype;
+package org.monarchinitiative.lr2pg.old;
 
 import org.apache.log4j.Logger;
 

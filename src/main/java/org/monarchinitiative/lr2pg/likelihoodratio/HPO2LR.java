@@ -1,18 +1,13 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
-import com.github.phenomics.ontolib.formats.hpo.HpoDiseaseAnnotation;
 import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.Ontology;
 import com.github.phenomics.ontolib.ontology.data.TermId;
-import org.monarchinitiative.lr2pg.prototype.Disease;
+import org.monarchinitiative.lr2pg.old.Disease;
 import org.apache.log4j.Logger;
 
 import java.util.*;
-import java.io.*;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.counting;
 
 
 /**

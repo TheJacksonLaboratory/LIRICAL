@@ -1,4 +1,4 @@
-package org.monarchinitiative.lr2pg.prototype;
+package org.monarchinitiative.lr2pg.old;
 
 import com.github.phenomics.ontolib.ontology.data.TermId;
 

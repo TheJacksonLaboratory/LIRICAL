@@ -1,5 +1,5 @@
 package org.monarchinitiative.lr2pg;
-import org.monarchinitiative.lr2pg.prototype.MapUtil;
+import org.monarchinitiative.lr2pg.old.MapUtil;
 import java.util.*;
 import org.junit.*;
 /**

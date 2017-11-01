@@ -5,15 +5,13 @@ import com.github.phenomics.ontolib.formats.hpo.HpoDiseaseAnnotation;
 import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.Ontology;
-import com.github.phenomics.ontolib.ontology.data.Term;
 import com.github.phenomics.ontolib.ontology.data.TermId;
-import org.monarchinitiative.lr2pg.prototype.Disease;
+import org.monarchinitiative.lr2pg.old.Disease;
 import org.apache.log4j.Logger;
-import org.monarchinitiative.lr2pg.hpo.HPOParser;
+import org.monarchinitiative.lr2pg.old.HPOParser;
 import org.monarchinitiative.lr2pg.hpo.HPTerms;
-import org.monarchinitiative.lr2pg.hpo.WriteResults;
+import org.monarchinitiative.lr2pg.old.WriteResults;
 import org.monarchinitiative.lr2pg.io.CommandParser;
-import org.monarchinitiative.lr2pg.likelihoodratio.HPO2LR;
 import org.monarchinitiative.lr2pg.likelihoodratio.LR;
 
 import java.util.*;
