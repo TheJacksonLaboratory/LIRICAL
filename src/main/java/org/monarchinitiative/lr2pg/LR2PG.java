@@ -6,24 +6,35 @@ import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.Ontology;
 import com.github.phenomics.ontolib.ontology.data.TermId;
+import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 import org.monarchinitiative.lr2pg.old.Disease;
 import org.apache.log4j.Logger;
-import org.monarchinitiative.lr2pg.old.HPOParser;
 import org.monarchinitiative.lr2pg.hpo.HPTerms;
 import org.monarchinitiative.lr2pg.old.WriteResults;
 import org.monarchinitiative.lr2pg.io.CommandParser;
 import org.monarchinitiative.lr2pg.likelihoodratio.LR;
 
+import java.io.IOException;
 import java.util.*;
 
+/**
+ * This is the central class that coordinates the phenotype/genotype likelihood ratio test.
+ * The path through the program is as follows.
+ * <ul>
+ *     <li>Parse the hp.obo file (see {@link HpoOntologyParser}</li>
+ * </ul>
+ * @author Vida Ravanmehr
+ * @author Peter Robinson
+ * @version 0.1.2 (2017-11-15)
+ */
 public class LR2PG {
     static Logger logger = Logger.getLogger(LR2PG.class.getName());
 
 
-    private Ontology<HpoTerm, HpoTermRelation> ontology=null;
-    /** Map of all of the Phenotypic abnormality terms (i.e., not the inheritance terms). */
+    private Ontology<HpoTerm, HpoTermRelation> phenotypeSubontology =null;
+    /** Map of all of the Phenotypic abnormality terms (i.e., not the inheritanceSubontology terms). */
     private Map<TermId,HpoTerm> termmap=null;
-    Ontology<HpoTerm, HpoTermRelation> inheritance=null;
+    Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology =null;
     /** List of all annotations parsed from phenotype_annotation.tab. */
     private List<HpoDiseaseAnnotation> annotList=null;
     //private static HPOParser parserHPO=null;
@@ -55,21 +66,26 @@ public class LR2PG {
     private static String WriteFileNameLR = "Results.txt";
 
     public LR2PG(String args[]) {
-        CommandParser parser= new CommandParser(args);
-        String hpopath=parser.getHpoPath();
-        String annotpath=parser.getAnnotationPath();
-        String pathToPatientData = parser.getPatientAnnotations();
-        HPOParser parserHPO = new HPOParser();
-        hpoOntology = parserHPO.parseOntology(hpopath);
-        parserHPO.parseAnnotation(annotpath);
-        this.annotations = parserHPO.getAnnotList();
-        parserHPO.initializeTermMap();
-        this.diseaseMap = parserHPO.createDiseaseModels();
+        CommandParser cmdline= new CommandParser(args);
+        String annotpath=cmdline.getAnnotationPath();
+        String pathToPatientData = cmdline.getPatientAnnotations();
+        HpoOntologyParser parserHPO = new HpoOntologyParser(cmdline.getHpoPath());
         try {
-            parserHPO.initializeTerm2DiseaseMap(hpoTerm2DiseaseCount,  diseaseMap, hpoOntology);
-        } catch (Exception e) {
-            System.err.println(e);
+            parserHPO.parseOntology();
+            this.phenotypeSubontology=parserHPO.getPhenotypeSubontology();
+            this.inheritanceSubontology=parserHPO.getInheritanceSubontology();
+//            parserHPO.parseAnnotation(annotpath);
+//            this.annotations = parserHPO.getAnnotList();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+//        parserHPO.initializeTermMap();
+//        this.diseaseMap = parserHPO.createDiseaseModels();
+//        try {
+//            parserHPO.initializeTerm2DiseaseMap(hpoTerm2DiseaseCount,  diseaseMap, hpoOntology);
+//        } catch (Exception e) {
+//            System.err.println(e);
+//        }
         // etc
     }
 
@@ -97,11 +113,10 @@ public class LR2PG {
 
     static public void main(String [] args) {
         LR2PG lr2pg = new LR2PG(args);
-        logger.trace("starting");
         logger.trace("reading HPO terms from a file");
-        lr2pg.getPatientHPOTermsFromFile(fileName);
-        logger.trace("Creating disease map and calculating Likelihood ratio, PretestOdds, Posttest Odds and PosttestProb");
-        lr2pg.calculateLikelihoodRatio();
+//        lr2pg.getPatientHPOTermsFromFile(fileName);
+//        logger.trace("Creating disease map and calculating Likelihood ratio, PretestOdds, Posttest Odds and PosttestProb");
+//        lr2pg.calculateLikelihoodRatio();
 
     }
 

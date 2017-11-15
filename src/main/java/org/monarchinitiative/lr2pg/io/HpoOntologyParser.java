@@ -7,12 +7,11 @@ import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.io.obo.hpo.HpoOboParser;
 import com.github.phenomics.ontolib.ontology.data.*;
 import org.apache.log4j.Logger;
-import org.monarchinitiative.lr2pg.old.HPOParser;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
+
 
 /**
  * This class uses the <a href="https://github.com/phenomics/ontolib">ontolb</a> library to
@@ -21,12 +20,10 @@ import java.util.Set;
  * (see <a href="http://human-phenotype-ontology.github.io/">HPO Homepage</a>).
  * @author Peter Robinson
  * @author Vida Ravanmehr
- * @version 0.0.2 (2017-11-01)
+ * @version 0.1.1 (2017-11-15)
  */
-
-
-public class HPOOntologyParser {
-    static Logger logger = Logger.getLogger(HPOParser.class.getName());
+public class HpoOntologyParser {
+    static Logger logger = Logger.getLogger(HpoOntologyParser.class.getName());
     /** Path to the {@code hp.obo} file. */
     private String hpoOntologyPath=null;
 
@@ -36,11 +33,15 @@ public class HPOOntologyParser {
     /** Map of all of the Phenotypic abnormality terms (i.e., not the inheritance terms). */
     private Map<TermId,HpoTerm> termmap=null;
 
-    public HPOOntologyParser(String path){
+    public HpoOntologyParser(String path){
         hpoOntologyPath=path;
     }
 
-
+    /**
+     * Parse the HP ontology file and place the data in {@link #abnormalPhenoSubOntology} and
+     * {@link #inheritanceSubontology}.
+     * @throws IOException
+     */
     public void parseOntology() throws IOException {
         HpoOntology hpo;
         TermPrefix pref = new ImmutableTermPrefix("HP");
@@ -49,11 +50,6 @@ public class HPOOntologyParser {
         hpo = hpoOboParser.parse();
         this.abnormalPhenoSubOntology = hpo.getPhenotypicAbnormalitySubOntology();
         this.inheritanceSubontology = hpo.subOntology(inheritId);
-        Map<TermId,HpoTerm> submap = inheritanceSubontology.getTermMap();
-        Set<TermId> actual = inheritanceSubontology.getNonObsoleteTermIds();
-        for (TermId t:actual) {
-            System.out.println("INHERITANCE GOT TERM "+ submap.get(t).getName());
-        }
     }
 
     public Ontology<HpoTerm, HpoTermRelation> getPhenotypeSubontology() { return this.abnormalPhenoSubOntology; }

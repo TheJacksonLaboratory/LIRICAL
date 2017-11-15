@@ -121,27 +121,7 @@ public class HPOParser {
         return annotList;
     }
 
-    /**
-     * @param annotationPath Path to the phenotype_annotation.tab file
-     * @return A list of disease-HPO phenotype annotations.
-     */
-    public void  parseAnnotation(String annotationPath) {
-        File inputFile = new File(annotationPath);
-        logger.trace(String.format("Parsing annotations at %s (%s)",annotationPath,inputFile));
-        annotList = new ArrayList<>();
-        try {
-            HpoDiseaseAnnotationParser parser = new HpoDiseaseAnnotationParser(inputFile);
-            while (parser.hasNext()) {
-                HpoDiseaseAnnotation anno = parser.next();
-                annotList.add(anno);
-            }
-        } catch (IOException e) {
-            System.err.println("Problem reading from file.");
-        } catch (TermAnnotationParserException e) {
-            System.err.println("Problem parsing file.");
-        }
 
-    }
 
 
     public void initializeTermMap() {

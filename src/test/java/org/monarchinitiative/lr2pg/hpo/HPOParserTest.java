@@ -54,14 +54,14 @@ public class HPOParserTest {
     }
 
 
-    public void debugPrintDiseaseMap() {
-        for (String d: diseaseMap.keySet()) {
-            Disease disease = diseaseMap.get(d);
-            System.err.println(String.format("Disease: %s: HPO ids: %d",disease.getName(),disease.getHpoIds().size()));
-        }
-
-
-    }
+//    public void debugPrintDiseaseMap() {
+//        for (String d: diseaseMap.keySet()) {
+//            Disease disease = diseaseMap.get(d);
+//            System.err.println(String.format("Disease: %s: HPO ids: %d",disease.getName(),disease.getHpoIds().size()));
+//        }
+//
+//
+//    }
     private double getBackgroundFrequency(TermId hpoId) {
         int NumberOfDiseases = diseaseMap.size();
             if (hpoTerm2DiseaseCount.containsKey(hpoId)) { // If the hpoTerm2DiseaseCount contains the HPO term
@@ -106,7 +106,7 @@ public class HPOParserTest {
                 } else if (ids.size()==0) {
                     System.err.println("TermIds zero size");
                     System.err.println("disease: " + disease.getName());
-                    debugPrintDiseaseMap();
+//                    debugPrintDiseaseMap();
                     //System.exit(17);
                     String msg = String.format("Disease %s had zero HpoIds",disease.getName());
                     throw new Exception(msg);

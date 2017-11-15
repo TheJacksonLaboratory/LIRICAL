@@ -7,6 +7,7 @@ public class CommandParser {
 
     private String hpoPath=null;
     private String annotationPath=null;
+    /** Path to a file with a list of HPO terms that a "patient" has. */
     private String patientAnnotations=null;
 
     public String getHpoPath() {
@@ -31,7 +32,7 @@ public class CommandParser {
             if (commandLine.hasOption("o")) {
                 hpoPath=commandLine.getOptionValue("o");
             } else {
-                System.err.println("[ERROR] hp.obo file (-og) required.");
+                System.err.println("[ERROR] hp.obo file (-o) required.");
                 printUsage();
                 System.exit(1);
             }

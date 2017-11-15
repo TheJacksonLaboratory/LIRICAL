@@ -4,16 +4,18 @@ if [ ! -e target/LR2PG-0.0.1-SNAPSHOT.jar ]; then
     mvn package
 fi
 
-HPO=/home/robinp/data/hpo/hp.obo
+HPO=src/test/resources/hp.obo
+ANNOT=src/test/resources/small_phenoannot.tab
 
 
 
+## Vida--adjust paths to your computer here,
 HNAME=`hostname`
-#if [ $HNAME eq "xx" ]; then
-#    HPO = "vidas paths"
-#fi
+if [ ${HNAME} = "xx" ]; then
+    HPO ="/Users/ravanv/Documents/HPO_LR1/LR2PG/HPO/hp.obo"
+fi
 
 
 
 
-java -jar target/LR2PG-0.0.1-SNAPSHOT.jar
+java -jar target/LR2PG-0.0.1-SNAPSHOT.jar -o ${HPO} -a ${ANNOT}
