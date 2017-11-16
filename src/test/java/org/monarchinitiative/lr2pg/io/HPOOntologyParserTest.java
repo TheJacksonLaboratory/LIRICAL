@@ -57,7 +57,7 @@ public class HPOOntologyParserTest {
         Assert.assertTrue(count>10_000);
     }
 
-    /** The term for sporadic is in the inheritance subontology and not the phenotype subontology. */
+    /** The term for "Sporadic" is in the inheritance subontology and not the phenotype subontology. */
     @Test
     public void testInCorrectSubontology1() {
         TermId sporadic = new ImmutableTermId(hpoPrefix,"0003745");
@@ -65,7 +65,7 @@ public class HPOOntologyParserTest {
         Assert.assertFalse(phenotypeSubOntology.getNonObsoleteTermIds().contains(sporadic));
     }
 
-    /** The term for otitis media is in the phenotype subontology and not the inheritance subontology */
+    /** The term for "Otitis media" is in the phenotype subontology and not the inheritance subontology */
     @Test
     public void testInCorrectSubontology2() {
         TermId otitisMedia = new ImmutableTermId(hpoPrefix,"0000388");

@@ -24,7 +24,7 @@ public class HpoAnnotationParser {
      */
     public void  parseAnnotation(String annotationPath) {
         File inputFile = new File(annotationPath);
-//        logger.trace(String.format("Parsing annotations at %s (%s)",annotationPath,inputFile));
+        logger.trace(String.format("Parsing annotations at %s (%s)",annotationPath,inputFile));
 //        annotList = new ArrayList<>();
 //        try {
 //            HpoDiseaseAnnotationParser parser = new HpoDiseaseAnnotationParser(inputFile);

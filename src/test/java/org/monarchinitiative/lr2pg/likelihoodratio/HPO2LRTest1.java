@@ -59,14 +59,14 @@ public class HPO2LRTest1 {
 
     double PretestProb = 0.5;
 
-    private void parseHPOData(String hpopath, String annotpath) {
-        HPOParser parser = new HPOParser();
-        this.ontology = parser.parseOntology(hpopath);
-        parser.parseAnnotation(annotpath);
-        this.annotList =parser.getAnnotList();
-                this.inheritance = parser.getInheritanceSubontology();
-        this.termmap = parser.extractStrictPhenotypeTermMap();
-    }
+//    private void parseHPOData(String hpopath, String annotpath) {
+//        HPOParser parser = new HPOParser();
+//        this.ontology = parser.parseOntology(hpopath);
+//       // parser.parseAnnotation(annotpath);
+//        this.annotList =parser.getAnnotList();
+//                this.inheritance = parser.getInheritanceSubontology();
+//        this.termmap = parser.extractStrictPhenotypeTermMap();
+//    }
 
     private void debugPrintOntology() {
         TermId rootID = ontology.getRootTermId();
@@ -279,39 +279,39 @@ public class HPO2LRTest1 {
      */
 
 
-    @Test
-    public void ResultsLrOddProb() {
-        getHPOIdFile();
-        parseHPOData(hpopath, annotpath);
-        debugPrintOntology();
-        createDiseaseModels();
-        try {
-            initializeTerm2DiseaseMap();
-        } catch (Exception e) {
-            System.err.println(e);
-        }
-
-        for (String disease : diseaseMap.keySet()) {
-            List<HPOTestResult> results = new ArrayList<>();
-            for (TermId id : ListOfTermIdsOfHPOTerms) {
-                HPOTestResult result = new HPOTestResult(getFrequency(disease, id), getBackgroundFrequency(id));
-                results.add(result);
-            }
-            HPOLRTest hpolrtest = new HPOLRTest(results, PretestProb, TestSign);
-            LikelihoodRatios.add(hpolrtest.getCompositeLikelihoodRatio());
-            Disease2LR.put(disease,(-1)*hpolrtest.getCompositeLikelihoodRatio());
-            PretestOdds.add(hpolrtest.getPretestOdds());
-            PostTestOdds.add(hpolrtest.getPosttestOdds());
-            PostTestProb.add(hpolrtest.getPosttestProbability());
-
-        }
-        Disease2LR = MapUtil.sortByValue(Disease2LR);
-        for(String disease: Disease2LR.keySet()){
-            double LR =  Disease2LR.get(disease);
-            Disease2LR.put(disease, (-1)*LR);
-
-        }
-    }
+//    @Test
+//    public void ResultsLrOddProb() {
+//        getHPOIdFile();
+//        parseHPOData(hpopath, annotpath);
+//        debugPrintOntology();
+//        createDiseaseModels();
+//        try {
+//            initializeTerm2DiseaseMap();
+//        } catch (Exception e) {
+//            System.err.println(e);
+//        }
+//
+//        for (String disease : diseaseMap.keySet()) {
+//            List<HPOTestResult> results = new ArrayList<>();
+//            for (TermId id : ListOfTermIdsOfHPOTerms) {
+//                HPOTestResult result = new HPOTestResult(getFrequency(disease, id), getBackgroundFrequency(id));
+//                results.add(result);
+//            }
+//            HPOLRTest hpolrtest = new HPOLRTest(results, PretestProb, TestSign);
+//            LikelihoodRatios.add(hpolrtest.getCompositeLikelihoodRatio());
+//            Disease2LR.put(disease,(-1)*hpolrtest.getCompositeLikelihoodRatio());
+//            PretestOdds.add(hpolrtest.getPretestOdds());
+//            PostTestOdds.add(hpolrtest.getPosttestOdds());
+//            PostTestProb.add(hpolrtest.getPosttestProbability());
+//
+//        }
+//        Disease2LR = MapUtil.sortByValue(Disease2LR);
+//        for(String disease: Disease2LR.keySet()){
+//            double LR =  Disease2LR.get(disease);
+//            Disease2LR.put(disease, (-1)*LR);
+//
+//        }
+//    }
 
 
 

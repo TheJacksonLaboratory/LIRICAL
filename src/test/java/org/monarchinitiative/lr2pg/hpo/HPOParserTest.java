@@ -47,7 +47,7 @@ public class HPOParserTest {
         hpoOntology = parser.parseOntology(hpoPath);
         String annotationPath = classLoader.getResource("small_phenoannot.tab").getFile();
       //  String annotationPath = "/Users/ravanv/Documents/HPO_LRTest/LR2PG/HPO/phenotype_annotation.tab";
-        parser.parseAnnotation(annotationPath);
+        //parser.parseAnnotation(annotationPath);
         annotations = parser.getAnnotList();
         parser.initializeTermMap();
         diseaseMap = parser.createDiseaseModels();
@@ -62,30 +62,30 @@ public class HPOParserTest {
 //
 //
 //    }
-    private double getBackgroundFrequency(TermId hpoId) {
-        int NumberOfDiseases = diseaseMap.size();
-            if (hpoTerm2DiseaseCount.containsKey(hpoId)) { // If the hpoTerm2DiseaseCount contains the HPO term
-                return (hpoTerm2DiseaseCount.get(hpoId)*(1.0) / NumberOfDiseases); //return number of diseases wit HPO term divided by total number of diseases
-        } else {
-            return 0;
-        }
-    }
+//    private double getBackgroundFrequency(TermId hpoId) {
+//        int NumberOfDiseases = diseaseMap.size();
+//            if (hpoTerm2DiseaseCount.containsKey(hpoId)) { // If the hpoTerm2DiseaseCount contains the HPO term
+//                return (hpoTerm2DiseaseCount.get(hpoId)*(1.0) / NumberOfDiseases); //return number of diseases wit HPO term divided by total number of diseases
+//        } else {
+//            return 0;
+//        }
+//    }
 
-    /**
-     * If disease has the HPO term, return 0.9; else return 0 (initial approach/simplification)
-     * TODO later calculate the actual frequency if possible
-     *
-     * @param diseaseID
-     * @param hpoId
-     * @return The frequency of HPO feature (hpoId) in patients with the given disease
-     */
-    private double getFrequency(String diseaseID, TermId hpoId) {
-        Disease disease1 = diseaseMap.get(diseaseID);
-        if (disease1 != null && disease1.getHpoIds().contains(hpoId))
-            return 0.9;
-        else
-            return 0.0;
-    }
+//    /**
+//     * If disease has the HPO term, return 0.9; else return 0 (initial approach/simplification)
+//     * TODO later calculate the actual frequency if possible
+//     *
+//     * @param diseaseID
+//     * @param hpoId
+//     * @return The frequency of HPO feature (hpoId) in patients with the given disease
+//     */
+//    private double getFrequency(String diseaseID, TermId hpoId) {
+//        Disease disease1 = diseaseMap.get(diseaseID);
+//        if (disease1 != null && disease1.getHpoIds().contains(hpoId))
+//            return 0.9;
+//        else
+//            return 0.0;
+//    }
 
 
 
@@ -195,51 +195,51 @@ public class HPOParserTest {
 
     }
 
-    @Test
-    public void testHPO2count(){
-        try {
-            initializeTerm2DiseaseMap();
-        } catch (Exception e) {
-            System.err.println(e);
-        }
-        getHPOIdFile();
-
-        for (String disease : diseaseMap.keySet()) {
-            List<HPOTestResult> results = new ArrayList<>();
-            for (TermId id : ListOfTermIdsOfHPOTerms) {
-                if(hpoTerm2DiseaseCount.containsKey(id)) {
-                    HPOTestResult result = new HPOTestResult(getFrequency(disease, id), getBackgroundFrequency(id));
-                    results.add(result);
-                }
-            }
-            HPOLRTest hpolrtest = new HPOLRTest(results, PretestProb, TestSign);
-            LikelihoodRatios.add(hpolrtest.getCompositeLikelihoodRatio());
-            Disease2LR.put(disease,hpolrtest.getCompositeLikelihoodRatio());
-            PretestOdds.add(hpolrtest.getPretestOdds());
-            PostTestOdds.add(hpolrtest.getPosttestOdds());
-            PostTestProb.add(hpolrtest.getPosttestProbability());
-
-        }
-        Disease2LR = MapUtil.sortByValue(Disease2LR);
-        /*for(String disease: Disease2LR.keySet()){
-          double LR =  Disease2LR.get(disease);
-          Disease2LR.put(disease, (-1)*LR);
-
-        }*/
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter("myfile.txt",false)))
-        {
-            for(String disease:Disease2LR.keySet()){
-                writer.write(disease);
-                writer.write("  ");
-                writer.write(String.valueOf(Disease2LR.get(disease)));
-                writer.newLine();
-            }
-
-        }
-        catch(IOException e){
-            System.out.println(e.getMessage());
-        }
-    }
+//    @Test
+//    public void testHPO2count(){
+//        try {
+//            initializeTerm2DiseaseMap();
+//        } catch (Exception e) {
+//            System.err.println(e);
+//        }
+//        getHPOIdFile();
+//
+//        for (String disease : diseaseMap.keySet()) {
+//            List<HPOTestResult> results = new ArrayList<>();
+//            for (TermId id : ListOfTermIdsOfHPOTerms) {
+//                if(hpoTerm2DiseaseCount.containsKey(id)) {
+//                    HPOTestResult result = new HPOTestResult(getFrequency(disease, id), getBackgroundFrequency(id));
+//                    results.add(result);
+//                }
+//            }
+//            HPOLRTest hpolrtest = new HPOLRTest(results, PretestProb, TestSign);
+//            LikelihoodRatios.add(hpolrtest.getCompositeLikelihoodRatio());
+//            Disease2LR.put(disease,hpolrtest.getCompositeLikelihoodRatio());
+//            PretestOdds.add(hpolrtest.getPretestOdds());
+//            PostTestOdds.add(hpolrtest.getPosttestOdds());
+//            PostTestProb.add(hpolrtest.getPosttestProbability());
+//
+//        }
+//        Disease2LR = MapUtil.sortByValue(Disease2LR);
+//        /*for(String disease: Disease2LR.keySet()){
+//          double LR =  Disease2LR.get(disease);
+//          Disease2LR.put(disease, (-1)*LR);
+//
+//        }*/
+//        try(BufferedWriter writer = new BufferedWriter(new FileWriter("myfile.txt",false)))
+//        {
+//            for(String disease:Disease2LR.keySet()){
+//                writer.write(disease);
+//                writer.write("  ");
+//                writer.write(String.valueOf(Disease2LR.get(disease)));
+//                writer.newLine();
+//            }
+//
+//        }
+//        catch(IOException e){
+//            System.out.println(e.getMessage());
+//        }
+//    }
 
 
 
