@@ -7,7 +7,6 @@ import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.io.obo.hpo.HpoOboParser;
 import com.github.phenomics.ontolib.ontology.data.*;
 import org.junit.Test;
-import org.monarchinitiative.lr2pg.old.Disease;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,7 +24,7 @@ public class HPO2LRTest {
     /** List of all annotations parsed from phenotype_annotation.tab. */
     private List<HpoDiseaseAnnotation> annotList=null;
 
-    private Map<String,Disease> diseaseMap=null;
+//    private Map<String,Disease> diseaseMap=null;
 
     @Test
     public void findBadTerm() {

@@ -2,30 +2,31 @@ package org.monarchinitiative.lr2pg.io;
 
 import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
-import com.github.phenomics.ontolib.ontology.data.ImmutableTermPrefix;
-import com.github.phenomics.ontolib.ontology.data.Ontology;
-import com.github.phenomics.ontolib.ontology.data.TermPrefix;
+import com.github.phenomics.ontolib.ontology.data.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 import org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata;
+import org.monarchinitiative.lr2pg.hpo.ImmutableTermIdWithMetadata;
+import org.monarchinitiative.lr2pg.hpo.TermIdWithMetadata;
 
+import javax.smartcardio.TerminalFactory;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class HpoAnnotation2DiseaseParserTest {
     /** The subontology of the HPO with all the phenotypic abnormality terms. */
     private static Ontology<HpoTerm, HpoTermRelation> phenotypeSubOntology =null;
     /** The subontology of the HPO with all the inheritance terms. */
     private static Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology=null;
-    private static TermPrefix hpoPrefix=null;
 
     private static HpoAnnotation2DiseaseParser annotationParser=null;
 
     private static Map<String,HpoDiseaseWithMetadata> diseaseMap;
+
+    private static TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
 
     @BeforeClass
     public static void setup() throws IOException {
@@ -36,7 +37,7 @@ public class HpoAnnotation2DiseaseParserTest {
         parser.parseOntology();
         phenotypeSubOntology = parser.getPhenotypeSubontology();
         inheritanceSubontology = parser.getInheritanceSubontology();
-        hpoPrefix = new ImmutableTermPrefix("HP");
+        HP_PREFIX = new ImmutableTermPrefix("HP");
         annotationParser = new HpoAnnotation2DiseaseParser(annotationPath,phenotypeSubOntology,inheritanceSubontology);
         diseaseMap=annotationParser.getDiseaseMap();
     }
@@ -60,27 +61,64 @@ public class HpoAnnotation2DiseaseParserTest {
         assertEquals(expected,diseaseMap.size());
     }
 
-    /*
-    OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0000006      OMIM:101120     IEA                             I               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0000263      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0000272      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0000274      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0000303      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0000316      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0000327      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0000369      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0000377      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0000470      OMIM:101120     TAS                             O               2009-02-17      HPO:probinson
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0000586      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0000678      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0001159      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0001177      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0001363      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0009816      OMIM:101120     IEA                             O               2009-02-17      HPO:curators
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0010055      OMIM:101120     TAS                             O               2012-06-08      HPO:probinson
-OMIM    101120  ACROCEPHALOPOLYSYNDACTYLY TYPE III              HP:0011304      OMIM:101120     TAS                             O               2009-02-17      HPO:probinson
 
+    @Test public void testAcrocephalopolysyndactylyAnnotations() {
+        HpoDiseaseWithMetadata disease = diseaseMap.get("101120");
+        assertNotNull(disease);
+    }
+
+    /** Acrocephalopolysyndactlyly is annotated to     HP:0000006 , Autosomal dominant inheritance */
+    @Test public void testAcrocephalopolysyndactylyInheritance() {
+        HpoDiseaseWithMetadata disease = diseaseMap.get("101120");
+        List<TermId> inherTerms = disease.getModesOfInheritance();
+        assertEquals(1,inherTerms.size());
+        TermId autosomaldominant = new ImmutableTermId(HP_PREFIX,"0000006");
+        assertEquals(autosomaldominant,inherTerms.get(0));
+    }
+
+    /**
+     * crocephalopolysyndactlyly is annotated to 17 phenpotype terms (we exclude autosomal dominant, HP:0000006).
+     *  grep ACROCEPHALOPOLYSYNDACTYLY small_phenoannot.tab | grep -v 0000006 | wc -l
+     * 17
      */
+    @Test public void testAcrocephalopolysyndactylyPhenoAnnotations() {
+        int expected = 17;
+        HpoDiseaseWithMetadata disease = diseaseMap.get("101120");
+        assertEquals(expected,disease.getPhenotypicAbnormalities().size());
+        TermId oxycephaly = new ImmutableTermId(HP_PREFIX,"0000263");
+        TermIdWithMetadata oxycephaly_withmetadata = new ImmutableTermIdWithMetadata( oxycephaly,null,null);
+        assertTrue(disease.getPhenotypicAbnormalities().contains(oxycephaly_withmetadata));
+        TermId abnEKG = new ImmutableTermId(HP_PREFIX,"0003115");
+        TermIdWithMetadata abnEKGmd = new ImmutableTermIdWithMetadata(abnEKG,null,null);
+        // this term does not annotate Acrocephalopolysyndactyly
+        assertFalse(disease.getPhenotypicAbnormalities().contains(abnEKGmd));
+        expected=0;
+        assertEquals(expected,disease.getNegativeAnnotations().size());
+    }
+
+
+
+    /*
+    * 111400	#111400 BLOOD GROUP, P1PK SYSTEMP(1) PHENOTYPE..has two annotations
+     * Blood group antigen abnormality: HP:0010970
+     * Also autosomal dominant HP:0000006
+     */
+    @Test
+    public void testP1PKBloodGroupAnnotations() {
+        int expected = 1;
+        HpoDiseaseWithMetadata disease = diseaseMap.get("111400");
+        assertEquals(expected,disease.getPhenotypicAbnormalities().size());
+        TermId AntigenAbn = new ImmutableTermId(HP_PREFIX,"0010970");
+        TermIdWithMetadata antigenAbnMD = new ImmutableTermIdWithMetadata(AntigenAbn,null,null);
+        assertTrue(disease.getPhenotypicAbnormalities().contains(antigenAbnMD));
+        List<TermId> inherTerms = disease.getModesOfInheritance();
+        assertEquals(1,inherTerms.size());
+        TermId autosomaldominant = new ImmutableTermId(HP_PREFIX,"0000006");
+        assertEquals(autosomaldominant,inherTerms.get(0));
+
+    }
+
+
 
 
 }

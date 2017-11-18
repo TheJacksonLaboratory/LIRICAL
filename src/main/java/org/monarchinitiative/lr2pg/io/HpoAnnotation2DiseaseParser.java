@@ -9,15 +9,13 @@ import com.google.common.collect.ImmutableList;
 import org.apache.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata;
 import org.monarchinitiative.lr2pg.hpo.HpoOnset;
+import org.monarchinitiative.lr2pg.hpo.ImmutableTermIdWithMetadata;
 import org.monarchinitiative.lr2pg.hpo.TermIdWithMetadata;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class parses the phenotype_annotation.tab file into a collection of HpoDisease objects.
@@ -31,6 +29,7 @@ public class HpoAnnotation2DiseaseParser {
 
     private static final TermPrefix HP_PREFIX = new ImmutableTermPrefix("HP");
     private static final TermId ONSET_TID = new ImmutableTermId(HP_PREFIX,"0003674");
+    private static final TermId INHERITANCE_ROOT = new ImmutableTermId(HP_PREFIX,"0000005");
 
 
     Map<String,HpoDiseaseWithMetadata> diseaseMap;
@@ -55,7 +54,7 @@ public class HpoAnnotation2DiseaseParser {
     /**
      * @return A list of disease-HPO phenotype annotations.
      */
-    public void  parseAnnotation() {
+    private void  parseAnnotation() {
         logger.trace(String.format("Parsing annotations at %s",annotationFilePath));
         // First stage of parsing is to get the lines parsed and sorted acccording to disease.
         Map<String,List<AnnotationLine>> disease2AnnotLineMap = new HashMap<>();
@@ -64,7 +63,7 @@ public class HpoAnnotation2DiseaseParser {
             BufferedReader br = new BufferedReader(new FileReader(this.annotationFilePath));
             String line=null;
             while ((line=br.readLine())!=null) {
-                System.out.println(line);
+                //System.out.println(line);
                 AnnotationLine aline = parseAnnotationLine(line);
                 List annots=null;
                 if (disease2AnnotLineMap.containsKey(aline.DBObjectId)) {
@@ -96,11 +95,11 @@ public class HpoAnnotation2DiseaseParser {
                 } else if (line.NOT) {
                     negativeTermListBuilder.add(line.hpoId);
                 } else {
-                    TermIdWithMetadata tidm = new TermIdWithMetadata(line.hpoId,line.freqeuncyModifier,line.onsetModifier);
+                    TermIdWithMetadata tidm = new ImmutableTermIdWithMetadata(line.hpoId,line.freqeuncyModifier,line.onsetModifier);
                     phenoListBuilder.add(tidm);
                 }
                 if (line.DbObjectName!=null) diseaseName=line.DbObjectName;
-            }
+                }
             HpoDiseaseWithMetadata hpoDisease = new HpoDiseaseWithMetadata(diseaseName,
                     diseaseId,
                     phenoListBuilder.build(),
@@ -111,10 +110,15 @@ public class HpoAnnotation2DiseaseParser {
     }
 
 
-
+    /**
+     * Check whether a term is a member of the inheritance subontology.
+     * ToDo implement this with the termmap once we are using the new ontolib version
+     * @param tid A term to be checked
+     * @return true of tid is an inheritance term
+     */
    private boolean isInheritanceTerm(TermId tid) {
        return inheritancePhenotypeOntology.getAncestorTermIds(tid) != null &&
-               inheritancePhenotypeOntology.getAncestorTermIds(tid).contains(ONSET_TID);
+               inheritancePhenotypeOntology.getAncestorTermIds(tid).contains(INHERITANCE_ROOT);
    }
 
 
@@ -128,9 +132,10 @@ public class HpoAnnotation2DiseaseParser {
      * @return
      */
     private TermId string2TermId(String hp) {
-        if (! hp.startsWith("HP:"))
+        if (! hp.startsWith("HP:")) {
+            logger.trace(String.format("S2T id null for %s",hp));
             return null;
-        else
+        } else
             return new ImmutableTermId(HP_PREFIX,hp.substring(3));
     }
 
@@ -154,7 +159,7 @@ public class HpoAnnotation2DiseaseParser {
 
 
 
-    public AnnotationLine parseAnnotationLine(String line) {
+    private AnnotationLine parseAnnotationLine(String line) {
         String A[]=line.split("\t");
         if (A.length != 14) {
             logger.error(String.format("Malformed annotation line with %d (instead of 14) fields: %s",A.length,line ));
@@ -178,7 +183,7 @@ public class HpoAnnotation2DiseaseParser {
      * parse; from these data, we will construct the {@link org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata}
      * objects
      */
-    public static class AnnotationLine {
+    private static class AnnotationLine {
         String database;
         String DBObjectId;
         String DbObjectName;
@@ -192,7 +197,7 @@ public class HpoAnnotation2DiseaseParser {
             DBObjectId=objectId;
             DbObjectName=name;
             NOT=isNot;
-            termId=termId;
+            hpoId=termId;
             onsetModifier=onset;
             freqeuncyModifier=freq;
         }

@@ -4,8 +4,9 @@ import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.Ontology;
 import com.github.phenomics.ontolib.ontology.data.TermId;
-import org.monarchinitiative.lr2pg.old.Disease;
 import org.apache.log4j.Logger;
+import org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata;
+import org.monarchinitiative.lr2pg.hpo.TermIdWithMetadata;
 
 import java.util.*;
 
@@ -19,14 +20,14 @@ import java.util.*;
 public class HPO2LR {
 
     Ontology<HpoTerm, HpoTermRelation> hpoOntology;
-    Map<String, Disease> diseaseMap;
+    Map<String, HpoDiseaseWithMetadata> diseaseMap;
 
 
     Map<TermId, Integer> hpoTerm2DiseaseCount = null;
 
     static Logger logger = Logger.getLogger(HPO2LR.class.getName());
 
-    public HPO2LR(Ontology<HpoTerm, HpoTermRelation> ontology, Map<String, Disease> diseaseMp) {
+    public HPO2LR(Ontology<HpoTerm, HpoTermRelation> ontology, Map<String, HpoDiseaseWithMetadata> diseaseMp) {
         hpoOntology = ontology;
         diseaseMap = diseaseMp;
         try {
@@ -109,8 +110,8 @@ public class HPO2LR {
 
     public void debugPrintDiseaseMap() {
         for (String d: diseaseMap.keySet()) {
-            Disease disease = diseaseMap.get(d);
-            System.err.println(String.format("Disease: %s: HPO ids: %d",disease.getName(),disease.getHpoIds().size()));
+            HpoDiseaseWithMetadata disease = diseaseMap.get(d);
+            System.err.println(String.format("Disease: %s: HPO ids: %d",disease.getName(),disease.getPhenotypicAbnormalities().size()));
         }
 
 
@@ -120,14 +121,14 @@ public class HPO2LR {
     private void initializeTerm2DiseaseMap() throws Exception {
         hpoTerm2DiseaseCount = new HashMap<>();
         int good=0,bad=0;
-        for(Disease disease: diseaseMap.values()){
+        for(HpoDiseaseWithMetadata disease: diseaseMap.values()){
             System.err.println(String.format("Disease %s", disease.getName()));
-            for (TermId termId : disease.getHpoIds()) {
+            for (TermIdWithMetadata termId : disease.getPhenotypicAbnormalities()) {
                 System.err.println(String.format("Term %s Status %s",
                         termId.getIdWithPrefix(), hpoOntology.getAllTermIds().contains(termId)));
             }
 
-            Collection<TermId> ids = disease.getHpoIds();
+            Collection<TermIdWithMetadata> ids = disease.getPhenotypicAbnormalities();
             if (ids==null) {
                 String msg="TermIds NULL";
                 throw new Exception(msg);
@@ -140,7 +141,9 @@ public class HPO2LR {
                 throw new Exception(msg);
             }
             ids.remove(null);
-            Set<TermId> ancestors = hpoOntology.getAllAncestorTermIds(ids);
+            Set<TermId> plainTids= new HashSet<>();
+            ids.stream().map( termIdWithMetadata -> termIdWithMetadata.getTermId()).forEach(tid -> plainTids.add(tid));
+            Set<TermId> ancestors = hpoOntology.getAllAncestorTermIds(plainTids);
             ancestors.remove(null);
             for (TermId hpoid : ancestors) {
                 if (hpoid==null) continue;
@@ -182,8 +185,8 @@ public class HPO2LR {
      * @return The frequency of HPO feature (hpoId) in patients with the given disease
      */
     private double getFrequency(String diseaseID, TermId hpoId) {
-        Disease disease1 = diseaseMap.get(diseaseID);
-        if (disease1 != null && disease1.getHpoIds().contains(hpoId))
+        HpoDiseaseWithMetadata disease1 = diseaseMap.get(diseaseID);
+        if (disease1 != null && disease1.getPhenotypicAbnormalities().contains(hpoId))
             return 0.9;
         else
             return 0.0;
