@@ -5,6 +5,7 @@ import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.Ontology;
 import com.github.phenomics.ontolib.ontology.data.TermId;
+import org.monarchinitiative.lr2pg.command.Command;
 import org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
@@ -77,6 +78,11 @@ public class LR2PG {
 
     public LR2PG(String args[]) {
         CommandParser cmdline= new CommandParser(args);
+        if (true) {
+            Command command = cmdline.getCommand();
+            command.execute();
+            return;
+        }
         String annotationPath = cmdline.getAnnotationPath();
         String pathToPatientData = cmdline.getPatientAnnotations();
         HpoOntologyParser parserHPO = new HpoOntologyParser(cmdline.getHpoPath());
