@@ -78,7 +78,7 @@ public class HpoAnnotation2DiseaseParserTest {
 
     /**
      * crocephalopolysyndactlyly is annotated to 17 phenpotype terms (we exclude autosomal dominant, HP:0000006).
-     *  grep ACROCEPHALOPOLYSYNDACTYLY small_phenoannot.tab | grep -v 0000006 | wc -l
+     *  cat ACROCEPHALOPOLYSYNDACTYLY small_phenoannot.tab | grep -v 0000006 | wc -l
      * 17
      */
     @Test public void testAcrocephalopolysyndactylyPhenoAnnotations() {
