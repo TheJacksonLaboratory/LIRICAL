@@ -25,51 +25,51 @@ public class HPO2LRTest {
     private List<HpoDiseaseAnnotation> annotList=null;
 
 //    private Map<String,Disease> diseaseMap=null;
+//
+//    @Test
+//    public void findBadTerm() {
+//        // This initializes ontology (which should have just phenotype terms)
+//        parseHPOData(hpopath,path);
+//        // This gets the four TermIds for OMIM 613172 and puts them in a list
+//        List<TermId> ids = getTermsFromDisease();
+//        System.out.println(String.format("*** Looking for the %d ancestors of the TermId's used to annotate MIM:613172 ***",ids.size()));
+//
+//        for (TermId id:ids) {
+//            System.out.println(String.format("Testing term id %s at %s",id.toString(),termmap.get(id).getName() ));
+//            if (this.termmap.containsKey(id)) {
+//                System.out.println(String.format("TermId %s (%s) was found in PhenotypicAbnormality subontology", termmap.get(id).getName(), termmap.get(id).getId()));
+//            } else {
+//                System.out.println(String.format("TermId %s was NOT found in PhenotypicAbnormality subontology", id.toString()));
+//            }
+//            Set<TermId> uniset = new HashSet<>();
+//            uniset.add(id);
+//            try {
+//                Set<TermId> ancestors = ontology.getAllAncestorTermIds(uniset);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//        }
+//    }
 
-    @Test
-    public void findBadTerm() {
-        // This initializes ontology (which should have just phenotype terms)
-        parseHPOData(hpopath,path);
-        // This gets the four TermIds for OMIM 613172 and puts them in a list
-        List<TermId> ids = getTermsFromDisease();
-        System.out.println(String.format("*** Looking for the %d ancestors of the TermId's used to annotate MIM:613172 ***",ids.size()));
 
-        for (TermId id:ids) {
-            System.out.println(String.format("Testing term id %s at %s",id.toString(),termmap.get(id).getName() ));
-            if (this.termmap.containsKey(id)) {
-                System.out.println(String.format("TermId %s (%s) was found in PhenotypicAbnormality subontology", termmap.get(id).getName(), termmap.get(id).getId()));
-            } else {
-                System.out.println(String.format("TermId %s was NOT found in PhenotypicAbnormality subontology", id.toString()));
-            }
-            Set<TermId> uniset = new HashSet<>();
-            uniset.add(id);
-            try {
-                Set<TermId> ancestors = ontology.getAllAncestorTermIds(uniset);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-    }
-
-
-
-    @Test
-    public void testAutosomalDominantInheritance() {
-        TermPrefix pref = new ImmutableTermPrefix("HP");
-        TermId autosomalDominantId = new ImmutableTermId(pref,"0000006");
-        parseHPOData(hpopath,path);
-        System.out.println("About to test term: "+ autosomalDominantId.toString());
-        Set<TermId> myset = new HashSet<>();
-        myset.add(autosomalDominantId);
-        try {
-            Set<TermId> ancestors = ontology.getAllAncestorTermIds(myset);
-            System.out.println(String.format("We extracted %d ancesters -OK!!",ancestors.size()));
-        } catch (Exception e) {
-            System.out.println("We crashed on Autosomal dominant");
-            e.printStackTrace();
-        }
-    }
+//
+//    @Test
+//    public void testAutosomalDominantInheritance() {
+//        TermPrefix pref = new ImmutableTermPrefix("HP");
+//        TermId autosomalDominantId = new ImmutableTermId(pref,"0000006");
+//        parseHPOData(hpopath,path);
+//        System.out.println("About to test term: "+ autosomalDominantId.toString());
+//        Set<TermId> myset = new HashSet<>();
+//        myset.add(autosomalDominantId);
+//        try {
+//            Set<TermId> ancestors = ontology.getAllAncestorTermIds(myset);
+//            System.out.println(String.format("We extracted %d ancesters -OK!!",ancestors.size()));
+//        } catch (Exception e) {
+//            System.out.println("We crashed on Autosomal dominant");
+//            e.printStackTrace();
+//        }
+//    }
 
 
 

@@ -9,10 +9,8 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="TRACE">
+        <Root level="WARN">
             <AppenderRef ref="LogFile"/>
-        </Root>
-        <Root level="TRACE">
             <AppenderRef ref="STDOUT"/>
         </Root>
     </Loggers>

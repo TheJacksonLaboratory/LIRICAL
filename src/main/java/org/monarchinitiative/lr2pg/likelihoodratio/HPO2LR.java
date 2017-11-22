@@ -19,14 +19,14 @@ import java.util.*;
  * @version 0.0.2 (09/20/2017)
  */
 public class HPO2LR {
-
+    private static final Logger logger = LogManager.getLogger();
     Ontology<HpoTerm, HpoTermRelation> hpoOntology;
     Map<String, HpoDiseaseWithMetadata> diseaseMap;
 
 
     Map<TermId, Integer> hpoTerm2DiseaseCount = null;
 
-    private static final Logger logger = LogManager.getLogger();
+
 
     public HPO2LR(Ontology<HpoTerm, HpoTermRelation> ontology, Map<String, HpoDiseaseWithMetadata> diseaseMp) {
         hpoOntology = ontology;

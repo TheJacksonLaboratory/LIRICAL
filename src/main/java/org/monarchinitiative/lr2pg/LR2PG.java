@@ -69,8 +69,12 @@ public class LR2PG {
     private static String WriteFileNameLR = "Results.txt";
 
     static public void main(String [] args) {
-        LR2PG lr2pg = new LR2PG(args);
-        logger.trace("reading HPO terms from a file");
+        logger.trace("MAIN");
+        CommandParser cmdline= new CommandParser(args);
+        Command command = cmdline.getCommand();
+        command.execute();
+
+
 //        lr2pg.getPatientHPOTermsFromFile(fileName);
 //        logger.trace("Creating disease map and calculating Likelihood ratio, PretestOdds, Posttest Odds and PosttestProb");
 //        lr2pg.calculateLikelihoodRatio();

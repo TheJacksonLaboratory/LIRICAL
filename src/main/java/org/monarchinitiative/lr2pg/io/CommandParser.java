@@ -2,11 +2,13 @@ package org.monarchinitiative.lr2pg.io;
 
 import java.io.PrintWriter;
 import org.apache.commons.cli.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.command.Command;
 import org.monarchinitiative.lr2pg.command.DownloadCommand;
 
 public class CommandParser {
-
+    private static final Logger logger = LogManager.getLogger();
     private String hpoPath=null;
     private String annotationPath=null;
     /** Path to a file with a list of HPO terms that a "patient" has. */
@@ -42,7 +44,7 @@ public class CommandParser {
                 printUsage("command missing");
             } else {
                 mycommand = category[0];
-
+                logger.trace(String.format("I GOT COMMANT %s",mycommand));
             }
             if (commandLine.getArgs().length < 1) {
                 printUsage("no arguments passed");
@@ -52,15 +54,9 @@ public class CommandParser {
 
             if (commandLine.hasOption("o")) {
                 hpoPath=commandLine.getOptionValue("o");
-            } else {
-                printUsage("[ERROR] hp.obo file (-o) required.");
-                System.exit(1);
             }
             if (commandLine.hasOption("a")) {
                 annotationPath=commandLine.getOptionValue("a");
-            } else {
-                printUsage("[ERROR] phenotype_annotation.tab file (-h) required.");
-                System.exit(1);
             }
             if (commandLine.hasOption("i")) {
                 patientAnnotations=commandLine.getOptionValue("i");
@@ -74,6 +70,7 @@ public class CommandParser {
                     System.out.println("Will download to the default location: \"data\"");
                     this.dataDownloadDirectory="data";
                 }
+                logger.warn(String.format("Download command to %s",dataDownloadDirectory));
                 this.command=new DownloadCommand(dataDownloadDirectory);
             } else {
                 printUsage(String.format("Did not recognize command: %s", mycommand));
