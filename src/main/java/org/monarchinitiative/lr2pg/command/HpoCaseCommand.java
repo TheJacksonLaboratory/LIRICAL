@@ -9,13 +9,13 @@ import org.monarchinitiative.lr2pg.hpo.Disease2TermFrequency;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  * @version 0.0.2 (2017-11-24)
  */
-public class CaseCommand extends Command {
+public class HpoCaseCommand extends Command {
 
 
     private static TermPrefix HP_PREFIX = new ImmutableTermPrefix("HP");
     private Disease2TermFrequency disease2TermFrequencyMap=null;
 
-    public CaseCommand(String hpoPath, String annotationPath) {
+    public HpoCaseCommand(String hpoPath, String annotationPath) {
         this.disease2TermFrequencyMap= new Disease2TermFrequency(hpoPath,annotationPath);
     }
 

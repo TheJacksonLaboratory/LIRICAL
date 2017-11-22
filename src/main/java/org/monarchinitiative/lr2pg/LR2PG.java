@@ -9,14 +9,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.command.Command;
 import org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata;
-import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
-import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
-import org.monarchinitiative.lr2pg.hpo.HPTerms;
-import org.monarchinitiative.lr2pg.old.WriteResults;
 import org.monarchinitiative.lr2pg.io.CommandParser;
+import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This is the central class that coordinates the phenotype/genotype likelihood ratio test.
@@ -26,7 +25,7 @@ import java.util.*;
  * </ul>
  * @author Vida Ravanmehr
  * @author Peter Robinson
- * @version 0.2.1 (2017-11-15)
+ * @version 0.3.1 (2017-11-25)
  */
 public class LR2PG {
     private static final Logger logger = LogManager.getLogger();
@@ -40,9 +39,6 @@ public class LR2PG {
     /** List of all annotations parsed from phenotype_annotation.tab. */
 //    private List<HpoDiseaseAnnotation> annotList=null;
 
-    private static WriteResults writeResults = null;
-//    private static LR HPLikelihood = null;
-//    private List<HpoDiseaseAnnotation> annotations=null;
 
     /** Map of HPO Term Ids and the number of diseases that has the HPO term */
     private Map<TermId, Integer> hpoTerm2DiseaseCount = new HashMap<>();
@@ -81,33 +77,9 @@ public class LR2PG {
 
     }
 
-    public LR2PG(String args[]) {
-
-//
-//        try {
-//            parserHPO.parseOntology();
-//            this.phenotypeSubontology=parserHPO.getPhenotypeSubontology();
-//            this.inheritanceSubontology=parserHPO.getInheritanceSubontology();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        HpoAnnotation2DiseaseParser annotationParser =
-//                new HpoAnnotation2DiseaseParser(annotationPath,
-//                    this.phenotypeSubontology,
-//                        this.inheritanceSubontology);
-//        this.diseaseMap = annotationParser.getDiseaseMap();
-    }
 
 
-    public void getPatientHPOTermsFromFile(String filename) {
-        if (this.pathToPatientData != null) {
-            filename = this.pathToPatientData;
-        }
 
-        HPTerms hpTerm = new HPTerms(filename);
-        //Reading HPO terms form a file and storing HPO ids in a list
-        hpTerm.getHPOIdFile(this.ListOfTermIdsOfHPOTerms);
-    }
 
 
     public void calculateLikelihoodRatio() {

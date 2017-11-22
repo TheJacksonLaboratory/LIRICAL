@@ -19,7 +19,7 @@ public class TestLRTest {
     private static char SignTest = 'P';
 
 
-
+    /*
     @Test
     public void testGlaucomaLR1() {
         List<TestResult> results = new ArrayList<>();
@@ -234,6 +234,6 @@ public class TestLRTest {
 
     }
 
-
+    */
 
 }

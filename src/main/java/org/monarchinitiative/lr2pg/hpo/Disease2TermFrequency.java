@@ -15,6 +15,7 @@ import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -67,6 +68,10 @@ public class Disease2TermFrequency {
         diseaseMap=annParser.getDiseaseMap();
     }
 
+    public Iterator<String> getDiseaseNameIterator() {
+        return this.diseaseMap.keySet().iterator();
+    }
+
     private void initializeFrequencyMap() {
 
         Map<TermId, Double> mp = new HashMap<>();
@@ -85,13 +90,16 @@ public class Disease2TermFrequency {
         hpoTerm2OverallFrequency=imb.build();
     }
 
-
+    public double getFrequencyIfNotAnnotated(TermId tid) {
+        double bf = getBackgroundFrequency(tid);
+        return bf/10;
+    }
 
     public int getNumberOfDiseases() {
         return diseaseMap.size();
     }
 
-    public HpoFrequency getFrequencyOfTermInDisease(String diseaseName, TermId term) {
+    public double getFrequencyOfTermInDisease(String diseaseName, TermId term) {
         HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
         if (disease==null) {
             logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
@@ -99,10 +107,11 @@ public class Disease2TermFrequency {
         }
         TermIdWithMetadata timd = disease.getTermIdWithMetadata(term);
         if (timd==null) {
-            logger.fatal("Could not find term %s in disease %s. Terminating...",term.getIdWithPrefix(),diseaseName);
-            System.exit(1);
+            // this disease does not have the Hpo term in question
+            return getFrequencyIfNotAnnotated(term);
+        } else {
+            return timd.getFrequency().upperBound();
         }
-        return timd.getFrequency();
     }
 
     /** Note -- the frequencies are returned as percents. We want to have probabilities, and thus the factor 100. */
@@ -115,6 +124,7 @@ public class Disease2TermFrequency {
     }
 
 
-
-
+    public Ontology<HpoTerm, HpoTermRelation> getPhenotypeSubOntology() {
+        return phenotypeSubOntology;
+    }
 }
