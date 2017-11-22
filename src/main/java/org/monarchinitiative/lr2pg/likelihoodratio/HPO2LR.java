@@ -4,7 +4,8 @@ import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.Ontology;
 import com.github.phenomics.ontolib.ontology.data.TermId;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata;
 import org.monarchinitiative.lr2pg.hpo.TermIdWithMetadata;
 
@@ -25,7 +26,7 @@ public class HPO2LR {
 
     Map<TermId, Integer> hpoTerm2DiseaseCount = null;
 
-    static Logger logger = Logger.getLogger(HPO2LR.class.getName());
+    private static final Logger logger = LogManager.getLogger();
 
     public HPO2LR(Ontology<HpoTerm, HpoTermRelation> ontology, Map<String, HpoDiseaseWithMetadata> diseaseMp) {
         hpoOntology = ontology;

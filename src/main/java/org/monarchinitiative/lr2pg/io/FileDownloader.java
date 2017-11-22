@@ -3,6 +3,8 @@ package org.monarchinitiative.lr2pg.io;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.net.SocketException;
@@ -19,7 +21,7 @@ import java.net.URLConnection;
  * @author <a href="mailto:manuel.holtgrewe@charite.de">Manuel Holtgrewe</a>
  */
 public class FileDownloader {
-    static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(FileDownloader.class.getName());
+    private static final Logger logger = LogManager.getLogger();
 
     public static class ProxyOptions {
         public String host = null;

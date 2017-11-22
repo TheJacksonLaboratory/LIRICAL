@@ -1,9 +1,10 @@
 package org.monarchinitiative.lr2pg.command;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class DownloadCommand extends Command {
-    static Logger logger = Logger.getLogger(DownloadCommand.class.getName());
+    private static final Logger logger = LogManager.getLogger();
 
     private String downloadDirectory=null;
 

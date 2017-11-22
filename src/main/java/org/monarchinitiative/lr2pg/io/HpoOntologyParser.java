@@ -6,7 +6,8 @@ import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.io.obo.hpo.HpoOboParser;
 import com.github.phenomics.ontolib.ontology.data.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +24,7 @@ import java.util.Map;
  * @version 0.1.1 (2017-11-15)
  */
 public class HpoOntologyParser {
-    static Logger logger = Logger.getLogger(HpoOntologyParser.class.getName());
+    private static final Logger logger = LogManager.getLogger();
     /** Path to the {@code hp.obo} file. */
     private String hpoOntologyPath=null;
 

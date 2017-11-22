@@ -5,11 +5,12 @@ import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.Ontology;
 import com.github.phenomics.ontolib.ontology.data.TermId;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.command.Command;
 import org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
-import org.apache.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.HPTerms;
 import org.monarchinitiative.lr2pg.old.WriteResults;
 import org.monarchinitiative.lr2pg.io.CommandParser;
@@ -28,7 +29,7 @@ import java.util.*;
  * @version 0.2.1 (2017-11-15)
  */
 public class LR2PG {
-    static Logger logger = Logger.getLogger(LR2PG.class.getName());
+    private static final Logger logger = LogManager.getLogger();
     /** HPO phenotypic abnormality subontology. */
     private Ontology<HpoTerm, HpoTermRelation> phenotypeSubontology =null;
     /** HPO inheritance subontology. */

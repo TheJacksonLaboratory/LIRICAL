@@ -6,7 +6,8 @@ import com.github.phenomics.ontolib.ontology.data.TermId;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.*;
 import com.google.common.collect.ImmutableList;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata;
 import org.monarchinitiative.lr2pg.hpo.HpoOnset;
 import org.monarchinitiative.lr2pg.hpo.ImmutableTermIdWithMetadata;
@@ -21,7 +22,7 @@ import java.util.*;
  * This class parses the phenotype_annotation.tab file into a collection of HpoDisease objects.
  */
 public class HpoAnnotation2DiseaseParser {
-    static Logger logger = Logger.getLogger(HpoAnnotation2DiseaseParser.class.getName());
+    private static final Logger logger = LogManager.getLogger();
 
     private String annotationFilePath =null;
     private Ontology<HpoTerm, HpoTermRelation> hpoPhenotypeOntology=null;
