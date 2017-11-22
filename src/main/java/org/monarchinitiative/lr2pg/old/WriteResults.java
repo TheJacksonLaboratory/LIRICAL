@@ -54,59 +54,6 @@ import java.util.Map;
             }
         }
 
-        /*public void WritingPretestOdds(String WriteFileName) {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(WriteFileName, false))) {
-                writer.write("disease id");
-                writer.write("  ");
-                writer.write("PretestOdds");
-                writer.newLine();
-                for (String disease : Disease2PretestOdds.keySet()) {
-                    writer.write(disease);
-                    writer.write("  ");
-                    writer.write(String.valueOf(Disease2PretestOdds.get(disease)));
-                    writer.newLine();
-                }
-
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-        public void WritingPosttestOdds(String WriteFileName) {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(WriteFileName, false))) {
-                writer.write("disease id");
-                writer.write("  ");
-                writer.write("PosttestOdds");
-                writer.newLine();
-                for (String disease : Disease2PosttestOdds.keySet()) {
-                    writer.write(disease);
-                    writer.write("  ");
-                    writer.write(String.valueOf(Disease2PosttestOdds.get(disease)));
-                    writer.newLine();
-                }
-
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-        public void WritingPosttestProb( String WriteFileName) {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(WriteFileName, false))) {
-                writer.write("disease id");
-                writer.write("  ");
-                writer.write("PosttestProb");
-                writer.newLine();
-                for (String disease : Disease2PosttestProb.keySet()) {
-                    writer.write(disease);
-                    writer.write("  ");
-                    writer.write(String.valueOf(Disease2PosttestProb.get(disease)));
-                    writer.newLine();
-                }
-
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-        }*/
 
 
     }
