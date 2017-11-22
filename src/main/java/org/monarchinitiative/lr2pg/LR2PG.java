@@ -82,27 +82,20 @@ public class LR2PG {
     }
 
     public LR2PG(String args[]) {
-        CommandParser cmdline= new CommandParser(args);
-        if (true) {
-            Command command = cmdline.getCommand();
-            command.execute();
-            return;
-        }
-        String annotationPath = cmdline.getAnnotationPath();
-        String pathToPatientData = cmdline.getPatientAnnotations();
-        HpoOntologyParser parserHPO = new HpoOntologyParser(cmdline.getHpoPath());
-        try {
-            parserHPO.parseOntology();
-            this.phenotypeSubontology=parserHPO.getPhenotypeSubontology();
-            this.inheritanceSubontology=parserHPO.getInheritanceSubontology();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        HpoAnnotation2DiseaseParser annotationParser =
-                new HpoAnnotation2DiseaseParser(annotationPath,
-                    this.phenotypeSubontology,
-                        this.inheritanceSubontology);
-        this.diseaseMap = annotationParser.getDiseaseMap();
+
+//
+//        try {
+//            parserHPO.parseOntology();
+//            this.phenotypeSubontology=parserHPO.getPhenotypeSubontology();
+//            this.inheritanceSubontology=parserHPO.getInheritanceSubontology();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        HpoAnnotation2DiseaseParser annotationParser =
+//                new HpoAnnotation2DiseaseParser(annotationPath,
+//                    this.phenotypeSubontology,
+//                        this.inheritanceSubontology);
+//        this.diseaseMap = annotationParser.getDiseaseMap();
     }
 
 
