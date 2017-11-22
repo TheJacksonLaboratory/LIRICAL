@@ -84,6 +84,18 @@ public final class HpoDiseaseWithMetadata {
 
     public List<TermId> getNegativeAnnotations() { return this.negativeAnnotations;}
 
+    /**
+     * Users can user this function to get the TermIdWithMetadata corresponding to a TermId
+     * @param id
+     * @return corresponding {@link TermIdWithMetadata} or null if not present.
+     */
+    public TermIdWithMetadata getTermIdWithMetadata(TermId id) {
+        return phenotypicAbnormalities.stream().filter( timd -> timd.getTermId().equals(id)).findAny().orElse(null);
+    }
+
+
+
+
     @Override
     public String toString() {
         return "HpoDisease [name=" + name + ", phenotypicAbnormalities=" + phenotypicAbnormalities

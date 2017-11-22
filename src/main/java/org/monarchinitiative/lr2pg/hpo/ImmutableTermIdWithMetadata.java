@@ -3,9 +3,16 @@ package org.monarchinitiative.lr2pg.hpo;
 import com.github.phenomics.ontolib.formats.hpo.HpoFrequency;
 import com.github.phenomics.ontolib.ontology.data.TermId;
 import com.github.phenomics.ontolib.ontology.data.TermPrefix;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+/**
+ * Represent an HPO Term together with a Frequency and an Onset. This is intended to be used to represent a disease
+ * annotation.
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ * @version 0.0.2 (2017-11-24)
+ */
 public class ImmutableTermIdWithMetadata implements TermIdWithMetadata {
-
+    private static final Logger logger = LogManager.getLogger();
     /** The annotated {@link TermId}. */
     private final TermId termId;
 
@@ -13,6 +20,11 @@ public class ImmutableTermIdWithMetadata implements TermIdWithMetadata {
     private final HpoFrequency frequency;
     /** The characteristic age of onset of a feature in a certain disease. */
     private final HpoOnset onset;
+    /** If no information is available, then assume that the feature is always present! */
+    private static final HpoFrequency DEFAULT_HPO_FREQUENCY=HpoFrequency.ALWAYS_PRESENT;
+    /** If no onset information is available, use the Onset term "Onset" (HP:0003674), which is the root of the subontology for onset. */
+    private static final HpoOnset DEFAULT_HPO_ONSET=HpoOnset.ONSET;
+
 
     /**
      * Constructor.
@@ -22,8 +34,8 @@ public class ImmutableTermIdWithMetadata implements TermIdWithMetadata {
      */
     public ImmutableTermIdWithMetadata(TermId termId, HpoFrequency frequency, HpoOnset onset) {
         this.termId = termId;
-        this.frequency = frequency;
-        this.onset=onset;
+        this.frequency = frequency!=null?frequency:DEFAULT_HPO_FREQUENCY;
+        this.onset=onset!=null?onset:DEFAULT_HPO_ONSET;
     }
 
     /**
@@ -66,7 +78,7 @@ public class ImmutableTermIdWithMetadata implements TermIdWithMetadata {
     public String getId() { return this.termId.getId();}
 
     /** Objects are equal if the three components are equal.
-     * If frequency are both null and/or onset are both null, we are still equal!
+     * Note that the constructor guarantees that the the TermId, the Frequency, and the Onset are not null.
      * @param o
      * @return
      */
@@ -75,23 +87,11 @@ public class ImmutableTermIdWithMetadata implements TermIdWithMetadata {
         if (o==null) return false;
         if (! (o instanceof TermIdWithMetadata)) return false;
         TermIdWithMetadata otherTIDM = (TermIdWithMetadata) o;
-        if (! this.termId.equals(otherTIDM.getTermId())) return false;
-        if ((this.frequency == null && otherTIDM.getFrequency() == null &&
-        this.onset==null && otherTIDM.getOnset()==null) ) return true; // only tid initialized
-        if (this.onset == null) {
-            if (otherTIDM != null) return false;
-        } else {
-            if (otherTIDM.getOnset()==null) return false;
-            if (! this.onset.equals(otherTIDM.getOnset()) ) return  false;
-        }
-        // if we get here, tid and onset are equal
-        if (this.frequency == null) {
-            if (otherTIDM.getFrequency() != null) return false;
-        } else {
-            if (otherTIDM.getFrequency()==null) return false;
-            return this.frequency.equals(otherTIDM.getFrequency());
-        }
-        return true;
+
+        return termId.getId().equals(otherTIDM.getId()) &&
+                frequency.equals(otherTIDM.getFrequency()) &&
+                onset.equals(otherTIDM.getOnset());
+
     }
 
     @Override

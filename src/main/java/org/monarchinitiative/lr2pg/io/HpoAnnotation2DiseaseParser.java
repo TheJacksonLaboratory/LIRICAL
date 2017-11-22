@@ -29,8 +29,12 @@ public class HpoAnnotation2DiseaseParser {
     private Ontology<HpoTerm, HpoTermRelation> inheritancePhenotypeOntology=null;
 
     private static final TermPrefix HP_PREFIX = new ImmutableTermPrefix("HP");
-    private static final TermId ONSET_TID = new ImmutableTermId(HP_PREFIX,"0003674");
     private static final TermId INHERITANCE_ROOT = new ImmutableTermId(HP_PREFIX,"0000005");
+    /** The default frequency will be 100% (Obligate, HP:0040280). This will be used if an annotation line has no
+     * value for the Frequency modifier.    */
+    private static final String DEFAULT_FREQUENCY="0040280";
+    private static final TermId DEFAULT_FREQUENCY_ID = new ImmutableTermId(HP_PREFIX,DEFAULT_FREQUENCY);
+
 
 
     Map<String,HpoDiseaseWithMetadata> diseaseMap;
@@ -111,6 +115,9 @@ public class HpoAnnotation2DiseaseParser {
     }
 
 
+
+
+
     /**
      * Check whether a term is a member of the inheritance subontology.
      * ToDo implement this with the termmap once we are using the new ontolib version
@@ -141,16 +148,21 @@ public class HpoAnnotation2DiseaseParser {
     }
 
 
-
+    /**
+     * Extract the {@link HpoFrequency} object that corresponds to the frequency modifier in an annotation line.
+     * If we find nothing or there is some parsing error, return the default frequency (obligate, 100%).
+     * @param freq The representation of the frequency, if any, in the {@code phenotype_annotation.tab} file
+     * @return the corresponding {@link HpoFrequency} object or the default {@link HpoFrequency} object (100%).
+     */
     private HpoFrequency getFrequency(String freq) {
-        if (freq==null || freq.isEmpty()) return null;
+        if (freq==null || freq.isEmpty()) return HpoFrequency.fromTermId(DEFAULT_FREQUENCY_ID);
         try {
             TermId tid = string2TermId(freq);
             return HpoFrequency.fromTermId(tid);
         } catch (Exception e){
             e.printStackTrace();
         }
-        return null;
+        return HpoFrequency.fromTermId(DEFAULT_FREQUENCY_ID);
     }
 
     private HpoOnset getOnset(String ons) {

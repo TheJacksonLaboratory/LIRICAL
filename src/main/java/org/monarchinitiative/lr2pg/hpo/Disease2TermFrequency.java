@@ -1,5 +1,6 @@
 package org.monarchinitiative.lr2pg.hpo;
 
+import com.github.phenomics.ontolib.formats.hpo.HpoFrequency;
 import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.ImmutableTermPrefix;
@@ -67,7 +68,7 @@ public class Disease2TermFrequency {
     }
 
     private void initializeFrequencyMap() {
-       // ImmutableMap.Builder<TermId, Double> imb = new ImmutableMap.Builder<>();
+
         Map<TermId, Double> mp = new HashMap<>();
         for (HpoDiseaseWithMetadata dis: this.diseaseMap.values()) {
             for (TermIdWithMetadata tidm : dis.getPhenotypicAbnormalities()) {
@@ -79,7 +80,41 @@ public class Disease2TermFrequency {
                 mp.put(tid,cumulativeFreq);
             }
         }
+        ImmutableMap.Builder<TermId, Double> imb = new ImmutableMap.Builder<>();
+        imb.putAll(mp);
+        hpoTerm2OverallFrequency=imb.build();
     }
+
+
+
+    public int getNumberOfDiseases() {
+        return diseaseMap.size();
+    }
+
+    public HpoFrequency getFrequencyOfTermInDisease(String diseaseName, TermId term) {
+        HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
+        if (disease==null) {
+            logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
+            System.exit(1);
+        }
+        TermIdWithMetadata timd = disease.getTermIdWithMetadata(term);
+        if (timd==null) {
+            logger.fatal("Could not find term %s in disease %s. Terminating...",term.getIdWithPrefix(),diseaseName);
+            System.exit(1);
+        }
+        return timd.getFrequency();
+    }
+
+    /** Note -- the frequencies are returned as percents. We want to have probabilities, and thus the factor 100. */
+    public double getBackgroundFrequency(TermId term) {
+        if (! hpoTerm2OverallFrequency.containsKey(term)) {
+            logger.fatal(String.format("Map did not contian data for term %s",term.getIdWithPrefix() ));
+            System.exit(1);
+        }
+        return hpoTerm2OverallFrequency.get(term)/(100*getNumberOfDiseases());
+    }
+
+
 
 
 }

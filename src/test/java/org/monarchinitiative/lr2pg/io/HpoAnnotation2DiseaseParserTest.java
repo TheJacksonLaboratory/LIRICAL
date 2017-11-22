@@ -1,5 +1,6 @@
 package org.monarchinitiative.lr2pg.io;
 
+import com.github.phenomics.ontolib.formats.hpo.HpoFrequency;
 import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.*;
@@ -27,6 +28,8 @@ public class HpoAnnotation2DiseaseParserTest {
     private static Map<String,HpoDiseaseWithMetadata> diseaseMap;
 
     private static TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
+    /** If no frequency is provided, the parser uses the default (100%) */
+    private static HpoFrequency defaultFrequency=null;
 
     @BeforeClass
     public static void setup() throws IOException {
@@ -40,6 +43,9 @@ public class HpoAnnotation2DiseaseParserTest {
         HP_PREFIX = new ImmutableTermPrefix("HP");
         annotationParser = new HpoAnnotation2DiseaseParser(annotationPath,phenotypeSubOntology,inheritanceSubontology);
         diseaseMap=annotationParser.getDiseaseMap();
+        String DEFAULT_FREQUENCY="0040280";
+        final TermId DEFAULT_FREQUENCY_ID = new ImmutableTermId(HP_PREFIX,DEFAULT_FREQUENCY);
+        defaultFrequency=HpoFrequency.fromTermId(DEFAULT_FREQUENCY_ID);
     }
 
 
@@ -86,10 +92,14 @@ public class HpoAnnotation2DiseaseParserTest {
         HpoDiseaseWithMetadata disease = diseaseMap.get("101120");
         assertEquals(expected,disease.getPhenotypicAbnormalities().size());
         TermId oxycephaly = new ImmutableTermId(HP_PREFIX,"0000263");
-        TermIdWithMetadata oxycephaly_withmetadata = new ImmutableTermIdWithMetadata( oxycephaly,null,null);
+        TermIdWithMetadata oxycephaly_withmetadata = new ImmutableTermIdWithMetadata( oxycephaly,defaultFrequency,null);
+        for (TermIdWithMetadata timd : disease.getPhenotypicAbnormalities()) {
+            System.out.println(timd.toString());
+        }
+        System.out.println("oxycephaly: "+ oxycephaly_withmetadata.toString());
         assertTrue(disease.getPhenotypicAbnormalities().contains(oxycephaly_withmetadata));
         TermId abnEKG = new ImmutableTermId(HP_PREFIX,"0003115");
-        TermIdWithMetadata abnEKGmd = new ImmutableTermIdWithMetadata(abnEKG,null,null);
+        TermIdWithMetadata abnEKGmd = new ImmutableTermIdWithMetadata(abnEKG,defaultFrequency,null);
         // this term does not annotate Acrocephalopolysyndactyly
         assertFalse(disease.getPhenotypicAbnormalities().contains(abnEKGmd));
         expected=0;
@@ -109,13 +119,25 @@ public class HpoAnnotation2DiseaseParserTest {
         HpoDiseaseWithMetadata disease = diseaseMap.get("111400");
         assertEquals(expected,disease.getPhenotypicAbnormalities().size());
         TermId AntigenAbn = new ImmutableTermId(HP_PREFIX,"0010970");
-        TermIdWithMetadata antigenAbnMD = new ImmutableTermIdWithMetadata(AntigenAbn,null,null);
+        TermIdWithMetadata antigenAbnMD = new ImmutableTermIdWithMetadata(AntigenAbn,defaultFrequency,null);
         assertTrue(disease.getPhenotypicAbnormalities().contains(antigenAbnMD));
         List<TermId> inherTerms = disease.getModesOfInheritance();
         assertEquals(1,inherTerms.size());
         TermId autosomaldominant = new ImmutableTermId(HP_PREFIX,"0000006");
         assertEquals(autosomaldominant,inherTerms.get(0));
+    }
 
+    /**
+     * Currently, none of our annotations in the test file have frequencies. Therefore, the parser should
+     * assign to each annotation the default frequency value of 100%
+     */
+    @Test
+    public void testDefaultFrequency() {
+        HpoDiseaseWithMetadata disease = diseaseMap.get("111400");
+        TermId AntigenAbn = new ImmutableTermId(HP_PREFIX,"0010970");
+        TermIdWithMetadata timd = disease.getTermIdWithMetadata(AntigenAbn);
+        int expected = 100;
+        assertEquals(expected,timd.getFrequency().upperBound());
     }
 
 

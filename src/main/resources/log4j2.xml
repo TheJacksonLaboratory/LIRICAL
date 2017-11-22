@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="TRACE">
+<Configuration status="WARN">
     <Appenders>
         <File name="LogFile" fileName="target/LR2PG.log" append="false">
             <PatternLayout pattern="[%t] %-5level %logger{36} - %msg%n"/>
