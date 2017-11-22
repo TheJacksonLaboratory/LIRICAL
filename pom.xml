@@ -16,7 +16,7 @@
         <jannovar.version>0.22</jannovar.version>
         <jdk.version>1.8</jdk.version>
         <junit.version>4.12</junit.version>
-        <ontolib.version>0.5-SNAPSHOT</ontolib.version>
+        <ontolib.version>0.3</ontolib.version>
     </properties>
 
 
