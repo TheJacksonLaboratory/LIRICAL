@@ -12,7 +12,8 @@ import java.util.stream.Collectors;
  * (in this case, 48) is not important.
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
- * @version 0.1.1 (2017-11-24)
+ * @author <a href="mailto:vida.ravanmehr@jax.org">Vida Ravanmehr</a>
+ * @version 0.2.1 (2017-11-24)
  */
 public class TestResult implements Comparable<TestResult> {
 
@@ -39,6 +40,28 @@ public class TestResult implements Comparable<TestResult> {
     public double getCompositeLR() {
         return compositeLR;
     }
+
+    public int getNumberOfTests() {
+        return results.size();
+    }
+
+    /**
+     * TODO Should this be a class variable?
+     * @param pretestProb
+     * @return
+     */
+    public double pretestodds(double pretestProb) {return pretestProb/(1-pretestProb);}
+
+    /**
+     * TODO Should this be a class variable?
+     * @param pretestProb
+     * @return
+     */
+    public double posttestodds(double pretestProb) {
+        double pretestodds=pretestodds(pretestProb);
+        return pretestodds * getCompositeLR();
+    }
+
 
     /**
      * TODO what if specificity and/or sensitivity is 100%?

@@ -31,7 +31,7 @@ import static org.monarchinitiative.lr2pg.likelihoodratio.LikelihoodRatio.HpoFre
 public class HpoCase {
     private static final Logger logger = LogManager.getLogger();
 
-    private static TermPrefix HP_PREFIX = new ImmutableTermPrefix("HP");
+
     private Disease2TermFrequency disease2TermFrequencyMap=null;
 
     private String disease=null;
@@ -58,9 +58,10 @@ public class HpoCase {
             String diseasename = it.next();
             ImmutableList.Builder builder = new ImmutableList.Builder();
             for (TermId tid : this.hpoTerms) {
-                double f = disease2TermFrequencyMap.getFrequencyOfTermInDisease(diseasename,tid);
-                double backgroundf = disease2TermFrequencyMap.getBackgroundFrequency(tid);
-                double LR=HpoFrequencies2LR(f,backgroundf);
+//                double f = disease2TermFrequencyMap.getFrequencyOfTermInDisease(diseasename,tid);
+//                double backgroundf = disease2TermFrequencyMap.getBackgroundFrequency(tid);
+//                double LR=HpoFrequencies2LR(f,backgroundf);
+                double LR = disease2TermFrequencyMap.getLikelihoodRatio(tid,diseasename);
                 builder.add(LR);
             }
             TestResult result = new TestResult(builder,diseasename);

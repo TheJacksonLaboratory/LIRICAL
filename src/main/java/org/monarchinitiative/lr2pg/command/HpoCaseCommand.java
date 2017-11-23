@@ -3,6 +3,7 @@ package org.monarchinitiative.lr2pg.command;
 import com.github.phenomics.ontolib.ontology.data.ImmutableTermPrefix;
 import com.github.phenomics.ontolib.ontology.data.TermPrefix;
 import org.monarchinitiative.lr2pg.hpo.Disease2TermFrequency;
+import org.monarchinitiative.lr2pg.hpo.HpoCase;
 
 /**
  * Analyze the likelihood ratios for a case represented by a list of HPO terms.
@@ -11,17 +12,16 @@ import org.monarchinitiative.lr2pg.hpo.Disease2TermFrequency;
  */
 public class HpoCaseCommand extends Command {
 
+    HpoCase hpocase =null;
 
-    private static TermPrefix HP_PREFIX = new ImmutableTermPrefix("HP");
-    private Disease2TermFrequency disease2TermFrequencyMap=null;
-
-    public HpoCaseCommand(String hpoPath, String annotationPath) {
-        this.disease2TermFrequencyMap= new Disease2TermFrequency(hpoPath,annotationPath);
+    public HpoCaseCommand(String hpoPath, String annotationPath, String caseData) {
+        hpocase = new HpoCase(hpoPath,annotationPath,caseData);
     }
 
 
     public void execute() {
-
+        hpocase.calculateLikelihoodRatios();
+        hpocase.outputResults();
     }
 
 }
