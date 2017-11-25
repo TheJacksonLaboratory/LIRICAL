@@ -26,17 +26,17 @@ public class LikelihoodRatio {
     public double odds() {
         return -1d;
     }*/
-    private double x,y,z;
-    LikelihoodRatio(double pretestprob, double sensit, double specif) {
-        this.x = pretestprob;
-        this.y = sensit;
-        this.z = specif;
-       // logger.trace(String.format("x=%f,y=%f,z=%f",x,y,z ));
-    }
+//    private double x,y,z;
+//    LikelihoodRatio(double pretestprob, double sensit, double specif) {
+//        this.x = pretestprob;
+//        this.y = sensit;
+//        this.z = specif;
+//       // logger.trace(String.format("x=%f,y=%f,z=%f",x,y,z ));
+//    }
 
-    public double ratio() {return y/(1-z);}
-
-    public double pretestodds() {return x/(1-x);}
+//    public double ratio() {return y/(1-z);}
+//
+//    public double pretestodds() {return x/(1-x);}
 
     //public double posttestodds(){return (x/(1-x))*(y/(1-z));}
 
