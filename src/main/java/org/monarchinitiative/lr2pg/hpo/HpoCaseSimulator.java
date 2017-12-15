@@ -13,10 +13,7 @@ import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A simulator that similates cases from the {@link HpoDiseaseWithMetadata} objects by choosing a subset of terms
@@ -30,6 +27,9 @@ public class HpoCaseSimulator {
     private static Ontology<HpoTerm, HpoTermRelation> phenotypeSubOntology =null;
     /** The subontology of the HPO with all the inheritance terms. */
     private static Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology=null;
+
+
+
 
     Disease2TermFrequency d2termFreqMap;
 
@@ -89,9 +89,18 @@ public class HpoCaseSimulator {
 
     public void simulateCases() {
         int c=0;
+        int LIMIT=1000;
+        Map<Integer,Integer> ranks=new HashMap<>();
         for (String diseasename : diseaseMap.keySet()) {
-            simulateCase(diseasename);
-            if (c++>200) break; // for testing just simulate one disease
+            int rank=simulateCase(diseasename);
+            if (!ranks.containsKey(rank)) {
+                ranks.put(rank,0);
+            }
+            ranks.put(rank,ranks.get(rank)+1);
+            if (c++>LIMIT) break; // for testing just simulate one disease
+        }
+        for (int r:ranks.keySet()) {
+            System.out.println(String.format("Rank=%d: count:%d (%.1f%%)",r,ranks.get(r),(double)100.0*ranks.get(r)/LIMIT));
         }
     }
 
@@ -124,19 +133,22 @@ public class HpoCaseSimulator {
         Set<TermIdWithMetadata> rand=new HashSet<>();
         int maxindex = abnormalities.size();
         do {
-            int r = (int)Math.floor(maxindex*Math.random());
-            TermIdWithMetadata t=abnormalities.get(r);
-            rand.add(t);
+            try {
+                int r = (int) Math.floor(maxindex * Math.random());
+                r = Math.max(0, r);
+                TermIdWithMetadata t = abnormalities.get(r);
+                rand.add(t);
+            } catch (Exception e) {e.printStackTrace();}
         } while (rand.size()<desiredsize);
         return rand;
     }
 
 
-    public void simulateCase(String diseasename) {
+    public int simulateCase(String diseasename) {
         HpoDiseaseWithMetadata disease = diseaseMap.get(diseasename);
         if (disease==null) {
             logger.error("Should never happen -- could not retrieve disease for " + diseasename);
-            return;
+            return -1;
         }
 
         int n_terms=Math.min(disease.getNumberOfPhenotypeAnnotations(),n_terms_per_case);
@@ -160,7 +172,9 @@ public class HpoCaseSimulator {
 
         HpoCase hpocase = new HpoCase(phenotypeSubOntology,d2termFreqMap,diseasename,termlist);
         hpocase.calculateLikelihoodRatios();
-        System.out.println(String.format("Rank of %s was %d/%d",diseasename,hpocase.getRank(diseasename),hpocase.getTotalResultCount()));
+        int rank=hpocase.getRank(diseasename);
+        System.out.println(String.format("Rank of %s was %d/%d",diseasename,rank,hpocase.getTotalResultCount()));
+        return rank;
     }
 
 

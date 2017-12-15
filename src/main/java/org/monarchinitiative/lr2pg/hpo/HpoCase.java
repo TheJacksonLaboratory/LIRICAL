@@ -56,15 +56,6 @@ public class HpoCase {
     }
 
 
-
-//    public HpoCase(String hpoPath, String annotationPath, String caseData) {
-//        this.disease2TermFrequencyMap= new Disease2TermFrequency(hpoPath,annotationPath);
-//        this.hpoOntology=disease2TermFrequencyMap.getPhenotypeSubOntology();
-//        hpoTerms = new ArrayList<>();
-//        parseCasedata(caseData);
-//
-//    }
-
     public void calculateLikelihoodRatios() {
         Iterator<String> it = disease2TermFrequencyMap.getDiseaseNameIterator();
         while (it.hasNext()) {
@@ -83,9 +74,14 @@ public class HpoCase {
         return results.size();
     }
 
-
+    /**
+     * This method sorts all of the results in {@link #results}. The best results are the highest, and so
+     * we sort in descending order. We return the rank of the item
+     * @param diseasename name of the disease whose rank we want to know
+     * @return the rank of the disease within all of the test results
+     */
     public int getRank(String diseasename){
-       Collections.sort(results);
+       Collections.sort(results,Collections.reverseOrder());
         ;
         int rank=0;
         for (TestResult r: results){

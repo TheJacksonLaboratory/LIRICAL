@@ -7,6 +7,8 @@ import com.github.phenomics.ontolib.ontology.data.TermPrefix;
 
 /**
  * A {@link TermId} with Frequency and Onset metadata
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ * @version 0.0.1
  */
 public interface TermIdWithMetadata extends TermId {
 

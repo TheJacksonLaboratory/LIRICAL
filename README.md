@@ -1,6 +1,13 @@
 # LR2PG
 Likelihood ratio analysis of phenotypes and genotypes
 
+To run LR2PG
+```
+$ mvn clean package
+$ java -jar target/LR2PG-0.0.1-SNAPSHOT.jar download
+$ java -jar target/LR2PG-0.0.1-SNAPSHOT.jar simulate
+```
+
 
 The input to the method is a list of HPO terms observed in a case (patient). This list is evaluated
 for each disease in our database to search for the best match. We need to evaluate two probabilities.
