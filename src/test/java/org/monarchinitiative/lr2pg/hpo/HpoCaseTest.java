@@ -38,9 +38,7 @@ public class HpoCaseTest {
         Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology = parser.getInheritanceSubontology();
         HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationPath,phenotypeSubOntology,inheritanceSubontology);
         Map<String,HpoDiseaseWithMetadata> diseaseMap=annotationParser.getDiseaseMap();
-        Disease2TermFrequency d2fmap=new Disease2TermFrequency(hpoPath,annotationPath); //todo pass in the other objects
-
-
+        Disease2TermFrequency d2fmap=new Disease2TermFrequency(phenotypeSubOntology,inheritanceSubontology,diseaseMap);
         String caseFile = classLoader.getResource("HPOTerms").getFile();
 
         String diseasename="OMIM:108500";

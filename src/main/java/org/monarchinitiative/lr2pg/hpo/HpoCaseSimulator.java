@@ -205,6 +205,7 @@ public class HpoCaseSimulator {
         String DEFAULT_FREQUENCY="0040280";
         final TermId DEFAULT_FREQUENCY_ID = new ImmutableTermId(HP_PREFIX,DEFAULT_FREQUENCY);
         defaultFrequency=HpoFrequency.fromTermId(DEFAULT_FREQUENCY_ID);
-        this.d2termFreqMap = new Disease2TermFrequency(hpopath,annotationpath); //todo pass in the other objects
+        this.d2termFreqMap=new Disease2TermFrequency(phenotypeSubOntology,inheritanceSubontology,diseaseMap);
+        //this.d2termFreqMap = new Disease2TermFrequency(hpopath,annotationpath); //todo pass in the other objects
     }
 }

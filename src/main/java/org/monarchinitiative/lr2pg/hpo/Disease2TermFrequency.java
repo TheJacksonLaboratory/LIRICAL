@@ -30,9 +30,9 @@ import java.util.Map;
 public class Disease2TermFrequency {
     private static final Logger logger = LogManager.getLogger();
     /** Path to the {@code hp.obo} file. */
-    final private String hpoOboFilePath;
+     private String hpoOboFilePath;
     /** Path to the {@code phenotype_annotation.tab} file. */
-    final private String hpoPhenotypeAnnotationPath;
+     private String hpoPhenotypeAnnotationPath;
     /** The subontology of the HPO with all the phenotypic abnormality terms. */
     private  Ontology<HpoTerm, HpoTermRelation> phenotypeSubOntology =null;
     /** The subontology of the HPO with all the inheritance terms. */
@@ -41,37 +41,48 @@ public class Disease2TermFrequency {
     private  Map<String,HpoDiseaseWithMetadata> diseaseMap;
 
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
-    /**
-     * @param hpoPath path to {@code hp.obo}
-     * @param hpoAnnotationPath path to {@code phenotype_annotation.tab}
-     */
-    public Disease2TermFrequency(String hpoPath, String hpoAnnotationPath){
-        hpoOboFilePath=hpoPath;
-        hpoPhenotypeAnnotationPath=hpoAnnotationPath;
-        try {
-            inputHpoData();
-        } catch (IOException e) {
-            logger.fatal(String.format("could not input data: %s",e.toString()));
-            System.exit(1);
-        }
+
+
+    public Disease2TermFrequency(Ontology<HpoTerm, HpoTermRelation> pheno,
+                                 Ontology<HpoTerm, HpoTermRelation> inheri,
+                                 Map<String,HpoDiseaseWithMetadata> diseases) {
+        phenotypeSubOntology=pheno;
+        inheritanceSubontology=inheri;
+        this.diseaseMap=diseases;
         initializeFrequencyMap();
     }
+
+    /**
+//     * @param hpoPath path to {@code hp.obo}
+//     * @param hpoAnnotationPath path to {@code phenotype_annotation.tab}
+//     */
+//    public Disease2TermFrequency(String hpoPath, String hpoAnnotationPath){
+//        hpoOboFilePath=hpoPath;
+//        hpoPhenotypeAnnotationPath=hpoAnnotationPath;
+//        try {
+//            inputHpoData();
+//        } catch (IOException e) {
+//            logger.fatal(String.format("could not input data: %s",e.toString()));
+//            System.exit(1);
+//        }
+//        initializeFrequencyMap();
+//    }
 
     /**
      * Parse the {@code hp.obo} and the {@code phenotype_annotation.tab} files.
      * @throws IOException
      */
-    private void inputHpoData() throws IOException {
-        HpoOntologyParser parser = new HpoOntologyParser(this.hpoOboFilePath);
-        parser.parseOntology();
-        phenotypeSubOntology = parser.getPhenotypeSubontology();
-        inheritanceSubontology = parser.getInheritanceSubontology();
-        HpoAnnotation2DiseaseParser annParser =
-                new HpoAnnotation2DiseaseParser(this.hpoPhenotypeAnnotationPath,
-                        phenotypeSubOntology,
-                        inheritanceSubontology);
-        diseaseMap=annParser.getDiseaseMap();
-    }
+//    private void inputHpoData() throws IOException {
+////        HpoOntologyParser parser = new HpoOntologyParser(this.hpoOboFilePath);
+////        parser.parseOntology();
+////        phenotypeSubOntology = parser.getPhenotypeSubontology();
+////        inheritanceSubontology = parser.getInheritanceSubontology();
+//        HpoAnnotation2DiseaseParser annParser =
+//                new HpoAnnotation2DiseaseParser(this.hpoPhenotypeAnnotationPath,
+//                        phenotypeSubOntology,
+//                        inheritanceSubontology);
+//        diseaseMap=annParser.getDiseaseMap();
+//    }
     /** @return iterator over the diseases in the database. TODO just return the disease objects. */
     public Iterator<String> getDiseaseNameIterator() {
         return this.diseaseMap.keySet().iterator();
