@@ -151,4 +151,7 @@ public class TestResult implements Comparable<TestResult> {
     }
 
 
+    public String getDiseasename() {
+        return diseasename;
+    }
 }

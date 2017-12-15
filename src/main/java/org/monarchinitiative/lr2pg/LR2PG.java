@@ -29,27 +29,10 @@ import java.util.Map;
  */
 public class LR2PG {
     private static final Logger logger = LogManager.getLogger();
-    /** HPO phenotypic abnormality subontology. */
-    private Ontology<HpoTerm, HpoTermRelation> phenotypeSubontology =null;
-    /** HPO inheritance subontology. */
-    Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology =null;
-    /** Key, a disease ID like 100324 for OMIM:100324; value-corresponding {@link HpoDiseaseWithMetadata} object .*/
-    private Map<String, HpoDiseaseWithMetadata> diseaseMap=null;
-
-    /** List of all annotations parsed from phenotype_annotation.tab. */
-//    private List<HpoDiseaseAnnotation> annotList=null;
 
 
-    /** Map of HPO Term Ids and the number of diseases that has the HPO term */
-    private Map<TermId, Integer> hpoTerm2DiseaseCount = new HashMap<>();
-    /** List of TermIds of the patient */
-    private List<TermId> ListOfTermIdsOfHPOTerms = new ArrayList<>();
-    /** Sign for calculating LR (Positive='P', Negative = 'N') */
-    private static char TestSign = 'P';
     /** Pretest Probability */
     private static final double PretestProb = 0.5;
-
-//    private static String fileName = "/Users/ravanv/Documents/IntelliJ_projects/HPO_LRTest/LR2PG/HPOTerms.txt";
 
     private String pathToPatientData=null;
 
@@ -57,12 +40,7 @@ public class LR2PG {
 
 //    private Map<String,Disease> diseaseMap= new HashMap<>();
 
-//    private static Map<String,Double> Disease2LR = new HashMap<>();
-//    private static Map<String,Double> Disease2PretestOdds = new HashMap<>();
-//    private static Map<String, Double> Disease2PosttestOdds = new HashMap<>();
-//    private static Map<String, Double> Disease2PosttestProb = new HashMap<>();
-    /** File Name for the results of the Likelihood ratio, PretestOdds, Posttest Odds and PosttestProb */
-    private static String WriteFileNameLR = "Results.txt";
+
 
     static public void main(String [] args) {
         logger.trace("MAIN");

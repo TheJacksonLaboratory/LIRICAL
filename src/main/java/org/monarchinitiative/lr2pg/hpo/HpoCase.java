@@ -36,7 +36,7 @@ public class HpoCase {
 
     private String disease=null;
     /** List of Hpo terms for our case. TODO add negative annotations. */
-    private List<TermId> hpoTerms;
+    private List<TermIdWithMetadata> observedAbnormalities;
 
     private Ontology<HpoTerm, HpoTermRelation> hpoOntology=null;
 
@@ -44,23 +44,33 @@ public class HpoCase {
 
 
 
-    public HpoCase(String hpoPath, String annotationPath, String caseData) {
-        this.disease2TermFrequencyMap= new Disease2TermFrequency(hpoPath,annotationPath);
-        this.hpoOntology=disease2TermFrequencyMap.getPhenotypeSubOntology();
-        hpoTerms = new ArrayList<>();
-        parseCasedata(caseData);
+    public HpoCase(Ontology<HpoTerm, HpoTermRelation> phenoOntology,
+                   Disease2TermFrequency diseaseFreqMap,
+                   String diseaseNane,
+                   List<TermIdWithMetadata> observedAbn) {
+        this.disease2TermFrequencyMap=diseaseFreqMap;
+        this.hpoOntology=phenoOntology;
+        this.disease=diseaseNane;
+        this.observedAbnormalities=observedAbn;
         results=new ArrayList<>();
     }
+
+
+
+//    public HpoCase(String hpoPath, String annotationPath, String caseData) {
+//        this.disease2TermFrequencyMap= new Disease2TermFrequency(hpoPath,annotationPath);
+//        this.hpoOntology=disease2TermFrequencyMap.getPhenotypeSubOntology();
+//        hpoTerms = new ArrayList<>();
+//        parseCasedata(caseData);
+//
+//    }
 
     public void calculateLikelihoodRatios() {
         Iterator<String> it = disease2TermFrequencyMap.getDiseaseNameIterator();
         while (it.hasNext()) {
             String diseasename = it.next();
             ImmutableList.Builder builder = new ImmutableList.Builder();
-            for (TermId tid : this.hpoTerms) {
-//                double f = disease2TermFrequencyMap.getFrequencyOfTermInDisease(diseasename,tid);
-//                double backgroundf = disease2TermFrequencyMap.getBackgroundFrequency(tid);
-//                double LR=HpoFrequencies2LR(f,backgroundf);
+            for (TermIdWithMetadata tid : this.observedAbnormalities) {
                 double LR = disease2TermFrequencyMap.getLikelihoodRatio(tid,diseasename);
                 builder.add(LR);
             }
@@ -69,6 +79,22 @@ public class HpoCase {
         }
     }
 
+    public int getTotalResultCount() {
+        return results.size();
+    }
+
+
+    public int getRank(String diseasename){
+       Collections.sort(results);
+        ;
+        int rank=0;
+        for (TestResult r: results){
+            rank++;
+            if (r.getDiseasename().equals(diseasename)) { return rank; }
+        }
+        return rank;
+
+    }
 
     public void outputResults() {
         Collections.sort(results);
@@ -77,50 +103,10 @@ public class HpoCase {
         }
     }
 
-    /**
-     * In this prototype stage, we expect the input file to be like this
-     * <pre>
-     *  OMIM:108500
-     * HP:0006855
-     * HP:0000651
-     * HP:0010545
-     * HP:0001260
-     * HP:0001332
-     * </pre>
-     * @param path
-     */
-    private void parseCasedata(String path) {
-         Map<TermId,HpoTerm> mp= hpoOntology.getTermMap();
-         Map<String,TermId> string2termMap=new HashMap<>();
-         for (TermId tid : mp.keySet()) {
-             string2termMap.put(tid.getIdWithPrefix(),tid);
-         }
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(path));
-            String line;
-            while ((line=br.readLine())!= null) {
-                //System.out.println(line);
-                if (line.startsWith("OMIM")) {
-                    this.disease=line.trim();
-                } else if (line.startsWith("HP")) {
-                    if (string2termMap.containsKey(line.trim())) {
-                        hpoTerms.add(string2termMap.get(line.trim()));
-                    } else {
-                        logger.error(String.format("Could not identify term \"%s\" ",line.trim()));
-                        continue;
-                    }
-                }
-            }
-            br.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
 
     public int getNumberOfAnnotations() {
-        return hpoTerms.size();
+        return observedAbnormalities.size();
     }
 
 

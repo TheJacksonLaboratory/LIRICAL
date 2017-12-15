@@ -38,6 +38,15 @@ public class ImmutableTermIdWithMetadata implements TermIdWithMetadata {
         this.onset=onset!=null?onset:DEFAULT_HPO_ONSET;
     }
 
+
+    public ImmutableTermIdWithMetadata(TermId t) {
+        this.termId=t;
+        this.frequency = DEFAULT_HPO_FREQUENCY;
+        this.onset=DEFAULT_HPO_ONSET;
+    }
+
+
+
     /**
      * @return The annotated {@link TermId}.
      */

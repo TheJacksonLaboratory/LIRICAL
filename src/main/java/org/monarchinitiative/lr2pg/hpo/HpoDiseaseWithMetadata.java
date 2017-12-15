@@ -74,6 +74,9 @@ public final class HpoDiseaseWithMetadata {
         return name;
     }
 
+    /**@return the count of the non-negated annotations excluding mode of inheritance. */
+    public int getNumberOfPhenotypeAnnotations() { return this.phenotypicAbnormalities.size(); }
+
     /**
      * @return The list of frequency-annotated phenotypic abnormalities.
      */

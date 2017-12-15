@@ -15,13 +15,13 @@ public class HpoCaseCommand extends Command {
     HpoCase hpocase =null;
 
     public HpoCaseCommand(String hpoPath, String annotationPath, String caseData) {
-        hpocase = new HpoCase(hpoPath,annotationPath,caseData);
+       // hpocase = new HpoCase(hpoPath,annotationPath,caseData);
     }
 
 
     public void execute() {
-        hpocase.calculateLikelihoodRatios();
-        hpocase.outputResults();
+        //pocase.outputResults();
+        System.err.println("TODO REFACTOR ME");
     }
 
 }

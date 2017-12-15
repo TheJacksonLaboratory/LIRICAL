@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.command.Command;
 import org.monarchinitiative.lr2pg.command.DownloadCommand;
+import org.monarchinitiative.lr2pg.command.SimulateCasesCommand;
 
 public class CommandParser {
     private static final Logger logger = LogManager.getLogger();
@@ -15,6 +16,8 @@ public class CommandParser {
     private String patientAnnotations=null;
     /** Path to directory where we will download the needed files. */
     private String dataDownloadDirectory=null;
+    /** This is where we download the files to by default (otherwise, specify {@code -f <arg>}). */
+    private static final String DEFAULT_DATA_DOWNLOAD_DIRECTORY="data";
 
     private String mycommand=null;
 
@@ -67,11 +70,15 @@ public class CommandParser {
 
             if (mycommand.equals("download")) {
                 if (this.dataDownloadDirectory == null) {
-                    System.out.println("Will download to the default location: \"data\"");
-                    this.dataDownloadDirectory="data";
+                    this.dataDownloadDirectory=DEFAULT_DATA_DOWNLOAD_DIRECTORY;
                 }
                 logger.warn(String.format("Download command to %s",dataDownloadDirectory));
                 this.command=new DownloadCommand(dataDownloadDirectory);
+            } else if (mycommand.equals("simulate")) {
+                if (this.dataDownloadDirectory == null) {
+                    this.dataDownloadDirectory=DEFAULT_DATA_DOWNLOAD_DIRECTORY;
+                }
+                this.command=new SimulateCasesCommand(this.dataDownloadDirectory);
             } else {
                 printUsage(String.format("Did not recognize command: %s", mycommand));
             }
