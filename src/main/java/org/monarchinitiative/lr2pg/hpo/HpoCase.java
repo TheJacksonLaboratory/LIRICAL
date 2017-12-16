@@ -55,7 +55,11 @@ public class HpoCase {
         results=new ArrayList<>();
     }
 
-
+    /**
+     * Calculate the likelihood ratio for the diagnosis of each disease in {@link #disease2TermFrequencyMap}
+     * given the observed phenotypic abnormalities in {@link #observedAbnormalities}. Place the results into
+     * {@link #results}.
+     */
     public void calculateLikelihoodRatios() {
         Iterator<String> it = disease2TermFrequencyMap.getDiseaseNameIterator();
         while (it.hasNext()) {
@@ -65,11 +69,11 @@ public class HpoCase {
                 double LR = disease2TermFrequencyMap.getLikelihoodRatio(tid,diseasename);
                 builder.add(LR);
             }
-            TestResult result = new TestResult(builder,diseasename);
+            TestResult result = new TestResult(builder.build(),diseasename);
             results.add(result);
         }
     }
-
+    /** @return the total number of tests performed. */
     public int getTotalResultCount() {
         return results.size();
     }
@@ -82,7 +86,7 @@ public class HpoCase {
      */
     public int getRank(String diseasename){
        Collections.sort(results,Collections.reverseOrder());
-        ;
+
         int rank=0;
         for (TestResult r: results){
             rank++;
@@ -93,9 +97,11 @@ public class HpoCase {
     }
 
     public void outputResults() {
-        Collections.sort(results);
+        Collections.sort(results,Collections.reverseOrder());
+        int rank=0;
         for (TestResult r: results){
-            System.out.println(r.toString());
+            rank++;
+            System.out.println(rank + ") "+ r.toString());
         }
     }
 

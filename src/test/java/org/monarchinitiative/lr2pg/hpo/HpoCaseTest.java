@@ -1,6 +1,6 @@
 package org.monarchinitiative.lr2pg.hpo;
 
-import com.github.phenomics.ontolib.formats.hpo.HpoFrequency;
+
 import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.*;
@@ -12,18 +12,16 @@ import org.junit.Test;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class HpoCaseTest {
     private static final Logger logger = LogManager.getLogger();
-
-
+    /** Name of the disease we are simulating in this test, i.e., OMIM:108500. */
+    private static String diseasename="108500";
     private static HpoCase hpocase;
 
     @BeforeClass
@@ -41,7 +39,7 @@ public class HpoCaseTest {
         Disease2TermFrequency d2fmap=new Disease2TermFrequency(phenotypeSubOntology,inheritanceSubontology,diseaseMap);
         String caseFile = classLoader.getResource("HPOTerms").getFile();
 
-        String diseasename="OMIM:108500";
+        /* these are the phenpotypic abnormalties of our "case" */
         TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
         ImmutableTermIdWithMetadata t1 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0006855"));
         ImmutableTermIdWithMetadata t2 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0000651"));
@@ -50,7 +48,6 @@ public class HpoCaseTest {
         ImmutableTermIdWithMetadata t5 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0001332"));
         ImmutableList.Builder<TermIdWithMetadata> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
-
 
         hpocase = new HpoCase(phenotypeSubOntology,d2fmap,diseasename,builder.build());
     }
@@ -62,7 +59,7 @@ public class HpoCaseTest {
     }
 
     /**
-     * Our test file has
+     * Our test case has
      * OMIM:108500
      HP:0006855
      HP:0000651
@@ -79,7 +76,9 @@ public class HpoCaseTest {
     @Test
     public void testPipeline() {
         hpocase.calculateLikelihoodRatios();
-        hpocase.outputResults();
-        assertEquals(1,1);
+        int expected=1;
+       // hpocase.outputResults();
+        int actual=hpocase.getRank(diseasename);
+        assertEquals(expected ,actual);
     }
 }

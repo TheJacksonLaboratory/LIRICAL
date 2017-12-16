@@ -32,7 +32,7 @@ public class TestResultTest {
         // we obtain a test result with 60% sensitivity and 97% specifity
         double LR1 = LikelihoodRatio.ratio(0.60, 0.97);
         builder.add(LR1);
-        tresult = new TestResult(builder, diseasename);
+        tresult = new TestResult(builder.build(), diseasename);
         // There should be a LR of 20 after just one test
         assertEquals(1, tresult.getNumberOfTests());
         // There should be a LR of 20
@@ -65,7 +65,7 @@ public class TestResultTest {
         // IOP: (50% sensitivity and 92% specificity[9])
         double LR2 = LikelihoodRatio.ratio(0.50, 0.92);
         builder.add(LR2);
-        tresult = new TestResult(builder, diseasename);
+        tresult = new TestResult(builder.build(), diseasename);
         // the pretest odds are the same as with the first test because they are based only on
         // the population prevalence.
         double expectedPretestOdds = 0.02564103;
@@ -94,7 +94,7 @@ public class TestResultTest {
         double LR3 = LikelihoodRatio.ratio(0.60, 0.97);
         builder.add(LR3);
 
-        tresult = new TestResult(builder,diseasename);
+        tresult = new TestResult(builder.build(),diseasename);
          //PretestOdds = pretest prob / (1-pretest prob) = 0.95 / 0.05 = 19.0
         double expectedPretestOdds = 0.0256410;
         Assert.assertEquals(expectedPretestOdds, tresult.pretestodds(prevalence), EPSILON);

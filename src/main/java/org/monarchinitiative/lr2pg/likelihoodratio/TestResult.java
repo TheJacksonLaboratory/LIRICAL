@@ -2,6 +2,7 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  * @author <a href="mailto:vida.ravanmehr@jax.org">Vida Ravanmehr</a>
- * @version 0.2.1 (2017-11-24)
+ * @version 0.2.2 (2017-12-15)
  */
 public class TestResult implements Comparable<TestResult> {
 
@@ -24,26 +25,24 @@ public class TestResult implements Comparable<TestResult> {
      * that is tested for the {@link org.monarchinitiative.lr2pg.hpo.HpoCase} object.
      */
     private ImmutableList<Double> results;
-
+    /** TODO document me! */
     private double compositeLR;
-
+    /** The name of the disease that we are testing for this time. */
     private final String diseasename;
 
 
-    public TestResult(ImmutableList.Builder builder, String name) {
-        results = builder.build();
+    public TestResult(ImmutableList<Double> reslist, String name) {
+        results = reslist;
         diseasename = name;
         calculateCompositeLikelihoodRatio();
     }
 
-
+    /** @return the composite likelihood ratio (product of the LRs of the individual tests). */
     public double getCompositeLR() {
         return compositeLR;
     }
-
-    public int getNumberOfTests() {
-        return results.size();
-    }
+    /** @return the total count of tests performed. */
+    public int getNumberOfTests() { return results.size();  }
 
     /**
      * TODO Should this be a class variable?
