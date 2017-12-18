@@ -174,7 +174,7 @@ public class HpoAnnotation2DiseaseParser {
 
     private AnnotationLine parseAnnotationLine(String line) {
         String A[]=line.split("\t");
-        if (A.length != 14) {
+        if (A.length < 14) {
             logger.error(String.format("Malformed annotation line with %d (instead of 14) fields: %s",A.length,line ));
             return null;
         }
