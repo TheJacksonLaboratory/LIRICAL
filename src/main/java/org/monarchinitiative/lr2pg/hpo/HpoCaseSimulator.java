@@ -92,6 +92,11 @@ public class HpoCaseSimulator {
         int LIMIT=1000;
         Map<Integer,Integer> ranks=new HashMap<>();
         for (String diseasename : diseaseMap.keySet()) {
+            HpoDiseaseWithMetadata disease = diseaseMap.get(diseasename);
+            if (disease.getNumberOfPhenotypeAnnotations()==0) {
+                logger.trace(String.format("Skipping disease %s because it has no phenotypic annotations", disease.getName() ));
+                continue;
+            }
             int rank=simulateCase(diseasename);
             if (!ranks.containsKey(rank)) {
                 ranks.put(rank,0);
@@ -129,16 +134,16 @@ public class HpoCaseSimulator {
         return tidm;
     }
 
-    private Set<TermIdWithMetadata> getNTerms( int desiredsize,List<TermIdWithMetadata> abnormalities) {
+    private Set<TermIdWithMetadata> getNTerms( int desiredsize,List<TermIdWithMetadata> abnormalities) throws  Exception {
         Set<TermIdWithMetadata> rand=new HashSet<>();
         int maxindex = abnormalities.size();
         do {
-            try {
+//            try {
                 int r = (int) Math.floor(maxindex * Math.random());
                 r = Math.max(0, r);
                 TermIdWithMetadata t = abnormalities.get(r);
                 rand.add(t);
-            } catch (Exception e) {e.printStackTrace();}
+//            } catch (Exception e) {e.printStackTrace();}
         } while (rand.size()<desiredsize);
         return rand;
     }
@@ -159,9 +164,14 @@ public class HpoCaseSimulator {
         List<TermIdWithMetadata> abnormalities = disease.getPhenotypicAbnormalities();
 
         ImmutableList.Builder<TermIdWithMetadata> builder = new ImmutableList.Builder<>();
-        builder.addAll(getNTerms(n_terms,abnormalities));
+        try {
+            builder.addAll(getNTerms(n_terms, abnormalities));
+        } catch (Exception e) {
+            logger.error("exception with diseases " + diseasename);
+            logger.error(disease.toString());
+        }
 
-        for (int i=0;i<n_terms;i++) {
+        for (int i=0;i<n_n_random_terms_per_case;i++) {
             TermIdWithMetadata t = getRandomTerm();
             builder.add(t);
         }

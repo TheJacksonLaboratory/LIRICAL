@@ -179,7 +179,12 @@ public final class HpoDiseaseWithMetadata {
 
     @Override
     public String toString() {
-        return "HpoDisease [name=" + name + ", phenotypicAbnormalities=" + phenotypicAbnormalities
+        StringBuilder sb = new StringBuilder();
+        for (TermIdWithMetadata t : phenotypicAbnormalities) {
+            sb.append("\t" + t + "\n");
+        }
+
+        return "HpoDisease [name=" + name + ", phenotypicAbnormalities=\n" + sb.toString()
                 + ", modesOfInheritance=" + modesOfInheritance + "]";
     }
 
