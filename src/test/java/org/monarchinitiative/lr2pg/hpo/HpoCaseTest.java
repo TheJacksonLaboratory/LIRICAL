@@ -37,7 +37,7 @@ public class HpoCaseTest {
         HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationPath,phenotypeSubOntology,inheritanceSubontology);
         Map<String,HpoDiseaseWithMetadata> diseaseMap=annotationParser.getDiseaseMap();
         Disease2TermFrequency d2fmap=new Disease2TermFrequency(phenotypeSubOntology,inheritanceSubontology,diseaseMap);
-        String caseFile = classLoader.getResource("HPOTerms").getFile();
+        //String caseFile = classLoader.getResource("HPOTerms").getFile();
 
         /* these are the phenpotypic abnormalties of our "case" */
         TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");

@@ -73,6 +73,15 @@
             <version>1.4</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/cobertura-maven-plugin -->
+        <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>cobertura-maven-plugin</artifactId>
+            <version>2.7</version>
+            <scope>test</scope>
+        </dependency>
+
+
         <!-- End of libraries for GUI testing -->
 
     </dependencies>
@@ -205,7 +214,15 @@
                     </archive>
                 </configuration>
             </plugin>
+
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.7</version>
+            </plugin>
         </plugins>
+
     </build>
 
 </project>

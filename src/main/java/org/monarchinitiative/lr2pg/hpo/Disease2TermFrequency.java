@@ -5,6 +5,7 @@ import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.Ontology;
 import com.github.phenomics.ontolib.ontology.data.TermId;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
@@ -12,9 +13,7 @@ import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 import util.Pair;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Creates a map from the {@code phenotype_annotation.tab} file that relates the
@@ -88,9 +87,14 @@ public class Disease2TermFrequency {
         return this.diseaseMap.keySet().iterator();
     }
 
+
+
+
+
     /**
      * Initialize the {@link #hpoTerm2OverallFrequency} object that has the background frequencies of each of the
      * HPO terms in the ontology.
+     * todo refactor
      */
     private void initializeFrequencyMap() {
         Map<TermId, Double> mp = new HashMap<>();
@@ -101,8 +105,13 @@ public class Disease2TermFrequency {
                 if (! mp.containsKey(tid)) {
                     mp.put(tid,0.0);
                 }
-                Double cumulativeFreq = mp.get(tid) + tidm.getFrequency().upperBound();
-                mp.put(tid,cumulativeFreq);
+                double delta = tidm.getFrequency().upperBound();
+                Set<TermId> ancs =this.phenotypeSubOntology.getAncestorTermIds(tid);
+                for (TermId at : ancs) {
+                    if (! mp.containsKey(at)) mp.put(at,0.0);
+                    double cumulativeFreq = mp.get(at) + delta;
+                    mp.put(at, cumulativeFreq);
+                }
             }
         }
         // Now we need to normalize by the number of diseases.

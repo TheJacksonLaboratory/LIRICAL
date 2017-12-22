@@ -68,7 +68,7 @@ public class HpoCaseSimulator {
             HpoOnset.NEONATAL_ONSET,
             HpoOnset.INFANTILE_ONSET,
             HpoOnset.CHILDHOOD_ONSET,
-            HpoOnset. JUVENILE_ONSET,
+            HpoOnset.JUVENILE_ONSET,
             HpoOnset.ADULT_ONSET,
             HpoOnset.YOUNG_ADULT_ONSET,
             HpoOnset.MIDDLE_AGE_ONSET,
