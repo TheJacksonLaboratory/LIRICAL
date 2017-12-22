@@ -8,12 +8,14 @@ import com.github.phenomics.ontolib.ontology.data.*;
 import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.monarchinitiative.lr2pg.LR2PGException;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * A simulator that similates cases from the {@link HpoDiseaseWithMetadata} objects by choosing a subset of terms
@@ -76,13 +78,11 @@ public class HpoCaseSimulator {
 
 
 
-    public HpoCaseSimulator(String datadir)  {
+    public HpoCaseSimulator(String datadir) throws LR2PGException {
         try {
             inputHpoOntologyAndAnnotations(datadir);
         } catch (Exception e) {
-            logger.trace("Could not input HPO data");
-            e.printStackTrace();
-            System.exit(1); // todo exception
+            throw new LR2PGException(e.getMessage());
         }
     }
 
@@ -134,17 +134,15 @@ public class HpoCaseSimulator {
         return tidm;
     }
 
-    private Set<TermIdWithMetadata> getNTerms( int desiredsize,List<TermIdWithMetadata> abnormalities) throws  Exception {
+    private Set<TermIdWithMetadata> getNTerms( int desiredsize,List<TermIdWithMetadata> abnormalities)  {
         Set<TermIdWithMetadata> rand=new HashSet<>();
-        int maxindex = abnormalities.size();
-        do {
-//            try {
-                int r = (int) Math.floor(maxindex * Math.random());
-                r = Math.max(0, r);
-                TermIdWithMetadata t = abnormalities.get(r);
-                rand.add(t);
-//            } catch (Exception e) {e.printStackTrace();}
-        } while (rand.size()<desiredsize);
+        if (abnormalities.size()==0) return rand; // should never happen
+        if (abnormalities.size()==1) return new HashSet<TermIdWithMetadata>(abnormalities);
+        int maxindex = abnormalities.size()-1;
+        int nTerms=Math.min(maxindex,desiredsize);
+        // get maxindex distinct random integers that will be our random index values.
+        int[] rdmidx =  ThreadLocalRandom.current().ints(0, maxindex).distinct().limit(nTerms).toArray();
+        Arrays.stream(rdmidx).forEach( i -> rand.add(abnormalities.get(i)));
         return rand;
     }
 
@@ -158,17 +156,15 @@ public class HpoCaseSimulator {
 
         int n_terms=Math.min(disease.getNumberOfPhenotypeAnnotations(),n_terms_per_case);
         int n_random=Math.min(n_terms,n_n_random_terms_per_case);
-//        logger.trace(String.format("Performing simulation on %s with %d randomly chosen terms and %d noise terms",disease.getName(),
-//                n_terms,n_random));
-
+        //logger.trace(String.format("Performing simulation on %s with %d randomly chosen terms and %d noise terms",disease.getName(), n_terms,n_random));
         List<TermIdWithMetadata> abnormalities = disease.getPhenotypicAbnormalities();
-
         ImmutableList.Builder<TermIdWithMetadata> builder = new ImmutableList.Builder<>();
         try {
             builder.addAll(getNTerms(n_terms, abnormalities));
         } catch (Exception e) {
             logger.error("exception with diseases " + diseasename);
             logger.error(disease.toString());
+            logger.error(e.toString());
         }
 
         for (int i=0;i<n_n_random_terms_per_case;i++) {

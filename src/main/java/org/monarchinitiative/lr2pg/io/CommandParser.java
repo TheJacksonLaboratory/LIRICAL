@@ -47,7 +47,6 @@ public class CommandParser {
                 printUsage("command missing");
             } else {
                 mycommand = category[0];
-                logger.trace(String.format("I GOT COMMANT %s",mycommand));
             }
             if (commandLine.getArgs().length < 1) {
                 printUsage("no arguments passed");
