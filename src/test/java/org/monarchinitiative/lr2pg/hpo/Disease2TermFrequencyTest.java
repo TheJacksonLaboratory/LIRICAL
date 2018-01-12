@@ -70,4 +70,18 @@ public class Disease2TermFrequencyTest {
         double expected = (double)1/196;
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
     }
+
+    @Test
+    public void testFrequency2() {
+        ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0001385"); //AURICULOOSTEODYSPLASIA
+        double expected = (double)1/196;
+        assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
+    }
+
+    //@Test
+    /*public void testFrequency3() {
+        ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000006"); //
+        double expected = (double)1/196;
+        assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
+    }*/
 }

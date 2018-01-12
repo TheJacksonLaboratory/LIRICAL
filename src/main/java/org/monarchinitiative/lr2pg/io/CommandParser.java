@@ -105,7 +105,7 @@ public class CommandParser {
     {
         final Options gnuOptions = new Options();
         gnuOptions.addOption("o", "hpo", true, "HPO OBO file path")
-                .addOption("d", "download", true, "path of direcotry to download files")
+                .addOption("d", "download", true, "path of directory to download files")
                 .addOption("i","patient-hpo-terms",true, "list of HPO terms for the patient")
                 .addOption("a", "annotations", true, "Annotation file path");
         return gnuOptions;
@@ -123,7 +123,7 @@ public class CommandParser {
         final Options options = constructOptions();
         usageFormatter.printUsage(writer, 120, applicationName, options);
         writer.println("\twhere command is one of download,....");
-        writer.println("\t- download [-d direcotry]: Download neeeded files to directory at (-d).");
+        writer.println("\t- download [-d directory]: Download needed files to directory at (-d).");
         writer.close();
         System.exit(0);
     }

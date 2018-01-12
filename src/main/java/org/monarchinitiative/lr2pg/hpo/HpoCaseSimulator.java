@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * A simulator that similates cases from the {@link HpoDiseaseWithMetadata} objects by choosing a subset of terms
+ * A simulator that simulates cases from the {@link HpoDiseaseWithMetadata} objects by choosing a subset of terms
  * and adding noise terms.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  * @version 0.0.1
@@ -46,7 +46,7 @@ public class HpoCaseSimulator {
 
     private static HpoFrequency defaultFrequency=null;
 
-    private static final int DEFAULT_N_TERMS_PER_CASE=4;
+    private static final int DEFAULT_N_TERMS_PER_CASE=3;
 
     private int n_terms_per_case = DEFAULT_N_TERMS_PER_CASE;
 
@@ -93,20 +93,22 @@ public class HpoCaseSimulator {
         Map<Integer,Integer> ranks=new HashMap<>();
         for (String diseasename : diseaseMap.keySet()) {
             HpoDiseaseWithMetadata disease = diseaseMap.get(diseasename);
-            if (disease.getNumberOfPhenotypeAnnotations()==0) {
-                logger.trace(String.format("Skipping disease %s because it has no phenotypic annotations", disease.getName() ));
+            if (disease.getNumberOfPhenotypeAnnotations() == 0) {
+                logger.trace(String.format("Skipping disease %s because it has no phenotypic annotations", disease.getName()));
                 continue;
             }
-            int rank=simulateCase(diseasename);
+            int rank = simulateCase(diseasename);
             if (!ranks.containsKey(rank)) {
-                ranks.put(rank,0);
+                ranks.put(rank, 0);
             }
-            ranks.put(rank,ranks.get(rank)+1);
-            if (c++>LIMIT) break; // for testing just simulate one disease
+            ranks.put(rank, ranks.get(rank) + 1);
+            if (c++ > LIMIT) break; // for testing just simulate one disease
+
         }
         for (int r:ranks.keySet()) {
             System.out.println(String.format("Rank=%d: count:%d (%.1f%%)",r,ranks.get(r),(double)100.0*ranks.get(r)/LIMIT));
         }
+
     }
 
 
@@ -167,10 +169,20 @@ public class HpoCaseSimulator {
             logger.error(e.toString());
         }
 
-        for (int i=0;i<n_n_random_terms_per_case;i++) {
-            TermIdWithMetadata t = getRandomTerm();
-            builder.add(t);
-        }
+       /* int maxSize = phenotypeSubOntology.countAllTerms();
+         int [] rndNumbers = ThreadLocalRandom.current().ints(0, maxSize).distinct().limit(n_random).toArray();
+            for (int i=0;i<rndNumbers.length;++i){
+                TermId tid = (TermId) phenotypeSubOntology.getAllTermIds().toArray()[rndNumbers[i]];
+                HpoFrequency randomFrequency=getRandomFrequency();
+                HpoOnset randomOnset=getRandomOnset();
+                // logger.trace(String.format("get random term freq=%s and onset=%s",randomFrequency.toTermId().getIdWithPrefix(),randomOnset.toString()));
+                TermIdWithMetadata tidm = new ImmutableTermIdWithMetadata(tid, randomFrequency, randomOnset);
+                builder.add( tidm);
+            }*/
+          for(int i=0;i<n_random;i++){
+                TermIdWithMetadata t = getRandomTerm();
+                 builder.add(t);
+          }
         ImmutableList<TermIdWithMetadata> termlist = builder.build();
 //        for (TermIdWithMetadata t : termlist) {
 //            System.out.println(t.toString());
@@ -186,17 +198,10 @@ public class HpoCaseSimulator {
 
 
 
-
-
-
-
-
     public void debugPrint() {
         logger.trace(String.format("Got %d terms and %d diseases",phenotypeSubOntology.getAllTermIds().size(),
                 diseaseMap.size()));
     }
-
-
 
 
     private void inputHpoOntologyAndAnnotations(String datadir) throws Exception {

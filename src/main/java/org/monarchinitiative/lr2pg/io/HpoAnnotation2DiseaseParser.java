@@ -41,7 +41,6 @@ public class HpoAnnotation2DiseaseParser {
 
 
 
-
     public HpoAnnotation2DiseaseParser(String annotationFile, Ontology<HpoTerm, HpoTermRelation> phenotypeOntology,
                                        Ontology<HpoTerm, HpoTermRelation> inheritanceOntology){
         this.annotationFilePath =annotationFile;
@@ -61,7 +60,7 @@ public class HpoAnnotation2DiseaseParser {
      */
     private void  parseAnnotation() {
         logger.trace(String.format("Parsing annotations at %s",annotationFilePath));
-        // First stage of parsing is to get the lines parsed and sorted acccording to disease.
+        // First stage of parsing is to get the lines parsed and sorted according to disease.
         Map<String,List<AnnotationLine>> disease2AnnotLineMap = new HashMap<>();
 
         try {
