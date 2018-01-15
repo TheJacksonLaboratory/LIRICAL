@@ -78,10 +78,33 @@ public class Disease2TermFrequencyTest {
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
     }
 
-    //@Test
-    /*public void testFrequency3() {
+   // @Test
+    //Map did not contain data for term HP:0000006??? (Autosomal dominant inheritance)
+   /* public void testFrequency3() {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000006"); //
         double expected = (double)1/196;
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
     }*/
+
+    @Test
+    public void testFrequency4() {
+        ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0001852");
+        double expected = (double)1/196;
+        assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
+    }
+
+    //@Test
+    //THere is no HP:0000008 in small_phenoannot.tab, but the Actual background frequency is :0.04081632653061224
+    /*public void testFrequency5() {
+        ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000008");
+        double expected = (double)0/196;
+        assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
+    }*/
+
+    @Test
+    public void testFrequency6() {
+        ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0004322");//SAETHRE-CHOTZEN SYNDROME; SCS;;ACROCEPHALOSYNDACTYLY
+        double expected = (double)22/196;
+        assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
+    }
 }
