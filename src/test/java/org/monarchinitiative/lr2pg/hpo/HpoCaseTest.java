@@ -77,7 +77,7 @@ public class HpoCaseTest {
     public void testPipeline() {
         hpocase.calculateLikelihoodRatios();
         int expected=1;
-       // hpocase.outputResults();
+       hpocase.outputResults();
         int actual=hpocase.getRank(diseasename);
         assertEquals(expected ,actual);
     }

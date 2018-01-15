@@ -87,4 +87,43 @@ public class HPOOntologyParserTest {
         expected.add(abnMiddleEar);
         Assert.assertEquals(expected,ancTermIds);
     }
+    /** The term for "Autosomal dominant inheritance" is in the inheritance subontology and not the phenotype subontology. */
+    @Test
+    public void testInCorrectSubontology3() {
+        TermId sporadic = new ImmutableTermId(hpoPrefix,"0000006");
+        Assert.assertTrue(inheritanceSubontology.getNonObsoleteTermIds().contains(sporadic));
+        Assert.assertFalse(phenotypeSubOntology.getNonObsoleteTermIds().contains(sporadic));
+    }
+
+    /** The term for "Functional abnormality of the bladder" is in the phenotype subontology and not the inheritance subontology. */
+    @Test
+    public void testInCorrectSubontology4() {
+        TermId sporadic = new ImmutableTermId(hpoPrefix,"0000009");
+        Assert.assertFalse(inheritanceSubontology.getNonObsoleteTermIds().contains(sporadic));
+        Assert.assertTrue(phenotypeSubOntology.getNonObsoleteTermIds().contains(sporadic));
+    }
+
+    /**
+     * Get the ancestors of HP:0000009
+     */
+    @Test
+    public void testGetAncestors2() {
+        TermId abnFuncBladder = new ImmutableTermId(hpoPrefix,"0000009");
+        TermId abnBladder = new ImmutableTermId(hpoPrefix,"0000014");
+        TermId abnlowerUrinary = new ImmutableTermId(hpoPrefix,"0010936");
+        TermId abnormalityUrinary = new ImmutableTermId(hpoPrefix,"0000079");
+        TermId abnormalityGenitourinary = new ImmutableTermId(hpoPrefix,"0000119");
+        TermId phenotypicAbnormality = new ImmutableTermId(hpoPrefix,"0000118");
+        Set<TermId> ancTermIds = phenotypeSubOntology.getAncestorTermIds(abnFuncBladder);
+        Set<TermId> expected = new HashSet<TermId>();
+        expected.add(abnlowerUrinary);
+        expected.add(abnBladder);
+        expected.add(abnFuncBladder);
+        expected.add(abnormalityUrinary);
+        expected.add(abnormalityGenitourinary);
+        expected.add(phenotypicAbnormality);
+        Assert.assertEquals(expected,ancTermIds);
+    }
+
+
 }

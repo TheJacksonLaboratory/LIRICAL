@@ -44,9 +44,12 @@ public class LR2PG {
 
     static public void main(String [] args) {
         logger.trace("MAIN");
+        long startTime = System.currentTimeMillis();
         CommandParser cmdline= new CommandParser(args);
         Command command = cmdline.getCommand();
         command.execute();
+        long stopTime = System.currentTimeMillis();
+        System.out.println("Elapsed time was " + (stopTime - startTime)*(1.0)/1000 + " seconds.");
 
 
 //        lr2pg.getPatientHPOTermsFromFile(fileName);
@@ -54,9 +57,6 @@ public class LR2PG {
 //        lr2pg.calculateLikelihoodRatio();
 
     }
-
-
-
 
 
 
