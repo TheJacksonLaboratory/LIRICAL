@@ -87,4 +87,21 @@ public class HPOOntologyParserTest {
         expected.add(abnMiddleEar);
         Assert.assertEquals(expected,ancTermIds);
     }
+    /** The term for "Autosomal dominant inheritance" is in the inheritance subontology and not the phenotype subontology. */
+    @Test
+    public void testInCorrectSubontology3() {
+        TermId sporadic = new ImmutableTermId(hpoPrefix,"0000006");
+        Assert.assertTrue(inheritanceSubontology.getNonObsoleteTermIds().contains(sporadic));
+        Assert.assertFalse(phenotypeSubOntology.getNonObsoleteTermIds().contains(sporadic));
+    }
+
+    /** The term for "Functional abnormality of the bladder" is in the phenotype subontology and not the inheritance subontology. */
+    @Test
+    public void testInCorrectSubontology4() {
+        TermId sporadic = new ImmutableTermId(hpoPrefix,"0000009");
+        Assert.assertFalse(inheritanceSubontology.getNonObsoleteTermIds().contains(sporadic));
+        Assert.assertTrue(phenotypeSubOntology.getNonObsoleteTermIds().contains(sporadic));
+    }
+
+
 }
