@@ -88,6 +88,8 @@ public class Disease2TermFrequencyTest {
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
     }*/
 
+
+
     @Test
     public void testFrequency4() {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0001852");
@@ -114,4 +116,15 @@ public class Disease2TermFrequencyTest {
         double expected = (double)12/196;
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
     }*/
+
+    /**
+     * Map did not contain data for term HP:0000006??? (Autosomal dominant inheritance) Is it because this term belongs to inheritance subontology or not?
+     */
+
+    @Test
+    public void testFrequency7() {
+        ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000005"); //
+        double expected = (double)1/196;
+        assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
+    }
 }
