@@ -78,8 +78,10 @@ public class Disease2TermFrequencyTest {
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
     }
 
-   // @Test
-    //Map did not contain data for term HP:0000006??? (Autosomal dominant inheritance) Is it because this term belongs to inheritance subontology or not?
+    /**
+     * Map did not contain data for term HP:0000006??? (Autosomal dominant inheritance) Is it because this term belongs to inheritance subontology or not?
+     */
+    //@Test
    /* public void testFrequency3() {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000006"); //
         double expected = (double)1/196;
@@ -93,16 +95,20 @@ public class Disease2TermFrequencyTest {
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
     }
 
+    /**
+     * There is no HP:0000008 in small_phenoannot.tab, but the Actual background frequency is :0.04081632653061224
+     */
     //@Test
-    //THere is no HP:0000008 in small_phenoannot.tab, but the Actual background frequency is :0.04081632653061224
     /*public void testFrequency5() {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000008");
         double expected = (double)0/196;
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
     }*/
 
+    /**
+     * Frequency of term in diseases in small_phenoannot.tab and in their parents? There are only 12 appearances of 0004322 in small_phenoannot.tab.
+     */
     //@Test
-    //Frequency of term in diseases in small_phenoannot.tab and in their parents? There are only 12 appearances of 0004322 in small_phenoannot.tab.
     /*public void testFrequency6() {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0004322");//SAETHRE-CHOTZEN SYNDROME; SCS;;ACROCEPHALOSYNDACTYLY
         double expected = (double)12/196;
