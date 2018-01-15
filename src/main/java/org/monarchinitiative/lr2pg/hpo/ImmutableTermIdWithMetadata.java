@@ -1,6 +1,7 @@
 package org.monarchinitiative.lr2pg.hpo;
 
 import com.github.phenomics.ontolib.formats.hpo.HpoFrequency;
+import com.github.phenomics.ontolib.ontology.data.ImmutableTermId;
 import com.github.phenomics.ontolib.ontology.data.TermId;
 import com.github.phenomics.ontolib.ontology.data.TermPrefix;
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +42,12 @@ public class ImmutableTermIdWithMetadata implements TermIdWithMetadata {
 
     public ImmutableTermIdWithMetadata(TermId t) {
         this.termId=t;
+        this.frequency = DEFAULT_HPO_FREQUENCY;
+        this.onset=DEFAULT_HPO_ONSET;
+    }
+
+    public ImmutableTermIdWithMetadata(TermPrefix prefix, String id) {
+        this.termId=new ImmutableTermId(prefix,id);
         this.frequency = DEFAULT_HPO_FREQUENCY;
         this.onset=DEFAULT_HPO_ONSET;
     }
