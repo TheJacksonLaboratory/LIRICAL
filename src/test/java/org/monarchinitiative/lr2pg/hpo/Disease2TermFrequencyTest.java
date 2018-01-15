@@ -102,6 +102,7 @@ public class Disease2TermFrequencyTest {
     }*/
 
     @Test
+    //Frequency of term in diseases in small_phenoannot.tab and in their parents?
     public void testFrequency6() {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0004322");//SAETHRE-CHOTZEN SYNDROME; SCS;;ACROCEPHALOSYNDACTYLY
         double expected = (double)22/196;
