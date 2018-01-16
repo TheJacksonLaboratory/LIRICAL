@@ -109,12 +109,12 @@ public class Disease2TermFrequencyTest {
     }*/
 
     /**
-     * Frequency of term in diseases in small_phenoannot.tab and in their parents? There are only 12 appearances of 0004322 in small_phenoannot.tab.
+     *  There are only 12 appearances of 0004322 in small_phenoannot.tab.
      */
     //@Test
     /*public void testFrequency6() {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0004322");//SAETHRE-CHOTZEN SYNDROME; SCS;;ACROCEPHALOSYNDACTYLY
-        double expected = (double)12/196;
+        double expected = (double)22/196;
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
     }*/
 
