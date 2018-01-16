@@ -155,18 +155,22 @@ public class Disease2TermFrequency {
      * disease is not present -- we call this the background frequency.
      * @return the estimate background frequency (note: bf \in [0,1])
      */
-    double getBackgroundFrequency(TermId term) {
-        if (! hpoTerm2OverallFrequency.containsKey(term)) {
-            logger.fatal(String.format("Map did not contain data for term %s",term.getIdWithPrefix() ));
-            String st = term.getId();
+    double getBackgroundFrequency(TermId termId) {
+        if (termId instanceof TermIdWithMetadata) {
+           termId= ((TermIdWithMetadata) termId).getTermId();
+        }
+        if (! hpoTerm2OverallFrequency.containsKey(termId)) {
+            logger.fatal(String.format("Map did not contain data for term %s",termId.getIdWithPrefix() ));
+            String st = termId.getId();
             for (TermId t: hpoTerm2OverallFrequency.keySet()) {
                 String bla = t.getId();
-                System.err.println(t.getIdWithPrefix() + " didnt find " + term.getIdWithPrefix());
-                if (st.equals(bla)) { System.out.println("BLA " + term.getIdWithPrefix()); }
+                //System.err.println(t.getIdWithPrefix() + " didnt find " + term.getIdWithPrefix());
+                if (termId.equals(t)) { System.out.println("term ID equals"); }
+                if (st.equals(bla)) { System.out.println("BLA " + termId.getIdWithPrefix()); }
             }
             System.exit(1);
         }
-        return hpoTerm2OverallFrequency.get(term);
+        return hpoTerm2OverallFrequency.get(termId);
     }
 
 
