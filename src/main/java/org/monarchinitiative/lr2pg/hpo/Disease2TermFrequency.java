@@ -98,6 +98,9 @@ public class Disease2TermFrequency {
      */
     private void initializeFrequencyMap() {
         Map<TermId, Double> mp = new HashMap<>();
+        for (TermId tid : this.phenotypeSubOntology.getTermMap().keySet()) {
+            mp.put(tid,0.0D);
+        }
         ImmutableMap.Builder<TermId, Double> imb = new ImmutableMap.Builder<>();
         for (HpoDiseaseWithMetadata dis: this.diseaseMap.values()) {
             for (TermIdWithMetadata tidm : dis.getPhenotypicAbnormalities()) {
