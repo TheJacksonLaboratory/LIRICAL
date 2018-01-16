@@ -164,13 +164,7 @@ public class Disease2TermFrequency {
         }
         if (! hpoTerm2OverallFrequency.containsKey(termId)) {
             logger.fatal(String.format("Map did not contain data for term %s",termId.getIdWithPrefix() ));
-            String st = termId.getId();
-            for (TermId t: hpoTerm2OverallFrequency.keySet()) {
-                String bla = t.getId();
-                //System.err.println(t.getIdWithPrefix() + " didnt find " + term.getIdWithPrefix());
-                if (termId.equals(t)) { System.out.println("term ID equals"); }
-                if (st.equals(bla)) { System.out.println("BLA " + termId.getIdWithPrefix()); }
-            }
+            // todo throw error
             System.exit(1);
         }
         return hpoTerm2OverallFrequency.get(termId);

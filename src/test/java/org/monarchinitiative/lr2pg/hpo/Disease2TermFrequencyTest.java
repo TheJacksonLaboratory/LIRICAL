@@ -129,14 +129,16 @@ public class Disease2TermFrequencyTest {
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
     }
 
-
+    /** According to HPO Workbench, there are 13 instances of Nystagmus in small_phenoannot.tab and not annotations to
+     * descendents of Nystagmus.
+     */
     @Test
     public void testFrequency8() {
         //Frequency7=Nystagmus
         ImmutableTermId nystagmusId = new ImmutableTermId(HP_PREFIX,"0000639");
         double bf = d2tf.getBackgroundFrequency(nystagmusId);
         System.err.println("background freq = " + bf);
-        double expected = (double)10/196;
+        double expected = (double)12/196;
         assertEquals(expected,d2tf.getBackgroundFrequency(nystagmusId),EPSILON);
     }
 }
