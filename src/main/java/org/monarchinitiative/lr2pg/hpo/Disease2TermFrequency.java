@@ -24,7 +24,7 @@ import java.util.*;
  * the annotation files can have false negatives (i.e., our data is incomplete), or the
  * patient simply has an additional feature.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
- * @version 0.1.1 (2017-11-16)
+ * @version 0.1.2 (2017-11-16)
  */
 public class Disease2TermFrequency {
     private static final Logger logger = LogManager.getLogger();
@@ -98,6 +98,9 @@ public class Disease2TermFrequency {
      */
     private void initializeFrequencyMap() {
         Map<TermId, Double> mp = new HashMap<>();
+        for (TermId tid : this.phenotypeSubOntology.getTermMap().keySet()) {
+            mp.put(tid,0.0D);
+        }
         ImmutableMap.Builder<TermId, Double> imb = new ImmutableMap.Builder<>();
         for (HpoDiseaseWithMetadata dis: this.diseaseMap.values()) {
             for (TermIdWithMetadata tidm : dis.getPhenotypicAbnormalities()) {
@@ -123,6 +126,7 @@ public class Disease2TermFrequency {
             imb.put(me.getKey(),f);
         }
         hpoTerm2OverallFrequency=imb.build();
+        logger.trace("Got data on background frequency for " + hpoTerm2OverallFrequency.size() + " terms");
     }
 
     public double getFrequencyIfNotAnnotated(TermId tid) {
@@ -154,12 +158,22 @@ public class Disease2TermFrequency {
      * disease is not present -- we call this the background frequency.
      * @return the estimate background frequency (note: bf \in [0,1])
      */
-    public double getBackgroundFrequency(TermId term) {
-        if (! hpoTerm2OverallFrequency.containsKey(term)) {
-            logger.fatal(String.format("Map did not contain data for term %s",term.getIdWithPrefix() ));
+    double getBackgroundFrequency(TermId termId) {
+        if (termId instanceof TermIdWithMetadata) {
+           termId= ((TermIdWithMetadata) termId).getTermId();
+        }
+        if (! hpoTerm2OverallFrequency.containsKey(termId)) {
+            logger.fatal(String.format("Map did not contain data for term %s",termId.getIdWithPrefix() ));
+            String st = termId.getId();
+            for (TermId t: hpoTerm2OverallFrequency.keySet()) {
+                String bla = t.getId();
+                //System.err.println(t.getIdWithPrefix() + " didnt find " + term.getIdWithPrefix());
+                if (termId.equals(t)) { System.out.println("term ID equals"); }
+                if (st.equals(bla)) { System.out.println("BLA " + termId.getIdWithPrefix()); }
+            }
             System.exit(1);
         }
-        return hpoTerm2OverallFrequency.get(term);
+        return hpoTerm2OverallFrequency.get(termId);
     }
 
 
@@ -168,17 +182,25 @@ public class Disease2TermFrequency {
     }
 
     public double getLikelihoodRatio(TermId tid, String diseaseName) {
+
         HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
         if (disease==null) {
             logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
             System.exit(1);
         }
-        Pair<TermIdWithMetadata, Integer> pair = disease.getMICAandPathLength(tid,phenotypeSubOntology);
-        if (pair==null) {
-            // There was no ancestor ??
-            return 1.0/(double)diseaseMap.size();
-        }
-        return pair.first.getFrequency().upperBound() /(100.0*pair.second); // see readme!
+        double numerator=getFrequencyOfTermInDisease(diseaseName,tid);
+        double denominator=getBackgroundFrequency(tid);
+        return numerator/denominator;
+//
+//
+//
+//
+//            Pair<TermIdWithMetadata, Integer> pair = disease.getMICAandPathLength(tid,phenotypeSubOntology);
+//            if (pair==null) {
+//                // There was no ancestor ??
+//                return 1.0/(double)diseaseMap.size();
+//            }
+//            return pair.first.getFrequency().upperBound() /(100.0*pair.second); // see readme!
     }
 
 

@@ -29,7 +29,8 @@ public class HpoCaseTest3 {
         private static final Logger logger = LogManager.getLogger();
         /** Name of the disease we are simulating in this test, i.e., OMIM:108500. */
         private static String diseasename="300082";
-        private static HpoCase hpocase;
+    private static  String kniestDysplasia="156550";
+    private static HpoCase hpocase;
 
 
         @BeforeClass
@@ -50,11 +51,20 @@ public class HpoCaseTest3 {
 
         /* these are the phenpotypic abnormalties of our "case" */
             TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
-             ImmutableTermIdWithMetadata t1 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0000707"));
+             ImmutableTermIdWithMetadata t1 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0410009"));
 
             ImmutableList.Builder<TermIdWithMetadata> builder = new ImmutableList.Builder<>();
             builder.add(t1);
-            hpocase = new HpoCase(phenotypeSubOntology,d2fmap,diseasename,builder.build());
+
+            ImmutableList lst = ImmutableList.of(new ImmutableTermIdWithMetadata(HP_PREFIX,"0002812"),
+                    new ImmutableTermIdWithMetadata(HP_PREFIX,"0003521"),
+                    new ImmutableTermIdWithMetadata(HP_PREFIX,"0000541"),
+                    new ImmutableTermIdWithMetadata(HP_PREFIX,"0011800"),
+                    new ImmutableTermIdWithMetadata(HP_PREFIX,"0003015"),
+                    new ImmutableTermIdWithMetadata(HP_PREFIX,"0008271"));
+
+
+            hpocase = new HpoCase(phenotypeSubOntology,d2fmap,kniestDysplasia,lst);
         }
 
         @Test
@@ -63,7 +73,7 @@ public class HpoCaseTest3 {
         }
         @Test
         public void testNumberOfAnnotations() {
-            int expected=1;
+            int expected=6;
             assertEquals(expected,hpocase.getNumberOfAnnotations());
         }
 
@@ -73,9 +83,9 @@ public class HpoCaseTest3 {
         @Test
         public void testPipeline() {
             hpocase.calculateLikelihoodRatios();
-            int expected=4;
+            int expected=1;
             hpocase.outputResults();
-            int actual=hpocase.getRank(diseasename);
+            int actual=hpocase.getRank(kniestDysplasia);
             assertEquals(expected ,actual);
         }
 
