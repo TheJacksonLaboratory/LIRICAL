@@ -16,6 +16,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class Disease2TermFrequencyTest {
 
@@ -118,13 +119,24 @@ public class Disease2TermFrequencyTest {
     }*/
 
     /**
-     * Map did not contain data for term HP:0000006??? (Autosomal dominant inheritance) Is it because this term belongs to inheritance subontology or not?
+     * HP:0000020 (Urinary incontinence) is used twice in small_phenoannot.tab
      */
-
     @Test
     public void testFrequency7() {
-        ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000005"); //
-        double expected = (double)1/196;
+        // Urinary incontinence = HP:0000020
+        ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000020"); //
+        double expected = (double)2/196;
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
+    }
+
+
+    @Test
+    public void testFrequency8() {
+        //Frequency7=Nystagmus
+        ImmutableTermId nystagmusId = new ImmutableTermId(HP_PREFIX,"0000639");
+        double bf = d2tf.getBackgroundFrequency(nystagmusId);
+        System.err.println("background freq = " + bf);
+        double expected = (double)10/196;
+        assertEquals(expected,d2tf.getBackgroundFrequency(nystagmusId),EPSILON);
     }
 }
