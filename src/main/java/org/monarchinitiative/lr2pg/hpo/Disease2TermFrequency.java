@@ -24,7 +24,7 @@ import java.util.*;
  * the annotation files can have false negatives (i.e., our data is incomplete), or the
  * patient simply has an additional feature.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
- * @version 0.1.1 (2017-11-16)
+ * @version 0.1.2 (2017-11-16)
  */
 public class Disease2TermFrequency {
     private static final Logger logger = LogManager.getLogger();
@@ -155,12 +155,13 @@ public class Disease2TermFrequency {
      * disease is not present -- we call this the background frequency.
      * @return the estimate background frequency (note: bf \in [0,1])
      */
-    public double getBackgroundFrequency(TermId term) {
+    double getBackgroundFrequency(TermId term) {
         if (! hpoTerm2OverallFrequency.containsKey(term)) {
             logger.fatal(String.format("Map did not contain data for term %s",term.getIdWithPrefix() ));
             String st = term.getId();
             for (TermId t: hpoTerm2OverallFrequency.keySet()) {
                 String bla = t.getId();
+                System.err.println(t.getIdWithPrefix() + " didnt find " + term.getIdWithPrefix());
                 if (st.equals(bla)) { System.out.println("BLA " + term.getIdWithPrefix()); }
             }
             System.exit(1);

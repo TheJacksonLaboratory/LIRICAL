@@ -30,8 +30,8 @@ import static org.monarchinitiative.lr2pg.likelihoodratio.LikelihoodRatio.HpoFre
  */
 public class HpoCase {
     private static final Logger logger = LogManager.getLogger();
-
-
+    /** The {@link Disease2TermFrequency} has data on each disease. Within this class, we iterate over each disease
+     * in order to get the overall likelihood ratio for the diagnosis*/
     private Disease2TermFrequency disease2TermFrequencyMap=null;
 
     private String disease=null;
@@ -39,7 +39,7 @@ public class HpoCase {
     private List<TermIdWithMetadata> observedAbnormalities;
 
     private Ontology<HpoTerm, HpoTermRelation> hpoOntology=null;
-
+    /** a set of test results -- the evaluation of each HPO term for the disease. */
     private List<TestResult> results;
 
 
@@ -106,7 +106,7 @@ public class HpoCase {
     }
 
 
-
+    /** @return Number of annotations (i.e., HPO Terms) that were observed in this case. */
     public int getNumberOfAnnotations() {
         return observedAbnormalities.size();
     }

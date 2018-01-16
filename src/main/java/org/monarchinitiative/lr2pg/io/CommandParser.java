@@ -7,7 +7,10 @@ import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.command.Command;
 import org.monarchinitiative.lr2pg.command.DownloadCommand;
 import org.monarchinitiative.lr2pg.command.SimulateCasesCommand;
-
+/**
+ * Command line parser designed to generate and initialize {@link Command} objects.
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ */
 public class CommandParser {
     private static final Logger logger = LogManager.getLogger();
     private String hpoPath=null;
