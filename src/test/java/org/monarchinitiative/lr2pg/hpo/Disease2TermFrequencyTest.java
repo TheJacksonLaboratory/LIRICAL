@@ -33,7 +33,6 @@ public class Disease2TermFrequencyTest {
         ClassLoader classLoader = Disease2TermFrequencyTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String annotationPath = classLoader.getResource("small_phenoannot.tab").getFile();
-        //String annotationPath = classLoader.getResource("phenotype_annotation.tab").getFile();
         HpoOntologyParser parser = new HpoOntologyParser(hpoPath);
         parser.parseOntology();
         Ontology<HpoTerm, HpoTermRelation> phenotypeSubOntology = parser.getPhenotypeSubontology();

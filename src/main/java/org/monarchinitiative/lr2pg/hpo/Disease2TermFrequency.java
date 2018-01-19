@@ -118,7 +118,7 @@ public class Disease2TermFrequency {
             }
         }
         // Now we need to normalize by the number of diseases.
-        // We also divide by 100 since the HpoFrequency objects are returning a percentage and not
+        // We also multiply by 100 since the HpoFrequency objects are returning a percentage and not
         // a probability
         double N = (double) getNumberOfDiseases() * 100;
         for (Map.Entry<TermId,Double> me : mp.entrySet()) {
