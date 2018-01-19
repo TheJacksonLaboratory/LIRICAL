@@ -24,8 +24,9 @@ public class Disease2TermFrequencyTest3 {
     private static Disease2TermFrequency d2tf=null;
 
     private static final double EPSILON=0.000001;
+    private static String diseaseName = "100300";
 
-// We test the frequency of an HPO term in a disease.
+// We test the frequency of HPO terms in a disease.
 
     @BeforeClass
     public static void setup() throws IOException {
@@ -63,7 +64,6 @@ public class Disease2TermFrequencyTest3 {
      */
     @Test
     public void testGetFrequencyOfTermInDieases1() {
-        String diseaseName = "100300";
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000965");
         double expected =1.0;
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
@@ -74,19 +74,17 @@ public class Disease2TermFrequencyTest3 {
      */
     @Test
     public void testGetFrequencyOfTermInDieases1_1() {
-        String diseaseName = "100300";
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0010957");
         double expected =0.000510;
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
     }
     /**
-     * The term HP:0004415 is not a phenotype term in the disease 100300. The frequency of term in disease is 0.003061224489795918?
+     * The term HP:0004415 is  a phenotype term in the disease 100300. The frequency of term in disease is 1.
      */
     @Test
     public void testGetFrequencyOfTermInDieases1_3() {
-        String diseaseName = "100300";
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0004415");
-        double expected =0.003061224489795918;
+        double expected =1;
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
     }
     /**
@@ -94,9 +92,8 @@ public class Disease2TermFrequencyTest3 {
      */
     @Test
     public void testGetFrequencyOfTermInDieases1_4() {
-        String diseaseName = "100300";
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0011304");
-        double expected =0.000510;
+        double expected =0.003061224489795918;
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
     }
 
