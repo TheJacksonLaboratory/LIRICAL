@@ -97,7 +97,7 @@ public class CalculatingLikelihoodRatio {
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
     }
 
-    //There are 1 appearances of HP:0001265 in small_phenoannot.tab. The frequency of this term is 1/196.
+    //There is 1 appearance of HP:0001265 in small_phenoannot.tab. The frequency of this term is 1/196.
     @Test
     public void testGetBackgroundFrequency_1() {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0012074");
