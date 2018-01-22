@@ -138,8 +138,7 @@ public class Disease2TermFrequencyTest {
         ImmutableTermId nystagmusId = new ImmutableTermId(HP_PREFIX,"0000639");
         double bf = d2tf.getBackgroundFrequency(nystagmusId);
         System.err.println("background freq = " + bf);
-        //double expected = (double)13/196;
-        double expected = 0.06142857142857143;
+        double expected = (double)12/196;
         assertEquals(expected,d2tf.getBackgroundFrequency(nystagmusId),EPSILON);
     }
 }
