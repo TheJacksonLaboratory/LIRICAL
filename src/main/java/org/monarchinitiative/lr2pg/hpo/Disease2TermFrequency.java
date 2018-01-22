@@ -118,7 +118,7 @@ public class Disease2TermFrequency {
             }
         }
         // Now we need to normalize by the number of diseases.
-        // We also divide by 100 since the HpoFrequency objects are returning a percentage and not
+        // We also multiply by 100 since the HpoFrequency objects are returning a percentage and not
         // a probability
         double N = (double) getNumberOfDiseases() * 100;
         for (Map.Entry<TermId,Double> me : mp.entrySet()) {
@@ -178,23 +178,31 @@ public class Disease2TermFrequency {
     public double getLikelihoodRatio(TermId tid, String diseaseName) {
 
         HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
-        if (disease==null) {
+       if (disease==null) {
             logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
             System.exit(1);
         }
         double numerator=getFrequencyOfTermInDisease(diseaseName,tid);
         double denominator=getBackgroundFrequency(tid);
-        return numerator/denominator;
-//
-//
-//
-//
-//            Pair<TermIdWithMetadata, Integer> pair = disease.getMICAandPathLength(tid,phenotypeSubOntology);
-//            if (pair==null) {
-//                // There was no ancestor ??
-//                return 1.0/(double)diseaseMap.size();
-//            }
-//            return pair.first.getFrequency().upperBound() /(100.0*pair.second); // see readme!
+               return numerator/denominator;
+
+
+
+
+           /*Pair<TermIdWithMetadata, Integer> pair = disease.getMICAandPathLength(tid,phenotypeSubOntology);
+           if (pair==null) {
+               // There was no ancestor ??
+               return 1.0/(double)diseaseMap.size();
+            }*/
+       // double numerator=getFrequencyOfTermInDisease(diseaseName,tid);
+       // double denominator=getBackgroundFrequency(tid);
+       // System.out.println(numerator);
+       // System.out.println(pair.first.getFrequency().upperBound());
+       // System.out.println(denominator);
+       // System.out.println(pair.second);
+       // return pair.first.getFrequency().upperBound()/(100.0*pair.second); // see readme!
+
+
     }
 
 

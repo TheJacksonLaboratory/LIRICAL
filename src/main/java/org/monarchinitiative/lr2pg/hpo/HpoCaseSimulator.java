@@ -46,7 +46,7 @@ public class HpoCaseSimulator {
 
     private static HpoFrequency defaultFrequency=null;
 
-    private static final int DEFAULT_N_TERMS_PER_CASE=3;
+    private static final int DEFAULT_N_TERMS_PER_CASE=4;
 
     private int n_terms_per_case = DEFAULT_N_TERMS_PER_CASE;
 
