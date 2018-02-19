@@ -9,6 +9,7 @@ import com.github.phenomics.ontolib.ontology.data.TermPrefix;
 import com.google.common.collect.ImmutableList;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 
@@ -61,7 +62,7 @@ public class CalculatingLikelihoodRatio {
      * The term HP:0001265 is a phenotype term in the disease 103100. The frequency of term in disease is 1.
      */
     @Test
-    public void testGetFrequencyOfTermInDieases1_1() {
+    public void testGetFrequencyOfTermInDieases1_1()throws Lr2pgException {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0001265");
         double expected =1.0;
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
@@ -71,7 +72,7 @@ public class CalculatingLikelihoodRatio {
      * The term HP:0012074 is a phenotype term in the disease 103100. The frequency of term in disease is 1.
      */
     @Test
-    public void testGetFrequencyOfTermInDieases1_2() {
+    public void testGetFrequencyOfTermInDieases1_2()throws Lr2pgException {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0012074");
         double expected =1.0;
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
@@ -81,7 +82,7 @@ public class CalculatingLikelihoodRatio {
      * The term HP:0012074 is a phenotype term in the disease 103100. The frequency of term in disease is 1.
      */
     @Test
-    public void testGetFrequencyOfTermInDieases1_3() {
+    public void testGetFrequencyOfTermInDieases1_3()throws Lr2pgException {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0012074");
         double expected =1.0;
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
@@ -91,7 +92,7 @@ public class CalculatingLikelihoodRatio {
      * The term HP:0000006 is an inheritance phenotype term in the disease 103100.
      */
     @Test
-    public void testGetFrequencyOfTermInDieases1_4() {
+    public void testGetFrequencyOfTermInDieases1_4() throws Lr2pgException{
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000006"); //Autosomal dominant inheritance,
         double expected =0.0;
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
@@ -99,7 +100,7 @@ public class CalculatingLikelihoodRatio {
 
     //There is 1 appearance of HP:0001265 in small_phenoannot.tab. The frequency of this term is 1/196.
     @Test
-    public void testGetBackgroundFrequency_1() {
+    public void testGetBackgroundFrequency_1()throws Lr2pgException {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0012074");
         double expected = (double)1/196;
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
@@ -107,7 +108,7 @@ public class CalculatingLikelihoodRatio {
 
     //There are 2 appearances of HP:0001265 in small_phenoannot.tab. The frequency of this term is 2/196.
     @Test
-    public void testGetBackgroundFrequency_2() {
+    public void testGetBackgroundFrequency_2() throws Lr2pgException{
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0001265");
         double expected = (double)2/196;
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);
@@ -116,7 +117,7 @@ public class CalculatingLikelihoodRatio {
 
    //Likelihood ratio for this term is calculated as 1/ (2/196) = 98.
     @Test
-    public void testgetLikelihoodRatio_1() {
+    public void testgetLikelihoodRatio_1()throws Lr2pgException {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0001265");
         double expected = (double)196/2;
         assertEquals(expected,d2tf.getLikelihoodRatio(tid,diseaseName),EPSILON);
@@ -124,7 +125,7 @@ public class CalculatingLikelihoodRatio {
 
     //Likelihood ratio for this term is calculated as 1/ (1/196) = 196.
     @Test
-    public void testgetLikelihoodRatio_2() {
+    public void testgetLikelihoodRatio_2() throws Lr2pgException{
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0012074");
         double expected = (double)196;
         assertEquals(expected,d2tf.getLikelihoodRatio(tid,diseaseName),EPSILON);
@@ -133,7 +134,7 @@ public class CalculatingLikelihoodRatio {
     //So, the likelihood ratio will be the product of the terms which is 196*98 = 19208
     //Note that inheritance terms are not considered, only phenotype terms!
     @Test
-    public void testPipeline() {
+    public void testPipeline()throws Lr2pgException {
         hpocase.calculateLikelihoodRatios();
         int expected=1;
         hpocase.outputResults();

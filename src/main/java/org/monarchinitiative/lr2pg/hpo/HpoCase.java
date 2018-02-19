@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.sun.org.apache.bcel.internal.generic.IMUL;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 
@@ -60,7 +61,7 @@ public class HpoCase {
      * given the observed phenotypic abnormalities in {@link #observedAbnormalities}. Place the results into
      * {@link #results}.
      */
-    public void calculateLikelihoodRatios() {
+    public void calculateLikelihoodRatios() throws Lr2pgException {
         Iterator<String> it = disease2TermFrequencyMap.getDiseaseNameIterator();
         while (it.hasNext()) {
             String diseasename = it.next();

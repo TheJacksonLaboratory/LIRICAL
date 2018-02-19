@@ -5,6 +5,7 @@ import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 
@@ -63,7 +64,7 @@ public class Disease2TermFrequencyTest3 {
      * The term HP:0000965 is a phenotype term in the disease 100300. The frequency of term in disease is 1.
      */
     @Test
-    public void testGetFrequencyOfTermInDieases1() {
+    public void testGetFrequencyOfTermInDieases1() throws Lr2pgException {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000965");
         double expected =1.0;
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
@@ -73,7 +74,7 @@ public class Disease2TermFrequencyTest3 {
      * The term HP:0010957 is not a phenotype term in the disease 100300. The frequency of term in disease is almost zero, 0.000510.
      */
     @Test
-    public void testGetFrequencyOfTermInDieases1_1() {
+    public void testGetFrequencyOfTermInDieases1_1()throws Lr2pgException {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0010957");
         double expected =0.000510;
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
@@ -82,7 +83,7 @@ public class Disease2TermFrequencyTest3 {
      * The term HP:0004415 is  a phenotype term in the disease 100300. The frequency of term in disease is 1.
      */
     @Test
-    public void testGetFrequencyOfTermInDieases1_3() {
+    public void testGetFrequencyOfTermInDieases1_3()throws Lr2pgException {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0004415");
         double expected =1;
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
@@ -91,7 +92,7 @@ public class Disease2TermFrequencyTest3 {
      * The term HP:0011304 is not a phenotype term in the disease 100300. The frequency of term in disease is 0.003061224489795918?
      */
     @Test
-    public void testGetFrequencyOfTermInDieases1_4() {
+    public void testGetFrequencyOfTermInDieases1_4() throws Lr2pgException{
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0011304");
         double expected =0.003061224489795918;
         assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);

@@ -15,6 +15,8 @@ import util.Pair;
 import java.io.IOException;
 import java.util.*;
 
+import static com.github.phenomics.ontolib.ontology.algo.OntologyAlgorithm.getParentTerms;
+
 /**
  * Creates a map from the {@code phenotype_annotation.tab} file that relates the
  * an HPO feature to the frequency of the HPO in a disease. This is also the central
@@ -105,6 +107,7 @@ public class Disease2TermFrequency {
         for (HpoDiseaseWithMetadata dis: this.diseaseMap.values()) {
             for (TermIdWithMetadata tidm : dis.getPhenotypicAbnormalities()) {
                 TermId tid=tidm.getTermId();
+               // tid = phenotypeSubOntology.getTermMap().get(tid).getId(); //replace with current id if needed
                 if (! mp.containsKey(tid)) {
                     mp.put(tid,0.0);
                 }
@@ -118,9 +121,7 @@ public class Disease2TermFrequency {
             }
         }
         // Now we need to normalize by the number of diseases.
-        // We also multiply by 100 since the HpoFrequency objects are returning a percentage and not
-        // a probability
-        double N = (double) getNumberOfDiseases() * 100;
+        double N = (double) getNumberOfDiseases();
         for (Map.Entry<TermId,Double> me : mp.entrySet()) {
             double f = me.getValue()/N;
             imb.put(me.getKey(),f);
@@ -129,10 +130,90 @@ public class Disease2TermFrequency {
         logger.trace("Got data on background frequency for " + hpoTerm2OverallFrequency.size() + " terms");
     }
 
-    public double getFrequencyIfNotAnnotated(TermId tid) {
-        double bf = getBackgroundFrequency(tid);
-        return bf/10;
+    /*If the term is in the same subhierarchy, the frequency of a term is calculated based on the depth of the term and the level (distance) that it has from one of the
+    HPO terms of the disease. The larger distance, the smaller frequency. The frequency decreases by a factor of (1/log(level)).
+    If the term is not in the same subhierarchy, the frequency of term is calculated using backgroundfrequency/10.
+    */
+    public double getFrequencyIfNotAnnotatedOLD(TermId tid, String diseaseName) {
+        // double bf = getBackgroundFrequency(tid);
+        // return bf/10;
+        Set<TermId> ancs =this.phenotypeSubOntology.getAncestorTermIds(tid);
+        int level = 0;
+        double prob = 0;
+        do{
+            level += 1;
+            //Check if the term is a root,(a term is a root if its ancestors is empty)
+            for (TermId at:ancs) {
+                Set<TermId> ances = this.phenotypeSubOntology.getAncestorTermIds(at);
+                if(ances.isEmpty()){
+                    continue;
+                }
+               // phenotypeSubOntology.isRootTerm(at)
+                HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
+                if (disease==null) {
+                    logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
+                    System.exit(1);
+                }
+                TermIdWithMetadata timd = disease.getTermIdWithMetadata(at);
+                if (timd !=null){ //Disease have the HPO term
+                    prob = timd.getFrequency().upperBound() / ((100)*(1 + Math.log(level))); //penalty for imprecision,
+                    break;
+                }
+            }
+        }
+        while(!ancs.isEmpty());
+        if (prob != 0)
+            return prob;
+        else //if the HPO term is not in this subhierarchy, then we assign a value for prob based on the background freq of the term.
+            return getBackgroundFrequency(tid)/10;
     }
+
+
+    private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.000_005; // 1:20,000
+
+    double getFrequencyIfNotAnnotated(TermId tid, String diseaseName) {
+        if (phenotypeSubOntology.getTermMap().get(tid)==null) {
+            logger.error("Could not get term for "+tid.getIdWithPrefix());
+            System.exit(1);
+        }
+        tid = phenotypeSubOntology.getTermMap().get(tid).getId();
+        int level = 0;
+        double prob = 0;
+        boolean foundannotation=false;
+        HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
+       Set<TermId> currentlevel=new HashSet<>();
+        currentlevel.add(tid);
+        while (! currentlevel.isEmpty()) {
+            level++;
+            Set<TermId> parents =  getParentTerms(phenotypeSubOntology,currentlevel);
+            for (TermId id : parents) {
+                if (phenotypeSubOntology.isRootTerm(id)) {
+                    break;
+                }
+                TermIdWithMetadata timd = disease.getTermIdWithMetadata(id);
+                if (timd != null) {
+                    prob += timd.getFrequency().upperBound() / (1 + Math.log(level)); //penalty for imprecision,
+                    foundannotation=true;
+                }
+            }
+            if (foundannotation) {
+                return prob;
+            } else {
+                currentlevel=parents;
+            }
+        }
+        // if we get here, then we are at the root.
+        // this means that the disease has no annotations in the same section (e.g., cardiology) of the HPO
+        // Therefore, the current term is not at all typical for the disease and is probably just a false positive
+        // (there is a smaller chance that our annotations are incomplete)
+        return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+
+    }
+
+
+
+
+
 
     public int getNumberOfDiseases() {
         return diseaseMap.size();
@@ -147,9 +228,9 @@ public class Disease2TermFrequency {
         TermIdWithMetadata timd = disease.getTermIdWithMetadata(term);
         if (timd==null) {
             // this disease does not have the Hpo term in question
-            return getFrequencyIfNotAnnotated(term);
+            return getFrequencyIfNotAnnotated(term,diseaseName);
         } else {
-            return timd.getFrequency().upperBound()/100.0;
+            return timd.getFrequency().upperBound();
         }
     }
 
@@ -164,13 +245,7 @@ public class Disease2TermFrequency {
         }
         if (! hpoTerm2OverallFrequency.containsKey(termId)) {
             logger.fatal(String.format("Map did not contain data for term %s",termId.getIdWithPrefix() ));
-            String st = termId.getId();
-            for (TermId t: hpoTerm2OverallFrequency.keySet()) {
-                String bla = t.getId();
-                //System.err.println(t.getIdWithPrefix() + " didnt find " + term.getIdWithPrefix());
-                if (termId.equals(t)) { System.out.println("term ID equals"); }
-                if (st.equals(bla)) { System.out.println("BLA " + termId.getIdWithPrefix()); }
-            }
+            // todo throw error
             System.exit(1);
         }
         return hpoTerm2OverallFrequency.get(termId);
@@ -191,23 +266,6 @@ public class Disease2TermFrequency {
         double numerator=getFrequencyOfTermInDisease(diseaseName,tid);
         double denominator=getBackgroundFrequency(tid);
                return numerator/denominator;
-
-
-
-
-           /*Pair<TermIdWithMetadata, Integer> pair = disease.getMICAandPathLength(tid,phenotypeSubOntology);
-           if (pair==null) {
-               // There was no ancestor ??
-               return 1.0/(double)diseaseMap.size();
-            }*/
-       // double numerator=getFrequencyOfTermInDisease(diseaseName,tid);
-       // double denominator=getBackgroundFrequency(tid);
-       // System.out.println(numerator);
-       // System.out.println(pair.first.getFrequency().upperBound());
-       // System.out.println(denominator);
-       // System.out.println(pair.second);
-       // return pair.first.getFrequency().upperBound()/(100.0*pair.second); // see readme!
-
 
     }
 

@@ -8,6 +8,7 @@ import com.github.phenomics.ontolib.ontology.data.Ontology;
 import com.github.phenomics.ontolib.ontology.data.TermPrefix;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 
@@ -71,7 +72,7 @@ public class Disease2TermFrequencyTest2 {
      * weighting
      */
     @Test
-    public void testFrequency1() {
+    public void testFrequency1() throws Lr2pgException {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0200127"); // Atrial cardiomyopathy
         double expected = (double)1/10262;
         assertEquals(expected,d2tf.getBackgroundFrequency(tid),EPSILON);

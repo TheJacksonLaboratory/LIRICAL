@@ -31,6 +31,8 @@ public class HpoAnnotation2DiseaseParserTest {
     /** If no frequency is provided, the parser uses the default (100%) */
     private static HpoFrequency defaultFrequency=null;
 
+    private static double EPSILON=0.00001;
+
     @BeforeClass
     public static void setup() throws IOException {
         ClassLoader classLoader = HPOOntologyParserTest.class.getClassLoader();
@@ -136,8 +138,8 @@ public class HpoAnnotation2DiseaseParserTest {
         HpoDiseaseWithMetadata disease = diseaseMap.get("111400");
         TermId AntigenAbn = new ImmutableTermId(HP_PREFIX,"0010970");
         TermIdWithMetadata timd = disease.getTermIdWithMetadata(AntigenAbn);
-        int expected = 100;
-        assertEquals(expected,timd.getFrequency().upperBound());
+        double expected = 1D;
+        assertEquals(expected,timd.getFrequency().upperBound(),EPSILON);
     }
 
 
