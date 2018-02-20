@@ -6,6 +6,7 @@ import com.github.phenomics.ontolib.ontology.data.Ontology;
 import com.github.phenomics.ontolib.ontology.data.TermId;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.sun.tools.javac.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
@@ -14,6 +15,7 @@ import util.Pair;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 import static com.github.phenomics.ontolib.ontology.algo.OntologyAlgorithm.getParentTerms;
 
@@ -141,9 +143,10 @@ public class Disease2TermFrequency {
         int level = 0;
         double prob = 0;
         do{
-            level += 1;
+            level ++;
             //Check if the term is a root,(a term is a root if its ancestors is empty)
             for (TermId at:ancs) {
+
                 Set<TermId> ances = this.phenotypeSubOntology.getAncestorTermIds(at);
                 if(ances.isEmpty()){
                     continue;
@@ -171,7 +174,7 @@ public class Disease2TermFrequency {
 
     private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.000_005; // 1:20,000
 
-    double getFrequencyIfNotAnnotated(TermId tid, String diseaseName) {
+    double getFrequencyIfNotAnnotated1(TermId tid, String diseaseName) {
         if (phenotypeSubOntology.getTermMap().get(tid)==null) {
             logger.error("Could not get term for "+tid.getIdWithPrefix());
             System.exit(1);
@@ -211,6 +214,73 @@ public class Disease2TermFrequency {
     }
 
 
+    double getFrequencyIfNotAnnotated(TermId tid, String diseaseName) {
+       // if (phenotypeSubOntology.getTermMap().get(tid)==null) {
+        //    logger.error("Could not get term for "+tid.getIdWithPrefix());
+        //    System.exit(1);
+        //}
+        //tid = phenotypeSubOntology.getTermMap().get(tid).getId();
+        int level = 0;
+        double prob = 0;
+        int alpha =2;
+        boolean foundannotation=false;
+        HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
+        Set<TermId> ances = this.phenotypeSubOntology.getAncestorTermIds(tid);
+        List<TermIdWithMetadata> abnormalities = null;
+        Map<Integer,TermIdWithMetadata> levelTermIdMap= new HashMap<Integer,TermIdWithMetadata>();
+       ArrayList<Integer>levels = new ArrayList<Integer>();
+        //Sorting ancestors from parents to grandparents,...?
+        while (! ances.isEmpty()) {
+            level++;
+            for (TermId id : ances) {
+                if (phenotypeSubOntology.isRootTerm(id)) {
+                    break;
+                }
+                TermIdWithMetadata timd = disease.getTermIdWithMetadata(id);
+                if (timd != null) {
+                    prob += timd.getFrequency().upperBound() / (1 + Math.log(level)); //penalty for imprecision,
+                    foundannotation = true;
+                }
+            }
+            if (foundannotation) {
+                return prob;
+            }
+        }
+        //get all abnormality terms of the disease.
+        abnormalities = disease.getPhenotypicAbnormalities();
+        //check if the ancestors of the term  and ancestors of the abnormality terms of the disease have any term in common.
+        for (TermId id : ances) {
+            for (TermId id2 : abnormalities) {
+                level=0;
+                Set<TermId> ancsAbnormalities = this.phenotypeSubOntology.getAncestorTermIds(id2);
+                if (!ancsAbnormalities.isEmpty()) {
+                    for (TermId idAb : ancsAbnormalities) {
+                        ++level;
+                        if (idAb.equals(id)) {
+                            TermIdWithMetadata timd = disease.getTermIdWithMetadata(idAb);
+                            levelTermIdMap.put(level, timd);
+                            levels.add(level);
+                            foundannotation = true;
+                        }
+                    }
+                }
+            }
+        }
+        //find the shortest path (smallest level)
+        Collections.sort(levels);
+        prob += levelTermIdMap.get(levels.get(0)).getFrequency().upperBound() / (1 + alpha* Math.log(level));
+        if(foundannotation)
+            return prob;
+
+        // if we get here, then we are at the root.
+        // this means that the disease has no annotations in the same section (e.g., cardiology) of the HPO
+        // Therefore, the current term is not at all typical for the disease and is probably just a false positive
+        // (there is a smaller chance that our annotations are incomplete)
+        return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+
+
+
+    }
 
 
 
