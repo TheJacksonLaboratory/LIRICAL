@@ -1,14 +1,9 @@
 package org.monarchinitiative.lr2pg.io;
 
-import com.github.phenomics.ontolib.formats.hpo.HpoFrequency;
-import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
-import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
+import com.github.phenomics.ontolib.formats.hpo.*;
 import com.github.phenomics.ontolib.ontology.data.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata;
-import org.monarchinitiative.lr2pg.hpo.ImmutableTermIdWithMetadata;
-import org.monarchinitiative.lr2pg.hpo.TermIdWithMetadata;
 
 import javax.smartcardio.TerminalFactory;
 import java.io.IOException;
