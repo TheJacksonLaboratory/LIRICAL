@@ -159,7 +159,6 @@ public class TermFrequency {
           default:
               return   DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
 
-
       }
 
   }
@@ -210,6 +209,7 @@ public class TermFrequency {
         HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
         Set<TermId> parents =  getParentTerms(phenotypeSubOntology,tid);
         if(parents.size() == 1){
+            //Access to child needs to be checked!
             int NumberOfChildren = getChildTerms(phenotypeSubOntology,parents).size();
             parents.iterator().next();
             return getAdjustedFrequency(parents.iterator().next(),diseaseName,SUPERCLASS)/NumberOfChildren;
