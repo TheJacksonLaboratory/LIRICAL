@@ -169,6 +169,7 @@ public class TermFrequency {
         if(parents.contains(query)) {
             Set<TermId> ancs = this.phenotypeSubOntology.getAncestorTermIds(query);
             for (TermId id : ancs) {
+                //Check getFrequencyTerm(id, diseaseName)!
                 prob += getFrequencyTerm(id, diseaseName);
             }
         }
@@ -193,7 +194,7 @@ public class TermFrequency {
             int NumberOfChildren = children.size();
             return timd.getFrequency().upperBound()/NumberOfChildren;
         }
-        //What if it is not a direct subclacll? Find the level  and divide the frequency by the (1+log(level))*NumberOfChildren
+        //What if it is not a direct subclass? Find the level  and divide the frequency by the (1+log(level))*NumberOfChildren
         return prob;
     }
 
