@@ -150,14 +150,11 @@ public class TermFrequency {
               return getFrequencySubclassTerm(tid, queryTerm, diseaseName);
           case "Sibling":
               return getSiblingsTermsFrequency(tid, queryTerm,diseaseName);
-
           case "Related":
               return getRelatedTermsFrequency(tid, queryTerm, diseaseName);
           default:
               return   DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
-
       }
-
   }
 
     /**
@@ -167,8 +164,6 @@ public class TermFrequency {
      * @return frequency
      */
     private double getFrequencySuperclassTerm(TermId tid, TermId query, String diseaseName) {
-        HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
-
         double prob =0;
         Set<TermId> parents = getParentTerms(phenotypeSubOntology,tid);
         Set<TermId> children = getChildTerms(phenotypeSubOntology,parents);
