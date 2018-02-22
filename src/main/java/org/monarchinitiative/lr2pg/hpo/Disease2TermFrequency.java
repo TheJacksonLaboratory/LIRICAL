@@ -89,7 +89,7 @@ public class Disease2TermFrequency {
 //        diseaseMap=annParser.getDiseaseMap();
 //    }
     /** @return iterator over the diseases in the database. TODO just return the disease objects. */
-    private Iterator<String> getDiseaseNameIterator() {
+    public Iterator<String> getDiseaseNameIterator() {
         return this.diseaseMap.keySet().iterator();
     }
 
@@ -134,44 +134,44 @@ public class Disease2TermFrequency {
         logger.trace("Got data on background frequency for " + hpoTerm2OverallFrequency.size() + " terms");
     }
 
-    /*If the term is in the same subhierarchy, the frequency of a term is calculated based on the depth of the term and the level (distance) that it has from one of the
-    HPO terms of the disease. The larger distance, the smaller frequency. The frequency decreases by a factor of (1/log(level)).
-    If the term is not in the same subhierarchy, the frequency of term is calculated using backgroundfrequency/10.
-    */
-    public double getFrequencyIfNotAnnotatedOLD(TermId tid, String diseaseName) {
-        // double bf = getBackgroundFrequency(tid);
-        // return bf/10;
-        Set<TermId> ancs =this.phenotypeSubOntology.getAncestorTermIds(tid);
-        int level = 0;
-        double prob = 0;
-        do{
-            level ++;
-            //Check if the term is a root,(a term is a root if its ancestors is empty)
-            for (TermId at:ancs) {
-
-                Set<TermId> ances = this.phenotypeSubOntology.getAncestorTermIds(at);
-                if(ances.isEmpty()){
-                    continue;
-                }
-               // phenotypeSubOntology.isRootTerm(at)
-                HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
-                if (disease==null) {
-                    logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
-                    System.exit(1);
-                }
-                TermIdWithMetadata timd = disease.getTermIdWithMetadata(at);
-                if (timd !=null){ //Disease have the HPO term
-                    prob = timd.getFrequency().upperBound() / ((100)*(1 + Math.log(level))); //penalty for imprecision,
-                    break;
-                }
-            }
-        }
-        while(!ancs.isEmpty());
-        if (prob != 0)
-            return prob;
-        else //if the HPO term is not in this subhierarchy, then we assign a value for prob based on the background freq of the term.
-            return getBackgroundFrequency(tid)/10;
-    }
+//    /*If the term is in the same subhierarchy, the frequency of a term is calculated based on the depth of the term and the level (distance) that it has from one of the
+//    HPO terms of the disease. The larger distance, the smaller frequency. The frequency decreases by a factor of (1/log(level)).
+//    If the term is not in the same subhierarchy, the frequency of term is calculated using backgroundfrequency/10.
+//    */
+//    public double getFrequencyIfNotAnnotatedOLD(TermId tid, String diseaseName) {
+//        // double bf = getBackgroundFrequency(tid);
+//        // return bf/10;
+//        Set<TermId> ancs =this.phenotypeSubOntology.getAncestorTermIds(tid);
+//        int level = 0;
+//        double prob = 0;
+//        do{
+//            level ++;
+//            //Check if the term is a root,(a term is a root if its ancestors is empty)
+//            for (TermId at:ancs) {
+//
+//                Set<TermId> ances = this.phenotypeSubOntology.getAncestorTermIds(at);
+//                if(ances.isEmpty()){
+//                    continue;
+//                }
+//               // phenotypeSubOntology.isRootTerm(at)
+//                HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
+//                if (disease==null) {
+//                    logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
+//                    System.exit(1);
+//                }
+//                TermIdWithMetadata timd = disease.getTermIdWithMetadata(at);
+//                if (timd !=null){ //Disease have the HPO term
+//                    prob = timd.getFrequency().upperBound() / ((100)*(1 + Math.log(level))); //penalty for imprecision,
+//                    break;
+//                }
+//            }
+//        }
+//        while(!ancs.isEmpty());
+//        if (prob != 0)
+//            return prob;
+//        else //if the HPO term is not in this subhierarchy, then we assign a value for prob based on the background freq of the term.
+//            return getBackgroundFrequency(tid)/10;
+//    }
 
 
     private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.000_005; // 1:20,000
@@ -179,7 +179,9 @@ public class Disease2TermFrequency {
     private double getFrequencyIfNotAnnotated(TermId tid, String diseaseName) {
         if (phenotypeSubOntology.getTermMap().get(tid)==null) {
             logger.error("Could not get term for "+tid.getIdWithPrefix());
-            System.exit(1);
+            logger.error("phenotypeSubOntology size "+phenotypeSubOntology.getTermMap().size());
+            //System.exit(1);
+            return 0.001;
         }
         tid = phenotypeSubOntology.getTermMap().get(tid).getId();
         int level = 0;
@@ -219,11 +221,11 @@ public class Disease2TermFrequency {
 
 
 
-    private int getNumberOfDiseases() {
+    public int getNumberOfDiseases() {
         return diseaseMap.size();
     }
 
-    private double getFrequencyOfTermInDisease(String diseaseName, TermId term) {
+    public double getFrequencyOfTermInDisease(String diseaseName, TermId term) {
         HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
         if (disease==null) {
             logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
@@ -260,7 +262,7 @@ public class Disease2TermFrequency {
         return phenotypeSubOntology;
     }
 
-    private double getLikelihoodRatio(TermId tid, String diseaseName) {
+    public double getLikelihoodRatio(TermId tid, String diseaseName) {
 
         HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
        if (disease==null) {

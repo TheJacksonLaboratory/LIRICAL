@@ -2,8 +2,10 @@ package org.monarchinitiative.lr2pg.hpo;
 
 
 
+import com.github.phenomics.ontolib.formats.hpo.HpoDiseaseWithMetadata;
 import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
+import com.github.phenomics.ontolib.formats.hpo.TermIdWithMetadata;
 import com.github.phenomics.ontolib.ontology.data.Ontology;
 import com.github.phenomics.ontolib.ontology.data.TermId;
 import com.google.common.collect.ImmutableMap;
