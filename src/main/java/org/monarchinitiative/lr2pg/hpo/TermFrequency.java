@@ -166,8 +166,7 @@ public class TermFrequency {
     private double getFrequencySuperclassTerm(TermId tid, TermId query, String diseaseName) {
         double prob =0;
         Set<TermId> parents = getParentTerms(phenotypeSubOntology,tid);
-        Set<TermId> children = getChildTerms(phenotypeSubOntology,parents);
-        if(children.contains(query)) {
+        if(parents.contains(query)) {
             Set<TermId> ancs = this.phenotypeSubOntology.getAncestorTermIds(query);
             for (TermId id : ancs) {
                 prob += getFrequencyTerm(id, diseaseName);
