@@ -160,28 +160,20 @@ public class TermFrequency {
   }
 
     /**
-     * If the query term is a (direct)superclass of a term of disease, then we need to add frequency terms of ancestors (maybe with some changes)
+     * If the query term is a superclass of a term of disease, then the frequency of the term will be the maximum of the frequency of its children.
      * @param tid:TermId
      * @param diseaseName:Disease
      * @return frequency
      */
     private double getFrequencySuperclassTerm(TermId tid, TermId query, String diseaseName) {
         double prob =0;
-        Set<TermId> parents = getParentTerms(phenotypeSubOntology,tid);
-        if(parents.contains(query)) {
-            Set<TermId> ancs = this.phenotypeSubOntology.getAncestorTermIds(query);
-            for (TermId id : ancs) {
-                //Check getFrequencyTerm(id, diseaseName)!
-                prob += getFrequencyTerm(id, diseaseName);
-            }
-        }
-        //What if it is not a direct superclass? Find the level  and divide the frequency by the (1+log(level))
+        //Needds to be completed.
         return prob;
     }
 
 
     /**
-     * If the query term is a (direct)subclass of a term of disease, we divide the frequency of term by the number of children.
+     * If the query term is a subclass of a term of disease, we divide the frequency of term by 1+log(level).
      * @param tid: TermId
      * @param diseaseName:Disease
      * @return frequency
@@ -190,13 +182,7 @@ public class TermFrequency {
         HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
         TermIdWithMetadata timd = disease.getTermIdWithMetadata(tid);
         double prob = 0;
-        Set<TermId> children = getChildTerms(phenotypeSubOntology,timd);
-
-        if(children.contains(query)){
-            int NumberOfChildren = children.size();
-            return timd.getFrequency().upperBound()/NumberOfChildren;
-        }
-        //What if it is not a direct subclass? Find the level  and divide the frequency by the (1+log(level))*NumberOfChildren
+        //Needs to be completed.
         return prob;
     }
 
@@ -204,29 +190,20 @@ public class TermFrequency {
 
 
     /**
-     * If two terms are siblings, we first find their parent, then we divide the frequency of the parent by the number of children that it has.
+     * If two terms are siblings, we divide the frequency of the term by (1+log(level)).
      * @param tid:TermId
      * @param diseaseName:Disease
      * @return frequency
      */
     private double getSiblingsTermsFrequency(TermId tid, TermId queryTerm, String diseaseName) {
-        HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
-        Set<TermId> parents =  getParentTerms(phenotypeSubOntology,tid);
-        int NumberOfChildren = getChildTerms(phenotypeSubOntology,parents).size();
-        if(parents.size() == 1){
-            //Access to child needs to be checked!
-            return getAdjustedFrequency(parents.iterator().next(),queryTerm,diseaseName,SUPERCLASS)/NumberOfChildren;
-        }
-        //what if the term has more than 1 parent? TODO find a good estimate when there is more than 1 parent
-        else{
-            return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
-        }
+        //Needs to be completed.
+        double prob = 0;
+        return prob;
 
     }
 
     /**
-     * If two terms are related, we first find the mutual parent of the query and term. Then, based on the depth(level) of the query term and
-     * the parent, we return a coefficient of the frequency of siblings.
+     * If two terms are related, we divide the frequency of the disease term Id by 1+log(level)
      *
      * @param tid:TermId
      * @param diseaseName:Disease
