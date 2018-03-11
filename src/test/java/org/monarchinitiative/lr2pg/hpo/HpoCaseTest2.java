@@ -1,10 +1,5 @@
 package org.monarchinitiative.lr2pg.hpo;
 
-/**
- * Created by ravanv on 1/8/18.
- */
-import com.github.phenomics.ontolib.formats.hpo.*;
-import com.github.phenomics.ontolib.ontology.data.*;
 import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,15 +7,23 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
-import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
-import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
+import org.monarchinitiative.phenol.formats.hpo.*;
+import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
+import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
+
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+/**
+ * Created by ravanv on 1/8/18.
+ */
 public class HpoCaseTest2 {
 
     private static final Logger logger = LogManager.getLogger();
@@ -34,13 +37,11 @@ public class HpoCaseTest2 {
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String annotationPath = classLoader.getResource("phenotype_annotation.tab").getFile();
         /* parse ontology */
-        HpoOntologyParser parser = new HpoOntologyParser(hpoPath);
-        parser.parseOntology();
-        Ontology<HpoTerm, HpoTermRelation>phenotypeSubOntology = parser.getPhenotypeSubontology();
-        Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology = parser.getInheritanceSubontology();
-        HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationPath,phenotypeSubOntology,inheritanceSubontology);
+        HpoOboParser parser = new HpoOboParser(new File(hpoPath));
+        HpoOntology ontology =parser.parse();
+        HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationPath,ontology);
         Map<String,HpoDiseaseWithMetadata> diseaseMap=annotationParser.getDiseaseMap();
-        Disease2TermFrequency d2fmap=new Disease2TermFrequency(phenotypeSubOntology,inheritanceSubontology,diseaseMap);
+        Disease2TermFrequency d2fmap=new Disease2TermFrequency(ontology,diseaseMap);
         //String caseFile = classLoader.getResource("HPOTerms").getFile();
 
         /* these are the phenpotypic abnormalties of our "case" */
@@ -53,7 +54,7 @@ public class HpoCaseTest2 {
 
         ImmutableList.Builder<TermIdWithMetadata> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2);
-        hpocase = new HpoCase(phenotypeSubOntology,d2fmap,diseasename,builder.build());
+        hpocase = new HpoCase(ontology,d2fmap,diseasename,builder.build());
     }
 
     @Test

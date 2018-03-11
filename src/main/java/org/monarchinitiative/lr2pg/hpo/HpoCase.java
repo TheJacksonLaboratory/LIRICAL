@@ -1,13 +1,14 @@
 package org.monarchinitiative.lr2pg.hpo;
 
-import com.github.phenomics.ontolib.formats.hpo.*;
 
-import com.github.phenomics.ontolib.ontology.data.Ontology;
 import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
+import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.formats.hpo.HpoTerm;
+import org.monarchinitiative.phenol.formats.hpo.TermIdWithMetadata;
 
 
 import java.util.*;
@@ -29,18 +30,18 @@ public class HpoCase {
     /** List of Hpo terms for our case. TODO add negative annotations. */
     private List<TermIdWithMetadata> observedAbnormalities;
 
-    private Ontology<HpoTerm, HpoTermRelation> hpoOntology=null;
+    private final HpoOntology hpoOntology;
     /** a set of test results -- the evaluation of each HPO term for the disease. */
     private List<TestResult> results;
 
 
 
-    public HpoCase(Ontology<HpoTerm, HpoTermRelation> phenoOntology,
+    public HpoCase(HpoOntology ontol,
                    Disease2TermFrequency diseaseFreqMap,
                    String diseaseNane,
                    List<TermIdWithMetadata> observedAbn) {
         this.disease2TermFrequencyMap=diseaseFreqMap;
-        this.hpoOntology=phenoOntology;
+        this.hpoOntology=ontol;
         this.disease=diseaseNane;
         this.observedAbnormalities=observedAbn;
         results=new ArrayList<>();

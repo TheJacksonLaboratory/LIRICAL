@@ -16,7 +16,7 @@
         <jannovar.version>0.23</jannovar.version>
         <jdk.version>1.8</jdk.version>
         <junit.version>4.12</junit.version>
-        <ontolib.version>0.1.4</ontolib.version>
+        <phenol.version>0.1.7</phenol.version>
     </properties>
 
     <reporting>
@@ -79,14 +79,14 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.phenomics</groupId>
-            <artifactId>ontolib-core</artifactId>
-            <version>${ontolib.version}</version>
+            <groupId>org.monarchinitiative.phenol</groupId>
+            <artifactId>phenol-core</artifactId>
+            <version>${phenol.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.phenomics</groupId>
-            <artifactId>ontolib-io</artifactId>
-            <version>${ontolib.version}</version>
+            <groupId>org.monarchinitiative.phenol</groupId>
+            <artifactId>phenol-io</artifactId>
+            <version>${phenol.version}</version>
         </dependency>
 
         <dependency>
