@@ -1,11 +1,12 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
-import com.github.phenomics.ontolib.ontology.data.ImmutableTermId;
-import com.github.phenomics.ontolib.ontology.data.ImmutableTermPrefix;
-import com.github.phenomics.ontolib.ontology.data.TermId;
-import com.github.phenomics.ontolib.ontology.data.TermPrefix;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
+import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import static org.junit.Assert.assertEquals;
 

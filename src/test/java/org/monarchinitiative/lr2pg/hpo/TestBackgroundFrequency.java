@@ -1,20 +1,27 @@
 package org.monarchinitiative.lr2pg.hpo;
 
-import com.github.phenomics.ontolib.formats.hpo.*;
-import com.github.phenomics.ontolib.ontology.data.*;
+
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
-import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
+import org.monarchinitiative.phenol.formats.hpo.HpoDiseaseWithMetadata;
+import org.monarchinitiative.phenol.formats.hpo.HpoFrequency;
+import org.monarchinitiative.phenol.formats.hpo.HpoOnset;
+import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
+import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.phenol.ontology.data.TermPrefix;
+
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class TestBackgroundFrequency {
     /** THe file name of the HPO ontology file. */
@@ -23,9 +30,7 @@ public class TestBackgroundFrequency {
     private static final String HP_PHENOTYPE_ANNOTATION="phenotype_annotation.tab";
 
     /** The subontology of the HPO with all the phenotypic abnormality terms. */
-    private Ontology<HpoTerm, HpoTermRelation> phenotypeSubOntology =null;
-    /** The subontology of the HPO with all the inheritance terms. */
-    private Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology=null;
+    private HpoOntology ontology =null;
 
 
 
@@ -73,17 +78,14 @@ public class TestBackgroundFrequency {
         ClassLoader classLoader = TestBackgroundFrequency.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String annotationpath=classLoader.getResource("phenotype_annotation.tab").getFile();
-        HpoOntologyParser parser = new HpoOntologyParser(hpoPath);
-        parser.parseOntology();
-        phenotypeSubOntology = parser.getPhenotypeSubontology();
-        inheritanceSubontology = parser.getInheritanceSubontology();
-        HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationpath,phenotypeSubOntology,inheritanceSubontology);
+        HpoOboParser parser = new HpoOboParser(new File(hpoPath));
+        ontology=parser.parse();
+        HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationpath,ontology);
         diseaseMap=annotationParser.getDiseaseMap();
         String DEFAULT_FREQUENCY="0040280";
         final TermId DEFAULT_FREQUENCY_ID = new ImmutableTermId(HP_PREFIX,DEFAULT_FREQUENCY);
         defaultFrequency=HpoFrequency.fromTermId(DEFAULT_FREQUENCY_ID);
-        this.d2termFreqMap=new Disease2TermFrequency(phenotypeSubOntology,inheritanceSubontology,diseaseMap);
-        //this.d2termFreqMap = new Disease2TermFrequency(hpopath,annotationpath); //todo pass in the other objects
+        this.d2termFreqMap=new Disease2TermFrequency(ontology,diseaseMap);
     }
 
 

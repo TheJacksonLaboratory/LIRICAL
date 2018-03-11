@@ -2,22 +2,22 @@ package org.monarchinitiative.lr2pg.hpo;
 
 
 
-import com.github.phenomics.ontolib.formats.hpo.HpoDiseaseWithMetadata;
-import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
-import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
-import com.github.phenomics.ontolib.formats.hpo.TermIdWithMetadata;
-import com.github.phenomics.ontolib.ontology.data.Ontology;
-import com.github.phenomics.ontolib.ontology.data.TermId;
 import com.google.common.collect.ImmutableMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.monarchinitiative.phenol.formats.hpo.HpoDiseaseWithMetadata;
+import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.formats.hpo.TermIdWithMetadata;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.github.phenomics.ontolib.ontology.algo.OntologyAlgorithm.*;
+import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.*;
+
 
 public class TermFrequency {
     private static final Logger logger = LogManager.getLogger();
@@ -32,17 +32,15 @@ public class TermFrequency {
     /**
      * The subontology of the HPO with all the phenotypic abnormality terms.
      */
-    private Ontology<HpoTerm, HpoTermRelation> phenotypeSubOntology = null;
-    /**
-     * The subontology of the HPO with all the inheritance terms.
-     */
-    private Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology = null;
+    private HpoOntology ontology = null;
     /**
      * This map has one entry for each disease in our database.
      */
     private Map<String, HpoDiseaseWithMetadata> diseaseMap;
 
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
+
+    private final static TermId PHENOTYPIC_ABNORMALITY = ImmutableTermId.constructWithPrefix("HP:0000118");
 
     private String  IDENTICAL = "Identical";
 
@@ -54,11 +52,9 @@ public class TermFrequency {
 
     private String RELATED = "Related";
 
-    public TermFrequency(Ontology<HpoTerm, HpoTermRelation> pheno,
-                         Ontology<HpoTerm, HpoTermRelation> inheri,
+    public TermFrequency(HpoOntology onto,
                          Map<String, HpoDiseaseWithMetadata> diseases) {
-        phenotypeSubOntology = pheno;
-        inheritanceSubontology = inheri;
+        this.ontology=onto;
         this.diseaseMap = diseases;
         initializeFrequencyMap();
     }
@@ -69,19 +65,20 @@ public class TermFrequency {
      */
     private void initializeFrequencyMap() {
         Map<TermId, Double> mp = new HashMap<>();
-        for (TermId tid : this.phenotypeSubOntology.getTermMap().keySet()) {
+        for (TermId tid : getDescendents(ontology, PHENOTYPIC_ABNORMALITY)) {
             mp.put(tid, 0.0D);
         }
         ImmutableMap.Builder<TermId, Double> imb = new ImmutableMap.Builder<>();
         for (HpoDiseaseWithMetadata dis : this.diseaseMap.values()) {
             for (TermIdWithMetadata tidm : dis.getPhenotypicAbnormalities()) {
                 TermId tid = tidm.getTermId();
-                // tid = phenotypeSubOntology.getTermMap().get(tid).getId(); //replace with current id if needed
                 if (!mp.containsKey(tid)) {
                     mp.put(tid, 0.0);
                 }
-                double delta = tidm.getFrequency().upperBound();
-                Set<TermId> ancs = this.phenotypeSubOntology.getAncestorTermIds(tid);
+                double delta = tidm.getFrequency().mean();
+                // All of the ancestor terms are implicitly annotated to tid
+                // therefore, get all of the strict ancestors and add this to their background frequencies.
+                Set<TermId> ancs = getAncestorTerms(ontology,tid,false);
                 for (TermId at : ancs) {
                     if (!mp.containsKey(at)) mp.put(at, 0.0);
                     double cumulativeFreq = mp.get(at) + delta;
@@ -123,17 +120,17 @@ public class TermFrequency {
           if ( tid.equals(query) )  return getAdjustedFrequency(tid,query,diseaseName,IDENTICAL);
       }
       for (TermId tid : disease.getPhenotypicAbnormalities()) {
-          if ( isSubclass( phenotypeSubOntology,  tid, query) )  return getAdjustedFrequency(tid,query,diseaseName,SUPERCLASS);
+          if ( isSubclass( ontology,  tid, query) )  return getAdjustedFrequency(tid,query,diseaseName,SUPERCLASS);
       }
       for (TermId tid : disease.getPhenotypicAbnormalities()) {
-          if (isSubclass(phenotypeSubOntology,query,tid))  return getAdjustedFrequency(tid,query,diseaseName,SUBCLASS);
+          if (isSubclass(ontology,query,tid))  return getAdjustedFrequency(tid,query,diseaseName,SUBCLASS);
       }
       for (TermId tid : disease.getPhenotypicAbnormalities()) {
-          if (termsAreSiblings(phenotypeSubOntology,query,tid))  return getAdjustedFrequency(tid,query,diseaseName,SIBLINGS);
+          if (termsAreSiblings(ontology,query,tid))  return getAdjustedFrequency(tid,query,diseaseName,SIBLINGS);
       }
 
       for (TermId tid : disease.getPhenotypicAbnormalities()) {
-          if (termsAreRelated(phenotypeSubOntology,query,tid))  return getAdjustedFrequency(tid,query,diseaseName,RELATED);
+          if (termsAreRelated(ontology,query,tid))  return getAdjustedFrequency(tid,query,diseaseName,RELATED);
       }
       return   DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
 
@@ -215,12 +212,12 @@ public class TermFrequency {
         currentlevel.add(tid);
         while (! currentlevel.isEmpty()) {
             level++;
-            Set<TermId> parents =  getParentTerms(phenotypeSubOntology,currentlevel);
+            Set<TermId> parents =  getParentTerms(ontology,currentlevel);
             for (TermId id : parents) {
-                if (phenotypeSubOntology.isRootTerm(id)) {
+                if (id.equals(PHENOTYPIC_ABNORMALITY)) {
                     break;
                 }
-                Set<TermId>children = getChildTerms(phenotypeSubOntology,id);
+                Set<TermId>children = getChildTerms(ontology,id);
                 if (children.contains(tid)){
                    return (  getSiblingsTermsFrequency( tid, query, diseaseName) /(1 + Math.log(level)));
                 }

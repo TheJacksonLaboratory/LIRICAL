@@ -1,8 +1,5 @@
 package org.monarchinitiative.lr2pg.command;
 
-import com.github.phenomics.ontolib.ontology.data.ImmutableTermPrefix;
-import com.github.phenomics.ontolib.ontology.data.TermPrefix;
-import org.monarchinitiative.lr2pg.hpo.Disease2TermFrequency;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 
 /**

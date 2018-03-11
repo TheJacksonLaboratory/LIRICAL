@@ -1,22 +1,26 @@
 package org.monarchinitiative.lr2pg.io;
 
-import com.github.phenomics.ontolib.formats.hpo.*;
-import com.github.phenomics.ontolib.ontology.data.*;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.monarchinitiative.phenol.formats.hpo.*;
+import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
+import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
-import javax.smartcardio.TerminalFactory;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
 
 import static org.junit.Assert.*;
 
 public class HpoAnnotation2DiseaseParserTest {
     /** The subontology of the HPO with all the phenotypic abnormality terms. */
-    private static Ontology<HpoTerm, HpoTermRelation> phenotypeSubOntology =null;
-    /** The subontology of the HPO with all the inheritance terms. */
-    private static Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology=null;
+    private static HpoOntology ontology =null;
 
     private static HpoAnnotation2DiseaseParser annotationParser=null;
 
@@ -32,13 +36,11 @@ public class HpoAnnotation2DiseaseParserTest {
     public static void setup() throws IOException {
         ClassLoader classLoader = HPOOntologyParserTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
-        HpoOntologyParser parser = new HpoOntologyParser(hpoPath);
+        HpoOboParser parser = new HpoOboParser(new File(hpoPath));
         String annotationPath = classLoader.getResource("small_phenoannot.tab").getFile();
-        parser.parseOntology();
-        phenotypeSubOntology = parser.getPhenotypeSubontology();
-        inheritanceSubontology = parser.getInheritanceSubontology();
+        ontology=parser.parse();
         HP_PREFIX = new ImmutableTermPrefix("HP");
-        annotationParser = new HpoAnnotation2DiseaseParser(annotationPath,phenotypeSubOntology,inheritanceSubontology);
+        annotationParser = new HpoAnnotation2DiseaseParser(annotationPath,ontology);
         diseaseMap=annotationParser.getDiseaseMap();
         String DEFAULT_FREQUENCY="0040280";
         final TermId DEFAULT_FREQUENCY_ID = new ImmutableTermId(HP_PREFIX,DEFAULT_FREQUENCY);
