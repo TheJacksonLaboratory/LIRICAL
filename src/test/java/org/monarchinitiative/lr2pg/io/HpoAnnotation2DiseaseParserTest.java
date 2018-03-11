@@ -1,14 +1,9 @@
 package org.monarchinitiative.lr2pg.io;
 
-import com.github.phenomics.ontolib.formats.hpo.HpoFrequency;
-import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
-import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
+import com.github.phenomics.ontolib.formats.hpo.*;
 import com.github.phenomics.ontolib.ontology.data.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata;
-import org.monarchinitiative.lr2pg.hpo.ImmutableTermIdWithMetadata;
-import org.monarchinitiative.lr2pg.hpo.TermIdWithMetadata;
 
 import javax.smartcardio.TerminalFactory;
 import java.io.IOException;
@@ -30,6 +25,8 @@ public class HpoAnnotation2DiseaseParserTest {
     private static TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
     /** If no frequency is provided, the parser uses the default (100%) */
     private static HpoFrequency defaultFrequency=null;
+
+    private static double EPSILON=0.00001;
 
     @BeforeClass
     public static void setup() throws IOException {
@@ -136,8 +133,8 @@ public class HpoAnnotation2DiseaseParserTest {
         HpoDiseaseWithMetadata disease = diseaseMap.get("111400");
         TermId AntigenAbn = new ImmutableTermId(HP_PREFIX,"0010970");
         TermIdWithMetadata timd = disease.getTermIdWithMetadata(AntigenAbn);
-        int expected = 100;
-        assertEquals(expected,timd.getFrequency().upperBound());
+        double expected = 1D;
+        assertEquals(expected,timd.getFrequency().upperBound(),EPSILON);
     }
 
 

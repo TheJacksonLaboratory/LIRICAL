@@ -1,26 +1,17 @@
 package org.monarchinitiative.lr2pg.hpo;
 
-import com.github.phenomics.ontolib.formats.hpo.HpoFrequency;
-import com.github.phenomics.ontolib.formats.hpo.HpoOntology;
-import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
-import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
-import com.github.phenomics.ontolib.ontology.data.ImmutableTermPrefix;
+import com.github.phenomics.ontolib.formats.hpo.*;
+
 import com.github.phenomics.ontolib.ontology.data.Ontology;
-import com.github.phenomics.ontolib.ontology.data.TermId;
-import com.github.phenomics.ontolib.ontology.data.TermPrefix;
 import com.google.common.collect.ImmutableList;
-import com.sun.org.apache.bcel.internal.generic.IMUL;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
+import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+
 import java.util.*;
 
-import static org.monarchinitiative.lr2pg.likelihoodratio.LikelihoodRatio.HpoFrequencies2LR;
 
 /**
  * Represents a single case and the HPO terms assigned to the case (patient), as well as the results of the
@@ -60,7 +51,7 @@ public class HpoCase {
      * given the observed phenotypic abnormalities in {@link #observedAbnormalities}. Place the results into
      * {@link #results}.
      */
-    public void calculateLikelihoodRatios() {
+    public void calculateLikelihoodRatios() throws Lr2pgException {
         Iterator<String> it = disease2TermFrequencyMap.getDiseaseNameIterator();
         while (it.hasNext()) {
             String diseasename = it.next();

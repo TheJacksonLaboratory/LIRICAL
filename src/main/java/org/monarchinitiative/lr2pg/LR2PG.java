@@ -4,18 +4,13 @@ package org.monarchinitiative.lr2pg;
 import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
 import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.Ontology;
-import com.github.phenomics.ontolib.ontology.data.TermId;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.command.Command;
-import org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata;
+
 import org.monarchinitiative.lr2pg.io.CommandParser;
 import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * This is the central class that coordinates the phenotype/genotype likelihood ratio test.

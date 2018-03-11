@@ -3,14 +3,14 @@ package org.monarchinitiative.lr2pg.hpo;
 /**
  * Created by ravanv on 1/8/18.
  */
-import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
-import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
+import com.github.phenomics.ontolib.formats.hpo.*;
 import com.github.phenomics.ontolib.ontology.data.*;
 import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
@@ -68,7 +68,7 @@ public class HpoCaseTest2 {
 
 
     @Test
-    public void testPipeline() {
+    public void testPipeline() throws Lr2pgException {
         hpocase.calculateLikelihoodRatios();
         int expected=4;
         hpocase.outputResults();

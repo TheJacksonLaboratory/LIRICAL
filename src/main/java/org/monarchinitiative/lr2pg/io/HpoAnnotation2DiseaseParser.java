@@ -1,17 +1,12 @@
 package org.monarchinitiative.lr2pg.io;
 
-import com.github.phenomics.ontolib.formats.hpo.HpoFrequency;
-import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
+import com.github.phenomics.ontolib.formats.hpo.*;
 import com.github.phenomics.ontolib.ontology.data.TermId;
-import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
 import com.github.phenomics.ontolib.ontology.data.*;
 import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata;
-import org.monarchinitiative.lr2pg.hpo.HpoOnset;
-import org.monarchinitiative.lr2pg.hpo.ImmutableTermIdWithMetadata;
-import org.monarchinitiative.lr2pg.hpo.TermIdWithMetadata;
+
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -93,6 +88,7 @@ public class HpoAnnotation2DiseaseParser {
             final ImmutableList.Builder<TermId> inheritanceListBuilder = ImmutableList.builder();
             final ImmutableList.Builder<TermId> negativeTermListBuilder = ImmutableList.builder();
             String diseaseName=null;
+            String databaseId=null;
             for (AnnotationLine line: annots) {
                 if (isInheritanceTerm( line.hpoId) ) {
                     inheritanceListBuilder.add(line.hpoId);
@@ -103,9 +99,11 @@ public class HpoAnnotation2DiseaseParser {
                     phenoListBuilder.add(tidm);
                 }
                 if (line.DbObjectName!=null) diseaseName=line.DbObjectName;
+                if (line.database!=null) databaseId=line.database;
                 }
             HpoDiseaseWithMetadata hpoDisease = new HpoDiseaseWithMetadata(diseaseName,
                     diseaseId,
+                    databaseId,
                     phenoListBuilder.build(),
                     inheritanceListBuilder.build(),
                     negativeTermListBuilder.build());
@@ -192,7 +190,7 @@ public class HpoAnnotation2DiseaseParser {
 
     /**
      * A convenience class that will allow us to collect the annotation lines for each disease that we want to
-     * parse; from these data, we will construct the {@link org.monarchinitiative.lr2pg.hpo.HpoDiseaseWithMetadata}
+     * parse; from these data, we will construct the {@link HpoDiseaseWithMetadata}
      * objects
      */
     private static class AnnotationLine {

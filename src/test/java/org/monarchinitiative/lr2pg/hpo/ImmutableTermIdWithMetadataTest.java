@@ -1,6 +1,9 @@
 package org.monarchinitiative.lr2pg.hpo;
 
 import com.github.phenomics.ontolib.formats.hpo.HpoFrequency;
+import com.github.phenomics.ontolib.formats.hpo.HpoOnset;
+import com.github.phenomics.ontolib.formats.hpo.ImmutableTermIdWithMetadata;
+import com.github.phenomics.ontolib.formats.hpo.TermIdWithMetadata;
 import com.github.phenomics.ontolib.ontology.data.ImmutableTermId;
 import com.github.phenomics.ontolib.ontology.data.ImmutableTermPrefix;
 import com.github.phenomics.ontolib.ontology.data.TermId;
@@ -44,7 +47,7 @@ public class ImmutableTermIdWithMetadataTest {
     public void testEqualityOfTerms2() {
         TermId oxycephalyId = new ImmutableTermId(HP_PREFIX,"0000263");
         TermIdWithMetadata oxycephaly1 = new ImmutableTermIdWithMetadata( oxycephalyId,defaultFrequency,null);
-        TermIdWithMetadata oxycephaly2 = new ImmutableTermIdWithMetadata( oxycephalyId,defaultFrequency,HpoOnset.ADULT_ONSET);
+        TermIdWithMetadata oxycephaly2 = new ImmutableTermIdWithMetadata( oxycephalyId,defaultFrequency, HpoOnset.ADULT_ONSET);
         assertNotEquals(oxycephaly1,oxycephaly2);
     }
 

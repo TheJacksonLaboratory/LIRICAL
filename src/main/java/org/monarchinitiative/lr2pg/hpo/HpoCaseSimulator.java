@@ -1,19 +1,16 @@
 package org.monarchinitiative.lr2pg.hpo;
 
 
-import com.github.phenomics.ontolib.formats.hpo.HpoFrequency;
-import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
-import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
+import com.github.phenomics.ontolib.formats.hpo.*;
 import com.github.phenomics.ontolib.ontology.data.*;
 import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.monarchinitiative.lr2pg.LR2PGException;
+import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -78,11 +75,11 @@ public class HpoCaseSimulator {
 
 
 
-    public HpoCaseSimulator(String datadir) throws LR2PGException {
+    public HpoCaseSimulator(String datadir) throws Lr2pgException {
         try {
             inputHpoOntologyAndAnnotations(datadir);
         } catch (Exception e) {
-            throw new LR2PGException(e.getMessage());
+            throw new Lr2pgException(e.getMessage());
         }
     }
 
@@ -189,7 +186,12 @@ public class HpoCaseSimulator {
 //        }
 
         HpoCase hpocase = new HpoCase(phenotypeSubOntology,d2termFreqMap,diseasename,termlist);
-        hpocase.calculateLikelihoodRatios();
+        try {
+            hpocase.calculateLikelihoodRatios();
+        } catch (Lr2pgException e) {
+            e.printStackTrace();
+            return 0;
+        }
         int rank=hpocase.getRank(diseasename);
         System.out.println(String.format("Rank of %s was %d/%d",diseasename,rank,hpocase.getTotalResultCount()));
         return rank;
