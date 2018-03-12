@@ -1,25 +1,25 @@
 package org.monarchinitiative.lr2pg.hpo;
 
-import com.github.phenomics.ontolib.formats.hpo.HpoDiseaseWithMetadata;
-import com.github.phenomics.ontolib.formats.hpo.HpoTerm;
-import com.github.phenomics.ontolib.formats.hpo.HpoTermRelation;
-import com.github.phenomics.ontolib.formats.hpo.TermIdWithMetadata;
-import com.github.phenomics.ontolib.ontology.data.Ontology;
-import com.github.phenomics.ontolib.ontology.data.TermId;
+
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.sun.tools.javac.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
-import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
-import util.Pair;
+
+import org.monarchinitiative.phenol.formats.hpo.HpoDiseaseWithMetadata;
+import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.formats.hpo.TermIdWithMetadata;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
+import org.monarchinitiative.phenol.ontology.data.TermId;
+import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
+
 
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
-import static com.github.phenomics.ontolib.ontology.algo.OntologyAlgorithm.getParentTerms;
+import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
+import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getParentTerms;
+
 
 /**
  * Creates a map from the {@code phenotype_annotation.tab} file that relates the
@@ -38,24 +38,45 @@ public class Disease2TermFrequency {
      private String hpoOboFilePath;
     /** Path to the {@code phenotype_annotation.tab} file. */
      private String hpoPhenotypeAnnotationPath;
+     private HpoOntology ontology;
     /** The subontology of the HPO with all the phenotypic abnormality terms. */
-    private  Ontology<HpoTerm, HpoTermRelation> phenotypeSubOntology =null;
-    /** The subontology of the HPO with all the inheritance terms. */
-    private  Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology=null;
-    /** This map has one entry for each disease in our database. */
+//    private  Ontology<HpoTerm, HpoTermRelation> phenotypeSubOntology =null;
+//    /** The subontology of the HPO with all the inheritance terms. */
+//    private  Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology=null;
+//    /** This map has one entry for each disease in our database. */
     private  Map<String,HpoDiseaseWithMetadata> diseaseMap;
 
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
 
+    private ImmutableList<TermId> phenoTermlist;
 
-    public Disease2TermFrequency(Ontology<HpoTerm, HpoTermRelation> pheno,
-                                 Ontology<HpoTerm, HpoTermRelation> inheri,
-                                 Map<String,HpoDiseaseWithMetadata> diseases) {
-        phenotypeSubOntology=pheno;
-        inheritanceSubontology=inheri;
+    private final static TermId PHENOTYPIC_ABNORMALITY = ImmutableTermId.constructWithPrefix("HP:0000118");
+
+
+    public Disease2TermFrequency(HpoOntology pheno, Map<String,HpoDiseaseWithMetadata> diseases) {
+        this.ontology=pheno;
         this.diseaseMap=diseases;
-        initializeFrequencyMapOLD();
+        Set<TermId> phenoset = getDescendents(ontology,PHENOTYPIC_ABNORMALITY);
+        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder();
+        for (TermId tid : phenoset) {
+            builder.add(tid);
+        }
+        phenoTermlist=builder.build();
+        //initializeFrequencyMapOLD();
     }
+
+
+    /**
+     * @return a random term from the phenotype subontology.
+     */
+    public TermId getRandomPhenotypeTerm() {
+        int n=phenoTermlist.size();
+        int r = (int)Math.floor(n*Math.random());
+        return phenoTermlist.get(r);
+    }
+
+
+
 
     /**
 //     * @param hpoPath path to {@code hp.obo}
@@ -101,7 +122,7 @@ public class Disease2TermFrequency {
      * Initialize the {@link #hpoTerm2OverallFrequency} object that has the background frequencies of each of the
      * HPO terms in the ontology.
      * todo refactor
-     */
+
     private void initializeFrequencyMapOLD() {
         Map<TermId, Double> mp = new HashMap<>();
         for (TermId tid : this.phenotypeSubOntology.getTermMap().keySet()) {
@@ -132,7 +153,7 @@ public class Disease2TermFrequency {
         }
         hpoTerm2OverallFrequency=imb.build();
         logger.trace("Got data on background frequency for " + hpoTerm2OverallFrequency.size() + " terms");
-    }
+    } */
 
 //    /*If the term is in the same subhierarchy, the frequency of a term is calculated based on the depth of the term and the level (distance) that it has from one of the
 //    HPO terms of the disease. The larger distance, the smaller frequency. The frequency decreases by a factor of (1/log(level)).
@@ -177,13 +198,13 @@ public class Disease2TermFrequency {
     private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.000_005; // 1:20,000
 
     private double getFrequencyIfNotAnnotated(TermId tid, String diseaseName) {
-        if (phenotypeSubOntology.getTermMap().get(tid)==null) {
+        if (ontology.getTermMap().get(tid)==null) {
             logger.error("Could not get term for "+tid.getIdWithPrefix());
-            logger.error("phenotypeSubOntology size "+phenotypeSubOntology.getTermMap().size());
+            logger.error("phenotypeSubOntology size "+ontology.getTermMap().size());
             //System.exit(1);
             return 0.001;
         }
-        tid = phenotypeSubOntology.getTermMap().get(tid).getId();
+        tid = ontology.getPrimaryTermId(tid);// make sure we have current tid
         int level = 0;
         double prob = 0;
         boolean foundannotation=false;
@@ -192,9 +213,9 @@ public class Disease2TermFrequency {
         currentlevel.add(tid);
         while (! currentlevel.isEmpty()) {
             level++;
-            Set<TermId> parents =  getParentTerms(phenotypeSubOntology,currentlevel);
+            Set<TermId> parents =  getParentTerms(ontology,currentlevel);
             for (TermId id : parents) {
-                if (phenotypeSubOntology.isRootTerm(id)) {
+                if (ontology.isRootTerm(id)) { // to do replace with Abnormal Phenotype root term id.
                     break;
                 }
                 TermIdWithMetadata timd = disease.getTermIdWithMetadata(id);
@@ -257,10 +278,6 @@ public class Disease2TermFrequency {
         return hpoTerm2OverallFrequency.get(termId);
     }
 
-
-    public Ontology<HpoTerm, HpoTermRelation> getPhenotypeSubOntology() {
-        return phenotypeSubOntology;
-    }
 
     public double getLikelihoodRatio(TermId tid, String diseaseName) {
 

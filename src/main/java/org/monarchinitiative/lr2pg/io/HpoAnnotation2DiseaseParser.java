@@ -1,17 +1,22 @@
 package org.monarchinitiative.lr2pg.io;
 
-import com.github.phenomics.ontolib.formats.hpo.*;
-import com.github.phenomics.ontolib.ontology.data.TermId;
-import com.github.phenomics.ontolib.ontology.data.*;
+
 import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.monarchinitiative.phenol.formats.hpo.*;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
+import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+
+import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.existsPath;
 
 /**
  * This class parses the phenotype_annotation.tab file into a collection of HpoDisease objects.
@@ -20,8 +25,9 @@ public class HpoAnnotation2DiseaseParser {
     private static final Logger logger = LogManager.getLogger();
 
     private String annotationFilePath =null;
-    private Ontology<HpoTerm, HpoTermRelation> hpoPhenotypeOntology=null;
-    private Ontology<HpoTerm, HpoTermRelation> inheritancePhenotypeOntology=null;
+
+    private HpoOntology ontology;
+
 
     private static final TermPrefix HP_PREFIX = new ImmutableTermPrefix("HP");
     private static final TermId INHERITANCE_ROOT = new ImmutableTermId(HP_PREFIX,"0000005");
@@ -32,15 +38,13 @@ public class HpoAnnotation2DiseaseParser {
 
 
 
-    Map<String,HpoDiseaseWithMetadata> diseaseMap;
+    private Map<String,HpoDiseaseWithMetadata> diseaseMap;
 
 
 
-    public HpoAnnotation2DiseaseParser(String annotationFile, Ontology<HpoTerm, HpoTermRelation> phenotypeOntology,
-                                       Ontology<HpoTerm, HpoTermRelation> inheritanceOntology){
+    public HpoAnnotation2DiseaseParser(String annotationFile, HpoOntology ontology){
         this.annotationFilePath =annotationFile;
-        this.hpoPhenotypeOntology=phenotypeOntology;
-        this.inheritancePhenotypeOntology=inheritanceOntology;
+        this.ontology=ontology;
         this.diseaseMap=new HashMap<>();
         parseAnnotation();
     }
@@ -64,7 +68,7 @@ public class HpoAnnotation2DiseaseParser {
             while ((line=br.readLine())!=null) {
                 //System.out.println(line);
                 AnnotationLine aline = parseAnnotationLine(line);
-                List annots=null;
+                List annots;
                 if (disease2AnnotLineMap.containsKey(aline.DBObjectId)) {
                     annots = disease2AnnotLineMap.get(aline.DBObjectId);
                 } else {
@@ -122,8 +126,7 @@ public class HpoAnnotation2DiseaseParser {
      * @return true of tid is an inheritance term
      */
    private boolean isInheritanceTerm(TermId tid) {
-       return inheritancePhenotypeOntology.getAncestorTermIds(tid) != null &&
-               inheritancePhenotypeOntology.getAncestorTermIds(tid).contains(INHERITANCE_ROOT);
+       return  (existsPath(ontology,tid,INHERITANCE_ROOT));
    }
 
 

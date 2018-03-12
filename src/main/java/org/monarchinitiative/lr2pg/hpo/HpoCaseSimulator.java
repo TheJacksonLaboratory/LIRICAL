@@ -1,36 +1,40 @@
 package org.monarchinitiative.lr2pg.hpo;
 
 
-import com.github.phenomics.ontolib.formats.hpo.*;
-import com.github.phenomics.ontolib.ontology.data.*;
+
 import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
-import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
+import org.monarchinitiative.phenol.formats.hpo.*;
+import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
+import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
+
 /**
  * A simulator that simulates cases from the {@link HpoDiseaseWithMetadata} objects by choosing a subset of terms
  * and adding noise terms.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
- * @version 0.0.1
+ * @version 0.0.2
  */
 public class HpoCaseSimulator {
     private static final Logger logger = LogManager.getLogger();
     /** The subontology of the HPO with all the phenotypic abnormality terms. */
-    private static Ontology<HpoTerm, HpoTermRelation> phenotypeSubOntology =null;
-    /** The subontology of the HPO with all the inheritance terms. */
-    private static Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology=null;
+    private HpoOntology ontology =null;
 
 
 
 
-    Disease2TermFrequency d2termFreqMap;
+    private Disease2TermFrequency d2termFreqMap;
 
     /** THe file name of the HPO ontology file. */
     private static final String HP_OBO="hp.obo";
@@ -50,6 +54,8 @@ public class HpoCaseSimulator {
     private static final int DEFAULT_N_RANDOM_TERMS=2;
 
     private int n_n_random_terms_per_case=DEFAULT_N_RANDOM_TERMS;
+
+    private final static TermId PHENOTYPIC_ABNORMALITY = ImmutableTermId.constructWithPrefix("HP:0000118");
 
     private static final HpoFrequency[] FREQUENCYARRAY={
             HpoFrequency.ALWAYS_PRESENT,
@@ -123,20 +129,17 @@ public class HpoCaseSimulator {
 
 
     private TermIdWithMetadata getRandomTerm() {
-        int n = phenotypeSubOntology.countAllTerms();
-        int r = (int)Math.floor(n*Math.random());
-        TermId tid = (TermId)phenotypeSubOntology.getAllTermIds().toArray()[r];
+        TermId tid = d2termFreqMap.getRandomPhenotypeTerm();
         HpoFrequency randomFrequency=getRandomFrequency();
         HpoOnset randomOnset=getRandomOnset();
        // logger.trace(String.format("get random term freq=%s and onset=%s",randomFrequency.toTermId().getIdWithPrefix(),randomOnset.toString()));
-        TermIdWithMetadata tidm = new ImmutableTermIdWithMetadata(tid, randomFrequency, randomOnset);
-        return tidm;
+        return new ImmutableTermIdWithMetadata(tid, randomFrequency, randomOnset);
     }
 
     private Set<TermIdWithMetadata> getNTerms( int desiredsize,List<TermIdWithMetadata> abnormalities)  {
         Set<TermIdWithMetadata> rand=new HashSet<>();
         if (abnormalities.size()==0) return rand; // should never happen
-        if (abnormalities.size()==1) return new HashSet<TermIdWithMetadata>(abnormalities);
+        if (abnormalities.size()==1) return new HashSet<>(abnormalities);
         int maxindex = abnormalities.size()-1;
         int nTerms=Math.min(maxindex,desiredsize);
         // get maxindex distinct random integers that will be our random index values.
@@ -185,7 +188,7 @@ public class HpoCaseSimulator {
 //            System.out.println(t.toString());
 //        }
 
-        HpoCase hpocase = new HpoCase(phenotypeSubOntology,d2termFreqMap,diseasename,termlist);
+        HpoCase hpocase = new HpoCase(ontology,d2termFreqMap,diseasename,termlist);
         try {
             hpocase.calculateLikelihoodRatios();
         } catch (Lr2pgException e) {
@@ -201,7 +204,7 @@ public class HpoCaseSimulator {
 
 
     public void debugPrint() {
-        logger.trace(String.format("Got %d terms and %d diseases",phenotypeSubOntology.getAllTermIds().size(),
+        logger.trace(String.format("Got %d terms and %d diseases",ontology.getAllTermIds().size(),
                 diseaseMap.size()));
     }
 
@@ -209,16 +212,14 @@ public class HpoCaseSimulator {
     private void inputHpoOntologyAndAnnotations(String datadir) throws Exception {
         String hpopath=String.format("%s%s%s",datadir, File.separator,HP_OBO);
         String annotationpath=String.format("%s%s%s",datadir,File.separator,HP_PHENOTYPE_ANNOTATION);
-        HpoOntologyParser parser = new HpoOntologyParser(hpopath);
-        parser.parseOntology();
-        phenotypeSubOntology = parser.getPhenotypeSubontology();
-        inheritanceSubontology = parser.getInheritanceSubontology();
-        HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationpath,phenotypeSubOntology,inheritanceSubontology);
+        HpoOboParser parser = new HpoOboParser(new File(hpopath));
+        this.ontology= parser.parse();
+        HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationpath,ontology);
         diseaseMap=annotationParser.getDiseaseMap();
         String DEFAULT_FREQUENCY="0040280";
         final TermId DEFAULT_FREQUENCY_ID = new ImmutableTermId(HP_PREFIX,DEFAULT_FREQUENCY);
         defaultFrequency=HpoFrequency.fromTermId(DEFAULT_FREQUENCY_ID);
-        this.d2termFreqMap=new Disease2TermFrequency(phenotypeSubOntology,inheritanceSubontology,diseaseMap);
+        this.d2termFreqMap=new Disease2TermFrequency(ontology,diseaseMap);
         //this.d2termFreqMap = new Disease2TermFrequency(hpopath,annotationpath); //todo pass in the other objects
     }
 }

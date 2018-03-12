@@ -1,17 +1,17 @@
 package org.monarchinitiative.lr2pg.hpo;
 
-import com.github.phenomics.ontolib.formats.hpo.HpoFrequency;
-import com.github.phenomics.ontolib.formats.hpo.HpoOnset;
-import com.github.phenomics.ontolib.formats.hpo.ImmutableTermIdWithMetadata;
-import com.github.phenomics.ontolib.formats.hpo.TermIdWithMetadata;
-import com.github.phenomics.ontolib.ontology.data.ImmutableTermId;
-import com.github.phenomics.ontolib.ontology.data.ImmutableTermPrefix;
-import com.github.phenomics.ontolib.ontology.data.TermId;
-import com.github.phenomics.ontolib.ontology.data.TermPrefix;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.monarchinitiative.lr2pg.io.HPOOntologyParserTest;
-import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
+import org.monarchinitiative.phenol.formats.hpo.HpoFrequency;
+import org.monarchinitiative.phenol.formats.hpo.HpoOnset;
+import org.monarchinitiative.phenol.formats.hpo.ImmutableTermIdWithMetadata;
+import org.monarchinitiative.phenol.formats.hpo.TermIdWithMetadata;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
+import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.phenol.ontology.data.TermPrefix;
+
 
 import java.io.IOException;
 
