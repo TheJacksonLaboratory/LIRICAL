@@ -25,7 +25,7 @@ public class Disease2TermFrequencyTest {
 
     private static TermPrefix HP_PREFIX=null;
 
-    private static Disease2TermFrequency d2tf=null;
+    private static BackgroundForegroundTermFrequency d2tf=null;
 
     private static final double EPSILON=0.000001;
 
@@ -42,7 +42,7 @@ public class Disease2TermFrequencyTest {
         HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationPath,ontology);
         Map<String,HpoDiseaseWithMetadata> diseaseMap=annotationParser.getDiseaseMap();
         String DEFAULT_FREQUENCY="0040280";
-        d2tf=new Disease2TermFrequency(ontology,diseaseMap);
+        d2tf=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
     }
 
 

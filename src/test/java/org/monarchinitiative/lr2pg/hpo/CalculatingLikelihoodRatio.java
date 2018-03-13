@@ -8,8 +8,8 @@ import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.phenol.formats.hpo.HpoDiseaseWithMetadata;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.formats.hpo.ImmutableTermIdWithMetadata;
-import org.monarchinitiative.phenol.formats.hpo.TermIdWithMetadata;
+import org.monarchinitiative.phenol.formats.hpo.ImmutableHpoTermId;
+import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 public class CalculatingLikelihoodRatio {
     private static TermPrefix HP_PREFIX = null;
 
-    private static Disease2TermFrequency d2tf = null;
+    private static BackgroundForegroundTermFrequency d2tf = null;
 
     private static final double EPSILON = 0.000001;
 
@@ -51,12 +51,12 @@ public class CalculatingLikelihoodRatio {
         HpoAnnotation2DiseaseParser annotationParser = new HpoAnnotation2DiseaseParser(annotationPath, ontology);
         Map<String, HpoDiseaseWithMetadata> diseaseMap = annotationParser.getDiseaseMap();
         String DEFAULT_FREQUENCY = "0040280";
-        d2tf = new Disease2TermFrequency(ontology, diseaseMap);
+        d2tf = new BackgroundForegroundTermFrequency(ontology, diseaseMap);
         TermPrefix HP_PREFIX = new ImmutableTermPrefix("HP");
         //ImmutableTermIdWithMetadata t1 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX, "0000006"));
-        ImmutableTermIdWithMetadata t2 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX, "0001265"));
-        ImmutableTermIdWithMetadata t3 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX, "0012074"));
-        ImmutableList.Builder<TermIdWithMetadata> builder = new ImmutableList.Builder<>();
+        HpoTermId t2 = new ImmutableHpoTermId( "HP:0001265");
+        HpoTermId t3 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX, "0012074"));
+        ImmutableList.Builder<HpoTermId> builder = new ImmutableList.Builder<>();
         builder.add(t2,t3);
         hpocase = new HpoCase(ontology,d2tf,diseaseName,builder.build());
     }

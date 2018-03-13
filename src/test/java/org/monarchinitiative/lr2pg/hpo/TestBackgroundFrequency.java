@@ -27,14 +27,14 @@ public class TestBackgroundFrequency {
     /** THe file name of the HPO ontology file. */
     private static final String HP_OBO="hp.obo";
     /** The file name of the HPO annotation file. */
-    private static final String HP_PHENOTYPE_ANNOTATION="phenotype_annotation.tab";
+    private static final String HP_PHENOTYPE_ANNOTATION_PATH ="phenotype.hpoa";
 
     /** The subontology of the HPO with all the phenotypic abnormality terms. */
     private HpoOntology ontology =null;
 
 
 
-    private Disease2TermFrequency d2termFreqMap;
+    private BackgroundForegroundTermFrequency d2termFreqMap;
 
     private static Map<String,HpoDiseaseWithMetadata> diseaseMap;
 
@@ -77,7 +77,7 @@ public class TestBackgroundFrequency {
     public void init() throws IOException {
         ClassLoader classLoader = TestBackgroundFrequency.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
-        String annotationpath=classLoader.getResource("phenotype_annotation.tab").getFile();
+        String annotationpath=classLoader.getResource(HP_PHENOTYPE_ANNOTATION_PATH).getFile();
         HpoOboParser parser = new HpoOboParser(new File(hpoPath));
         ontology=parser.parse();
         HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationpath,ontology);
@@ -85,7 +85,7 @@ public class TestBackgroundFrequency {
         String DEFAULT_FREQUENCY="0040280";
         final TermId DEFAULT_FREQUENCY_ID = new ImmutableTermId(HP_PREFIX,DEFAULT_FREQUENCY);
         defaultFrequency=HpoFrequency.fromTermId(DEFAULT_FREQUENCY_ID);
-        this.d2termFreqMap=new Disease2TermFrequency(ontology,diseaseMap);
+        this.d2termFreqMap=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
     }
 
 
@@ -97,7 +97,7 @@ public class TestBackgroundFrequency {
      */
     @Test
     public void testTermNotInCorpusBackgroundFreqeuncy() throws Exception {
-        HpoDiseaseWithMetadata disease = diseaseMap.get("613172");
+        HpoDiseaseWithMetadata disease = diseaseMap.get("OMIM:613172");
         assertNotNull(disease);
         int expected_n_annotations=3;
         assertEquals(expected_n_annotations,disease.getPhenotypicAbnormalities().size());
@@ -106,7 +106,7 @@ public class TestBackgroundFrequency {
 
         TermId queryTerm = new ImmutableTermId(HP_PREFIX,"0031301");
 
-        double backgroundFrequency = 42;//d2termFreqMap.getBackgroundFrequency(queryTerm);
+        double backgroundFrequency = d2termFreqMap.getBackgroundFrequency(queryTerm);
         assertTrue(backgroundFrequency>0);
 
     }

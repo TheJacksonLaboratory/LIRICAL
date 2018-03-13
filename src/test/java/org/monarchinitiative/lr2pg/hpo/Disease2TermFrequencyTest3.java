@@ -26,7 +26,7 @@ import static org.junit.Assert.assertNotNull;
 public class Disease2TermFrequencyTest3 {
     private static TermPrefix HP_PREFIX=null;
 
-    private static Disease2TermFrequency d2tf=null;
+    private static BackgroundForegroundTermFrequency d2tf=null;
 
     private static final double EPSILON=0.000001;
     private static String diseaseName = "100300";
@@ -44,7 +44,7 @@ public class Disease2TermFrequencyTest3 {
         HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationPath,ontology);
         Map<String,HpoDiseaseWithMetadata> diseaseMap=annotationParser.getDiseaseMap();
         String DEFAULT_FREQUENCY="0040280";
-        d2tf=new Disease2TermFrequency(ontology,diseaseMap);
+        d2tf=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
     }
 
     @Test

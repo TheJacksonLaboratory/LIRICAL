@@ -9,8 +9,8 @@ import org.junit.Test;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.phenol.formats.hpo.HpoDiseaseWithMetadata;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.formats.hpo.ImmutableTermIdWithMetadata;
-import org.monarchinitiative.phenol.formats.hpo.TermIdWithMetadata;
+import org.monarchinitiative.phenol.formats.hpo.ImmutableHpoTermId;
+import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
@@ -39,17 +39,17 @@ public class HpoCaseTest {
         HpoOntology ontology =parser.parse();
         HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationPath,ontology);
         Map<String,HpoDiseaseWithMetadata> diseaseMap=annotationParser.getDiseaseMap();
-        Disease2TermFrequency d2fmap=new Disease2TermFrequency(ontology,diseaseMap);
+        BackgroundForegroundTermFrequency d2fmap=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
         //String caseFile = classLoader.getResource("HPOTerms").getFile();
 
         /* these are the phenotypic abnormalties of our "case" */
         TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
-        ImmutableTermIdWithMetadata t1 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0006855"));
-        ImmutableTermIdWithMetadata t2 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0000651"));
-        ImmutableTermIdWithMetadata t3 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0010545"));
-        ImmutableTermIdWithMetadata t4 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0001260"));
-        ImmutableTermIdWithMetadata t5 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0001332"));
-        ImmutableList.Builder<TermIdWithMetadata> builder = new ImmutableList.Builder<>();
+        HpoTermId t1 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX,"0006855"));
+        HpoTermId t2 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX,"0000651"));
+        HpoTermId t3 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX,"0010545"));
+        HpoTermId t4 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX,"0001260"));
+        HpoTermId t5 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX,"0001332"));
+        ImmutableList.Builder<HpoTermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
 
         hpocase = new HpoCase(ontology,d2fmap,diseasename,builder.build());

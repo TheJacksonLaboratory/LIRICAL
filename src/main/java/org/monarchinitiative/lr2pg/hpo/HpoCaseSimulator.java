@@ -30,16 +30,19 @@ public class HpoCaseSimulator {
     private static final Logger logger = LogManager.getLogger();
     /** The subontology of the HPO with all the phenotypic abnormality terms. */
     private HpoOntology ontology =null;
+    /** AN object that calculates the foreground frequency of an HPO term in a disease as well as the background frequency */
+    private BackgroundForegroundTermFrequency bftfrequency;
+
+    private ImmutableList<TermId> phenotypeterms;
 
 
 
-
-    private Disease2TermFrequency d2termFreqMap;
+//    private Disease2TermFrequency d2termFreqMap;
 
     /** THe file name of the HPO ontology file. */
     private static final String HP_OBO="hp.obo";
     /** The file name of the HPO annotation file. */
-    private static final String HP_PHENOTYPE_ANNOTATION="phenotype_annotation.tab";
+    private static final String HP_PHENOTYPE_ANNOTATION="phenotype.hpoa";
 
     private static Map<String,HpoDiseaseWithMetadata> diseaseMap;
 
@@ -87,6 +90,12 @@ public class HpoCaseSimulator {
         } catch (Exception e) {
             throw new Lr2pgException(e.getMessage());
         }
+        Set<TermId> descendents=getDescendents(ontology,PHENOTYPIC_ABNORMALITY);
+        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
+        for (TermId t: descendents) {
+            builder.add(t);
+        }
+        this.phenotypeterms=builder.build();
     }
 
 
@@ -127,17 +136,20 @@ public class HpoCaseSimulator {
         return ONSETARRAY[r];
     }
 
-
-    private TermIdWithMetadata getRandomTerm() {
-        TermId tid = d2termFreqMap.getRandomPhenotypeTerm();
+    /**
+     * @return a random term from the phenotype subontology.
+     */
+    public HpoTermId getRandomPhenotypeTerm() {
+        int n=phenotypeterms.size();
+        int r = (int)Math.floor(n*Math.random());
+        TermId tid = phenotypeterms.get(r);
         HpoFrequency randomFrequency=getRandomFrequency();
         HpoOnset randomOnset=getRandomOnset();
-       // logger.trace(String.format("get random term freq=%s and onset=%s",randomFrequency.toTermId().getIdWithPrefix(),randomOnset.toString()));
-        return new ImmutableTermIdWithMetadata(tid, randomFrequency, randomOnset);
+        return new ImmutableHpoTermId.Builder(tid).frequency(randomFrequency.mean()).onset(randomOnset).build();
     }
 
-    private Set<TermIdWithMetadata> getNTerms( int desiredsize,List<TermIdWithMetadata> abnormalities)  {
-        Set<TermIdWithMetadata> rand=new HashSet<>();
+    private Set<HpoTermId> getNTerms( int desiredsize,List<HpoTermId> abnormalities)  {
+        Set<HpoTermId> rand=new HashSet<>();
         if (abnormalities.size()==0) return rand; // should never happen
         if (abnormalities.size()==1) return new HashSet<>(abnormalities);
         int maxindex = abnormalities.size()-1;
@@ -159,8 +171,8 @@ public class HpoCaseSimulator {
         int n_terms=Math.min(disease.getNumberOfPhenotypeAnnotations(),n_terms_per_case);
         int n_random=Math.min(n_terms,n_n_random_terms_per_case);
         //logger.trace(String.format("Performing simulation on %s with %d randomly chosen terms and %d noise terms",disease.getName(), n_terms,n_random));
-        List<TermIdWithMetadata> abnormalities = disease.getPhenotypicAbnormalities();
-        ImmutableList.Builder<TermIdWithMetadata> builder = new ImmutableList.Builder<>();
+        List<HpoTermId> abnormalities = disease.getPhenotypicAbnormalities();
+        ImmutableList.Builder<HpoTermId> builder = new ImmutableList.Builder<>();
         try {
             builder.addAll(getNTerms(n_terms, abnormalities));
         } catch (Exception e) {
@@ -180,15 +192,15 @@ public class HpoCaseSimulator {
                 builder.add( tidm);
             }*/
           for(int i=0;i<n_random;i++){
-                TermIdWithMetadata t = getRandomTerm();
+              HpoTermId t = getRandomPhenotypeTerm();
                  builder.add(t);
           }
-        ImmutableList<TermIdWithMetadata> termlist = builder.build();
+        ImmutableList<HpoTermId> termlist = builder.build();
 //        for (TermIdWithMetadata t : termlist) {
 //            System.out.println(t.toString());
 //        }
 
-        HpoCase hpocase = new HpoCase(ontology,d2termFreqMap,diseasename,termlist);
+        HpoCase hpocase = new HpoCase(ontology,bftfrequency,diseasename,termlist);
         try {
             hpocase.calculateLikelihoodRatios();
         } catch (Lr2pgException e) {
@@ -216,10 +228,8 @@ public class HpoCaseSimulator {
         this.ontology= parser.parse();
         HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationpath,ontology);
         diseaseMap=annotationParser.getDiseaseMap();
-        String DEFAULT_FREQUENCY="0040280";
-        final TermId DEFAULT_FREQUENCY_ID = new ImmutableTermId(HP_PREFIX,DEFAULT_FREQUENCY);
-        defaultFrequency=HpoFrequency.fromTermId(DEFAULT_FREQUENCY_ID);
-        this.d2termFreqMap=new Disease2TermFrequency(ontology,diseaseMap);
+       // this.d2termFreqMap=new Disease2TermFrequency(ontology,diseaseMap);
+        bftfrequency=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
         //this.d2termFreqMap = new Disease2TermFrequency(hpopath,annotationpath); //todo pass in the other objects
     }
 }
