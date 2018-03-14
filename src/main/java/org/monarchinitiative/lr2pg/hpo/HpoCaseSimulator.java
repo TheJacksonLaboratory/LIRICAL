@@ -21,7 +21,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
 
 /**
- * A simulator that simulates cases from the {@link HpoDiseaseWithMetadata} objects by choosing a subset of terms
+ * A simulator that simulates cases from the {@link HpoDisease} objects by choosing a subset of terms
  * and adding noise terms.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  * @version 0.0.2
@@ -44,7 +44,7 @@ public class HpoCaseSimulator {
     /** The file name of the HPO annotation file. */
     private static final String HP_PHENOTYPE_ANNOTATION="phenotype.hpoa";
 
-    private static Map<String,HpoDiseaseWithMetadata> diseaseMap;
+    private static Map<String,HpoDisease> diseaseMap;
 
     private static TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
 
@@ -104,7 +104,7 @@ public class HpoCaseSimulator {
         int LIMIT=1000;
         Map<Integer,Integer> ranks=new HashMap<>();
         for (String diseasename : diseaseMap.keySet()) {
-            HpoDiseaseWithMetadata disease = diseaseMap.get(diseasename);
+            HpoDisease disease = diseaseMap.get(diseasename);
             if (disease.getNumberOfPhenotypeAnnotations() == 0) {
                 logger.trace(String.format("Skipping disease %s because it has no phenotypic annotations", disease.getName()));
                 continue;
@@ -162,7 +162,7 @@ public class HpoCaseSimulator {
 
 
     public int simulateCase(String diseasename) {
-        HpoDiseaseWithMetadata disease = diseaseMap.get(diseasename);
+        HpoDisease disease = diseaseMap.get(diseasename);
         if (disease==null) {
             logger.error("Should never happen -- could not retrieve disease for " + diseasename);
             return -1;

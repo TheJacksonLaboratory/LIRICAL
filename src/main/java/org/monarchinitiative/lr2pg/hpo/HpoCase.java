@@ -6,7 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
-import org.monarchinitiative.phenol.formats.hpo.HpoDiseaseWithMetadata;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.formats.hpo.HpoTerm;
 import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
@@ -54,9 +54,9 @@ public class HpoCase {
      * {@link #results}.
      */
     public void calculateLikelihoodRatios() throws Lr2pgException {
-        Iterator<HpoDiseaseWithMetadata> it = disease2TermFrequencyMap.getDiseaseIterator();
+        Iterator<HpoDisease> it = disease2TermFrequencyMap.getDiseaseIterator();
         while (it.hasNext()) {
-            HpoDiseaseWithMetadata disease = it.next();
+            HpoDisease disease = it.next();
             String diseasename = disease.getName();
             ImmutableList.Builder<Double> builder = new ImmutableList.Builder();
             for (HpoTermId tid : this.observedAbnormalities) {

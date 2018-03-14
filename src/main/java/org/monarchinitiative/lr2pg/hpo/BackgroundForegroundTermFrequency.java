@@ -5,7 +5,7 @@ package org.monarchinitiative.lr2pg.hpo;
 import com.google.common.collect.ImmutableMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.monarchinitiative.phenol.formats.hpo.HpoDiseaseWithMetadata;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
@@ -29,7 +29,7 @@ public class BackgroundForegroundTermFrequency {
     /** The HPO ontology with all of its subontologies. */
     private final HpoOntology ontology;
     /** This map has one entry for each disease in our database. */
-    private final Map<String, HpoDiseaseWithMetadata> diseaseMap;
+    private final Map<String, HpoDisease> diseaseMap;
     /** Overall, i.e., background frequency of each HPO term. */
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
 
@@ -46,7 +46,7 @@ public class BackgroundForegroundTermFrequency {
     private String RELATED = "Related";
 
     public BackgroundForegroundTermFrequency(HpoOntology onto,
-                                             Map<String, HpoDiseaseWithMetadata> diseases) {
+                                             Map<String, HpoDisease> diseases) {
         this.ontology=onto;
         this.diseaseMap = diseases;
         initializeFrequencyMap();
@@ -54,14 +54,14 @@ public class BackgroundForegroundTermFrequency {
 
 
     /** @return iterator over the diseases in the database.*/
-    public Iterator<HpoDiseaseWithMetadata> getDiseaseIterator() {
+    public Iterator<HpoDisease> getDiseaseIterator() {
         return this.diseaseMap.values().iterator();
     }
 
 
     public double getLikelihoodRatio(TermId tid, String diseaseName) {
 
-        HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
+        HpoDisease disease = diseaseMap.get(diseaseName);
         if (disease==null) {
 //            logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
             System.exit(1);
@@ -73,7 +73,7 @@ public class BackgroundForegroundTermFrequency {
     }
 
     public double getFrequencyOfTermInDisease(String diseaseName, TermId term) {
-        HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
+        HpoDisease disease = diseaseMap.get(diseaseName);
         if (disease==null) {
 //            logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
             System.exit(1);
@@ -98,7 +98,7 @@ public class BackgroundForegroundTermFrequency {
         int level = 0;
         double prob = 0;
         boolean foundannotation=false;
-        HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
+        HpoDisease disease = diseaseMap.get(diseaseName);
         Set<TermId> currentlevel=new HashSet<>();
         currentlevel.add(tid);
         while (! currentlevel.isEmpty()) {
@@ -156,7 +156,7 @@ public class BackgroundForegroundTermFrequency {
             mp.put(tid, 0.0D);
         }
         ImmutableMap.Builder<TermId, Double> imb = new ImmutableMap.Builder<>();
-        for (HpoDiseaseWithMetadata dis : this.diseaseMap.values()) {
+        for (HpoDisease dis : this.diseaseMap.values()) {
             for (HpoTermId tidm : dis.getPhenotypicAbnormalities()) {
                 TermId tid = tidm.getTermId();
                 if (!mp.containsKey(tid)) {
@@ -201,7 +201,7 @@ public class BackgroundForegroundTermFrequency {
     6. TID is unrelated to any term in the disease annotations
      */
     private double getFrequencyTerm(TermId query, String diseaseName){
-        HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
+        HpoDisease disease = diseaseMap.get(diseaseName);
 
       for (TermId tid : disease.getPhenotypicAbnormalities()) {
           if ( tid.equals(query) )  return getAdjustedFrequency(tid,query,diseaseName,IDENTICAL);
@@ -224,7 +224,7 @@ public class BackgroundForegroundTermFrequency {
   }
 
    private double getAdjustedFrequency(TermId tid, TermId queryTerm, String diseaseName, String relation){
-      HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
+       HpoDisease disease = diseaseMap.get(diseaseName);
        HpoTermId timd = disease.getTermIdWithMetadata(tid);
 
       switch (relation) {
@@ -263,7 +263,7 @@ public class BackgroundForegroundTermFrequency {
      * @return frequency
      */
     private double getFrequencySubclassTerm(TermId tid, TermId query, String diseaseName) {
-        HpoDiseaseWithMetadata disease = diseaseMap.get(diseaseName);
+        HpoDisease disease = diseaseMap.get(diseaseName);
         HpoTermId timd = disease.getTermIdWithMetadata(tid);
         double prob = 0;
         //Needs to be completed.

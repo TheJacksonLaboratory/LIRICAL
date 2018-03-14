@@ -4,7 +4,7 @@ package org.monarchinitiative.lr2pg.io;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.phenol.base.PhenolException;
-import org.monarchinitiative.phenol.formats.hpo.HpoDiseaseWithMetadata;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 
@@ -22,7 +22,7 @@ public class HpoAnnotation2DiseaseParser {
     /** Reference to the HPO ontology. */
     private HpoOntology ontology;
     /** Key: a disease ID such as OMIM:123456. Value: Corresponding disease object. */
-    private Map<String,HpoDiseaseWithMetadata> diseaseMap;
+    private Map<String,HpoDisease> diseaseMap;
 
 
 
@@ -34,7 +34,7 @@ public class HpoAnnotation2DiseaseParser {
     }
 
 
-    public Map<String, HpoDiseaseWithMetadata> getDiseaseMap() {
+    public Map<String, HpoDisease> getDiseaseMap() {
         return diseaseMap;
     }
 

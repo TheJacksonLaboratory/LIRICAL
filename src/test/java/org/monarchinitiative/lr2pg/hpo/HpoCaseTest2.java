@@ -40,7 +40,7 @@ public class HpoCaseTest2 {
         HpoOboParser parser = new HpoOboParser(new File(hpoPath));
         HpoOntology ontology =parser.parse();
         HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationPath,ontology);
-        Map<String,HpoDiseaseWithMetadata> diseaseMap=annotationParser.getDiseaseMap();
+        Map<String,HpoDisease> diseaseMap=annotationParser.getDiseaseMap();
         BackgroundForegroundTermFrequency d2fmap=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
         //String caseFile = classLoader.getResource("HPOTerms").getFile();
 

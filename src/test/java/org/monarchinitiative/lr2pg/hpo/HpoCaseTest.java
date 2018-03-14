@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
-import org.monarchinitiative.phenol.formats.hpo.HpoDiseaseWithMetadata;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.formats.hpo.ImmutableHpoTermId;
 import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
@@ -38,7 +38,7 @@ public class HpoCaseTest {
         HpoOboParser parser = new HpoOboParser(new File(hpoPath));
         HpoOntology ontology =parser.parse();
         HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationPath,ontology);
-        Map<String,HpoDiseaseWithMetadata> diseaseMap=annotationParser.getDiseaseMap();
+        Map<String,HpoDisease> diseaseMap=annotationParser.getDiseaseMap();
         BackgroundForegroundTermFrequency d2fmap=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
         //String caseFile = classLoader.getResource("HPOTerms").getFile();
 

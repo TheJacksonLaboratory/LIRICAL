@@ -4,7 +4,7 @@ package org.monarchinitiative.lr2pg.hpo;
 import org.junit.Before;
 import org.junit.Test;
 import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
-import org.monarchinitiative.phenol.formats.hpo.HpoDiseaseWithMetadata;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoFrequency;
 import org.monarchinitiative.phenol.formats.hpo.HpoOnset;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -36,7 +36,7 @@ public class TestBackgroundFrequency {
 
     private BackgroundForegroundTermFrequency d2termFreqMap;
 
-    private static Map<String,HpoDiseaseWithMetadata> diseaseMap;
+    private static Map<String,HpoDisease> diseaseMap;
 
     private static TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
 
@@ -97,7 +97,7 @@ public class TestBackgroundFrequency {
      */
     @Test
     public void testTermNotInCorpusBackgroundFreqeuncy() throws Exception {
-        HpoDiseaseWithMetadata disease = diseaseMap.get("OMIM:613172");
+        HpoDisease disease = diseaseMap.get("OMIM:613172");
         assertNotNull(disease);
         int expected_n_annotations=3;
         assertEquals(expected_n_annotations,disease.getPhenotypicAbnormalities().size());
