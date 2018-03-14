@@ -85,7 +85,6 @@ public class HpoCase {
             if (r.getDiseasename().equals(diseasename)) { return rank; }
         }
         return rank;
-
     }
 
     public void outputResults() {
