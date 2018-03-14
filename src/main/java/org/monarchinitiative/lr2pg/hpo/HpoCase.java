@@ -8,7 +8,6 @@ import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.formats.hpo.HpoTerm;
 import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
 
 
@@ -25,7 +24,7 @@ public class HpoCase {
     private static final Logger logger = LogManager.getLogger();
     /** The {@link BackgroundForegroundTermFrequency} has data on each disease. Within this class, we iterate over each disease
      * in order to get the overall likelihood ratio for the diagnosis*/
-    private BackgroundForegroundTermFrequency disease2TermFrequencyMap=null;
+    private BackgroundForegroundTermFrequency bftFrequency =null;
 
     private String disease=null;
     /** List of Hpo terms for our case. TODO add negative annotations. */
@@ -41,7 +40,7 @@ public class HpoCase {
                    BackgroundForegroundTermFrequency diseaseFreqMap,
                    String diseaseNane,
                    List<HpoTermId> observedAbn) {
-        this.disease2TermFrequencyMap=diseaseFreqMap;
+        this.bftFrequency =diseaseFreqMap;
         this.hpoOntology=ontol;
         this.disease=diseaseNane;
         this.observedAbnormalities=observedAbn;
@@ -49,21 +48,20 @@ public class HpoCase {
     }
 
     /**
-     * Calculate the likelihood ratio for the diagnosis of each disease in {@link #disease2TermFrequencyMap}
+     * Calculate the likelihood ratio for the diagnosis of each disease in {@link #bftFrequency}
      * given the observed phenotypic abnormalities in {@link #observedAbnormalities}. Place the results into
      * {@link #results}.
      */
     public void calculateLikelihoodRatios() throws Lr2pgException {
-        Iterator<HpoDisease> it = disease2TermFrequencyMap.getDiseaseIterator();
+        Iterator<String> it = bftFrequency.getDiseaseIterator();
         while (it.hasNext()) {
-            HpoDisease disease = it.next();
-            String diseasename = disease.getName();
+            String disease = it.next();
             ImmutableList.Builder<Double> builder = new ImmutableList.Builder();
             for (HpoTermId tid : this.observedAbnormalities) {
-                double LR = disease2TermFrequencyMap.getLikelihoodRatio(tid,diseasename);
+                double LR = bftFrequency.getLikelihoodRatio(tid,disease);
                 builder.add(LR);
             }
-            TestResult result = new TestResult(builder.build(),diseasename);
+            TestResult result = new TestResult(builder.build(),disease);
             results.add(result);
         }
     }

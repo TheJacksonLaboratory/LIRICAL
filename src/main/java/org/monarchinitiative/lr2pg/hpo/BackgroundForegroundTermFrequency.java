@@ -54,8 +54,8 @@ public class BackgroundForegroundTermFrequency {
 
 
     /** @return iterator over the diseases in the database.*/
-    public Iterator<HpoDisease> getDiseaseIterator() {
-        return this.diseaseMap.values().iterator();
+    public Iterator<String> getDiseaseIterator() {
+        return this.diseaseMap.keySet().iterator();
     }
 
 

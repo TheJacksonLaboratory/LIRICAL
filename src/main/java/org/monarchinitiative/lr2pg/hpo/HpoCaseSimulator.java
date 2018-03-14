@@ -10,9 +10,7 @@ import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.phenol.formats.hpo.*;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
-import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import java.io.File;
 import java.util.*;
@@ -30,34 +28,25 @@ public class HpoCaseSimulator {
     private static final Logger logger = LogManager.getLogger();
     /** The subontology of the HPO with all the phenotypic abnormality terms. */
     private HpoOntology ontology =null;
-    /** AN object that calculates the foreground frequency of an HPO term in a disease as well as the background frequency */
+    /** An object that calculates the foreground frequency of an HPO term in a disease as well as the background frequency */
     private BackgroundForegroundTermFrequency bftfrequency;
-
-    private ImmutableList<TermId> phenotypeterms;
-
-
-
-//    private Disease2TermFrequency d2termFreqMap;
-
-    /** THe file name of the HPO ontology file. */
+    /** A list of all HPO term ids in the Phenotypic abnormality subontology. */
+    private final ImmutableList<TermId> phenotypeterms;
+    /** The file name of the HPO ontology file. */
     private static final String HP_OBO="hp.obo";
     /** The file name of the HPO annotation file. */
     private static final String HP_PHENOTYPE_ANNOTATION="phenotype.hpoa";
-
+    /** Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
     private static Map<String,HpoDisease> diseaseMap;
-
-    private static TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
-
-    private static HpoFrequency defaultFrequency=null;
-
+    /** todo put this in the command line interface. */
     private static final int DEFAULT_N_TERMS_PER_CASE=4;
 
     private int n_terms_per_case = DEFAULT_N_TERMS_PER_CASE;
-
+    /** Number of random "noise" terms that get added to each simulated case. */
     private static final int DEFAULT_N_RANDOM_TERMS=2;
 
-    private int n_n_random_terms_per_case=DEFAULT_N_RANDOM_TERMS;
-
+    private int n_random_terms_per_case =DEFAULT_N_RANDOM_TERMS;
+    /** Root term id in the phenotypic abnormality subontology. */
     private final static TermId PHENOTYPIC_ABNORMALITY = ImmutableTermId.constructWithPrefix("HP:0000118");
 
     private static final HpoFrequency[] FREQUENCYARRAY={
@@ -83,7 +72,10 @@ public class HpoCaseSimulator {
             HpoOnset.LATE_ONSET};
 
 
-
+    /**
+     * The constructor initializes {@link #ontology} and {@link #diseaseMap} and {@link #phenotypeterms}.
+     * @param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
+     */
     public HpoCaseSimulator(String datadir) throws Lr2pgException {
         try {
             inputHpoOntologyAndAnnotations(datadir);
@@ -103,8 +95,10 @@ public class HpoCaseSimulator {
         int c=0;
         int LIMIT=1000;
         Map<Integer,Integer> ranks=new HashMap<>();
+        logger.trace(String.format("Will simulate %d diseases.",diseaseMap.size() ));
         for (String diseasename : diseaseMap.keySet()) {
             HpoDisease disease = diseaseMap.get(diseasename);
+            logger.trace("Simulating disease "+diseasename);
             if (disease.getNumberOfPhenotypeAnnotations() == 0) {
                 logger.trace(String.format("Skipping disease %s because it has no phenotypic annotations", disease.getName()));
                 continue;
@@ -114,7 +108,7 @@ public class HpoCaseSimulator {
                 ranks.put(rank, 0);
             }
             ranks.put(rank, ranks.get(rank) + 1);
-            if (c++ > LIMIT) break; // for testing just simulate one disease
+           // if (c++ > LIMIT) break; // for testing just simulate one disease
 
         }
         for (int r:ranks.keySet()) {
@@ -169,7 +163,7 @@ public class HpoCaseSimulator {
         }
 
         int n_terms=Math.min(disease.getNumberOfPhenotypeAnnotations(),n_terms_per_case);
-        int n_random=Math.min(n_terms,n_n_random_terms_per_case);
+        int n_random=Math.min(n_terms, n_random_terms_per_case);
         //logger.trace(String.format("Performing simulation on %s with %d randomly chosen terms and %d noise terms",disease.getName(), n_terms,n_random));
         List<HpoTermId> abnormalities = disease.getPhenotypicAbnormalities();
         ImmutableList.Builder<HpoTermId> builder = new ImmutableList.Builder<>();
