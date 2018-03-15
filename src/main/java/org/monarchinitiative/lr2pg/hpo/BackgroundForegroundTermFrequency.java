@@ -78,7 +78,7 @@ public class BackgroundForegroundTermFrequency {
 //            logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
             System.exit(1);
         }
-        HpoTermId timd = disease.getTermIdWithMetadata(term);
+        HpoTermId timd = disease.getHpoTermId(term);
         if (timd==null) {
             // this disease does not have the Hpo term in question
             return getFrequencyIfNotAnnotated(term,diseaseName);
@@ -108,7 +108,7 @@ public class BackgroundForegroundTermFrequency {
                 if (ontology.isRootTerm(id)) { // to do replace with Abnormal Phenotype root term id.
                     break;
                 }
-                HpoTermId timd = disease.getTermIdWithMetadata(id);
+                HpoTermId timd = disease.getHpoTermId(id);
                 if (timd != null) {
                     prob += timd.getFrequency() / (1 + Math.log(level)); //penalty for imprecision,
                     foundannotation=true;
@@ -225,7 +225,7 @@ public class BackgroundForegroundTermFrequency {
 
    private double getAdjustedFrequency(TermId tid, TermId queryTerm, String diseaseName, String relation){
        HpoDisease disease = diseaseMap.get(diseaseName);
-       HpoTermId timd = disease.getTermIdWithMetadata(tid);
+       HpoTermId timd = disease.getHpoTermId(tid);
 
       switch (relation) {
           case "Identical":
@@ -264,7 +264,7 @@ public class BackgroundForegroundTermFrequency {
      */
     private double getFrequencySubclassTerm(TermId tid, TermId query, String diseaseName) {
         HpoDisease disease = diseaseMap.get(diseaseName);
-        HpoTermId timd = disease.getTermIdWithMetadata(tid);
+        HpoTermId timd = disease.getHpoTermId(tid);
         double prob = 0;
         //Needs to be completed.
         return prob;
