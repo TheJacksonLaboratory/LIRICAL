@@ -14,6 +14,7 @@ import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import java.io.File;
@@ -57,9 +58,9 @@ public class LikelihoodRatioTestTest {
         d2tf = new BackgroundForegroundTermFrequency(ontology, diseaseMap);
         TermPrefix HP_PREFIX = new ImmutableTermPrefix("HP");
         //ImmutableTermIdWithMetadata t1 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX, "0000006"));
-        HpoTermId t2 = new ImmutableHpoTermId( "HP:0001265");
-        HpoTermId t3 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX, "0012074"));
-        ImmutableList.Builder<HpoTermId> builder = new ImmutableList.Builder<>();
+        TermId t2 = ImmutableTermId.constructWithPrefix( "HP:0001265");
+        TermId t3 = ImmutableTermId.constructWithPrefix("HP:0012074");
+        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t2,t3);
         hpocase = new HpoCase(ontology,d2tf,diseaseName,builder.build());
         disease = diseaseMap.get(diseaseName);

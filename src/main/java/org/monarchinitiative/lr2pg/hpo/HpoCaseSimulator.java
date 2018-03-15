@@ -22,7 +22,6 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDe
  * A simulator that simulates cases from the {@link HpoDisease} objects by choosing a subset of terms
  * and adding noise terms.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
- * @version 0.0.2
  */
 public class HpoCaseSimulator {
     private static final Logger logger = LogManager.getLogger();
@@ -100,7 +99,7 @@ public class HpoCaseSimulator {
         logger.trace(String.format("Will simulate %d diseases.",diseaseMap.size() ));
         for (String diseasename : diseaseMap.keySet()) {
             HpoDisease disease = diseaseMap.get(diseasename);
-            logger.trace("Simulating disease "+diseasename);
+            //logger.trace("Simulating disease "+diseasename);
             if (disease.getNumberOfPhenotypeAnnotations() == 0) {
                 logger.trace(String.format("Skipping disease %s because it has no phenotypic annotations", disease.getName()));
                 continue;
@@ -111,6 +110,7 @@ public class HpoCaseSimulator {
             }
             ranks.put(rank, ranks.get(rank) + 1);
             if (++c>LIMIT)break;
+            if (c%100==0) {logger.trace("Simulating case " + c); }
         }
         int N=LIMIT;
         int rank11_20=0;
@@ -150,26 +150,37 @@ public class HpoCaseSimulator {
     }
 
     /**
+     * This is a term that was observed in the simulated patient (note that it should not be a HpoTermId, which
+     * contains metadata about the term in a disease entity, such as overall frequency. Instead, we are simulating an
+     * individual patient and this is a definite observation.
      * @return a random term from the phenotype subontology.
      */
-    private HpoTermId getRandomPhenotypeTerm() {
+    private TermId getRandomPhenotypeTerm() {
         int n=phenotypeterms.size();
         int r = (int)Math.floor(n*Math.random());
-        TermId tid = phenotypeterms.get(r);
-        HpoFrequency randomFrequency=getRandomFrequency();
-        HpoOnset randomOnset=getRandomOnset();
-        return new ImmutableHpoTermId.Builder(tid).frequency(randomFrequency.mean()).onset(randomOnset).build();
+        return phenotypeterms.get(r);
     }
 
-    private Set<HpoTermId> getNTerms( int desiredsize,List<HpoTermId> abnormalities)  {
-        Set<HpoTermId> rand=new HashSet<>();
+    /**
+     * Note that this function returns ImmutableTermId objects and not HpoTermId objects
+     * @param desiredsize
+     * @param abnormalities
+     * @return
+     */
+    private Set<TermId> getNTerms( int desiredsize,List<HpoTermId> abnormalities)  {
+        Set<TermId> rand=new HashSet<>();
         if (abnormalities.size()==0) return rand; // should never happen
-        if (abnormalities.size()==1) return new HashSet<>(abnormalities);
+        if (abnormalities.size()==1)  {
+            HpoTermId htid=abnormalities.get(0);
+            Set<TermId> st = new HashSet<>();
+            st.add(htid.getTermId());
+            return st;
+        }
         int maxindex = abnormalities.size()-1;
         int nTerms=Math.min(maxindex,desiredsize);
         // get maxindex distinct random integers that will be our random index values.
         int[] rdmidx =  ThreadLocalRandom.current().ints(0, maxindex).distinct().limit(nTerms).toArray();
-        Arrays.stream(rdmidx).forEach( i -> rand.add(abnormalities.get(i)));
+        Arrays.stream(rdmidx).forEach( i -> rand.add(abnormalities.get(i).getTermId()));
         return rand;
     }
 
@@ -185,7 +196,7 @@ public class HpoCaseSimulator {
         int n_random=Math.min(n_terms, n_random_terms_per_case);
         //logger.trace(String.format("Performing simulation on %s with %d randomly chosen terms and %d noise terms",disease.getName(), n_terms,n_random));
         List<HpoTermId> abnormalities = disease.getPhenotypicAbnormalities();
-        ImmutableList.Builder<HpoTermId> builder = new ImmutableList.Builder<>();
+        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         try {
             builder.addAll(getNTerms(n_terms, abnormalities));
         } catch (Exception e) {
@@ -205,10 +216,10 @@ public class HpoCaseSimulator {
                 builder.add( tidm);
             }*/
           for(int i=0;i<n_random;i++){
-              HpoTermId t = getRandomPhenotypeTerm();
+              TermId t = getRandomPhenotypeTerm();
                  builder.add(t);
           }
-        ImmutableList<HpoTermId> termlist = builder.build();
+        ImmutableList<TermId> termlist = builder.build();
 //        for (TermIdWithMetadata t : termlist) {
 //            System.out.println(t.toString());
 //        }
@@ -221,7 +232,7 @@ public class HpoCaseSimulator {
             return 0;
         }
         int rank=hpocase.getRank(diseasename);
-        System.out.println(String.format("Rank of %s was %d/%d",diseasename,rank,hpocase.getTotalResultCount()));
+        //System.out.println(String.format("Rank of %s was %d/%d",diseasename,rank,hpocase.getTotalResultCount()));
         return rank;
     }
 

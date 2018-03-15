@@ -16,6 +16,7 @@ import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import java.io.File;
@@ -51,12 +52,12 @@ public class HpoCaseTest {
 
         /* these are the phenotypic abnormalties of our "case" */
         TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
-        HpoTermId t1 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX,"0006855"));
-        HpoTermId t2 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX,"0000651"));
-        HpoTermId t3 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX,"0010545"));
-        HpoTermId t4 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX,"0001260"));
-        HpoTermId t5 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX,"0001332"));
-        ImmutableList.Builder<HpoTermId> builder = new ImmutableList.Builder<>();
+        TermId t1 = new ImmutableTermId(HP_PREFIX,"0006855");
+        TermId t2 = new ImmutableTermId(HP_PREFIX,"0000651");
+        TermId t3 = new ImmutableTermId(HP_PREFIX,"0010545");
+        TermId t4 = new ImmutableTermId(HP_PREFIX,"0001260");
+        TermId t5 = new ImmutableTermId(HP_PREFIX,"0001332");
+        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
 
         hpocase = new HpoCase(ontology,backforeFreq,diseasename,builder.build());
@@ -89,9 +90,9 @@ public class HpoCaseTest {
     public void testAnotherCase() throws Lr2pgException{
         /* these are the phenpotypic abnormalties of our "case" */
         TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
-        HpoTermId t1 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX,"0000750"));
-        HpoTermId t2 = new ImmutableHpoTermId(new ImmutableTermId(HP_PREFIX,"0001258"));
-        ImmutableList.Builder<HpoTermId> builder = new ImmutableList.Builder<>();
+        TermId t1 = new ImmutableTermId(HP_PREFIX,"0000750");
+        TermId t2 = new ImmutableTermId(HP_PREFIX,"0001258");
+        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2);
         HpoCase case1 = new HpoCase(ontology,backforeFreq,diseasename,builder.build());
         assertNotNull(case1);
@@ -107,13 +108,13 @@ public class HpoCaseTest {
 
     @Test
     public void testKniestDysplasia() {
-        ImmutableList<HpoTermId> lst = ImmutableList.of(new ImmutableHpoTermId("HP:0410009"),
-                new ImmutableHpoTermId( "HP:0002812"),
-                new ImmutableHpoTermId("HP:0003521"),
-                new ImmutableHpoTermId("HP:0000541"),
-                new ImmutableHpoTermId("HP:0011800"),
-                new ImmutableHpoTermId("HP:0003015"),
-                new ImmutableHpoTermId("HP:0008271"));
+        ImmutableList<TermId> lst = ImmutableList.of( ImmutableTermId.constructWithPrefix("HP:0410009"),
+                ImmutableTermId.constructWithPrefix( "HP:0002812"),
+                ImmutableTermId.constructWithPrefix("HP:0003521"),
+                ImmutableTermId.constructWithPrefix("HP:0000541"),
+                ImmutableTermId.constructWithPrefix("HP:0011800"),
+                ImmutableTermId.constructWithPrefix("HP:0003015"),
+                ImmutableTermId.constructWithPrefix("HP:0008271"));
         String kniestDysplasia = "OMIM:156550";
         HpoCase kniestCase = new HpoCase(ontology, backforeFreq, kniestDysplasia, lst);
         int expected = 6;

@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.formats.hpo.HpoTerm;
 import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -61,13 +62,28 @@ public class BackgroundForegroundTermFrequency {
      * @param tid An HPO phenotypic abnormality
      * @param diseaseName Name of the disease
      * @return the likelihood ratio of observing the HPO term in the diseases
-     * @throws Lr2pgException If there is an error in calculating the LR
+     * @throws Lr2pgException If there is an error calculating the LR
      */
     public double getLikelihoodRatio(TermId tid, String diseaseName) throws Lr2pgException{
         HpoDisease disease = diseaseMap.get(diseaseName);
         if (disease==null) {
             throw new Lr2pgException(String.format("Could not find disease %s in diseaseMap. Terminating...",diseaseName));
         }
+        if (tid==null) {
+            logger.fatal("TID IS NULL");System.exit(1); //TODO refactor
+        }
+//        logger.trace("INSTANCE OF " + (tid.getClass().getName()));
+
+
+        Map<TermId,HpoTerm> mp = ontology.getTermMap();
+//        if (mp.containsKey(tid)) {
+//            logger.trace("COuntains key "+ tid.getIdWithPrefix());
+//        } else {
+//            logger.trace("NOT Countains key "+ tid.getIdWithPrefix());
+//            return 0.001;
+//        }
+
+//        logger.trace(String.format("getLR for %s [%s]",ontology.getTermMap().get(tid).getName(),tid.getIdWithPrefix()));
         double numerator=getFrequencyOfTermInDisease(disease,tid);
         double denominator=getBackgroundFrequency(tid);
         return numerator/denominator;
@@ -79,21 +95,21 @@ public class BackgroundForegroundTermFrequency {
         return numerator/denominator;
     }
 
-    public double getFrequencyOfTermInDisease(HpoDisease disease, TermId term) {
-        HpoTermId timd = disease.getHpoTermId(term);
-        if (timd==null) {
+    public double getFrequencyOfTermInDisease(HpoDisease disease, TermId tid) {
+        HpoTermId hpoTid = disease.getHpoTermId(tid);
+        if (hpoTid==null) {
             // this disease does not have the Hpo term in question
-            return getFrequencyIfNotAnnotated(term,disease);
+            return getFrequencyIfNotAnnotated(tid,disease);
         } else {
-            return timd.getFrequency();
+            return hpoTid.getFrequency();
         }
     }
 
     private double getFrequencyIfNotAnnotated(TermId tid, HpoDisease disease) {
         if (ontology.getTermMap().get(tid)==null) {
-//            logger.error("Could not get term for "+tid.getIdWithPrefix());
-//            logger.error("phenotypeSubOntology size "+ontology.getTermMap().size());
-            //System.exit(1);
+            logger.fatal("COULD NOT FIND TERM ID SHOULD NEVER HAPPEN: " + tid.getIdWithPrefix());
+            //System.exit(1); // TODO REFACTOR DO NOT DIE HERE
+            System.err.println("CLASS OF TID + "+ tid.getClass().getName());
             return 0.001;
         }
         tid = ontology.getPrimaryTermId(tid);// make sure we have current tid
@@ -104,7 +120,7 @@ public class BackgroundForegroundTermFrequency {
         currentlevel.add(tid);
         while (! currentlevel.isEmpty()) {
             level++;
-            Set<TermId> parents =  getParentTerms(ontology,currentlevel);
+            Set<TermId> parents =  getParentTerms(ontology,currentlevel,false);
             for (TermId id : parents) {
                 if (id.equals(PHENOTYPIC_ABNORMALITY)) {
                     continue; // root term gives zero information

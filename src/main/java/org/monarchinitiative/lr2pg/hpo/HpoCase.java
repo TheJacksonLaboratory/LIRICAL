@@ -9,6 +9,7 @@ import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
 import java.util.*;
@@ -24,11 +25,11 @@ public class HpoCase {
     private static final Logger logger = LogManager.getLogger();
     /** The {@link BackgroundForegroundTermFrequency} has data on each disease. Within this class, we iterate over each disease
      * in order to get the overall likelihood ratio for the diagnosis*/
-    private BackgroundForegroundTermFrequency bftFrequency =null;
+    private BackgroundForegroundTermFrequency bftFrequency;
 
     private String disease=null;
     /** List of Hpo terms for our case. TODO add negative annotations. */
-    private List<HpoTermId> observedAbnormalities;
+    private List<TermId> observedAbnormalities;
 
     private final HpoOntology hpoOntology;
     /** a set of test results -- the evaluation of each HPO term for the disease. */
@@ -39,7 +40,7 @@ public class HpoCase {
     public HpoCase(HpoOntology ontol,
                    BackgroundForegroundTermFrequency diseaseFreqMap,
                    String diseaseNane,
-                   List<HpoTermId> observedAbn) {
+                   List<TermId> observedAbn) {
         this.bftFrequency =diseaseFreqMap;
         this.hpoOntology=ontol;
         this.disease=diseaseNane;
@@ -56,8 +57,8 @@ public class HpoCase {
         Iterator<String> it = bftFrequency.getDiseaseIterator();
         while (it.hasNext()) {
             String disease = it.next();
-            ImmutableList.Builder<Double> builder = new ImmutableList.Builder();
-            for (HpoTermId tid : this.observedAbnormalities) {
+            ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
+            for (TermId tid : this.observedAbnormalities) {
                 double LR = bftFrequency.getLikelihoodRatio(tid,disease);
                 builder.add(LR);
             }
