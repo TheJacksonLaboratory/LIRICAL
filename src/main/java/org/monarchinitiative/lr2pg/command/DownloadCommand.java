@@ -12,7 +12,7 @@ import java.net.URL;
 public class DownloadCommand extends Command {
     private static final Logger logger = LogManager.getLogger();
 
-    private String downloadDirectory=null;
+    private final String downloadDirectory;
 
 
 
@@ -24,7 +24,7 @@ public class DownloadCommand extends Command {
 
     /**
      * Download all three files that we need for the analysis.
-     * @param path
+     * @param path path to directory to which to download the files.
      */
     public DownloadCommand(String path){
         this.downloadDirectory=path;
@@ -36,7 +36,7 @@ public class DownloadCommand extends Command {
      */
     public void execute() {
         downloadHpOntologyIfNeeded();
-        downloadHpPhenotypeAnnotationFileIfNeeded();
+        //downloadHpPhenotypeAnnotationFileIfNeeded();
     }
 
     private void downloadHpOntologyIfNeeded() {

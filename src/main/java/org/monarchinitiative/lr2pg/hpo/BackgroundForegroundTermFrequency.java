@@ -22,13 +22,9 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.*;
  */
 public class BackgroundForegroundTermFrequency {
     private static final Logger logger = LogManager.getLogger();
-    /** Path to the {@code hp.obo} file.*/
-    private String hpoOboFilePath;
-    /** Path to the {@code phenotype.hpoa} version 2 phenotype annotation file.*/
-    private String hpoPhenotypeAnnotationPath;
     /** The HPO ontology with all of its subontologies. */
     private final HpoOntology ontology;
-    /** This map has one entry for each disease in our database. */
+    /** This map has one entry for each disease in our database. Key--the disease ID, e.g., OMIM:600200.*/
     private final Map<String, HpoDisease> diseaseMap;
     /** Overall, i.e., background frequency of each HPO term. */
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
@@ -45,7 +41,7 @@ public class BackgroundForegroundTermFrequency {
 
     private String RELATED = "Related";
 
-    public BackgroundForegroundTermFrequency(HpoOntology onto,
+    BackgroundForegroundTermFrequency(HpoOntology onto,
                                              Map<String, HpoDisease> diseases) {
         this.ontology=onto;
         this.diseaseMap = diseases;
@@ -105,8 +101,9 @@ public class BackgroundForegroundTermFrequency {
             level++;
             Set<TermId> parents =  getParentTerms(ontology,currentlevel);
             for (TermId id : parents) {
-                if (ontology.isRootTerm(id)) { // to do replace with Abnormal Phenotype root term id.
-                    break;
+                if (id.equals(PHENOTYPIC_ABNORMALITY)) {
+                    continue; // root term gives zero information
+                    // skip because in theory could be other terms at same level depending on path
                 }
                 HpoTermId timd = disease.getHpoTermId(id);
                 if (timd != null) {
@@ -139,7 +136,7 @@ public class BackgroundForegroundTermFrequency {
             termId= ((HpoTermId) termId).getTermId();
         }
         if (! hpoTerm2OverallFrequency.containsKey(termId)) {
-//            logger.fatal(String.format("Map did not contain data for term %s",termId.getIdWithPrefix() ));
+            logger.fatal(String.format("Map did not contain data for term %s",termId.getIdWithPrefix() ));
             // todo throw error
             System.exit(1);
         }
@@ -164,8 +161,9 @@ public class BackgroundForegroundTermFrequency {
                 }
                 double delta = tidm.getFrequency();
                 // All of the ancestor terms are implicitly annotated to tid
-                // therefore, get all of the strict ancestors and add this to their background frequencies.
-                Set<TermId> ancs = getAncestorTerms(ontology,tid,false);
+                // therefore, add this to their background frequencies.
+                // Note we also include the original term here (third arg: true)
+                Set<TermId> ancs = getAncestorTerms(ontology,tid,true);
                 for (TermId at : ancs) {
                     if (!mp.containsKey(at)) mp.put(at, 0.0);
                     double cumulativeFreq = mp.get(at) + delta;
@@ -180,8 +178,12 @@ public class BackgroundForegroundTermFrequency {
             imb.put(me.getKey(), f);
         }
         hpoTerm2OverallFrequency = imb.build();
+        //
+        double f=hpoTerm2OverallFrequency.get(ImmutableTermId.constructWithPrefix("HP:0000028"));
+        logger.trace(String.format("Frequency  was %f",f));
         logger.trace("Got data on background frequency for " + hpoTerm2OverallFrequency.size() + " terms");
     }
+    /** @return the number of diseases we are using for the calculations. */
     int getNumberOfDiseases() {
         return diseaseMap.size();
     }

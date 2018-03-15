@@ -6,8 +6,8 @@ import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
-import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
 import org.monarchinitiative.phenol.formats.hpo.*;
+import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -133,7 +133,7 @@ public class HpoCaseSimulator {
     /**
      * @return a random term from the phenotype subontology.
      */
-    public HpoTermId getRandomPhenotypeTerm() {
+    private HpoTermId getRandomPhenotypeTerm() {
         int n=phenotypeterms.size();
         int r = (int)Math.floor(n*Math.random());
         TermId tid = phenotypeterms.get(r);
@@ -155,7 +155,7 @@ public class HpoCaseSimulator {
     }
 
 
-    public int simulateCase(String diseasename) {
+    private int simulateCase(String diseasename) {
         HpoDisease disease = diseaseMap.get(diseasename);
         if (disease==null) {
             logger.error("Should never happen -- could not retrieve disease for " + diseasename);
@@ -220,8 +220,8 @@ public class HpoCaseSimulator {
         String annotationpath=String.format("%s%s%s",datadir,File.separator,HP_PHENOTYPE_ANNOTATION);
         HpoOboParser parser = new HpoOboParser(new File(hpopath));
         this.ontology= parser.parse();
-        HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationpath,ontology);
-        diseaseMap=annotationParser.getDiseaseMap();
+        HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationpath,ontology);
+        diseaseMap=annotationParser.parse();
        // this.d2termFreqMap=new Disease2TermFrequency(ontology,diseaseMap);
         bftfrequency=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
         //this.d2termFreqMap = new Disease2TermFrequency(hpopath,annotationpath); //todo pass in the other objects

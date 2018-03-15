@@ -3,11 +3,12 @@ package org.monarchinitiative.lr2pg.hpo;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
+import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoFrequency;
 import org.monarchinitiative.phenol.formats.hpo.HpoOnset;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
@@ -74,14 +75,14 @@ public class TestBackgroundFrequency {
 
 
     @Before
-    public void init() throws IOException {
+    public void init() throws IOException, PhenolException {
         ClassLoader classLoader = TestBackgroundFrequency.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String annotationpath=classLoader.getResource(HP_PHENOTYPE_ANNOTATION_PATH).getFile();
         HpoOboParser parser = new HpoOboParser(new File(hpoPath));
         ontology=parser.parse();
-        HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationpath,ontology);
-        diseaseMap=annotationParser.getDiseaseMap();
+        HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationpath,ontology);
+        diseaseMap=annotationParser.parse();
         String DEFAULT_FREQUENCY="0040280";
         final TermId DEFAULT_FREQUENCY_ID = new ImmutableTermId(HP_PREFIX,DEFAULT_FREQUENCY);
         defaultFrequency=HpoFrequency.fromTermId(DEFAULT_FREQUENCY_ID);
