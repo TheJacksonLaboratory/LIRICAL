@@ -5,6 +5,7 @@ package org.monarchinitiative.lr2pg.hpo;
 import com.google.common.collect.ImmutableMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
@@ -54,36 +55,41 @@ public class BackgroundForegroundTermFrequency {
         return this.diseaseMap.keySet().iterator();
     }
 
-
-    public double getLikelihoodRatio(TermId tid, String diseaseName) {
-
+    /**
+     * Calculate and return the likelihood ratio of observing the HPO feature tid in an individual
+     * with the disease "diseaseName"
+     * @param tid An HPO phenotypic abnormality
+     * @param diseaseName Name of the disease
+     * @return the likelihood ratio of observing the HPO term in the diseases
+     * @throws Lr2pgException If there is an error in calculating the LR
+     */
+    public double getLikelihoodRatio(TermId tid, String diseaseName) throws Lr2pgException{
         HpoDisease disease = diseaseMap.get(diseaseName);
         if (disease==null) {
-//            logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
-            System.exit(1);
+            throw new Lr2pgException(String.format("Could not find disease %s in diseaseMap. Terminating...",diseaseName));
         }
-        double numerator=getFrequencyOfTermInDisease(diseaseName,tid);
+        double numerator=getFrequencyOfTermInDisease(disease,tid);
         double denominator=getBackgroundFrequency(tid);
         return numerator/denominator;
-
     }
 
-    public double getFrequencyOfTermInDisease(String diseaseName, TermId term) {
-        HpoDisease disease = diseaseMap.get(diseaseName);
-        if (disease==null) {
-//            logger.fatal("Could not find disease %s in diseaseMap. Terminating...",diseaseName);
-            System.exit(1);
-        }
+    public double getLikelihoodRatio(TermId tid, HpoDisease disease) throws Lr2pgException{
+        double numerator=getFrequencyOfTermInDisease(disease,tid);
+        double denominator=getBackgroundFrequency(tid);
+        return numerator/denominator;
+    }
+
+    public double getFrequencyOfTermInDisease(HpoDisease disease, TermId term) {
         HpoTermId timd = disease.getHpoTermId(term);
         if (timd==null) {
             // this disease does not have the Hpo term in question
-            return getFrequencyIfNotAnnotated(term,diseaseName);
+            return getFrequencyIfNotAnnotated(term,disease);
         } else {
             return timd.getFrequency();
         }
     }
 
-    private double getFrequencyIfNotAnnotated(TermId tid, String diseaseName) {
+    private double getFrequencyIfNotAnnotated(TermId tid, HpoDisease disease) {
         if (ontology.getTermMap().get(tid)==null) {
 //            logger.error("Could not get term for "+tid.getIdWithPrefix());
 //            logger.error("phenotypeSubOntology size "+ontology.getTermMap().size());
@@ -94,7 +100,6 @@ public class BackgroundForegroundTermFrequency {
         int level = 0;
         double prob = 0;
         boolean foundannotation=false;
-        HpoDisease disease = diseaseMap.get(diseaseName);
         Set<TermId> currentlevel=new HashSet<>();
         currentlevel.add(tid);
         while (! currentlevel.isEmpty()) {
@@ -205,41 +210,41 @@ public class BackgroundForegroundTermFrequency {
     private double getFrequencyTerm(TermId query, String diseaseName){
         HpoDisease disease = diseaseMap.get(diseaseName);
 
-      for (TermId tid : disease.getPhenotypicAbnormalities()) {
+      for (HpoTermId tid : disease.getPhenotypicAbnormalities()) {
           if ( tid.equals(query) )  return getAdjustedFrequency(tid,query,diseaseName,IDENTICAL);
       }
-      for (TermId tid : disease.getPhenotypicAbnormalities()) {
+      for (HpoTermId tid : disease.getPhenotypicAbnormalities()) {
           if ( isSubclass( ontology,  tid, query) )  return getAdjustedFrequency(tid,query,diseaseName,SUPERCLASS);
       }
-      for (TermId tid : disease.getPhenotypicAbnormalities()) {
+      for (HpoTermId tid : disease.getPhenotypicAbnormalities()) {
           if (isSubclass(ontology,query,tid))  return getAdjustedFrequency(tid,query,diseaseName,SUBCLASS);
       }
-      for (TermId tid : disease.getPhenotypicAbnormalities()) {
+      for (HpoTermId tid : disease.getPhenotypicAbnormalities()) {
           if (termsAreSiblings(ontology,query,tid))  return getAdjustedFrequency(tid,query,diseaseName,SIBLINGS);
       }
 
-      for (TermId tid : disease.getPhenotypicAbnormalities()) {
+      for (HpoTermId tid : disease.getPhenotypicAbnormalities()) {
           if (termsAreRelated(ontology,query,tid))  return getAdjustedFrequency(tid,query,diseaseName,RELATED);
       }
       return   DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
 
   }
 
-   private double getAdjustedFrequency(TermId tid, TermId queryTerm, String diseaseName, String relation){
+   private double getAdjustedFrequency(HpoTermId timd, TermId queryTerm, String diseaseName, String relation){
        HpoDisease disease = diseaseMap.get(diseaseName);
-       HpoTermId timd = disease.getHpoTermId(tid);
+
 
       switch (relation) {
           case "Identical":
               return timd.getFrequency();
           case "Superclass":
-              return getFrequencySuperclassTerm(tid, queryTerm, diseaseName);
+              return getFrequencySuperclassTerm(timd, queryTerm, diseaseName);
           case "Subclass":
-              return getFrequencySubclassTerm(tid, queryTerm, diseaseName);
+              return getFrequencySubclassTerm(timd, queryTerm, diseaseName);
           case "Sibling":
-              return getSiblingsTermsFrequency(tid, queryTerm,diseaseName);
+              return getSiblingsTermsFrequency(timd, queryTerm,diseaseName);
           case "Related":
-              return getRelatedTermsFrequency(tid, queryTerm, diseaseName);
+              return getRelatedTermsFrequency(timd, queryTerm, diseaseName);
           default:
               return   DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
       }
@@ -251,7 +256,7 @@ public class BackgroundForegroundTermFrequency {
      * @param diseaseName:Disease
      * @return frequency
      */
-    private double getFrequencySuperclassTerm(TermId tid, TermId query, String diseaseName) {
+    private double getFrequencySuperclassTerm(HpoTermId tid, TermId query, String diseaseName) {
         double prob =0;
         //Needds to be completed.
         return prob;
@@ -264,9 +269,8 @@ public class BackgroundForegroundTermFrequency {
      * @param diseaseName:Disease
      * @return frequency
      */
-    private double getFrequencySubclassTerm(TermId tid, TermId query, String diseaseName) {
+    private double getFrequencySubclassTerm(HpoTermId tid, TermId query, String diseaseName) {
         HpoDisease disease = diseaseMap.get(diseaseName);
-        HpoTermId timd = disease.getHpoTermId(tid);
         double prob = 0;
         //Needs to be completed.
         return prob;
@@ -281,7 +285,7 @@ public class BackgroundForegroundTermFrequency {
      * @param diseaseName:Disease
      * @return frequency
      */
-    private double getSiblingsTermsFrequency(TermId tid, TermId queryTerm, String diseaseName) {
+    private double getSiblingsTermsFrequency(HpoTermId tid, TermId queryTerm, String diseaseName) {
         //Needs to be completed.
         double prob = 0;
         return prob;
@@ -291,14 +295,14 @@ public class BackgroundForegroundTermFrequency {
     /**
      * If two terms are related, we divide the frequency of the disease term Id by 1+log(level)
      *
-     * @param tid:TermId
+     * @param hpoTermId
      * @param diseaseName:Disease
      * @return frequency
      */
-    private double getRelatedTermsFrequency(TermId tid, TermId query, String diseaseName) {
+    private double getRelatedTermsFrequency(HpoTermId hpoTermId, TermId query, String diseaseName) {
         int level = 0;
         Set<TermId> currentlevel=new HashSet<>();
-        currentlevel.add(tid);
+        currentlevel.add(hpoTermId.getTermId());
         while (! currentlevel.isEmpty()) {
             level++;
             Set<TermId> parents =  getParentTerms(ontology,currentlevel);
@@ -307,8 +311,8 @@ public class BackgroundForegroundTermFrequency {
                     break;
                 }
                 Set<TermId>children = getChildTerms(ontology,id);
-                if (children.contains(tid)){
-                   return (  getSiblingsTermsFrequency( tid, query, diseaseName) /(1 + Math.log(level)));
+                if (children.contains(hpoTermId)){
+                   return (  getSiblingsTermsFrequency( hpoTermId, query, diseaseName) /(1 + Math.log(level)));
                 }
             }
             currentlevel=parents;

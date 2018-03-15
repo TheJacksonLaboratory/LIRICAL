@@ -40,6 +40,8 @@ public class LikelihoodRatioTestTest {
 
     private static String diseaseName = "103100";
 
+    private static HpoDisease disease;
+
     @BeforeClass
     public static void setup() throws IOException,PhenolException {
         HP_PREFIX = new ImmutableTermPrefix("HP");
@@ -60,6 +62,7 @@ public class LikelihoodRatioTestTest {
         ImmutableList.Builder<HpoTermId> builder = new ImmutableList.Builder<>();
         builder.add(t2,t3);
         hpocase = new HpoCase(ontology,d2tf,diseaseName,builder.build());
+        disease = diseaseMap.get(diseaseName);
     }
 
     /**
@@ -69,7 +72,7 @@ public class LikelihoodRatioTestTest {
     public void testGetFrequencyOfTermInDieases1_1() {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0001265");
         double expected =1.0;
-        assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
+        assertEquals(expected,d2tf.getFrequencyOfTermInDisease(disease,tid),EPSILON);
     }
 
     /**
@@ -79,7 +82,7 @@ public class LikelihoodRatioTestTest {
     public void testGetFrequencyOfTermInDieases1_2() {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0012074");
         double expected =1.0;
-        assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
+        assertEquals(expected,d2tf.getFrequencyOfTermInDisease(disease,tid),EPSILON);
     }
 
     /**
@@ -89,7 +92,7 @@ public class LikelihoodRatioTestTest {
     public void testGetFrequencyOfTermInDieases1_3() {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0012074");
         double expected =1.0;
-        assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
+        assertEquals(expected,d2tf.getFrequencyOfTermInDisease(disease,tid),EPSILON);
     }
 
     /**
@@ -99,7 +102,7 @@ public class LikelihoodRatioTestTest {
     public void testGetFrequencyOfTermInDieases1_4() {
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000006"); //Autosomal dominant inheritance,
         double expected =0.0;
-        assertEquals(expected,d2tf.getFrequencyOfTermInDisease(diseaseName,tid),EPSILON);
+        assertEquals(expected,d2tf.getFrequencyOfTermInDisease(disease,tid),EPSILON);
     }
 
     //There is 1 appearance of HP:0001265 in small_phenoannot.tab. The frequency of this term is 1/196.
@@ -121,18 +124,18 @@ public class LikelihoodRatioTestTest {
 
    //Likelihood ratio for this term is calculated as 1/ (2/196) = 98.
     @Test
-    public void testgetLikelihoodRatio_1() {
+    public void testgetLikelihoodRatio_1() throws Lr2pgException{
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0001265");
         double expected = (double)196/2;
-        assertEquals(expected,d2tf.getLikelihoodRatio(tid,diseaseName),EPSILON);
+        assertEquals(expected,d2tf.getLikelihoodRatio(tid,disease),EPSILON);
     }
 
     //Likelihood ratio for this term is calculated as 1/ (1/196) = 196.
     @Test
-    public void testgetLikelihoodRatio_2() {
+    public void testgetLikelihoodRatio_2() throws Lr2pgException{
         ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0012074");
         double expected = (double)196;
-        assertEquals(expected,d2tf.getLikelihoodRatio(tid,diseaseName),EPSILON);
+        assertEquals(expected,d2tf.getLikelihoodRatio(tid,disease),EPSILON);
     }
      //Test the likelihood ratio of the phenotype terms HP:0001265 and HP:0012074. The likelihood ratio of terms are 98 and 196, respectively.
     //So, the likelihood ratio will be the product of the terms which is 196*98 = 19208

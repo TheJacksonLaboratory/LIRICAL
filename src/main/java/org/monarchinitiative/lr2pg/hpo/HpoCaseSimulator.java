@@ -43,11 +43,13 @@ public class HpoCaseSimulator {
 
     private int n_terms_per_case = DEFAULT_N_TERMS_PER_CASE;
     /** Number of random "noise" terms that get added to each simulated case. */
-    private static final int DEFAULT_N_RANDOM_TERMS=2;
+    private static final int DEFAULT_N_RANDOM_TERMS=1;
 
     private int n_random_terms_per_case =DEFAULT_N_RANDOM_TERMS;
     /** Root term id in the phenotypic abnormality subontology. */
     private final static TermId PHENOTYPIC_ABNORMALITY = ImmutableTermId.constructWithPrefix("HP:0000118");
+
+    private static int n_cases_to_simulate;
 
     private static final HpoFrequency[] FREQUENCYARRAY={
             HpoFrequency.ALWAYS_PRESENT,
@@ -108,13 +110,30 @@ public class HpoCaseSimulator {
                 ranks.put(rank, 0);
             }
             ranks.put(rank, ranks.get(rank) + 1);
-           // if (c++ > LIMIT) break; // for testing just simulate one disease
-
+            if (++c>LIMIT)break;
         }
+        int N=LIMIT;
+        int rank11_20=0;
+        int rank21_30=0;
+        int rank31_100=0;
+        int rank101_up=0;
         for (int r:ranks.keySet()) {
-            System.out.println(String.format("Rank=%d: count:%d (%.1f%%)",r,ranks.get(r),(double)100.0*ranks.get(r)/LIMIT));
+            if (r<11) {
+                System.out.println(String.format("Rank=%d: count:%d (%.1f%%)", r, ranks.get(r), (double) 100.0 * ranks.get(r) / N));
+            } else if (r<21) {
+                rank11_20+=ranks.get(r);
+            } else if (r<31) {
+                rank21_30+=ranks.get(r);
+            } else if (r<101) {
+                rank31_100+=ranks.get(r);
+            } else {
+                rank101_up+=ranks.get(r);
+            }
         }
-
+        System.out.println(String.format("Rank=11-20: count:%d (%.1f%%)", rank11_20, (double) 100.0 * rank11_20 / N));
+        System.out.println(String.format("Rank=21-30: count:%d (%.1f%%)", rank21_30, (double) 100.0 * rank21_30 / N));
+        System.out.println(String.format("Rank=31-100: count:%d (%.1f%%)", rank31_100, (double) 100.0 * rank31_100 / N));
+        System.out.println(String.format("Rank=101-...: count:%d (%.1f%%)", rank101_up, (double) 100.0 * rank101_up / N));
     }
 
 
@@ -222,8 +241,6 @@ public class HpoCaseSimulator {
         this.ontology= parser.parse();
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationpath,ontology);
         diseaseMap=annotationParser.parse();
-       // this.d2termFreqMap=new Disease2TermFrequency(ontology,diseaseMap);
         bftfrequency=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
-        //this.d2termFreqMap = new Disease2TermFrequency(hpopath,annotationpath); //todo pass in the other objects
     }
 }

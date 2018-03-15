@@ -21,20 +21,24 @@ public class CommandParser {
     private String dataDownloadDirectory=null;
     /** This is where we download the files to by default (otherwise, specify {@code -f <arg>}). */
     private static final String DEFAULT_DATA_DOWNLOAD_DIRECTORY="data";
-
+    /** The default number of "random" HPO cases to simulate. */
+    private static final int DEFAULT_N_CASES_TO_SIMULATE=1000;
+    /** The default number of terms to simulate per case. */
+    private static final int DEFAULT_N_TERMS_PER_CASE=5;
+    /** The default number of ranomd (noise) terms to add per simulated case */
+    private static final int DEFAULT_N_NOISE_TERMS_PER_CASE=1;
+    /** The number of HPO Cases to simulate. */
+    private int n_cases_to_simulate;
+    /** The number of random HPO terms to simulate in each simulated case. */
+    private int n_terms_per_case;
+    /** The number of random noise terms to add to each simulated HPO case. */
+    private int n_noise_terms;
+    /** The type of analysis to run. */
     private String mycommand=null;
-
+    /** The command object. */
     private Command command=null;
 
-    public String getHpoPath() {
-        return hpoPath;
-    }
 
-    public String getAnnotationPath() {
-        return annotationPath;
-    }
-
-    public String getPatientAnnotations() { return patientAnnotations; }
 
     public CommandParser(String args[]) {
         final CommandLineParser cmdLineGnuParser = new DefaultParser();
@@ -69,7 +73,37 @@ public class CommandParser {
             if (commandLine.hasOption("d")) {
                 this.dataDownloadDirectory=commandLine.getOptionValue("d");
             }
-
+            if (commandLine.hasOption("t")) {
+                String term=commandLine.getOptionValue("t");
+                try {
+                    n_terms_per_case=Integer.parseInt(term);
+                } catch (NumberFormatException nfe) {
+                    printUsage("[ERROR] Malformed argument for -t option (must be integer)");
+                }
+            } else {
+                n_terms_per_case=DEFAULT_N_TERMS_PER_CASE;
+            }
+            if (commandLine.hasOption("n")) {
+                String noise = commandLine.getOptionValue("n");
+                try {
+                    n_noise_terms=Integer.parseInt(noise);
+                } catch (NumberFormatException nfe) {
+                    printUsage("[ERROR] Malformed argument for -n option (must be integer)");
+                }
+            } else {
+                n_noise_terms=DEFAULT_N_NOISE_TERMS_PER_CASE;
+            }
+            if (commandLine.hasOption("s")) {
+                String simul=commandLine.getOptionValue("s");
+                try{
+                    n_cases_to_simulate=Integer.parseInt(simul);
+                } catch (NumberFormatException nfe) {
+                    printUsage("[ERROR] Malformed argument for -s option (must be integer)");
+                }
+            } else {
+                n_cases_to_simulate=DEFAULT_N_CASES_TO_SIMULATE;
+            }
+            // Commands
             if (mycommand.equals("download")) {
                 if (this.dataDownloadDirectory == null) {
                     this.dataDownloadDirectory=DEFAULT_DATA_DOWNLOAD_DIRECTORY;
@@ -80,7 +114,7 @@ public class CommandParser {
                 if (this.dataDownloadDirectory == null) {
                     this.dataDownloadDirectory=DEFAULT_DATA_DOWNLOAD_DIRECTORY;
                 }
-                this.command=new SimulateCasesCommand(this.dataDownloadDirectory);
+                this.command=new SimulateCasesCommand(this.dataDownloadDirectory,n_cases_to_simulate,n_terms_per_case,n_noise_terms);
             } else {
                 printUsage(String.format("Did not recognize command: %s", mycommand));
             }
@@ -104,13 +138,17 @@ public class CommandParser {
      *
      * @return Options expected from command-line of GNU form.
      */
-    public static Options constructOptions()
+    private static Options constructOptions()
     {
         final Options gnuOptions = new Options();
-        gnuOptions.addOption("o", "hpo", true, "HPO OBO file path")
+        gnuOptions.
+                addOption("a", "annotations", true, "Annotation file path")
                 .addOption("d", "download", true, "path of directory to download files")
                 .addOption("i","patient-hpo-terms",true, "list of HPO terms for the patient")
-                .addOption("a", "annotations", true, "Annotation file path");
+                .addOption("n","noise",true,"number of noise terms per simulate case (default: 1")
+                .addOption("o", "hpo", true, "HPO OBO file path")
+                .addOption("s","simulated_cases",true,"number of cases to simulate per run")
+                .addOption("t","terms",true,"number of HPO terms per simulated case (default: 5)");
         return gnuOptions;
     }
 
@@ -119,7 +157,7 @@ public class CommandParser {
     /**
      * Print usage information to provided OutputStream.
      */
-    public static void printUsage(String message) {
+    private static void printUsage(String message) {
         final PrintWriter writer = new PrintWriter(System.out);
         final HelpFormatter usageFormatter = new HelpFormatter();
         final String applicationName = "java -jar dimorph.jar command";

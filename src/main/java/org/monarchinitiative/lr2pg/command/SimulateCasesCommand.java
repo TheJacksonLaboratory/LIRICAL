@@ -17,7 +17,7 @@ public class SimulateCasesCommand extends Command {
     /**
      * @param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
      */
-    public SimulateCasesCommand(String datadir ) {
+    public SimulateCasesCommand(String datadir, int n_cases_to_simulate, int n_terms_per_case, int n_noise_terms ) {
         dataDirectoryPath=datadir;
     }
 
