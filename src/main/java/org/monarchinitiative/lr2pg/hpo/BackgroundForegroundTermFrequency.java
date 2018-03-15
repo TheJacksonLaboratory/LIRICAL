@@ -5,13 +5,15 @@ package org.monarchinitiative.lr2pg.hpo;
 import com.google.common.collect.ImmutableMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jgrapht.graph.DefaultDirectedGraph;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.formats.hpo.HpoTerm;
 import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
-import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
-import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.phenol.graph.IdLabeledEdge;
+import org.monarchinitiative.phenol.graph.algo.BreadthFirstSearch;
+import org.monarchinitiative.phenol.ontology.data.*;
 
 import java.util.*;
 
@@ -33,6 +35,8 @@ public class BackgroundForegroundTermFrequency {
 
     private final static TermId PHENOTYPIC_ABNORMALITY = ImmutableTermId.constructWithPrefix("HP:0000118");
 
+    private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.000_005; // 1:20,000
+
     private String  IDENTICAL = "Identical";
 
     private String SUPERCLASS = "Superclass";
@@ -43,8 +47,12 @@ public class BackgroundForegroundTermFrequency {
 
     private String RELATED = "Related";
 
-    BackgroundForegroundTermFrequency(HpoOntology onto,
-                                             Map<String, HpoDisease> diseases) {
+    /**
+     *
+     * @param onto The HPO ontology object
+     * @param diseases List of all diseases for this simulation
+     */
+    BackgroundForegroundTermFrequency(HpoOntology onto, Map<String, HpoDisease> diseases) {
         this.ontology=onto;
         this.diseaseMap = diseases;
         initializeFrequencyMap();
@@ -69,27 +77,12 @@ public class BackgroundForegroundTermFrequency {
         if (disease==null) {
             throw new Lr2pgException(String.format("Could not find disease %s in diseaseMap. Terminating...",diseaseName));
         }
-        if (tid==null) {
-            logger.fatal("TID IS NULL");System.exit(1); //TODO refactor
-        }
-//        logger.trace("INSTANCE OF " + (tid.getClass().getName()));
-
-
-        Map<TermId,HpoTerm> mp = ontology.getTermMap();
-//        if (mp.containsKey(tid)) {
-//            logger.trace("COuntains key "+ tid.getIdWithPrefix());
-//        } else {
-//            logger.trace("NOT Countains key "+ tid.getIdWithPrefix());
-//            return 0.001;
-//        }
-
-//        logger.trace(String.format("getLR for %s [%s]",ontology.getTermMap().get(tid).getName(),tid.getIdWithPrefix()));
         double numerator=getFrequencyOfTermInDisease(disease,tid);
         double denominator=getBackgroundFrequency(tid);
         return numerator/denominator;
     }
 
-    public double getLikelihoodRatio(TermId tid, HpoDisease disease) throws Lr2pgException{
+    public double getLikelihoodRatio(TermId tid, HpoDisease disease) {
         double numerator=getFrequencyOfTermInDisease(disease,tid);
         double denominator=getBackgroundFrequency(tid);
         return numerator/denominator;
@@ -105,13 +98,79 @@ public class BackgroundForegroundTermFrequency {
         }
     }
 
-    private double getFrequencyIfNotAnnotated(TermId tid, HpoDisease disease) {
-        if (ontology.getTermMap().get(tid)==null) {
-            logger.fatal("COULD NOT FIND TERM ID SHOULD NEVER HAPPEN: " + tid.getIdWithPrefix());
-            //System.exit(1); // TODO REFACTOR DO NOT DIE HERE
-            System.err.println("CLASS OF TID + "+ tid.getClass().getName());
-            return 0.001;
+
+    /**
+     * This will return an ordered list of terms emanating from t1 up to the root of the ontology.
+     * @param ontology
+     * @param t1
+     * @return
+     */
+    public List<TermId> getPathsToRoot(Ontology<? extends Term, ? extends Relationship> ontology,
+                                                       final TermId t1) {
+        final DefaultDirectedGraph<TermId, IdLabeledEdge> graph = ontology.getGraph();
+        List<TermId> visitedT1 = new ArrayList<>(); // this will contain all paths from query term to the root
+        BreadthFirstSearch<TermId, IdLabeledEdge> bfs = new BreadthFirstSearch<>();
+        bfs.startFromForward(
+                graph,
+                t1,
+                (g, termId) -> {
+                    visitedT1.add(termId);
+                    return true;
+                });
+        return visitedT1;
+    }
+
+    /**
+     * If we get here, we are trying to find a frequency for a term in a disease but there is not
+     * direct match. This function tries several ways of finding a fuzzy match
+     * @param query -- the term in the patient being tested for similarity with this disease
+     * @param disease
+     * @return
+     */
+    private double getFrequencyIfNotAnnotated(TermId query, HpoDisease disease) {
+        //Try to find a matching child term.
+
+        // 1. the query term is a subclass of the disease term. Therefore,
+        // our query satisfies the criteria for the disease and we can take the
+        // frequency of the disease term. Since there may be multiple parents
+        // take the average
+        int n=0;
+        double cumfreq=0.0;
+        for (HpoTermId hpoTermId : disease.getPhenotypicAbnormalities()) {
+            if (isSubclass(ontology,query,hpoTermId.getTermId())) {
+                cumfreq+=hpoTermId.getFrequency();
+                n++;
+            }
         }
+        if (n>0) return cumfreq/n;
+        else return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+        // for other possibilities, we will use the path to the root of the ontology that
+        // starts with the query term
+       /* List<TermId> pathToRoot = getPathsToRoot(ontology,query);
+
+        //2. If the disease has a subclass of the query term, then
+        // everybody with the subclass (e.g., nuclear cataract) also has the
+        // parent (e.g., cataract). Hard to say if our query is just inexact or if
+        // there is some difference, but not everybody with the disease will have the
+        // subterm in question--they could have another one of the subclasses.
+        // therefore we need to penalize
+
+        // The following is a set of terms representing the induced graph of the disease terms
+        Set<TermId> allAncs = getAncestorTerms(ontology,disease.getPhenotypeIdSet(),true);
+        for (int i=0;i<pathToRoot.size();i++) {
+            TermId td = pathToRoot.get(i);
+            if (allAncs.contains(td)) {
+                // the induced graph of the disease contains an ancestor of the query term
+                if (td.equals(PHENOTYPIC_ABNORMALITY)) break; // no match!
+                return 1.0/(1+0+Math.log(i));
+            }
+        }
+
+        return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+        */
+    }
+
+    private double getFrequencyIfNotAnnotatedOLD(TermId tid, HpoDisease disease) {
         tid = ontology.getPrimaryTermId(tid);// make sure we have current tid
         int level = 0;
         double prob = 0;
@@ -161,7 +220,7 @@ public class BackgroundForegroundTermFrequency {
             // todo throw error
             System.exit(1);
         }
-        return hpoTerm2OverallFrequency.get(termId);
+        return Math.max(DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY,hpoTerm2OverallFrequency.get(termId));
     }
 
     /**
@@ -200,16 +259,17 @@ public class BackgroundForegroundTermFrequency {
         }
         hpoTerm2OverallFrequency = imb.build();
         //
-        double f=hpoTerm2OverallFrequency.get(ImmutableTermId.constructWithPrefix("HP:0000028"));
-        logger.trace(String.format("Frequency  was %f",f));
         logger.trace("Got data on background frequency for " + hpoTerm2OverallFrequency.size() + " terms");
+        // ToDo -- we need to define some background frequency for the terms used to anotate our corpus
+        // We will use a herutistic that will distribute the probabilities of parent terms
+        // to the (unannotated) terms beneath them in the tree.
     }
     /** @return the number of diseases we are using for the calculations. */
     int getNumberOfDiseases() {
         return diseaseMap.size();
     }
 
-    private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.000_005; // 1:20,000
+
 
 
     /*
