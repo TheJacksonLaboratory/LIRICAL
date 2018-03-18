@@ -195,10 +195,10 @@ public class HpoCaseSimulator {
         int n_terms=Math.min(disease.getNumberOfPhenotypeAnnotations(),n_terms_per_case);
         int n_random=Math.min(n_terms, n_random_terms_per_case);
         //logger.trace(String.format("Performing simulation on %s with %d randomly chosen terms and %d noise terms",disease.getName(), n_terms,n_random));
-        List<HpoTermId> abnormalities = disease.getPhenotypicAbnormalities();
+        List<HpoAnnotation> abnormalities = disease.getPhenotypicAbnormalities();
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         try {
-            builder.addAll(getNTerms(n_terms, abnormalities));
+            abnormalities.forEach(a-> builder.add(a.getTermId()));
         } catch (Exception e) {
             logger.error("exception with diseases " + diseasename);
             logger.error(disease.toString());
