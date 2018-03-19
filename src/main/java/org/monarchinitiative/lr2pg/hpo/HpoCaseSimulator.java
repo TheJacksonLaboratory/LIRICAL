@@ -130,10 +130,10 @@ public class HpoCaseSimulator {
                 rank101_up+=ranks.get(r);
             }
         }
-        System.out.println(String.format("Rank=11-20: count:%d (%.1f%%)", rank11_20, (double) 100.0 * rank11_20 / N));
-        System.out.println(String.format("Rank=21-30: count:%d (%.1f%%)", rank21_30, (double) 100.0 * rank21_30 / N));
-        System.out.println(String.format("Rank=31-100: count:%d (%.1f%%)", rank31_100, (double) 100.0 * rank31_100 / N));
-        System.out.println(String.format("Rank=101-...: count:%d (%.1f%%)", rank101_up, (double) 100.0 * rank101_up / N));
+        System.out.println(String.format("Rank=11-20: count:%d (%.1f%%)", rank11_20, (double) 100* rank11_20 / N));
+        System.out.println(String.format("Rank=21-30: count:%d (%.1f%%)", rank21_30, (double) 100 * rank21_30 / N));
+        System.out.println(String.format("Rank=31-100: count:%d (%.1f%%)", rank31_100, (double) 100 * rank31_100 / N));
+        System.out.println(String.format("Rank=101-...: count:%d (%.1f%%)", rank101_up, (double) 100 * rank101_up / N));
     }
 
 
@@ -167,11 +167,11 @@ public class HpoCaseSimulator {
      * @param abnormalities
      * @return
      */
-    private Set<TermId> getNTerms( int desiredsize,List<HpoTermId> abnormalities)  {
+    private Set<TermId> getNTerms( int desiredsize,List<HpoAnnotation> abnormalities)  {
         Set<TermId> rand=new HashSet<>();
         if (abnormalities.size()==0) return rand; // should never happen
         if (abnormalities.size()==1)  {
-            HpoTermId htid=abnormalities.get(0);
+            HpoAnnotation htid=abnormalities.get(0);
             Set<TermId> st = new HashSet<>();
             st.add(htid.getTermId());
             return st;

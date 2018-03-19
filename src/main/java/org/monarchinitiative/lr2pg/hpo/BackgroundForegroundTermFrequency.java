@@ -209,9 +209,6 @@ public class BackgroundForegroundTermFrequency {
      * @return the estimate background frequency (note: bf \in [0,1])
      */
     double getBackgroundFrequency(TermId termId) {
-        if (termId instanceof HpoTermId) {
-            termId= ((HpoTermId) termId).getTermId();
-        }
         if (! hpoTerm2OverallFrequency.containsKey(termId)) {
             logger.fatal(String.format("Map did not contain data for term %s",termId.getIdWithPrefix() ));
             // todo throw error
