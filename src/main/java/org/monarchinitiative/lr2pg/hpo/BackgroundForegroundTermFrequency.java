@@ -9,7 +9,6 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.formats.hpo.HpoTerm;
 import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
 import org.monarchinitiative.phenol.graph.IdLabeledEdge;
 import org.monarchinitiative.phenol.graph.algo.BreadthFirstSearch;
@@ -37,15 +36,6 @@ public class BackgroundForegroundTermFrequency {
 
     private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.000_005; // 1:20,000
 
-    private String  IDENTICAL = "Identical";
-
-    private String SUPERCLASS = "Superclass";
-
-    private String SUBCLASS = "Subclass";
-
-    private String SIBLINGS = "Sibling";
-
-    private String RELATED = "Related";
 
     /**
      *
@@ -130,7 +120,7 @@ public class BackgroundForegroundTermFrequency {
     private double getFrequencyIfNotAnnotated(TermId query, HpoDisease disease) {
         //Try to find a matching child term.
 
-        // 1. the query term is a subclass of the disease term. Therefore,
+        // 1. the query term is a superclass of the disease term. Therefore,
         // our query satisfies the criteria for the disease and we can take the
         // frequency of the disease term. Since there may be multiple parents
         // take the average
@@ -169,7 +159,12 @@ public class BackgroundForegroundTermFrequency {
  for (HpoTermId hpoTermId : disease.getPhenotypicAbnormalities()) {
      if (isSubclass(ontology, hpoTermId.getTermId(), query)) {
          List<TermId> pathToRoot = getPathsToRoot(ontology, query);
-         Set<TermId> allAncs = getAncestorTerms(ontology, disease.getPhenotypicAbnormalities(), true);
+         List<HpoTermId> diseaesHpoId = disease.getPhenotypicAbnormalities();
+         Set<TermId> diseaseTermIds = new HashSet<TermId>();
+         for(HpoTermId diseaeHpId : diseaesHpoId){
+             diseaseTermIds.add(diseaeHpId.getTermId());
+         }
+         Set<TermId> allAncs = getAncestorTerms(ontology, diseaseTermIds, true);
          for (int i = 0; i < pathToRoot.size(); i++) {
              TermId td = pathToRoot.get(i);
              if (allAncs.contains(td)) {
