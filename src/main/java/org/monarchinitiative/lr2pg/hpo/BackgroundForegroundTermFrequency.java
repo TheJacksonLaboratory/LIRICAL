@@ -156,25 +156,26 @@ public class BackgroundForegroundTermFrequency {
                 return 1.0/(1+0+Math.log(i));
             }
         }*/
- for (HpoTermId hpoTermId : disease.getPhenotypicAbnormalities()) {
-     if (isSubclass(ontology, hpoTermId.getTermId(), query)) {
-         List<TermId> pathToRoot = getPathsToRoot(ontology, query);
-         List<HpoTermId> diseaesHpoId = disease.getPhenotypicAbnormalities();
-         Set<TermId> diseaseTermIds = new HashSet<TermId>();
-         for(HpoTermId diseaeHpId : diseaesHpoId){
-             diseaseTermIds.add(diseaeHpId.getTermId());
-         }
-         Set<TermId> allAncs = getAncestorTerms(ontology, diseaseTermIds, true);
-         for (int i = 0; i < pathToRoot.size(); i++) {
-             TermId td = pathToRoot.get(i);
-             if (allAncs.contains(td)) {
-                 // the induced graph of the disease contains an ancestor of the query term
-                 if (td.equals(PHENOTYPIC_ABNORMALITY)) break; // no match!
-                 return 1.0 / (1 + Math.log(i));
-             }
-         }
-     }
- }
+        for (HpoTermId hpoTermId : disease.getPhenotypicAbnormalities()) {
+            if (isSubclass(ontology, hpoTermId.getTermId(), query)) {
+                List<TermId> pathToRoot = getPathsToRoot(ontology, query);
+                List<HpoTermId> diseaesHpoId = disease.getPhenotypicAbnormalities();
+                Set<TermId> diseaseTermIds = new HashSet<TermId>();
+                for(HpoTermId diseaeHpId : diseaesHpoId){
+                    diseaseTermIds.add(diseaeHpId.getTermId());
+                }
+                Set<TermId> allAncs = getAncestorTerms(ontology, diseaseTermIds, true);
+                for (int i = 0; i < pathToRoot.size(); i++) {
+                    TermId td = pathToRoot.get(i);
+                    if (allAncs.contains(td)) {
+                        // the induced graph of the disease contains an ancestor of the query term
+                        if (td.equals(PHENOTYPIC_ABNORMALITY)) break; // no match!
+                        //Not sure about the numerator! 1 or td.frequency?
+                        return 1 / (1 + Math.log(i));
+                    }
+                }
+            }
+        }
 
        return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
 

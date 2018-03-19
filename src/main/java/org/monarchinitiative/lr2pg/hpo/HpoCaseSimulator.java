@@ -38,7 +38,7 @@ public class HpoCaseSimulator {
     /** Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
     private static Map<String,HpoDisease> diseaseMap;
     /** todo put this in the command line interface. */
-    private static final int DEFAULT_N_TERMS_PER_CASE=5;
+    private static final int DEFAULT_N_TERMS_PER_CASE=4;
 
     private int n_terms_per_case = DEFAULT_N_TERMS_PER_CASE;
     /** Number of random "noise" terms that get added to each simulated case. */
