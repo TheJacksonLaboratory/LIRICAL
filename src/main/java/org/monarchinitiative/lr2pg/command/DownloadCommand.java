@@ -18,7 +18,7 @@ public class DownloadCommand implements Command {
 
     private final static String HP_OBO="https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/master/hp.obo";
 
-    private final static String HP_ANNOTATION="http://compbio.charite.de/jenkins/job/hpo.annotations/lastStableBuild/artifact/misc/phenotype_annotation.tab";
+    private final static String HP_ANNOTATION="http://compbio.charite.de/jenkins/job/hpo.annotations.2018/lastSuccessfulBuild/artifact/misc_2018/phenotype.hpoa";
 
 
 
@@ -36,7 +36,7 @@ public class DownloadCommand implements Command {
      */
     public void execute() {
         downloadHpOntologyIfNeeded();
-        //downloadHpPhenotypeAnnotationFileIfNeeded();
+        downloadHpPhenotypeAnnotationFileIfNeeded();
     }
 
     private void downloadHpOntologyIfNeeded() {

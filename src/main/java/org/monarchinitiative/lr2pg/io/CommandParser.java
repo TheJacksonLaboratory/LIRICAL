@@ -152,7 +152,16 @@ public class CommandParser {
         return gnuOptions;
     }
 
-
+    private static String getVersion() {
+        String version = "0.1.7";// default, should be overwritten by the following.
+        try {
+            Package p = CommandParser.class.getPackage();
+            version= p.getImplementationVersion();
+        } catch (Exception e) {
+            // do nothing
+        }
+        return version;
+    }
 
     /**
      * Print usage information to provided OutputStream.
@@ -163,9 +172,23 @@ public class CommandParser {
         final String applicationName = "java -jar dimorph.jar command";
         final Options options = constructOptions();
         usageFormatter.printUsage(writer, 120, applicationName, options);
-        writer.println("\twhere command is one of download,....");
-        writer.println("\t- download [-d directory]: Download needed files to directory at (-d).");
-        writer.close();
+//        writer.println("\twhere command is one of download,....");
+//        writer.println("\t- download [-d directory]: Download needed files to directory at (-d).");
+        String version = getVersion();
+        System.out.println();
+        System.out.println(message);
+        System.out.println();
+        System.out.println("Program: LR2PG");
+        System.out.println("Version: " + version);
+        System.out.println();
+        System.out.println("Usage: java -jar Lr2pg.jar <command> [options]");
+        System.out.println();
+        System.out.println("Available commands:");
+        System.out.println();
+        System.out.println("download:");
+        System.out.println("\tjava -jar Lr2pg.jar download  [-d <directory>]");
+        System.out.println("\t<directory>: name of directory to which HPO data will be downloaded (default:\"data\")");
+        System.out.println();
         System.exit(0);
     }
 
