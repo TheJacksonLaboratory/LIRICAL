@@ -7,9 +7,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
+import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
 import org.monarchinitiative.phenol.graph.IdLabeledEdge;
 import org.monarchinitiative.phenol.graph.algo.BreadthFirstSearch;
 import org.monarchinitiative.phenol.ontology.data.*;
@@ -91,11 +91,11 @@ public class BackgroundForegroundTermFrequency {
 
     /**
      * This will return an ordered list of terms emanating from t1 up to the root of the ontology.
-     * @param ontology
-     * @param t1
-     * @return
+     * @param ontology An object representing the Human Phenotype Ontology
+     * @param t1 term of interest
+     * @return an ordered list of terms emanating from t1 up to the root of the ontology.
      */
-    public List<TermId> getPathsToRoot(Ontology<? extends Term, ? extends Relationship> ontology,
+    private List<TermId> getPathsToRoot(Ontology<? extends Term, ? extends Relationship> ontology,
                                                        final TermId t1) {
         final DefaultDirectedGraph<TermId, IdLabeledEdge> graph = ontology.getGraph();
         List<TermId> visitedT1 = new ArrayList<>(); // this will contain all paths from query term to the root
@@ -156,12 +156,12 @@ public class BackgroundForegroundTermFrequency {
                 return 1.0/(1+0+Math.log(i));
             }
         }*/
-        for (HpoTermId hpoTermId : disease.getPhenotypicAbnormalities()) {
+        for (HpoAnnotation hpoTermId : disease.getPhenotypicAbnormalities()) {
             if (isSubclass(ontology, hpoTermId.getTermId(), query)) {
                 List<TermId> pathToRoot = getPathsToRoot(ontology, query);
-                List<HpoTermId> diseaesHpoId = disease.getPhenotypicAbnormalities();
+                List<HpoAnnotation> diseaesHpoId = disease.getPhenotypicAbnormalities();
                 Set<TermId> diseaseTermIds = new HashSet<TermId>();
-                for(HpoTermId diseaeHpId : diseaesHpoId){
+                for(HpoAnnotation diseaeHpId : diseaesHpoId){
                     diseaseTermIds.add(diseaeHpId.getTermId());
                 }
                 Set<TermId> allAncs = getAncestorTerms(ontology, diseaseTermIds, true);
@@ -251,6 +251,7 @@ public class BackgroundForegroundTermFrequency {
                 // All of the ancestor terms are implicitly annotated to tid
                 // therefore, add this to their background frequencies.
                 // Note we also include the original term here (third arg: true)
+                tid=ontology.getPrimaryTermId(tid);
                 Set<TermId> ancs = getAncestorTerms(ontology,tid,true);
                 for (TermId at : ancs) {
                     if (!mp.containsKey(at)) mp.put(at, 0.0);
@@ -296,20 +297,20 @@ public class BackgroundForegroundTermFrequency {
         HpoDisease disease = diseaseMap.get(diseaseName);
 
       for (HpoAnnotation annotation : disease.getPhenotypicAbnormalities()) {
-          if ( annotation.getTermId().equals(query) )  return getAdjustedFrequency(annotation,query,diseaseName,IDENTICAL);
+          if ( annotation.getTermId().equals(query) )  return getAdjustedFrequency(annotation,query,diseaseName,"Identical");
       }
       for (HpoAnnotation annotation : disease.getPhenotypicAbnormalities()) {
-          if ( isSubclass( ontology,  annotation.getTermId(), query) )  return getAdjustedFrequency(annotation,query,diseaseName,SUPERCLASS);
+          if ( isSubclass( ontology,  annotation.getTermId(), query) )  return getAdjustedFrequency(annotation,query,diseaseName,"Superclass");
       }
       for (HpoAnnotation annotation : disease.getPhenotypicAbnormalities()) {
-          if (isSubclass(ontology,query,annotation.getTermId()))  return getAdjustedFrequency(annotation,query,diseaseName,SUBCLASS);
+          if (isSubclass(ontology,query,annotation.getTermId()))  return getAdjustedFrequency(annotation,query,diseaseName,"Subclass");
       }
       for (HpoAnnotation annotation : disease.getPhenotypicAbnormalities()) {
-          if (termsAreSiblings(ontology,query,annotation.getTermId()))  return getAdjustedFrequency(annotation,query,diseaseName,SIBLINGS);
+          if (termsAreSiblings(ontology,query,annotation.getTermId()))  return getAdjustedFrequency(annotation,query,diseaseName,"Siblings");
       }
 
       for (HpoAnnotation annotation : disease.getPhenotypicAbnormalities()) {
-          if (termsAreRelated(ontology,query,annotation.getTermId()))  return getAdjustedFrequency(annotation,query,diseaseName,RELATED);
+          if (termsAreRelated(ontology,query,annotation.getTermId()))  return getAdjustedFrequency(annotation,query,diseaseName,"Related");
       }
       return   DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
 

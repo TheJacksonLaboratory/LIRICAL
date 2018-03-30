@@ -87,20 +87,14 @@ public class HpoCaseTest {
     @Test
     public void testAnotherCase() throws Lr2pgException{
         /* these are the phenpotypic abnormalties of our "case" */
-        TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
-        TermId t1 = new ImmutableTermId(HP_PREFIX,"0000750");
-        TermId t2 = new ImmutableTermId(HP_PREFIX,"0001258");
+        TermId t1 = ImmutableTermId.constructWithPrefix("HP:0000750");
+        TermId t2 = ImmutableTermId.constructWithPrefix("HP:0001258");
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2);
         HpoCase case1 = new HpoCase(ontology,backforeFreq,diseasename,builder.build());
         assertNotNull(case1);
         int expected=2;
         assertEquals(expected,case1.getNumberOfAnnotations());
-        case1.calculateLikelihoodRatios();
-        expected=4;
-        hpocase.outputResults();
-        int actual=hpocase.getRank(diseasename);
-        assertEquals(expected ,actual);
     }
 
 
@@ -115,8 +109,9 @@ public class HpoCaseTest {
                 ImmutableTermId.constructWithPrefix("HP:0008271"));
         String kniestDysplasia = "OMIM:156550";
         HpoCase kniestCase = new HpoCase(ontology, backforeFreq, kniestDysplasia, lst);
-        int expected = 6;
-        assertEquals(expected, hpocase.getNumberOfAnnotations());
+       //kniestCase.debugPrint();
+        int expected = 7;
+        assertEquals(expected, kniestCase.getNumberOfAnnotations());
     }
 
 
