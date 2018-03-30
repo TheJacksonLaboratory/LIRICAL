@@ -7,7 +7,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
-import org.monarchinitiative.phenol.formats.hpo.*;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
 import org.monarchinitiative.phenol.graph.IdLabeledEdge;
 import org.monarchinitiative.phenol.graph.algo.BreadthFirstSearch;
 import org.monarchinitiative.phenol.ontology.data.*;
@@ -34,15 +36,6 @@ public class BackgroundForegroundTermFrequency {
 
     private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.000_005; // 1:20,000
 
-    private String  IDENTICAL = "Identical";
-
-    private String SUPERCLASS = "Superclass";
-
-    private String SUBCLASS = "Subclass";
-
-    private String SIBLINGS = "Sibling";
-
-    private String RELATED = "Related";
 
     /**
      *
@@ -127,7 +120,7 @@ public class BackgroundForegroundTermFrequency {
     private double getFrequencyIfNotAnnotated(TermId query, HpoDisease disease) {
         //Try to find a matching child term.
 
-        // 1. the query term is a subclass of the disease term. Therefore,
+        // 1. the query term is a superclass of the disease term. Therefore,
         // our query satisfies the criteria for the disease and we can take the
         // frequency of the disease term. Since there may be multiple parents
         // take the average
@@ -140,7 +133,8 @@ public class BackgroundForegroundTermFrequency {
             }
         }
         if (n>0) return cumfreq/n;
-        else return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+
+
         // for other possibilities, we will use the path to the root of the ontology that
         // starts with the query term
        /* List<TermId> pathToRoot = getPathsToRoot(ontology,query);
@@ -161,10 +155,30 @@ public class BackgroundForegroundTermFrequency {
                 if (td.equals(PHENOTYPIC_ABNORMALITY)) break; // no match!
                 return 1.0/(1+0+Math.log(i));
             }
+        }*/
+        for (HpoTermId hpoTermId : disease.getPhenotypicAbnormalities()) {
+            if (isSubclass(ontology, hpoTermId.getTermId(), query)) {
+                List<TermId> pathToRoot = getPathsToRoot(ontology, query);
+                List<HpoTermId> diseaesHpoId = disease.getPhenotypicAbnormalities();
+                Set<TermId> diseaseTermIds = new HashSet<TermId>();
+                for(HpoTermId diseaeHpId : diseaesHpoId){
+                    diseaseTermIds.add(diseaeHpId.getTermId());
+                }
+                Set<TermId> allAncs = getAncestorTerms(ontology, diseaseTermIds, true);
+                for (int i = 0; i < pathToRoot.size(); i++) {
+                    TermId td = pathToRoot.get(i);
+                    if (allAncs.contains(td)) {
+                        // the induced graph of the disease contains an ancestor of the query term
+                        if (td.equals(PHENOTYPIC_ABNORMALITY)) break; // no match!
+                        //Not sure about the numerator! 1 or td.frequency?
+                        return 1 / (1 + Math.log(i));
+                    }
+                }
+            }
         }
 
-        return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
-        */
+       return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+
     }
 
     private double getFrequencyIfNotAnnotatedOLD(TermId tid, HpoDisease disease) {
@@ -262,6 +276,7 @@ public class BackgroundForegroundTermFrequency {
     int getNumberOfDiseases() {
         return diseaseMap.size();
     }
+
 
 
 
@@ -391,6 +406,5 @@ public class BackgroundForegroundTermFrequency {
         return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
 
     }
-
 
 }
