@@ -79,7 +79,7 @@ public class BackgroundForegroundTermFrequency {
     }
 
     public double getFrequencyOfTermInDisease(HpoDisease disease, TermId tid) {
-        HpoTermId hpoTid = disease.getHpoTermId(tid);
+        HpoAnnotation hpoTid = disease.getAnnotation(tid);
         if (hpoTid==null) {
             // this disease does not have the Hpo term in question
             return getFrequencyIfNotAnnotated(tid,disease);
@@ -126,7 +126,7 @@ public class BackgroundForegroundTermFrequency {
         // take the average
         int n=0;
         double cumfreq=0.0;
-        for (HpoTermId hpoTermId : disease.getPhenotypicAbnormalities()) {
+        for (HpoAnnotation hpoTermId : disease.getPhenotypicAbnormalities()) {
             if (isSubclass(ontology,query,hpoTermId.getTermId())) {
                 cumfreq+=hpoTermId.getFrequency();
                 n++;
@@ -196,7 +196,7 @@ public class BackgroundForegroundTermFrequency {
                     continue; // root term gives zero information
                     // skip because in theory could be other terms at same level depending on path
                 }
-                HpoTermId timd = disease.getHpoTermId(id);
+                HpoAnnotation timd = disease.getAnnotation(id);
                 if (timd != null) {
                     prob += timd.getFrequency() / (1 + Math.log(level)); //penalty for imprecision,
                     foundannotation=true;
@@ -223,9 +223,6 @@ public class BackgroundForegroundTermFrequency {
      * @return the estimate background frequency (note: bf \in [0,1])
      */
     double getBackgroundFrequency(TermId termId) {
-        if (termId instanceof HpoTermId) {
-            termId= ((HpoTermId) termId).getTermId();
-        }
         if (! hpoTerm2OverallFrequency.containsKey(termId)) {
             logger.fatal(String.format("Map did not contain data for term %s",termId.getIdWithPrefix() ));
             // todo throw error
@@ -245,7 +242,7 @@ public class BackgroundForegroundTermFrequency {
         }
         ImmutableMap.Builder<TermId, Double> imb = new ImmutableMap.Builder<>();
         for (HpoDisease dis : this.diseaseMap.values()) {
-            for (HpoTermId tidm : dis.getPhenotypicAbnormalities()) {
+            for (HpoAnnotation tidm : dis.getPhenotypicAbnormalities()) {
                 TermId tid = tidm.getTermId();
                 if (!mp.containsKey(tid)) {
                     mp.put(tid, 0.0);
@@ -281,5 +278,133 @@ public class BackgroundForegroundTermFrequency {
     }
 
 
+
+
+
+    /*
+    We need a function that gets the best matching term for a query term TID so that we can calculate frequency of an arbitrary term in an arbitrary disease.
+    Priority list
+
+    1. TID is identical with a term in the disease annotations
+    2. TID is a (direct) parent term
+    3. TID is a (direct) child term
+    4. TID is a sibling of a term in the disease annotations
+    5. TID is related to a term in the disease annotations
+    6. TID is unrelated to any term in the disease annotations
+     */
+    private double getFrequencyTerm(TermId query, String diseaseName){
+        HpoDisease disease = diseaseMap.get(diseaseName);
+
+      for (HpoAnnotation annotation : disease.getPhenotypicAbnormalities()) {
+          if ( annotation.getTermId().equals(query) )  return getAdjustedFrequency(annotation,query,diseaseName,IDENTICAL);
+      }
+      for (HpoAnnotation annotation : disease.getPhenotypicAbnormalities()) {
+          if ( isSubclass( ontology,  annotation.getTermId(), query) )  return getAdjustedFrequency(annotation,query,diseaseName,SUPERCLASS);
+      }
+      for (HpoAnnotation annotation : disease.getPhenotypicAbnormalities()) {
+          if (isSubclass(ontology,query,annotation.getTermId()))  return getAdjustedFrequency(annotation,query,diseaseName,SUBCLASS);
+      }
+      for (HpoAnnotation annotation : disease.getPhenotypicAbnormalities()) {
+          if (termsAreSiblings(ontology,query,annotation.getTermId()))  return getAdjustedFrequency(annotation,query,diseaseName,SIBLINGS);
+      }
+
+      for (HpoAnnotation annotation : disease.getPhenotypicAbnormalities()) {
+          if (termsAreRelated(ontology,query,annotation.getTermId()))  return getAdjustedFrequency(annotation,query,diseaseName,RELATED);
+      }
+      return   DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+
+  }
+
+   private double getAdjustedFrequency(HpoAnnotation timd, TermId queryTerm, String diseaseName, String relation){
+       HpoDisease disease = diseaseMap.get(diseaseName);
+
+
+      switch (relation) {
+          case "Identical":
+              return timd.getFrequency();
+          case "Superclass":
+              return getFrequencySuperclassTerm(timd.getTermId(), queryTerm, diseaseName);
+          case "Subclass":
+              return getFrequencySubclassTerm(timd.getTermId(), queryTerm, diseaseName);
+          case "Sibling":
+              return getSiblingsTermsFrequency(timd.getTermId(), queryTerm,diseaseName);
+          case "Related":
+              return getRelatedTermsFrequency(timd.getTermId(), queryTerm, diseaseName);
+          default:
+              return   DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+      }
+  }
+
+    /**
+     * If the query term is a superclass of a term of disease, then the frequency of the term will be the maximum of the frequency of its children.
+     * @param tid:TermId
+     * @param diseaseName:Disease
+     * @return frequency
+     */
+    private double getFrequencySuperclassTerm(TermId tid, TermId query, String diseaseName) {
+        double prob =0;
+        //Needds to be completed.
+        return prob;
+    }
+
+
+    /**
+     * If the query term is a subclass of a term of disease, we divide the frequency of term by 1+log(level).
+     * @param tid: TermId
+     * @param diseaseName:Disease
+     * @return frequency
+     */
+    private double getFrequencySubclassTerm(TermId tid, TermId query, String diseaseName) {
+        HpoDisease disease = diseaseMap.get(diseaseName);
+        double prob = 0;
+        //Needs to be completed.
+        return prob;
+    }
+
+
+
+
+    /**
+     * If two terms are siblings, we divide the frequency of the term by (1+log(level)).
+     * @param tid:TermId
+     * @param diseaseName:Disease
+     * @return frequency
+     */
+    private double getSiblingsTermsFrequency(TermId tid, TermId queryTerm, String diseaseName) {
+        //Needs to be completed.
+        double prob = 0;
+        return prob;
+
+    }
+
+    /**
+     * If two terms are related, we divide the frequency of the disease term Id by 1+log(level)
+     *
+     * @param hpoTermId
+     * @param diseaseName:Disease
+     * @return frequency
+     */
+    private double getRelatedTermsFrequency(TermId hpoTermId, TermId query, String diseaseName) {
+        int level = 0;
+        Set<TermId> currentlevel=new HashSet<>();
+        currentlevel.add(hpoTermId);
+        while (! currentlevel.isEmpty()) {
+            level++;
+            Set<TermId> parents =  getParentTerms(ontology,currentlevel);
+            for (TermId id : parents) {
+                if (id.equals(PHENOTYPIC_ABNORMALITY)) {
+                    break;
+                }
+                Set<TermId>children = getChildTerms(ontology,id);
+                if (children.contains(hpoTermId)){
+                   return (  getSiblingsTermsFrequency( hpoTermId, query, diseaseName) /(1 + Math.log(level)));
+                }
+            }
+            currentlevel=parents;
+        }
+
+        return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+
+    }
 
 }

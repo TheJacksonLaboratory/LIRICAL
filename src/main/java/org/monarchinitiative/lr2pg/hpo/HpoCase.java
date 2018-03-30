@@ -6,9 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
@@ -78,7 +76,7 @@ public class HpoCase {
      * @return the rank of the disease within all of the test results
      */
     public int getRank(String diseasename){
-       Collections.sort(results,Collections.reverseOrder());
+        results.sort(Collections.reverseOrder());
 
         int rank=0;
         for (TestResult r: results){
@@ -89,7 +87,8 @@ public class HpoCase {
     }
 
     public void outputResults() {
-        Collections.sort(results,Collections.reverseOrder());
+        results.sort(Collections.reverseOrder());
+       // Collections.sort(results,);
         int rank=0;
         for (TestResult r: results){
             rank++;

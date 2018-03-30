@@ -10,8 +10,6 @@ import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.formats.hpo.ImmutableHpoTermId;
-import org.monarchinitiative.phenol.formats.hpo.HpoTermId;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
