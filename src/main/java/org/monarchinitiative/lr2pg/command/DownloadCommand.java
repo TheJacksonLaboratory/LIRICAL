@@ -9,7 +9,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class DownloadCommand extends Command {
+public class DownloadCommand implements Command {
     private static final Logger logger = LogManager.getLogger();
 
     private final String downloadDirectory;

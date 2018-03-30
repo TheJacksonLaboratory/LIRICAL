@@ -81,36 +81,37 @@ public class TestBackgroundFrequency {
         String annotationpath=classLoader.getResource(HP_PHENOTYPE_ANNOTATION_PATH).getFile();
         HpoOboParser parser = new HpoOboParser(new File(hpoPath));
         ontology=parser.parse();
+        System.out.println("Got terms "+ontology.getTerms().size());
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationpath,ontology);
         diseaseMap=annotationParser.parse();
         String DEFAULT_FREQUENCY="0040280";
         final TermId DEFAULT_FREQUENCY_ID = new ImmutableTermId(HP_PREFIX,DEFAULT_FREQUENCY);
         defaultFrequency=HpoFrequency.fromTermId(DEFAULT_FREQUENCY_ID);
-        this.d2termFreqMap=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
+       // this.d2termFreqMap=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
     }
 
 
 
-    /**
-     * Set up test case for disease OMIM:613172, Cardiomyopathy, dilated, 1DD
-     * The term HP:0031301 (Peripheral arterial calcification). No diseases in our
-     * corpus are annotated to this term.
-     */
-    @Test
-    public void testTermNotInCorpusBackgroundFreqeuncy() throws Exception {
-        HpoDisease disease = diseaseMap.get("OMIM:613172");
-        assertNotNull(disease);
-        int expected_n_annotations=3;
-        assertEquals(expected_n_annotations,disease.getPhenotypicAbnormalities().size());
-        TermId autosomalDominant = new ImmutableTermId(HP_PREFIX,"0000006");
-        assertEquals(autosomalDominant,disease.getModesOfInheritance().get(0));
-
-        TermId queryTerm = new ImmutableTermId(HP_PREFIX,"0031301");
-
-        double backgroundFrequency = d2termFreqMap.getBackgroundFrequency(queryTerm);
-        assertTrue(backgroundFrequency>0);
-
-    }
+//    /**
+//     * Set up test case for disease OMIM:613172, Cardiomyopathy, dilated, 1DD
+//     * The term HP:0031301 (Peripheral arterial calcification). No diseases in our
+//     * corpus are annotated to this term.
+//     */
+//    @Test
+//    public void testTermNotInCorpusBackgroundFreqeuncy() throws Exception {
+//        HpoDisease disease = diseaseMap.get("OMIM:613172");
+//        assertNotNull(disease);
+//        int expected_n_annotations=3;
+//        assertEquals(expected_n_annotations,disease.getPhenotypicAbnormalities().size());
+//        TermId autosomalDominant = new ImmutableTermId(HP_PREFIX,"0000006");
+//        assertEquals(autosomalDominant,disease.getModesOfInheritance().get(0));
+//
+//        TermId queryTerm = new ImmutableTermId(HP_PREFIX,"0031301");
+//
+//        double backgroundFrequency = d2termFreqMap.getBackgroundFrequency(queryTerm);
+//        assertTrue(backgroundFrequency>0);
+//
+//    }
 
 
 

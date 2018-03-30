@@ -103,5 +103,13 @@ public class HpoCase {
     }
 
 
+    public void debugPrint() {
+        System.out.println("Observed abnormalities:");
+        for (TermId tid : observedAbnormalities) {
+            System.out.println("\t" + tid.getIdWithPrefix());
+        }
+    }
+
+
 
 }

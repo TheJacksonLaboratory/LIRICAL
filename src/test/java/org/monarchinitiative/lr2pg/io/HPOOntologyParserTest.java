@@ -77,10 +77,12 @@ public class HPOOntologyParserTest {
         TermId abnEar = new ImmutableTermId(hpoPrefix,"0000598");
         TermId rootId = new ImmutableTermId(hpoPrefix,"0000118");
         Set<TermId> ancTermIds = getAncestorTerms(ontology,abnMiddleEar);
+        TermId root = ImmutableTermId.constructWithPrefix("HP:0000001"); // the very root of the ontology
         Set<TermId> expected = new HashSet<>();
         expected.add(rootId);
         expected.add(abnEar);
         expected.add(abnMiddleEar);
+        if (ancTermIds.contains(root)) { expected.add(root); }
         Assert.assertEquals(expected,ancTermIds);
     }
 
@@ -112,6 +114,7 @@ public class HPOOntologyParserTest {
         TermId abnormalityUrinary = new ImmutableTermId(hpoPrefix,"0000079");
         TermId abnormalityGenitourinary = new ImmutableTermId(hpoPrefix,"0000119");
         TermId phenotypicAbnormality = new ImmutableTermId(hpoPrefix,"0000118");
+
         Set<TermId> ancTermIds = getAncestorTerms(ontology,abnFuncBladder);
         Set<TermId> expected = new HashSet<>();
         expected.add(abnlowerUrinary);
@@ -120,6 +123,8 @@ public class HPOOntologyParserTest {
         expected.add(abnormalityUrinary);
         expected.add(abnormalityGenitourinary);
         expected.add(phenotypicAbnormality);
+        TermId root = ImmutableTermId.constructWithPrefix("HP:0000001"); // the very root of the ontology
+        if (ancTermIds.contains(root)) { expected.add(root); }
         Assert.assertEquals(expected,ancTermIds);
     }
 

@@ -7,7 +7,7 @@ import org.monarchinitiative.lr2pg.hpo.HpoCase;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  * @version 0.0.2 (2017-11-24)
  */
-public class HpoCaseCommand extends Command {
+public class HpoCaseCommand implements Command {
 
     HpoCase hpocase =null;
 
