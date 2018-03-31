@@ -4,7 +4,7 @@
 
     <groupId>org.monarchinitiative.lr2pg</groupId>
     <artifactId>lr2pg</artifactId>
-    <version>0.1.4</version>
+    <version>0.1.5</version>
     <packaging>jar</packaging>
 
     <name>lr2pg</name>
@@ -131,7 +131,7 @@
         </dependencies>
     </dependencyManagement>
     <build>
-        <finalName>LR2PG-${project.version}</finalName>
+        <finalName>Lr2pg</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -239,14 +239,34 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <!-- set useUniqueVersions=false in order that the classpath has the
-                                SNAPSHOT instead of the build number prefixed to the dependency -->
-                            <!--<useUniqueVersions>false</useUniqueVersions>-->
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <mainClass>org.monarchinitiative.lr2pg.LR2PG</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>org.monarchinitiative.lr2pg.LR2PG</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
 
 
             <plugin>
