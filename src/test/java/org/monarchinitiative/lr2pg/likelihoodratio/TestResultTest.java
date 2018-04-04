@@ -25,7 +25,7 @@ public class TestResultTest {
     public void testGlaucomaLR1() {
         TestResult tresult;
         String diseasename = "glaucoma";
-        ImmutableList.Builder<Double> builder = new ImmutableList.Builder();
+        ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
         // test #1
@@ -55,7 +55,7 @@ public class TestResultTest {
     public void testGlaucomaLR2() {
         TestResult tresult;
         String diseasename = "glaucoma";
-        ImmutableList.Builder<Double> builder = new ImmutableList.Builder();
+        ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
         // We now do two tests. The first test is the same as above
@@ -81,7 +81,7 @@ public class TestResultTest {
     public void testCompositepositiveLR() {
         TestResult tresult;
         String diseasename = "glaucoma";
-        ImmutableList.Builder<Double> builder = new ImmutableList.Builder();
+        ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
         //IOP test

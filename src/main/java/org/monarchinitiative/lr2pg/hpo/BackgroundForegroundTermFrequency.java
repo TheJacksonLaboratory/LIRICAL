@@ -19,7 +19,10 @@ import java.util.*;
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.*;
 
 /**
- * This class is designed to calculate the background and foreground frequencies of any HPO term in any disease.
+ * This class is designed to calculate the background and foreground frequencies of any HPO term in any disease. The main
+ * entry point into this class is the function {@link #getLikelihoodRatio}, which is called by {@link HpoCase} once for
+ * each HPO term to which the case is annotation; it calls it once for each disease in our database and calculates the
+ * likelihood ratio for each of the diseases.
  * @author <a href="mailto:vida.ravanmehr@jax.org">Vida Ravanmehr</a>
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
@@ -48,37 +51,22 @@ public class BackgroundForegroundTermFrequency {
         initializeFrequencyMap();
     }
 
-
-    /** @return iterator over the diseases in the database.*/
-    public Iterator<String> getDiseaseIterator() {
-        return this.diseaseMap.keySet().iterator();
-    }
-
     /**
      * Calculate and return the likelihood ratio of observing the HPO feature tid in an individual
      * with the disease "diseaseName"
      * @param tid An HPO phenotypic abnormality
-     * @param diseaseName Name of the disease
+     * @param disease the disease
      * @return the likelihood ratio of observing the HPO term in the diseases
      * @throws Lr2pgException If there is an error calculating the LR
      */
-    public double getLikelihoodRatio(TermId tid, String diseaseName) throws Lr2pgException{
-        HpoDisease disease = diseaseMap.get(diseaseName);
-        if (disease==null) {
-            throw new Lr2pgException(String.format("Could not find disease %s in diseaseMap. Terminating...",diseaseName));
-        }
+    double getLikelihoodRatio(TermId tid, HpoDisease disease) throws Lr2pgException{
         double numerator=getFrequencyOfTermInDisease(disease,tid);
         double denominator=getBackgroundFrequency(tid);
         return numerator/denominator;
     }
 
-    public double getLikelihoodRatio(TermId tid, HpoDisease disease) {
-        double numerator=getFrequencyOfTermInDisease(disease,tid);
-        double denominator=getBackgroundFrequency(tid);
-        return numerator/denominator;
-    }
 
-    public double getFrequencyOfTermInDisease(HpoDisease disease, TermId tid) {
+    double getFrequencyOfTermInDisease(HpoDisease disease, TermId tid) {
         HpoAnnotation hpoTid = disease.getAnnotation(tid);
         if (hpoTid==null) {
             // this disease does not have the Hpo term in question
@@ -114,8 +102,8 @@ public class BackgroundForegroundTermFrequency {
      * If we get here, we are trying to find a frequency for a term in a disease but there is not
      * direct match. This function tries several ways of finding a fuzzy match
      * @param query -- the term in the patient being tested for similarity with this disease
-     * @param disease
-     * @return
+     * @param disease the disease for which we want to calculate the frequency
+     * @return estimated frequency of the feature given the disease
      */
     private double getFrequencyIfNotAnnotated(TermId query, HpoDisease disease) {
         //Try to find a matching child term.
@@ -160,7 +148,7 @@ public class BackgroundForegroundTermFrequency {
             if (isSubclass(ontology, hpoTermId.getTermId(), query)) {
                 List<TermId> pathToRoot = getPathsToRoot(ontology, query);
                 List<HpoAnnotation> diseaesHpoId = disease.getPhenotypicAbnormalities();
-                Set<TermId> diseaseTermIds = new HashSet<TermId>();
+                Set<TermId> diseaseTermIds = new HashSet<>();
                 for(HpoAnnotation diseaeHpId : diseaesHpoId){
                     diseaseTermIds.add(diseaeHpId.getTermId());
                 }

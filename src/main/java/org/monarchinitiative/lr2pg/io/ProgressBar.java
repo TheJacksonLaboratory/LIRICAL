@@ -8,7 +8,7 @@ package org.monarchinitiative.lr2pg.io;
  *
  * @author <a href="mailto:manuel.holtgrewe@charite.de">Manuel Holtgrewe</a>
  */
-public final class ProgressBar {
+final class ProgressBar {
 
     /** smallest value */
     private final long min;
@@ -23,19 +23,19 @@ public final class ProgressBar {
     }
 
     /** Initialize progress bar with the given settings */
-    public ProgressBar(long min, long max, boolean doPrint) {
+    ProgressBar(long min, long max, boolean doPrint) {
         this.min = min;
         this.max = max;
         this.doPrint = true;
     }
 
     /** @return smallest value to represent */
-    public long getMin() {
+    long getMin() {
         return min;
     }
 
     /** @return largest value to represent */
-    public long getMax() {
+    long getMax() {
         return max;
     }
 
@@ -45,7 +45,7 @@ public final class ProgressBar {
     }
 
     /** print progress up to position <code>pos</code>, if {@link #doPrint} */
-    public void print(long pos) {
+    void print(long pos) {
         if (!doPrint)
             return;
         int percent = (int) Math.ceil(100.0 * (pos - this.min) / (this.max - this.min));
@@ -61,7 +61,7 @@ public final class ProgressBar {
             }
         }
 
-        bar.append("]   " + percent + "%     ");
+        bar.append("]   ").append(percent).append("%     ");
         System.err.print("\r" + bar.toString());
         if (pos == max)
             System.err.println();

@@ -49,18 +49,15 @@ public class CommandParser {
      */
     private int n_noise_terms;
     /**
-     * The type of analysis to run.
-     */
-    private String mycommand = null;
-    /**
      * The command object.
      */
     private Command command = null;
 
 
+
     public CommandParser(String args[]) {
         final CommandLineParser cmdLineGnuParser = new DefaultParser();
-
+        String mycommand="";
         final Options gnuOptions = constructOptions();
         org.apache.commons.cli.CommandLine commandLine;
 

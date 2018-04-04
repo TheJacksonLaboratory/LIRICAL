@@ -44,35 +44,35 @@ public class HpoCaseSimulator {
     /** Number of "noise" (unrelated) HPO terms to use for each simulated case. */
     private final int n_noise_terms;
     /** Number of cases to simulate. */
-    private static int n_cases_to_simulate;
+    private final int n_cases_to_simulate;
 
 
     /** Root term id in the phenotypic abnormality subontology. */
     private final static TermId PHENOTYPIC_ABNORMALITY = ImmutableTermId.constructWithPrefix("HP:0000118");
 
-
-
-    private static final HpoFrequency[] FREQUENCYARRAY={
-            HpoFrequency.ALWAYS_PRESENT,
-            HpoFrequency.VERY_FREQUENT,
-            HpoFrequency.FREQUENT,
-            HpoFrequency.OCCASIONAL,
-            HpoFrequency.VERY_RARE,
-            HpoFrequency.EXCLUDED};
-
-    private static final HpoOnset[] ONSETARRAY={
-            HpoOnset.ANTENATAL_ONSET,
-            HpoOnset.EMBRYONAL_ONSET,
-            HpoOnset.FETAL_ONSET,
-            HpoOnset.CONGENITAL_ONSET,
-            HpoOnset.NEONATAL_ONSET,
-            HpoOnset.INFANTILE_ONSET,
-            HpoOnset.CHILDHOOD_ONSET,
-            HpoOnset.JUVENILE_ONSET,
-            HpoOnset.ADULT_ONSET,
-            HpoOnset.YOUNG_ADULT_ONSET,
-            HpoOnset.MIDDLE_AGE_ONSET,
-            HpoOnset.LATE_ONSET};
+//
+//
+//    private static final HpoFrequency[] FREQUENCYARRAY={
+//            HpoFrequency.ALWAYS_PRESENT,
+//            HpoFrequency.VERY_FREQUENT,
+//            HpoFrequency.FREQUENT,
+//            HpoFrequency.OCCASIONAL,
+//            HpoFrequency.VERY_RARE,
+//            HpoFrequency.EXCLUDED};
+//
+//    private static final HpoOnset[] ONSETARRAY={
+//            HpoOnset.ANTENATAL_ONSET,
+//            HpoOnset.EMBRYONAL_ONSET,
+//            HpoOnset.FETAL_ONSET,
+//            HpoOnset.CONGENITAL_ONSET,
+//            HpoOnset.NEONATAL_ONSET,
+//            HpoOnset.INFANTILE_ONSET,
+//            HpoOnset.CHILDHOOD_ONSET,
+//            HpoOnset.JUVENILE_ONSET,
+//            HpoOnset.ADULT_ONSET,
+//            HpoOnset.YOUNG_ADULT_ONSET,
+//            HpoOnset.MIDDLE_AGE_ONSET,
+//            HpoOnset.LATE_ONSET};
 
 
     /**
@@ -80,6 +80,7 @@ public class HpoCaseSimulator {
      * @param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
      */
     public HpoCaseSimulator(String datadir, int cases_to_simulate, int terms_per_case, int noise_terms ) {
+
         this.n_cases_to_simulate=cases_to_simulate;
         this.n_terms_per_case=terms_per_case;
         this.n_noise_terms=noise_terms;
@@ -97,6 +98,7 @@ public class HpoCaseSimulator {
         int c=0;
         Map<Integer,Integer> ranks=new HashMap<>();
         logger.trace(String.format("Will simulate %d diseases.",diseaseMap.size() ));
+        logger.trace("Simulating n={} HPO cases with {} random terms and {} noise terms per case.",n_cases_to_simulate,n_terms_per_case,n_noise_terms);
         for (String diseasename : diseaseMap.keySet()) {
             HpoDisease disease = diseaseMap.get(diseasename);
             //logger.trace("Simulating disease "+diseasename);
@@ -138,18 +140,18 @@ public class HpoCaseSimulator {
         System.out.println(String.format("Rank=101-...: count:%d (%.1f%%)", rank101_up, (double) 100 * rank101_up / N));
     }
 
-
-    private HpoFrequency getRandomFrequency() {
-        int n=FREQUENCYARRAY.length;
-        int r=(int)Math.floor(Math.random()*n);
-        return FREQUENCYARRAY[r];
-    }
-
-    private HpoOnset getRandomOnset() {
-        int n=ONSETARRAY.length;
-        int r=(int)Math.floor(Math.random()*n);
-        return ONSETARRAY[r];
-    }
+//
+//    private HpoFrequency getRandomFrequency() {
+//        int n=FREQUENCYARRAY.length;
+//        int r=(int)Math.floor(Math.random()*n);
+//        return FREQUENCYARRAY[r];
+//    }
+//
+//    private HpoOnset getRandomOnset() {
+//        int n=ONSETARRAY.length;
+//        int r=(int)Math.floor(Math.random()*n);
+//        return ONSETARRAY[r];
+//    }
 
     /**
      * This is a term that was observed in the simulated patient (note that it should not be a HpoTermId, which
@@ -212,7 +214,7 @@ public class HpoCaseSimulator {
           }
         ImmutableList<TermId> termlist = builder.build();
 
-        HpoCase hpocase = new HpoCase(ontology,bftfrequency,diseasename,termlist);
+        HpoCase hpocase = new HpoCase(bftfrequency,diseasename,termlist,diseaseMap);
         try {
             hpocase.calculateLikelihoodRatios();
         } catch (Lr2pgException e) {

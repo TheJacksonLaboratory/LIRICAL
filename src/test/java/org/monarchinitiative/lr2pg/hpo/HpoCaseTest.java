@@ -58,7 +58,7 @@ public class HpoCaseTest {
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
 
-        hpocase = new HpoCase(ontology,backforeFreq,diseasename,builder.build());
+        hpocase = new HpoCase(backforeFreq,diseasename,builder.build(),diseaseMap);
     }
 
 
@@ -83,7 +83,7 @@ public class HpoCaseTest {
     }
 
 
-
+    /** Test that all of the annotations are added to the case correctly. TODO REFACTOR */
     @Test
     public void testAnotherCase() throws Lr2pgException{
         /* these are the phenpotypic abnormalties of our "case" */
@@ -91,13 +91,13 @@ public class HpoCaseTest {
         TermId t2 = ImmutableTermId.constructWithPrefix("HP:0001258");
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2);
-        HpoCase case1 = new HpoCase(ontology,backforeFreq,diseasename,builder.build());
+        HpoCase case1 = new HpoCase(backforeFreq,diseasename,builder.build(),null);
         assertNotNull(case1);
         int expected=2;
         assertEquals(expected,case1.getNumberOfAnnotations());
     }
 
-
+    /** Test that all of the annotations are added to the case correctly. TODO REFACTOR */
     @Test
     public void testKniestDysplasia() {
         ImmutableList<TermId> lst = ImmutableList.of( ImmutableTermId.constructWithPrefix("HP:0410009"),
@@ -108,7 +108,7 @@ public class HpoCaseTest {
                 ImmutableTermId.constructWithPrefix("HP:0003015"),
                 ImmutableTermId.constructWithPrefix("HP:0008271"));
         String kniestDysplasia = "OMIM:156550";
-        HpoCase kniestCase = new HpoCase(ontology, backforeFreq, kniestDysplasia, lst);
+        HpoCase kniestCase = new HpoCase(backforeFreq, kniestDysplasia, lst,null);
        //kniestCase.debugPrint();
         int expected = 7;
         assertEquals(expected, kniestCase.getNumberOfAnnotations());

@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -17,33 +18,33 @@ import java.util.*;
  * Represents a single case and the HPO terms assigned to the case (patient), as well as the results of the
  * likelihood ratio analysis.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
- * @version 0.0.1 (2017-11-24)
+ * @version 0.0.2 (2018-04-04)
  */
 public class HpoCase {
     private static final Logger logger = LogManager.getLogger();
     /** The {@link BackgroundForegroundTermFrequency} has data on each disease. Within this class, we iterate over each disease
      * in order to get the overall likelihood ratio for the diagnosis*/
-    private BackgroundForegroundTermFrequency bftFrequency;
-
-    private String disease=null;
+    private final BackgroundForegroundTermFrequency bftFrequency;
+    /** For some simulations, we know what the correct disease diagnosis is; if so, it is recorded here. */
+    private final String disease;
     /** List of Hpo terms for our case. TODO add negative annotations. */
-    private List<TermId> observedAbnormalities;
-
-    private final HpoOntology hpoOntology;
+    private final List<TermId> observedAbnormalities;
+    /** Map of all diseases we are using for differential diagnosis./ Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
+    private final Map<String,HpoDisease> diseaseMap;
     /** a set of test results -- the evaluation of each HPO term for the disease. */
-    private List<TestResult> results;
+    private final List<TestResult> results;
 
 
 
-    public HpoCase(HpoOntology ontol,
-                   BackgroundForegroundTermFrequency diseaseFreqMap,
+    public HpoCase(BackgroundForegroundTermFrequency diseaseFreqMap,
                    String diseaseNane,
-                   List<TermId> observedAbn) {
+                   List<TermId> observedAbn,
+                   Map<String,HpoDisease> disMap) {
         this.bftFrequency =diseaseFreqMap;
-        this.hpoOntology=ontol;
         this.disease=diseaseNane;
         this.observedAbnormalities=observedAbn;
-        results=new ArrayList<>();
+        this.diseaseMap=disMap;
+        this.results=new ArrayList<>();
     }
 
     /**
@@ -52,15 +53,14 @@ public class HpoCase {
      * {@link #results}.
      */
     public void calculateLikelihoodRatios() throws Lr2pgException {
-        Iterator<String> it = bftFrequency.getDiseaseIterator();
-        while (it.hasNext()) {
-            String disease = it.next();
+        for (String diseaseName: diseaseMap.keySet()) {
+            HpoDisease disease = diseaseMap.get(diseaseName);
             ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
             for (TermId tid : this.observedAbnormalities) {
                 double LR = bftFrequency.getLikelihoodRatio(tid,disease);
                 builder.add(LR);
             }
-            TestResult result = new TestResult(builder.build(),disease);
+            TestResult result = new TestResult(builder.build(),diseaseName);
             results.add(result);
         }
     }

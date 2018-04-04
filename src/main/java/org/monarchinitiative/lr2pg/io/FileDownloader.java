@@ -23,25 +23,25 @@ import java.net.URLConnection;
 public class FileDownloader {
     private static final Logger logger = LogManager.getLogger();
 
-    public static class ProxyOptions {
-        public String host = null;
-        public int port = -1;
-        public String user = null;
-        public String password = null;
+    static class ProxyOptions {
+        String host = null;
+        int port = -1;
+        String user = null;
+        String password = null;
     }
 
     /**
      * Configuration for the {@link FileDownloader}.
      */
     public static class Options {
-        public boolean printProgressBar = false;
-        public ProxyOptions http = new ProxyOptions();
-        public ProxyOptions https = new ProxyOptions();
-        public ProxyOptions ftp = new ProxyOptions();
+        boolean printProgressBar = false;
+        ProxyOptions http = new ProxyOptions();
+        ProxyOptions https = new ProxyOptions();
+        ProxyOptions ftp = new ProxyOptions();
     }
 
     /** configuration for the downloader */
-    Options options;
+    private final Options options;
 
     /** Initializer FileDownloader with the given options string */
     public FileDownloader(Options options) {
@@ -94,8 +94,6 @@ public class FileDownloader {
                 throw new IOException("Could not login with anonymous:anonymous@example.com");
             if (!ftp.isConnected())
                 logger.error("Weird, not connected!");
-        } catch (SocketException e) {
-            throw new FileDownloadException("ERROR: problem connecting when downloading file.", e);
         } catch (IOException e) {
             throw new FileDownloadException("ERROR: problem connecting when downloading file.", e);
         }
@@ -104,10 +102,6 @@ public class FileDownloader {
         } catch (IOException e) {
             try {
                 ftp.logout();
-            } catch (IOException e1) {
-                // swallow, nothing we can do about it
-            }
-            try {
                 ftp.disconnect();
             } catch (IOException e1) {
                 // swallow, nothing we can do about it
@@ -175,10 +169,6 @@ public class FileDownloader {
             dest.delete();
             try {
                 ftp.logout();
-            } catch (IOException e1) {
-                // swallow, nothing we can do about it
-            }
-            try {
                 ftp.disconnect();
             } catch (IOException e1) {
                 // swallow, nothing we can do about it
@@ -199,13 +189,6 @@ public class FileDownloader {
                     // swallow, nothing we can do
                 }
             }
-            // if (ftp != null) {
-            // try {
-            // ftp.completePendingCommand();
-            // } catch (IOException e) {
-            // // swallow, nothing we can do
-            // }
-            // }
         }
         return false;
     }
@@ -220,8 +203,8 @@ public class FileDownloader {
         setProxyProperties();
 
         // actually copy the file
-        BufferedInputStream in = null;
-        FileOutputStream out = null;
+        BufferedInputStream in;
+        FileOutputStream out;
         try {
             URLConnection connection =  src.openConnection();
             final int fileSize = connection.getContentLength();
