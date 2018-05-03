@@ -150,6 +150,10 @@ public class TestResult implements Comparable<TestResult> {
     }
 
 
+    public double getRatio(int i) {
+        return this.results.get(i);
+    }
+
     public String getDiseasename() {
         return diseasename;
     }

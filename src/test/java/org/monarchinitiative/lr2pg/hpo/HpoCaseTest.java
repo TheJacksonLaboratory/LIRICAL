@@ -1,55 +1,64 @@
 package org.monarchinitiative.lr2pg.hpo;
 
 
-import com.github.phenomics.ontolib.formats.hpo.*;
-import com.github.phenomics.ontolib.ontology.data.*;
 import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
-import org.monarchinitiative.lr2pg.io.HpoAnnotation2DiseaseParser;
-import org.monarchinitiative.lr2pg.io.HpoOntologyParser;
+import org.monarchinitiative.phenol.base.PhenolException;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
+import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
+import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
+import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+/**
+ * Test whether we can successfully create HpoCase objects.
+ */
 public class HpoCaseTest {
     private static final Logger logger = LogManager.getLogger();
     /** Name of the disease we are simulating in this test, i.e., OMIM:108500. */
     private static String diseasename="108500";
     private static HpoCase hpocase;
+    private static HpoOntology ontology;
+    private static BackgroundForegroundTermFrequency backforeFreq;
+
 
     @BeforeClass
-    public static void setup() throws IOException {
-        ClassLoader classLoader = Disease2TermFrequencyTest.class.getClassLoader();
+    public static void setup() throws IOException,PhenolException {
+        ClassLoader classLoader = BackgroundForegroundTermFrequencyTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
-        String annotationPath = classLoader.getResource("small_phenoannot.tab").getFile();
+        String annotationPath = classLoader.getResource("small.hpoa").getFile();
         /* parse ontology */
-        HpoOntologyParser parser = new HpoOntologyParser(hpoPath);
-        parser.parseOntology();
-        Ontology<HpoTerm, HpoTermRelation>phenotypeSubOntology = parser.getPhenotypeSubontology();
-        Ontology<HpoTerm, HpoTermRelation> inheritanceSubontology = parser.getInheritanceSubontology();
-        HpoAnnotation2DiseaseParser annotationParser=new HpoAnnotation2DiseaseParser(annotationPath,phenotypeSubOntology,inheritanceSubontology);
-        Map<String,HpoDiseaseWithMetadata> diseaseMap=annotationParser.getDiseaseMap();
-        Disease2TermFrequency d2fmap=new Disease2TermFrequency(phenotypeSubOntology,inheritanceSubontology,diseaseMap);
-        //String caseFile = classLoader.getResource("HPOTerms").getFile();
+        HpoOboParser parser = new HpoOboParser(new File(hpoPath));
+        ontology =parser.parse();
+        HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationPath,ontology);
+        Map<String,HpoDisease> diseaseMap=annotationParser.parse();
+        backforeFreq=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
 
-        /* these are the phenpotypic abnormalties of our "case" */
+        /* these are the phenotypic abnormalties of our "case" */
         TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
-        ImmutableTermIdWithMetadata t1 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0006855"));
-        ImmutableTermIdWithMetadata t2 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0000651"));
-        ImmutableTermIdWithMetadata t3 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0010545"));
-        ImmutableTermIdWithMetadata t4 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0001260"));
-        ImmutableTermIdWithMetadata t5 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX,"0001332"));
-        ImmutableList.Builder<TermIdWithMetadata> builder = new ImmutableList.Builder<>();
+        TermId t1 = new ImmutableTermId(HP_PREFIX,"0006855");
+        TermId t2 = new ImmutableTermId(HP_PREFIX,"0000651");
+        TermId t3 = new ImmutableTermId(HP_PREFIX,"0010545");
+        TermId t4 = new ImmutableTermId(HP_PREFIX,"0001260");
+        TermId t5 = new ImmutableTermId(HP_PREFIX,"0001332");
+        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
 
-        hpocase = new HpoCase(phenotypeSubOntology,d2fmap,diseasename,builder.build());
+        hpocase = new HpoCase(backforeFreq,diseasename,builder.build(),diseaseMap,ontology);
     }
 
 
@@ -72,13 +81,39 @@ public class HpoCaseTest {
         int expected=5;
         assertEquals(expected,hpocase.getNumberOfAnnotations());
     }
-//
-//    @Test
-//    public void testPipeline() throws Lr2pgException {
-//        hpocase.calculateLikelihoodRatios();
-//        int expected=1;
-//       hpocase.outputResults();
-//        int actual=hpocase.getRank(diseasename);
-//        assertEquals(expected ,actual);
-//    }
+
+
+    /** Test that all of the annotations are added to the case correctly. TODO REFACTOR */
+    @Test
+    public void testAnotherCase() throws Lr2pgException{
+        /* these are the phenpotypic abnormalties of our "case" */
+        TermId t1 = ImmutableTermId.constructWithPrefix("HP:0000750");
+        TermId t2 = ImmutableTermId.constructWithPrefix("HP:0001258");
+        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
+        builder.add(t1,t2);
+        HpoCase case1 = new HpoCase(backforeFreq,diseasename,builder.build(),null,ontology);
+        assertNotNull(case1);
+        int expected=2;
+        assertEquals(expected,case1.getNumberOfAnnotations());
+    }
+
+    /** Test that all of the annotations are added to the case correctly. TODO REFACTOR */
+    @Test
+    public void testKniestDysplasia() {
+        ImmutableList<TermId> lst = ImmutableList.of( ImmutableTermId.constructWithPrefix("HP:0410009"),
+                ImmutableTermId.constructWithPrefix( "HP:0002812"),
+                ImmutableTermId.constructWithPrefix("HP:0003521"),
+                ImmutableTermId.constructWithPrefix("HP:0000541"),
+                ImmutableTermId.constructWithPrefix("HP:0011800"),
+                ImmutableTermId.constructWithPrefix("HP:0003015"),
+                ImmutableTermId.constructWithPrefix("HP:0008271"));
+        String kniestDysplasia = "OMIM:156550";
+        HpoCase kniestCase = new HpoCase(backforeFreq, kniestDysplasia, lst,null,ontology);
+       //kniestCase.debugPrint();
+        int expected = 7;
+        assertEquals(expected, kniestCase.getNumberOfAnnotations());
+    }
+
+
+
 }

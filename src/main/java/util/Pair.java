@@ -8,8 +8,8 @@ package util;
  */
 public class Pair<X,Y> {
 
-    public final X first;
-    public final Y second;
+    private final X first;
+    private final Y second;
     public Pair(X x, Y y) {
         first=x;
         second=y;
