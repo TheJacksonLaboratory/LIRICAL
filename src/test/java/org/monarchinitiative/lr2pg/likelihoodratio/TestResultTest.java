@@ -19,7 +19,9 @@ import static org.junit.Assert.assertEquals;
 public class TestResultTest {
 
     private static final double EPSILON = 0.00001;
-
+    public static double ratio(double sensitivity, double specificity) {
+        return sensitivity/(1.0 - specificity);
+    }
 
     @Test
     public void testGlaucomaLR1() {
@@ -30,7 +32,7 @@ public class TestResultTest {
         double prevalence = 0.025;
         // test #1
         // we obtain a test result with 60% sensitivity and 97% specifity
-        double LR1 = LikelihoodRatio.ratio(0.60, 0.97);
+        double LR1 = ratio(0.60, 0.97);
         builder.add(LR1);
         tresult = new TestResult(builder.build(), diseasename);
         // There should be a LR of 20 after just one test
@@ -59,11 +61,11 @@ public class TestResultTest {
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
         // We now do two tests. The first test is the same as above
-        double LR1 = LikelihoodRatio.ratio(0.60, 0.97);
+        double LR1 = ratio(0.60, 0.97);
         builder.add(LR1);
         // The other test is intraocular pressure (IOP)
         // IOP: (50% sensitivity and 92% specificity[9])
-        double LR2 = LikelihoodRatio.ratio(0.50, 0.92);
+        double LR2 = ratio(0.50, 0.92);
         builder.add(LR2);
         tresult = new TestResult(builder.build(), diseasename);
         // the pretest odds are the same as with the first test because they are based only on
@@ -85,13 +87,13 @@ public class TestResultTest {
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
         //IOP test
-        double LR1 = LikelihoodRatio.ratio(0.5,0.92);
+        double LR1 = ratio(0.5,0.92);
         builder.add(LR1);
         //Dic
-        double LR2 = LikelihoodRatio.ratio(0.60, 0.97);
+        double LR2 = ratio(0.60, 0.97);
         builder.add(LR2);
         //GDx
-        double LR3 = LikelihoodRatio.ratio(0.60, 0.97);
+        double LR3 = ratio(0.60, 0.97);
         builder.add(LR3);
 
         tresult = new TestResult(builder.build(),diseasename);

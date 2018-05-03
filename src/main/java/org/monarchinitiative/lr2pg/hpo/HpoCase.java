@@ -27,6 +27,8 @@ public class HpoCase {
     private final BackgroundForegroundTermFrequency bftFrequency;
     /** For some simulations, we know what the correct disease diagnosis is; if so, it is recorded here. */
     private final String disease;
+    /** Reference to the Human Phenotype Ontology object. */
+    private HpoOntology ontology =null;
     /** List of Hpo terms for our case. TODO add negative annotations. */
     private final List<TermId> observedAbnormalities;
     /** Map of all diseases we are using for differential diagnosis./ Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
@@ -39,12 +41,14 @@ public class HpoCase {
     public HpoCase(BackgroundForegroundTermFrequency diseaseFreqMap,
                    String diseaseNane,
                    List<TermId> observedAbn,
-                   Map<String,HpoDisease> disMap) {
+                   Map<String,HpoDisease> disMap,
+                   HpoOntology ont) {
         this.bftFrequency =diseaseFreqMap;
         this.disease=diseaseNane;
         this.observedAbnormalities=observedAbn;
         this.diseaseMap=disMap;
         this.results=new ArrayList<>();
+        this.ontology=ont;
     }
 
     /**
@@ -81,9 +85,25 @@ public class HpoCase {
         int rank=0;
         for (TestResult r: results){
             rank++;
-            if (r.getDiseasename().equals(diseasename)) { return rank; }
+            if (r.getDiseasename().equals(diseasename)) {
+                //outputResults();
+                outputLR(r,diseasename, rank);
+                return rank;
+            }
         }
         return rank;
+    }
+
+
+    private void outputLR(TestResult r, String diseasename, int rank) {
+        System.err.println("Likelihood ratios for " + diseasename + "\tRank="+rank);
+        for (int i=0;i<r.getNumberOfTests();i++) {
+            double ratio = r.getRatio(i);
+            TermId tid =observedAbnormalities.get(i);
+            String term = String.format("%s [%s]",ontology.getTermMap().get(tid).getName(),tid.getIdWithPrefix() );
+            System.err.println(term + ": ratio="+ratio);
+        }
+        System.err.println();
     }
 
     public void outputResults() {

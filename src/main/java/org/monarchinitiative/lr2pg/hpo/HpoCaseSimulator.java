@@ -50,32 +50,7 @@ public class HpoCaseSimulator {
     /** Root term id in the phenotypic abnormality subontology. */
     private final static TermId PHENOTYPIC_ABNORMALITY = ImmutableTermId.constructWithPrefix("HP:0000118");
 
-//
-//
-//    private static final HpoFrequency[] FREQUENCYARRAY={
-//            HpoFrequency.ALWAYS_PRESENT,
-//            HpoFrequency.VERY_FREQUENT,
-//            HpoFrequency.FREQUENT,
-//            HpoFrequency.OCCASIONAL,
-//            HpoFrequency.VERY_RARE,
-//            HpoFrequency.EXCLUDED};
-//
-//    private static final HpoOnset[] ONSETARRAY={
-//            HpoOnset.ANTENATAL_ONSET,
-//            HpoOnset.EMBRYONAL_ONSET,
-//            HpoOnset.FETAL_ONSET,
-//            HpoOnset.CONGENITAL_ONSET,
-//            HpoOnset.NEONATAL_ONSET,
-//            HpoOnset.INFANTILE_ONSET,
-//            HpoOnset.CHILDHOOD_ONSET,
-//            HpoOnset.JUVENILE_ONSET,
-//            HpoOnset.ADULT_ONSET,
-//            HpoOnset.YOUNG_ADULT_ONSET,
-//            HpoOnset.MIDDLE_AGE_ONSET,
-//            HpoOnset.LATE_ONSET};
-
-
-    /**
+   /**
      * The constructor initializes {@link #ontology} and {@link #diseaseMap} and {@link #phenotypeterms}.
      * @param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
      */
@@ -214,7 +189,7 @@ public class HpoCaseSimulator {
           }
         ImmutableList<TermId> termlist = builder.build();
 
-        HpoCase hpocase = new HpoCase(bftfrequency,diseasename,termlist,diseaseMap);
+        HpoCase hpocase = new HpoCase(bftfrequency,diseasename,termlist,diseaseMap,this.ontology);
         try {
             hpocase.calculateLikelihoodRatios();
         } catch (Lr2pgException e) {

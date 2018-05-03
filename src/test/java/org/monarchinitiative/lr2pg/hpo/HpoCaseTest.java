@@ -58,7 +58,7 @@ public class HpoCaseTest {
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
 
-        hpocase = new HpoCase(backforeFreq,diseasename,builder.build(),diseaseMap);
+        hpocase = new HpoCase(backforeFreq,diseasename,builder.build(),diseaseMap,ontology);
     }
 
 
@@ -91,7 +91,7 @@ public class HpoCaseTest {
         TermId t2 = ImmutableTermId.constructWithPrefix("HP:0001258");
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2);
-        HpoCase case1 = new HpoCase(backforeFreq,diseasename,builder.build(),null);
+        HpoCase case1 = new HpoCase(backforeFreq,diseasename,builder.build(),null,ontology);
         assertNotNull(case1);
         int expected=2;
         assertEquals(expected,case1.getNumberOfAnnotations());
@@ -108,7 +108,7 @@ public class HpoCaseTest {
                 ImmutableTermId.constructWithPrefix("HP:0003015"),
                 ImmutableTermId.constructWithPrefix("HP:0008271"));
         String kniestDysplasia = "OMIM:156550";
-        HpoCase kniestCase = new HpoCase(backforeFreq, kniestDysplasia, lst,null);
+        HpoCase kniestCase = new HpoCase(backforeFreq, kniestDysplasia, lst,null,ontology);
        //kniestCase.debugPrint();
         int expected = 7;
         assertEquals(expected, kniestCase.getNumberOfAnnotations());
