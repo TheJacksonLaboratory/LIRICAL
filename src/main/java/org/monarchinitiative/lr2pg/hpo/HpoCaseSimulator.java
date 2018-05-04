@@ -189,7 +189,7 @@ public class HpoCaseSimulator {
           }
         ImmutableList<TermId> termlist = builder.build();
 
-        HpoCase hpocase = new HpoCase(bftfrequency,diseasename,termlist,diseaseMap,this.ontology);
+        HpoCaseOld hpocase = new HpoCaseOld(bftfrequency,diseasename,termlist,diseaseMap,this.ontology);
         try {
             hpocase.calculateLikelihoodRatios();
         } catch (Lr2pgException e) {

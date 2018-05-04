@@ -28,7 +28,7 @@ public class SimulateCasesCommand implements Command {
     }
 
     public void execute() {
-        logger.trace("Executing HpoCase simulation");
+        logger.trace("Executing HpoCaseOld simulation");
         HpoCaseSimulator simulator = new HpoCaseSimulator(this.dataDirectoryPath,n_cases_to_simulate, n_terms_per_case, n_noise_terms);
         simulator.debugPrint();
         simulator.simulateCases();

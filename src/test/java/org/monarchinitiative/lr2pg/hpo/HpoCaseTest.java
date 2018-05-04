@@ -25,13 +25,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * Test whether we can successfully create HpoCase objects.
+ * Test whether we can successfully create HpoCaseOld objects.
  */
 public class HpoCaseTest {
     private static final Logger logger = LogManager.getLogger();
     /** Name of the disease we are simulating in this test, i.e., OMIM:108500. */
     private static String diseasename="108500";
-    private static HpoCase hpocase;
+    private static HpoCaseOld hpocase;
     private static HpoOntology ontology;
     private static BackgroundForegroundTermFrequency backforeFreq;
 
@@ -58,7 +58,7 @@ public class HpoCaseTest {
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
 
-        hpocase = new HpoCase(backforeFreq,diseasename,builder.build(),diseaseMap,ontology);
+        hpocase = new HpoCaseOld(backforeFreq,diseasename,builder.build(),diseaseMap,ontology);
     }
 
 
@@ -91,7 +91,7 @@ public class HpoCaseTest {
         TermId t2 = ImmutableTermId.constructWithPrefix("HP:0001258");
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2);
-        HpoCase case1 = new HpoCase(backforeFreq,diseasename,builder.build(),null,ontology);
+        HpoCaseOld case1 = new HpoCaseOld(backforeFreq,diseasename,builder.build(),null,ontology);
         assertNotNull(case1);
         int expected=2;
         assertEquals(expected,case1.getNumberOfAnnotations());
@@ -108,7 +108,7 @@ public class HpoCaseTest {
                 ImmutableTermId.constructWithPrefix("HP:0003015"),
                 ImmutableTermId.constructWithPrefix("HP:0008271"));
         String kniestDysplasia = "OMIM:156550";
-        HpoCase kniestCase = new HpoCase(backforeFreq, kniestDysplasia, lst,null,ontology);
+        HpoCaseOld kniestCase = new HpoCaseOld(backforeFreq, kniestDysplasia, lst,null,ontology);
        //kniestCase.debugPrint();
         int expected = 7;
         assertEquals(expected, kniestCase.getNumberOfAnnotations());

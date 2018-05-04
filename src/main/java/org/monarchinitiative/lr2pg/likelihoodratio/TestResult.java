@@ -1,8 +1,8 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
+import org.monarchinitiative.lr2pg.hpo.HpoCaseOld;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -19,10 +19,10 @@ import java.util.stream.Collectors;
 public class TestResult implements Comparable<TestResult> {
 
     /**
-     * A list of results for the tests performed in a {@link org.monarchinitiative.lr2pg.hpo.HpoCase} case.
+     * A list of results for the tests performed in a {@link HpoCaseOld} case.
      * To save space, we only record the result of the test, and we assume that the order of the test is the same
      * as indicated in the case object. In the intended use case, there will be one test result for each disease
-     * that is tested for the {@link org.monarchinitiative.lr2pg.hpo.HpoCase} object.
+     * that is tested for the {@link HpoCaseOld} object.
      */
     private ImmutableList<Double> results;
     /** TODO document me! */

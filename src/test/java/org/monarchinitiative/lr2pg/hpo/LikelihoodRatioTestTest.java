@@ -60,7 +60,7 @@ public class LikelihoodRatioTestTest {
 //        TermId t3 = ImmutableTermId.constructWithPrefix("HP:0012074");
 //        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
 //        builder.add(t2,t3);
-//        hpocase = new HpoCase(ontology,d2tf,diseaseName,builder.build());
+//        hpocase = new HpoCaseOld(ontology,d2tf,diseaseName,builder.build());
 //        disease = diseaseMap.get(diseaseName);
     }
 
