@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.command.Command;
 import org.monarchinitiative.lr2pg.command.DownloadCommand;
+import org.monarchinitiative.lr2pg.command.HpoCase2SvgCommand;
 import org.monarchinitiative.lr2pg.command.SimulateCasesCommand;
 
 /**
@@ -46,6 +47,8 @@ public class CommandParser {
      * The number of random noise terms to add to each simulated HPO case.
      */
     private int n_noise_terms;
+
+    private String diseaseName=null;
     /**
      * The command object.
      */
@@ -74,6 +77,10 @@ public class CommandParser {
 
             if (commandLine.hasOption("d")) {
                 this.dataDownloadDirectory = commandLine.getOptionValue("d");
+            }
+
+            if (commandLine.hasOption("disease")) {
+                diseaseName=commandLine.getOptionValue("disease");
             }
             if (commandLine.hasOption("t")) {
                 String term = commandLine.getOptionValue("t");
@@ -120,8 +127,19 @@ public class CommandParser {
                     }
                     this.command = new SimulateCasesCommand(this.dataDownloadDirectory, n_cases_to_simulate, n_terms_per_case, n_noise_terms);
                     break;
+                case "svg":
+                    if (this.dataDownloadDirectory == null) {
+                        this.dataDownloadDirectory = DEFAULT_DATA_DOWNLOAD_DIRECTORY;
+                    }
+                    if (diseaseName==null) {
+                        printUsage("svg command requires --disease option");
+                    }
+                    //n_terms_per_case, n_noise_terms);
+                    this.command = new HpoCase2SvgCommand(this.dataDownloadDirectory,diseaseName,n_terms_per_case,n_noise_terms);
+                    break;
+
                 default:
-                    printUsage(String.format("Did not recognize command: %s", mycommand));
+                    printUsage(String.format("Did not recognize command: \"%s\"", mycommand));
             }
         } catch (ParseException parseException) {
             System.err.println(
@@ -148,20 +166,22 @@ public class CommandParser {
                 .addOption("d", "download", true, "path of directory to download files")
                 .addOption("n", "noise", true, "number of noise terms per simulate case (default: 1")
                 .addOption("o", "hpo", true, "HPO OBO file path")
+                .addOption(null,"disease", true, "disease to simulate and create SVG for")
                 .addOption("s", "simulated_cases", true, "number of cases to simulate per run")
                 .addOption("t", "terms", true, "number of HPO terms per simulated case (default: 5)");
         return gnuOptions;
     }
 
     private static String getVersion() {
-        String version = "0.1.7";// default, should be overwritten by the following.
+        String DEFAULT="0.2.1";// default, should be overwritten by the following.
+        String version=null;
         try {
             Package p = CommandParser.class.getPackage();
             version = p.getImplementationVersion();
         } catch (Exception e) {
             // do nothing
         }
-        return version;
+        return version!=null?version:DEFAULT;
     }
 
     /**
@@ -172,8 +192,7 @@ public class CommandParser {
         System.out.println();
         System.out.println(message);
         System.out.println();
-        System.out.println("Program: LR2PG");
-        System.out.println("Version: " + version);
+        System.out.println("Program: LR2PG (v. "+version +")");
         System.out.println();
         System.out.println("Usage: java -jar Lr2pg.jar <command> [options]");
         System.out.println();
@@ -187,6 +206,12 @@ public class CommandParser {
         System.out.println("\tjava -jar Lr2pg.jar simulate [-d <directory>] [-s <int>] [-t <int>] [-n <int>]");
         System.out.println("\t-d <directory>: name of directory with HPO data (default:\"data\")");
         System.out.println(String.format("\t-s <int>: number of cases to simulate (default: %d)", DEFAULT_N_CASES_TO_SIMULATE));
+        System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
+        System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
+        System.out.println();
+        System.out.println("svg:");
+        System.out.println("\tjava -jar Lr2pg.jar svg --disease <name> [-d <directory>] [-t <int>] [-n <int>]");
+        System.out.println("\t--disease <string>: name of disease to simulate (e.g., OMIM:600321)");
         System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
         System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
         System.exit(0);

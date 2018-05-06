@@ -2,6 +2,7 @@ package org.monarchinitiative.lr2pg.command;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCaseSimulator;
 
 /**
@@ -27,9 +28,13 @@ public class SimulateCasesCommand implements Command {
     }
 
     public void execute() {
-        logger.trace("Executing HpoCaseOld simulation");
+        logger.trace("Executing HpoCase simulation");
         HpoCaseSimulator simulator = new HpoCaseSimulator(this.dataDirectoryPath,n_cases_to_simulate, n_terms_per_case, n_noise_terms);
         simulator.debugPrint();
-        simulator.simulateCases();
+        try {
+            simulator.simulateCases();
+        } catch (Lr2pgException e) {
+            e.printStackTrace();
+        }
     }
 }

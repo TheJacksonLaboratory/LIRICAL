@@ -7,12 +7,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.LrEvaluator;
+import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.*;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.xml.sax.ext.Locator2;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +42,8 @@ public class HpoCaseSimulator {
     private static final String HP_PHENOTYPE_ANNOTATION="phenotype.hpoa";
     /** Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
     private static Map<String,HpoDisease> diseaseMap;
+    /** Object to evaluate the results of differential diagnosis by LR analysis. */
+    private LrEvaluator evaluator;
     /** Number of HPO terms to use for each simulated case. */
     private final int n_terms_per_case;
     /** Number of "noise" (unrelated) HPO terms to use for each simulated case. */
@@ -70,7 +74,7 @@ public class HpoCaseSimulator {
     }
 
 
-    public void simulateCases() {
+    public void simulateCases() throws Lr2pgException {
         int c=0;
         Map<Integer,Integer> ranks=new HashMap<>();
         logger.trace(String.format("Will simulate %d diseases.",diseaseMap.size() ));
@@ -84,7 +88,7 @@ public class HpoCaseSimulator {
                         disease.getDiseaseDatabaseId()));
                 continue;
             }
-            int rank = simulateCase(diseasename);
+            int rank = simulateCase(disease);
             if (!ranks.containsKey(rank)) {
                 ranks.put(rank, 0);
             }
@@ -116,18 +120,6 @@ public class HpoCaseSimulator {
         System.out.println(String.format("Rank=101-...: count:%d (%.1f%%)", rank101_up, (double) 100 * rank101_up / N));
     }
 
-//
-//    private HpoFrequency getRandomFrequency() {
-//        int n=FREQUENCYARRAY.length;
-//        int r=(int)Math.floor(Math.random()*n);
-//        return FREQUENCYARRAY[r];
-//    }
-//
-//    private HpoOnset getRandomOnset() {
-//        int n=ONSETARRAY.length;
-//        int r=(int)Math.floor(Math.random()*n);
-//        return ONSETARRAY[r];
-//    }
 
     /**
      * This is a term that was observed in the simulated patient (note that it should not be a HpoTermId, which
@@ -141,63 +133,49 @@ public class HpoCaseSimulator {
         return phenotypeterms.get(r);
     }
 
-    /**
-     * Note that this function returns ImmutableTermId objects and not HpoTermId objects
-     * @param desiredsize The number of terms desired
-     * @param abnormalities The list of abnormalities associated with the disease that we will use for simulation.
-     * @return a randomly chosen subset of upto desiredSize terms from abnormalities.
-     */
-    private Set<TermId> getNTerms( int desiredsize,List<HpoAnnotation> abnormalities)  {
-        Set<TermId> rand=new HashSet<>();
-        if (abnormalities.size()==0) return rand; // should never happen
-        if (abnormalities.size()==1)  {
-            HpoAnnotation htid=abnormalities.get(0);
-            Set<TermId> st = new HashSet<>();
-            st.add(htid.getTermId());
-            return st;
+
+    private HpoCase createSimulatedCase(HpoDisease disease) throws Lr2pgException {
+        if (disease==null) {
+            throw new Lr2pgException("Attempt to create case from Null-value for disease");
         }
-        int maxindex = abnormalities.size()-1;
-        int nTerms=Math.min(maxindex,desiredsize);
-        // get maxindex distinct random integers that will be our random index values.
-        int[] rdmidx =  ThreadLocalRandom.current().ints(0, maxindex).distinct().limit(nTerms).toArray();
-        Arrays.stream(rdmidx).forEach( i -> rand.add(abnormalities.get(i).getTermId()));
-        return rand;
+        int n_terms=Math.min(disease.getNumberOfPhenotypeAnnotations(),n_terms_per_case);
+        int n_random=Math.min(n_terms, n_noise_terms);// do not take more random than real terms.
+        logger.trace("Create simulated case with n_terms="+n_terms + ", n_random="+n_random);
+        // the creation of a new ArrayList is needed because disease returns an immutable list.
+        List<HpoAnnotation> abnormalities = new ArrayList<>(disease.getPhenotypicAbnormalities());
+        ImmutableList.Builder<TermId> termIdBuilder = new ImmutableList.Builder<>();
+        Collections.shuffle(abnormalities); // randomize order of phenotypes
+        // take the first n_random terms of the randomized list
+        abnormalities.stream().limit(n_terms).forEach(a-> termIdBuilder.add(a.getTermId()));
+        // now add n_random "noise" terms to the list of abnormalities of our case.
+        for(int i=0;i<n_random;i++){
+            TermId t = getRandomPhenotypeTerm();
+            termIdBuilder.add(t);
+        }
+        ImmutableList<TermId> termlist = termIdBuilder.build();
+        return new HpoCase.Builder(termlist).build();
     }
 
 
-    private int simulateCase(String diseasename) {
-        HpoDisease disease = diseaseMap.get(diseasename);
-        if (disease==null) {
-            logger.error("Should never happen -- could not retrieve disease for " + diseasename);
-            return -1;
+    public TestResult getResults(HpoDisease disease) throws Lr2pgException {
+        if (this.evaluator==null) {
+            int rank = simulateCase(disease);
+            System.err.println(String.format("Rank for %s was %d",disease.getName(),rank));
         }
+        return evaluator.getResult(disease);
+    }
 
-        int n_terms=Math.min(disease.getNumberOfPhenotypeAnnotations(),n_terms_per_case);
-        int n_random=Math.min(n_terms, n_noise_terms);// do not take more random than real terms.
-        //logger.trace(String.format("Performing simulation on %s with %d randomly chosen terms and %d noise terms",disease.getName(), n_terms,n_random));
-        List<HpoAnnotation> abnormalities = new ArrayList<>(disease.getPhenotypicAbnormalities());
-        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
-        try {
-            Collections.shuffle(abnormalities); // randomize order of phenotypes
-            // take the first n_random terms of the randomized list
-            abnormalities.stream().limit(n_terms).forEach(a-> builder.add(a.getTermId()));
-        } catch (Exception e) {
-            logger.error("exception with diseases " + diseasename);
-            logger.error(disease.toString());
-            logger.error(e.toString());
-        }
-          for(int i=0;i<n_random;i++){
-              TermId t = getRandomPhenotypeTerm();
-                 builder.add(t);
-          }
-        ImmutableList<TermId> termlist = builder.build();
+    public HpoDisease name2disease(String diseasename) {
+        return diseaseMap.get(diseasename);
+    }
 
-        HpoCase hpocase2 = new HpoCase.Builder(termlist).build();
+
+    public int simulateCase(HpoDisease disease) throws Lr2pgException {
+        HpoCase hpocase2 = createSimulatedCase(disease);
         List<HpoDisease> diseaselist = new ArrayList<>(diseaseMap.values());
         // the following evaluates the case for each disease with equal pretest probabilities.
-        LrEvaluator evaluator = new LrEvaluator(hpocase2, diseaselist,ontology,bftfrequency);
+        this.evaluator = new LrEvaluator(hpocase2, diseaselist,ontology,bftfrequency);
         evaluator.evaluate();
-        System.err.println("\n### Test with n_terms="+n_terms + ", n_random="+n_random);
         return evaluator.getRank(disease);
     }
 

@@ -1,7 +1,6 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
-import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.BackgroundForegroundTermFrequency;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
@@ -9,9 +8,7 @@ import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Likelihood ratio evaluator. This class coordinates the performance of the likelihood ratio test on
@@ -21,6 +18,8 @@ public class LrEvaluator {
 
     private final HpoCase hpocase;
     private final List<HpoDisease> diseaselist;
+
+    private final Map<HpoDisease,TestResult> disease2resultMap;
     private final List<Double> pretestProbabilities;
     private final BackgroundForegroundTermFrequency bftfrequency;
     /** Reference to the Human Phenotype Ontology object. */
@@ -32,6 +31,7 @@ public class LrEvaluator {
     public LrEvaluator(HpoCase hpcase, List<HpoDisease> diseases, HpoOntology ont,BackgroundForegroundTermFrequency bftfrequency) {
         this.hpocase=hpcase;
         this.diseaselist=diseases;
+        this.disease2resultMap = new HashMap<>();
         this.bftfrequency=bftfrequency;
 
         // initialize to all equal pretest probabilities.
@@ -58,10 +58,17 @@ public class LrEvaluator {
                 builder.add(LR);
             }
             TestResult result = new TestResult(builder.build(),disease.getName(),pretest);
+            disease2resultMap.put(disease,result);
             results.add(result);
         }
         results.sort(Collections.reverseOrder());
     }
+
+
+    public TestResult getResult(HpoDisease disease) {
+        return disease2resultMap.get(disease);
+    }
+
 
     /**
      * This method sorts all of the results in {@link #results}. The best results are the highest, and so
@@ -113,11 +120,6 @@ public class LrEvaluator {
             return df.format(d);
         }
     }
-
-
-
-
-
-
+    
 
 }
