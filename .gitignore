@@ -22,19 +22,11 @@
 hs_err_pid*
 
 .idea
-.idea/misc.xml
-.idea/vcs.xml
 target/
-/.idea/
-*.log
 /lr2pg.iml
-/.idea/misc.xml
 Results.txt
 ResultsLR.txt
-lr2pg.log
 lr2pg.log.1
 lr2pg.log.2
-/.idea/LR2PG.iml
-/.idea/modules.xml
-/.idea/vcs.xml
-/.idea/workspace.xml
+data/
+dependency-reduced-pom.xml

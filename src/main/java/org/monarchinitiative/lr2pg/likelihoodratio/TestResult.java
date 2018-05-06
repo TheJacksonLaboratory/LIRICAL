@@ -1,7 +1,7 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
-import org.monarchinitiative.lr2pg.hpo.HpoCaseOld;
+import org.monarchinitiative.lr2pg.hpo.HpoCase;
 
 import java.util.stream.Collectors;
 
@@ -19,21 +19,24 @@ import java.util.stream.Collectors;
 public class TestResult implements Comparable<TestResult> {
 
     /**
-     * A list of results for the tests performed in a {@link HpoCaseOld} case.
+     * A list of results for the tests performed in a {@link HpoCase} case.
      * To save space, we only record the result of the test, and we assume that the order of the test is the same
      * as indicated in the case object. In the intended use case, there will be one test result for each disease
-     * that is tested for the {@link HpoCaseOld} object.
+     * that is tested for the {@link HpoCase} object.
      */
-    private ImmutableList<Double> results;
-    /** TODO document me! */
+    private final ImmutableList<Double> results;
+    /** This is the product of the individual test results */
     private double compositeLR;
     /** The name of the disease that we are testing for this time. */
     private final String diseasename;
 
+    private final double pretestProbability;
 
-    public TestResult(ImmutableList<Double> reslist, String name) {
+
+    public TestResult(ImmutableList<Double> reslist, String name, double pretest) {
         results = reslist;
         diseasename = name;
+        this.pretestProbability=pretest;
         calculateCompositeLikelihoodRatio();
     }
 
@@ -45,96 +48,37 @@ public class TestResult implements Comparable<TestResult> {
     public int getNumberOfTests() { return results.size();  }
 
     /**
-     * TODO Should this be a class variable?
-     * @param pretestProb
-     * @return
+     * @return the pretest odds.
      */
-    public double pretestodds(double pretestProb) {return pretestProb/(1-pretestProb);}
+    public double pretestodds() {return pretestProbability/(1.0-pretestProbability);}
 
     /**
-     * TODO Should this be a class variable?
-     * @param pretestProb
-     * @return
+     * @return the post-test odds
      */
-    public double posttestodds(double pretestProb) {
-        double pretestodds=pretestodds(pretestProb);
-        return pretestodds * getCompositeLR();
+    public double posttestodds() {
+        double pretestodds=pretestodds();
+        return pretestodds*getCompositeLR();
     }
 
-
-    /**
-     * TODO what if specificity and/or sensitivity is 100%?
-     *
-     * @return
-     */
-//    public double PositivelikelihoodRatio() {
-//        double LR = 0;
-//        //Put a threshold |sensitivity|<\epsilon
-//        if (sensitivity == 0)
-//            return 0;
-//        try {
-//            LR = sensitivity / (1 - specificity);
-//            return LR;
-//        } catch (ArithmeticException e) {
-//            System.err.println(e);
-//            return 0;
-//        } catch (Exception e) {
-//            System.err.println(e);
-//            return 0;
-//        }
-//    }
 
     public void calculateCompositeLikelihoodRatio() {
         compositeLR = 1.0;
-        for (Double tres : results) {
-            compositeLR *= tres;
-        }
+        results.forEach( r -> compositeLR *= r);
     }
 
-    /**
-     * TODO what if pretest prob is 100% ?
-     *
-     * @return
-     */
-//    public double getPretestOdds() {
-//        return pretestProbability / (1 - pretestProbability);
-//    }
+
+    public double getPretestProbability() {
+        return pretestProbability;
+    }
+
+    public double getPosttestProbability() {
+        double po=posttestodds();
+        return po/(1+po);
+   }
 
 
-//    public double getPosttestProbability(double pretestpb) {
-//        double po=getPosttestOdds();
-//        return po/(1+po);
-//
-//    }
 
 
-//    public double getPosttestOdds() {
-//        return getCompositeLikelihoodRatio() * getPretestOdds();
-//    }
-
-//    /**
-//     * TODO revise this!
-//     * @return
-//     */
-//    public double NegativelikelihoodRatio() {
-//
-////        double LR = 0;
-////        //Put a threshold, if |sensitivity-1|<\epsilon
-////        if (sensitivity == 1)
-////            return 0;
-////        try {
-////            LR = specificity / (1 - sensitivity);
-////            return LR;
-////        } catch (ArithmeticException e) {
-////            System.err.println(e);
-////            return 0;
-////        } catch (Exception e) {
-////            System.err.println(e);
-////            return 0;
-////        }
-//
-//
-//    }
     @Override
     public int compareTo(TestResult other) {
         if (compositeLR>other.compositeLR) return 1;
@@ -145,7 +89,7 @@ public class TestResult implements Comparable<TestResult> {
 
     @Override
     public String toString() {
-        String resultlist=results.stream().map(r -> String.valueOf(r)).collect(Collectors.joining(";"));
+        String resultlist=results.stream().map(String::valueOf).collect(Collectors.joining(";"));
         return String.format("%s: %.2f [%s]",diseasename,compositeLR,resultlist);
     }
 

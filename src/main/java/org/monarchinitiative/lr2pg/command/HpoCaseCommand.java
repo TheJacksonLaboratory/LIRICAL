@@ -1,6 +1,6 @@
 package org.monarchinitiative.lr2pg.command;
 
-import org.monarchinitiative.lr2pg.hpo.HpoCaseOld;
+import org.monarchinitiative.lr2pg.hpo.HpoCase;
 
 /**
  * Analyze the likelihood ratios for a case represented by a list of HPO terms.
@@ -9,7 +9,7 @@ import org.monarchinitiative.lr2pg.hpo.HpoCaseOld;
  */
 public class HpoCaseCommand implements Command {
 
-    HpoCaseOld hpocase =null;
+    HpoCase hpocase =null;
 
     public HpoCaseCommand(String hpoPath, String annotationPath, String caseData) {
        // hpocase = new HpoCaseOld(hpoPath,annotationPath,caseData);

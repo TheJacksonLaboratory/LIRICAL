@@ -20,7 +20,7 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.*;
 
 /**
  * This class is designed to calculate the background and foreground frequencies of any HPO term in any disease. The main
- * entry point into this class is the function {@link #getLikelihoodRatio}, which is called by {@link HpoCaseOld} once for
+ * entry point into this class is the function {@link #getLikelihoodRatio}, which is called by {@link HpoCase} once for
  * each HPO term to which the case is annotation; it calls it once for each disease in our database and calculates the
  * likelihood ratio for each of the diseases.
  * @author <a href="mailto:vida.ravanmehr@jax.org">Vida Ravanmehr</a>
@@ -56,9 +56,8 @@ public class BackgroundForegroundTermFrequency {
      * @param tid An HPO phenotypic abnormality
      * @param disease the disease
      * @return the likelihood ratio of observing the HPO term in the diseases
-     * @throws Lr2pgException If there is an error calculating the LR
      */
-    double getLikelihoodRatio(TermId tid, HpoDisease disease) throws Lr2pgException{
+    public double getLikelihoodRatio(TermId tid, HpoDisease disease) {
         double numerator=getFrequencyOfTermInDisease(disease,tid);
         double denominator=getBackgroundFrequency(tid);
         return numerator/denominator;

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
+import org.monarchinitiative.lr2pg.likelihoodratio.LrEvaluator;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.*;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
@@ -172,12 +173,14 @@ public class HpoCaseSimulator {
         }
 
         int n_terms=Math.min(disease.getNumberOfPhenotypeAnnotations(),n_terms_per_case);
-        int n_random=Math.min(n_terms, n_terms_per_case);
+        int n_random=Math.min(n_terms, n_noise_terms);// do not take more random than real terms.
         //logger.trace(String.format("Performing simulation on %s with %d randomly chosen terms and %d noise terms",disease.getName(), n_terms,n_random));
-        List<HpoAnnotation> abnormalities = disease.getPhenotypicAbnormalities();
+        List<HpoAnnotation> abnormalities = new ArrayList<>(disease.getPhenotypicAbnormalities());
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         try {
-            abnormalities.forEach(a-> builder.add(a.getTermId()));
+            Collections.shuffle(abnormalities); // randomize order of phenotypes
+            // take the first n_random terms of the randomized list
+            abnormalities.stream().limit(n_terms).forEach(a-> builder.add(a.getTermId()));
         } catch (Exception e) {
             logger.error("exception with diseases " + diseasename);
             logger.error(disease.toString());
@@ -189,14 +192,13 @@ public class HpoCaseSimulator {
           }
         ImmutableList<TermId> termlist = builder.build();
 
-        HpoCaseOld hpocase = new HpoCaseOld(bftfrequency,diseasename,termlist,diseaseMap,this.ontology);
-        try {
-            hpocase.calculateLikelihoodRatios();
-        } catch (Lr2pgException e) {
-            e.printStackTrace();
-            return 0;
-        }
-        return hpocase.getRank(diseasename);
+        HpoCase hpocase2 = new HpoCase.Builder(termlist).build();
+        List<HpoDisease> diseaselist = new ArrayList<>(diseaseMap.values());
+        // the following evaluates the case for each disease with equal pretest probabilities.
+        LrEvaluator evaluator = new LrEvaluator(hpocase2, diseaselist,ontology,bftfrequency);
+        evaluator.evaluate();
+        System.err.println("\n### Test with n_terms="+n_terms + ", n_random="+n_random);
+        return evaluator.getRank(disease);
     }
 
 

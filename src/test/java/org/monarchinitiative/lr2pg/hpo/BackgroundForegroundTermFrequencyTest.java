@@ -3,7 +3,6 @@ package org.monarchinitiative.lr2pg.hpo;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;

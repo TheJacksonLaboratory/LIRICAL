@@ -6,7 +6,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -31,7 +30,7 @@ public class HpoCaseTest {
     private static final Logger logger = LogManager.getLogger();
     /** Name of the disease we are simulating in this test, i.e., OMIM:108500. */
     private static String diseasename="108500";
-    private static HpoCaseOld hpocase;
+    private static HpoCase hpocase;
     private static HpoOntology ontology;
     private static BackgroundForegroundTermFrequency backforeFreq;
 
@@ -58,7 +57,7 @@ public class HpoCaseTest {
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
 
-        hpocase = new HpoCaseOld(backforeFreq,diseasename,builder.build(),diseaseMap,ontology);
+        hpocase = new HpoCase.Builder(builder.build()).build();
     }
 
 
@@ -79,39 +78,7 @@ public class HpoCaseTest {
     @Test
     public void testNumberOfAnnotations() {
         int expected=5;
-        assertEquals(expected,hpocase.getNumberOfAnnotations());
-    }
-
-
-    /** Test that all of the annotations are added to the case correctly. TODO REFACTOR */
-    @Test
-    public void testAnotherCase() throws Lr2pgException{
-        /* these are the phenpotypic abnormalties of our "case" */
-        TermId t1 = ImmutableTermId.constructWithPrefix("HP:0000750");
-        TermId t2 = ImmutableTermId.constructWithPrefix("HP:0001258");
-        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
-        builder.add(t1,t2);
-        HpoCaseOld case1 = new HpoCaseOld(backforeFreq,diseasename,builder.build(),null,ontology);
-        assertNotNull(case1);
-        int expected=2;
-        assertEquals(expected,case1.getNumberOfAnnotations());
-    }
-
-    /** Test that all of the annotations are added to the case correctly. TODO REFACTOR */
-    @Test
-    public void testKniestDysplasia() {
-        ImmutableList<TermId> lst = ImmutableList.of( ImmutableTermId.constructWithPrefix("HP:0410009"),
-                ImmutableTermId.constructWithPrefix( "HP:0002812"),
-                ImmutableTermId.constructWithPrefix("HP:0003521"),
-                ImmutableTermId.constructWithPrefix("HP:0000541"),
-                ImmutableTermId.constructWithPrefix("HP:0011800"),
-                ImmutableTermId.constructWithPrefix("HP:0003015"),
-                ImmutableTermId.constructWithPrefix("HP:0008271"));
-        String kniestDysplasia = "OMIM:156550";
-        HpoCaseOld kniestCase = new HpoCaseOld(backforeFreq, kniestDysplasia, lst,null,ontology);
-       //kniestCase.debugPrint();
-        int expected = 7;
-        assertEquals(expected, kniestCase.getNumberOfAnnotations());
+        assertEquals(expected,hpocase.getNumberOfObservations());
     }
 
 

@@ -2,7 +2,6 @@ package org.monarchinitiative.lr2pg.hpo;
 
 
 import org.junit.Before;
-import org.junit.Test;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoFrequency;
@@ -19,10 +18,6 @@ import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class TestBackgroundFrequency {
     /** THe file name of the HPO ontology file. */
