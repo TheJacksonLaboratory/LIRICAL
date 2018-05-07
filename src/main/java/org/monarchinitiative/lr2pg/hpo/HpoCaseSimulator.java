@@ -51,6 +51,8 @@ public class HpoCaseSimulator {
     /** Number of cases to simulate. */
     private final int n_cases_to_simulate;
 
+    private HpoCase currentCase;
+
 
     /** Root term id in the phenotypic abnormality subontology. */
     private final static TermId PHENOTYPIC_ABNORMALITY = ImmutableTermId.constructWithPrefix("HP:0000118");
@@ -134,6 +136,10 @@ public class HpoCaseSimulator {
     }
 
 
+    public HpoOntology getOntology() {
+        return ontology;
+    }
+
     private HpoCase createSimulatedCase(HpoDisease disease) throws Lr2pgException {
         if (disease==null) {
             throw new Lr2pgException("Attempt to create case from Null-value for disease");
@@ -170,11 +176,15 @@ public class HpoCaseSimulator {
     }
 
 
+    public HpoCase getCurrentCase() {
+        return currentCase;
+    }
+
     public int simulateCase(HpoDisease disease) throws Lr2pgException {
-        HpoCase hpocase2 = createSimulatedCase(disease);
+        this.currentCase = createSimulatedCase(disease);
         List<HpoDisease> diseaselist = new ArrayList<>(diseaseMap.values());
         // the following evaluates the case for each disease with equal pretest probabilities.
-        this.evaluator = new LrEvaluator(hpocase2, diseaselist,ontology,bftfrequency);
+        this.evaluator = new LrEvaluator(this.currentCase, diseaselist,ontology,bftfrequency);
         evaluator.evaluate();
         return evaluator.getRank(disease);
     }
