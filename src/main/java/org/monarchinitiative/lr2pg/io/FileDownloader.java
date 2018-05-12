@@ -7,7 +7,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
-import java.net.SocketException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -33,7 +32,7 @@ public class FileDownloader {
     /**
      * Configuration for the {@link FileDownloader}.
      */
-    public static class Options {
+    static class Options {
         boolean printProgressBar = false;
         ProxyOptions http = new ProxyOptions();
         ProxyOptions https = new ProxyOptions();

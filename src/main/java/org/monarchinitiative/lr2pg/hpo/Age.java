@@ -12,7 +12,7 @@ public class Age {
     private final int months;
     private final int days;
 
-    public Age(int years, int months, int days) {
+    private Age(int years, int months, int days) {
         this.years=years;
         this.months=months;
         this.days=days;

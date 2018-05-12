@@ -72,7 +72,7 @@ public final class HpoCase {
 
     public static class Builder {
         /** List of Hpo terms for our case. */
-        private List<TermId> observedAbnormalities;
+        private final List<TermId> observedAbnormalities;
         /** List of excluded Hpo terms for our case. */
         private List<TermId> excludedAbnormalities;
         /** One of Male, Female, Unknown. See {@link Sex}. */

@@ -61,7 +61,7 @@ public class TestResult implements Comparable<TestResult> {
     }
 
 
-    public void calculateCompositeLikelihoodRatio() {
+    private void calculateCompositeLikelihoodRatio() {
         compositeLR = 1.0;
         results.forEach( r -> compositeLR *= r);
     }

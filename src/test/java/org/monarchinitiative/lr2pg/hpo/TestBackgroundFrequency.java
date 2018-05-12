@@ -34,7 +34,7 @@ public class TestBackgroundFrequency {
 
     private static Map<String,HpoDisease> diseaseMap;
 
-    private static TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
+    private static final TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
 
     private static HpoFrequency defaultFrequency=null;
 

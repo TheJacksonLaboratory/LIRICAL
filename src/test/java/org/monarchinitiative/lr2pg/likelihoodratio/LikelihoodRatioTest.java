@@ -12,13 +12,7 @@ import static org.junit.Assert.assertEquals;
 
 public class LikelihoodRatioTest {
 
-    public static final TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
-
-    @BeforeClass
-    public static void init() {
-
-
-    }
+    private static final TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
 
 
     /**

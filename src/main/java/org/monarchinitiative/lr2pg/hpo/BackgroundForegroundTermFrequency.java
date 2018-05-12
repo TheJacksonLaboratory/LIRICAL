@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jgrapht.graph.DefaultDirectedGraph;
-import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -108,16 +107,16 @@ public class BackgroundForegroundTermFrequency {
         // 1. the query term is a superclass of the disease term. Therefore,
         // our query satisfies the criteria for the disease and we can take the
         // frequency of the disease term. Since there may be multiple parents
-        // take the average
-        int n=0;
+        // take the maximum frequency (since the parent term will have at least this frequency)
         double cumfreq=0.0;
+        boolean isAncestor=false;
         for (HpoAnnotation hpoTermId : disease.getPhenotypicAbnormalities()) {
             if (isSubclass(ontology,query,hpoTermId.getTermId())) {
-                cumfreq+=hpoTermId.getFrequency();
-                n++;
+                cumfreq=Math.max(cumfreq,hpoTermId.getFrequency());
+                isAncestor=true;
             }
         }
-        if (n>0) return cumfreq/n;
+        if (isAncestor) return cumfreq;
 
         //2. If the disease has a subclass of the query term, then
         // everybody with the subclass (e.g., nuclear cataract) also has the
@@ -125,28 +124,41 @@ public class BackgroundForegroundTermFrequency {
         // there is some difference, but not everybody with the disease will have the
         // subterm in question--they could have another one of the subclasses.
         // therefore we need to penalize
-        Set<TermId> diseaseTermIds = new HashSet<>();
-        for(HpoAnnotation diseaseHpId : disease.getPhenotypicAbnormalities()){
-            diseaseTermIds.add(diseaseHpId.getTermId());
-        }
-        Set<TermId> allAncs = getAncestorTerms(ontology, diseaseTermIds, true);
-        for (HpoAnnotation hpoTermId : disease.getPhenotypicAbnormalities()) {
-            if (isSubclass(ontology, hpoTermId.getTermId(), query)) {
-                List<TermId> pathToRoot = getPathsToRoot(ontology, query);
-                for (int i = 0; i < pathToRoot.size(); i++) {
-                    TermId td = pathToRoot.get(i);
-                    if (allAncs.contains(td)) {
-                        // the induced graph of the disease contains an ancestor of the query term
-                        if (td.equals(PHENOTYPIC_ABNORMALITY)) break; // no match!
-                        //Not sure about the numerator! 1 or td.frequency?
-                        double frequency = hpoTermId.getFrequency();
-                        return frequency / (1 + Math.log(i));
-                    }
-                }
+        for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
+            if (isSubclass(ontology, annot.getTermId(), query)) {
+                double proportionalFrequency = getProportionalFrequencyInAncestors(query,annot.getTermId());
+                double queryFrequency = annot.getFrequency();
+                double f = proportionalFrequency*queryFrequency;
+                return Math.max(f,DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY);
             }
         }
+
         // If we get here, then there is no common ancestor between the query and any of the disease phenotype annotations.
        return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+    }
+
+
+    /**
+     * Get the overall proportion of the frequency that is made up by the query term, given that
+     * query term is a descendant of the diseaseTerm (which should be checked before this method is called).
+     * @param query A term used in the query (i.e., an annotation of the HpoCase proband)
+     * @param diseaseTerm A term that is annotated to the disease we are investigating
+     * @return the proportion of the frequency of diseaseTerm that is attributable to query
+     */
+    private double getProportionalFrequencyInAncestors(TermId query, TermId diseaseTerm) {
+        Set<TermId> directChildren= getChildTerms(ontology,diseaseTerm,false);
+        if (directChildren.isEmpty()) {
+            return 0.0;
+        }
+        if (directChildren.contains(query)) {
+            return 1.0/(double)directChildren.size();
+        } else {
+            double f=0.0;
+            for (TermId tid : directChildren) {
+                f += getProportionalFrequencyInAncestors(query,tid);
+            }
+            return f;
+        }
     }
 
 

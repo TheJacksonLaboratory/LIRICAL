@@ -19,8 +19,6 @@ import java.io.IOException;
  */
 public class HpoCase2SvgCommand implements Command {
     private static final Logger logger = LogManager.getLogger();
-    /** An object representing the Human Phenotype Ontology */
-    private HpoOntology ontology =null;
     private final String dataDirectory;
 
     private final String diseaseName;
@@ -44,11 +42,12 @@ public class HpoCase2SvgCommand implements Command {
         HpoCaseSimulator simulator = new HpoCaseSimulator( dataDirectory, cases_to_simulate, n_terms_per_case, n_noise_terms);
         try {
             HpoDisease disease = simulator.name2disease(diseaseName);
-            this.ontology=simulator.getOntology();
+            /* An object representing the Human Phenotype Ontology */ /** An object representing the Human Phenotype Ontology */
+            HpoOntology ontology = simulator.getOntology();
             simulator.simulateCase(disease);
             TestResult result = simulator.getResults(disease);
             HpoCase hpocase = simulator.getCurrentCase();
-            Lr2Svg l2svg = new Lr2Svg(hpocase,result,ontology);
+            Lr2Svg l2svg = new Lr2Svg(hpocase,result, ontology);
             l2svg.writeSvg("test.svg");
         } catch (Lr2pgException e) {
             e.printStackTrace();
