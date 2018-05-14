@@ -30,3 +30,6 @@ lr2pg.log.1
 lr2pg.log.2
 data/
 dependency-reduced-pom.xml
+.settings
+.project
+.classpath
