@@ -49,6 +49,10 @@ public class CommandParser {
     private int n_noise_terms;
 
     private String diseaseName=null;
+
+    /** If true, we do a grid search over the parameters for LR2PG clinical. */
+    private boolean gridSearch=false;
+
     /**
      * The command object.
      */
@@ -77,6 +81,10 @@ public class CommandParser {
 
             if (commandLine.hasOption("d")) {
                 this.dataDownloadDirectory = commandLine.getOptionValue("d");
+            }
+
+            if (commandLine.hasOption("grid")) {
+                this.gridSearch = true;
             }
 
             if (commandLine.hasOption("disease")) {
@@ -125,7 +133,8 @@ public class CommandParser {
                     if (this.dataDownloadDirectory == null) {
                         this.dataDownloadDirectory = DEFAULT_DATA_DOWNLOAD_DIRECTORY;
                     }
-                    this.command = new SimulateCasesCommand(this.dataDownloadDirectory, n_cases_to_simulate, n_terms_per_case, n_noise_terms);
+                    this.command = new SimulateCasesCommand(this.dataDownloadDirectory,
+                            n_cases_to_simulate, n_terms_per_case, n_noise_terms, gridSearch);
                     break;
                 case "svg":
                     if (this.dataDownloadDirectory == null) {
@@ -167,6 +176,7 @@ public class CommandParser {
                 .addOption("n", "noise", true, "number of noise terms per simulate case (default: 1")
                 .addOption("o", "hpo", true, "HPO OBO file path")
                 .addOption(null,"disease", true, "disease to simulate and create SVG for")
+                .addOption(null,"grid", false, "perform a grid search over parameters")
                 .addOption("s", "simulated_cases", true, "number of cases to simulate per run")
                 .addOption("t", "terms", true, "number of HPO terms per simulated case (default: 5)");
         return gnuOptions;
@@ -203,11 +213,12 @@ public class CommandParser {
         System.out.println("\t-d <directory>: name of directory to which HPO data will be downloaded (default:\"data\")");
         System.out.println();
         System.out.println("simulate:");
-        System.out.println("\tjava -jar Lr2pg.jar simulate [-d <directory>] [-s <int>] [-t <int>] [-n <int>]");
+        System.out.println("\tjava -jar Lr2pg.jar simulate [-d <directory>] [-s <int>] [-t <int>] [-n <int>] [--grid]");
         System.out.println("\t-d <directory>: name of directory with HPO data (default:\"data\")");
         System.out.println(String.format("\t-s <int>: number of cases to simulate (default: %d)", DEFAULT_N_CASES_TO_SIMULATE));
         System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
         System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
+        System.out.println("--grid: Indicates a grid search over noise and imprecision should be performed");
         System.out.println();
         System.out.println("svg:");
         System.out.println("\tjava -jar Lr2pg.jar svg --disease <name> [-d <directory>] [-t <int>] [-n <int>]");

@@ -1,6 +1,8 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.BackgroundForegroundTermFrequency;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
@@ -15,7 +17,7 @@ import java.util.*;
  * an {@link HpoCase}.
  */
 public class LrEvaluator {
-
+    private static final Logger logger = LogManager.getLogger();
     private final HpoCase hpocase;
     private final List<HpoDisease> diseaselist;
 
@@ -78,8 +80,20 @@ public class LrEvaluator {
      */
     public int getRank(HpoDisease disease){
         int rank=0;
+        if (disease==null) {
+            logger.error("null disease in getRank");
+            return 0;
+        }
         for (TestResult r: results){
             rank++;
+            if (r==null) {
+                logger.error("result at rank " + rank + " null in getRank");
+                continue;
+            }
+            if (r.getDiseasename()==null) {
+                logger.error("Result::getDiseasename at rank " + rank + " null in getRank");
+                continue;
+            }
             if (r.getDiseasename().equals(disease.getName())) {
                 //outputResults();
                 outputLR(r,disease, rank);

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
+import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getParentTerms;
 
 /**
  * A simulator that simulates cases from the {@link HpoDisease} objects by choosing a subset of terms
@@ -48,6 +49,12 @@ public class HpoCaseSimulator {
     private final int n_noise_terms;
     /** Number of cases to simulate. */
     private final int n_cases_to_simulate;
+    /** If true, we exchange each of the non-noise terms with a direct parent except if that would mean going to
+     * the root of the phenotype ontology.
+     */
+    private boolean addTermImprecision = false;
+    /** The proportion of cases at rank 1 in the current simulation */
+    private double proportionAtRank1=0.0;
 
     private HpoCase currentCase;
 
@@ -73,6 +80,15 @@ public class HpoCaseSimulator {
         this.phenotypeterms=builder.build();
     }
 
+    public  HpoCaseSimulator(String datadir, int cases_to_simulate, int terms_per_case, int noise_terms, boolean imprecise ) {
+        this(datadir,cases_to_simulate,terms_per_case,noise_terms);
+        this.addTermImprecision=imprecise;
+    }
+
+
+    public double getProportionAtRank1() {
+        return proportionAtRank1;
+    }
 
     public void simulateCases() throws Lr2pgException {
         int c=0;
@@ -93,7 +109,9 @@ public class HpoCaseSimulator {
                 ranks.put(rank, 0);
             }
             ranks.put(rank, ranks.get(rank) + 1);
-            if (++c>n_cases_to_simulate)break;
+            if (++c>n_cases_to_simulate) {
+                break; // finished!
+            }
             if (c%100==0) {logger.trace("Simulating case " + c); }
         }
         int N=n_cases_to_simulate;
@@ -102,6 +120,9 @@ public class HpoCaseSimulator {
         int rank31_100=0;
         int rank101_up=0;
         for (int r:ranks.keySet()) {
+            if (r==1) {
+                proportionAtRank1=ranks.get(r) / (double)N;
+            }
             if (r<11) {
                 System.out.println(String.format("Rank=%d: count:%d (%.1f%%)", r, ranks.get(r), 100.0 * ranks.get(r) / N));
             } else if (r<21) {
@@ -133,6 +154,20 @@ public class HpoCaseSimulator {
         return phenotypeterms.get(r);
     }
 
+    private TermId getRandomParentTerm(TermId tid) {
+        Set<TermId> parents = getParentTerms(ontology,tid,false);
+        int r = (int)Math.floor(parents.size()*Math.random());
+        int i=0;
+        for (TermId t : parents) {
+            if (i==r) return t;
+            i++;
+        }
+        // we should never get here
+        // the following is to satisfy the compiler that we need to return something.
+        return null;
+    }
+
+
 
     public HpoOntology getOntology() {
         return ontology;
@@ -154,6 +189,9 @@ public class HpoCaseSimulator {
         // now add n_random "noise" terms to the list of abnormalities of our case.
         for(int i=0;i<n_random;i++){
             TermId t = getRandomPhenotypeTerm();
+            if (addTermImprecision) {
+                t = getRandomParentTerm(t);
+            }
             termIdBuilder.add(t);
         }
         ImmutableList<TermId> termlist = termIdBuilder.build();
