@@ -66,14 +66,14 @@ public class SimulateCasesCommand implements Command {
     private void gridsearch() throws Lr2pgException, IOException {
 
 
-//        int[] termnumber = {10,9,8,7,6,5,4,3,2,1};
-//        int[] randomtermnumber = {0,1,2,3,4,0,1,2,3,4};
-        int[] termnumber = {1,2,3};
-        int[] randomtermnumber = {0,1,2};
+        int[] termnumber = {1,2,3,4,5,6,7,8,9,10};
+        int[] randomtermnumber = {0,1,2,3,4,0,1,2,3,4};
+//        int[] termnumber = {1,2,3};
+//        int[] randomtermnumber = {0,1,2};
         String outfilename="gridsearch.R";
         BufferedWriter writer = new BufferedWriter(new FileWriter(outfilename));
         double[][] Z = new double[termnumber.length][randomtermnumber.length];
-        int n_cases=20;
+        int n_cases=100;
         HpoCaseSimulator simulator;
         for (int i=0;i<termnumber.length;i++) {
             for (int j=0;j<randomtermnumber.length;j++) {
@@ -101,16 +101,16 @@ public class SimulateCasesCommand implements Command {
                         mapToObj(Integer::toString)
                         .collect(Collectors.joining(", ")));
         List<String> Zlist = new ArrayList<>();
-        for (int j=0;j<randomtermnumber.length;j++) {
-            for (int i = 0; i < termnumber.length; i++) {
-                Zlist.add(String.valueOf(Z[i][j]));
+        for (int i = 0; i < termnumber.length; i++) {
+            for (int j=0;j<randomtermnumber.length;j++) {
+                Zlist.add(String.format("%.2f",100.0*Z[i][j]));
             }
         }
         String zstring=String.format("Z <- matrix(c(%s),nrow=%d,ncol=%d)\n",
                 Zlist.stream().collect(Collectors.joining(",")),
                 termnumber.length,
                 randomtermnumber.length);
-
+        writer.write("library(plot3D)\n");
         writer.write(xstring + ystring +  zstring);
 
         String xlab = String.format("c(%s)\n",
@@ -121,12 +121,13 @@ public class SimulateCasesCommand implements Command {
         writer.write(create3d);
         //alternatively, do a grouped bar plot
 
-        String colnames= Arrays.stream(termnumber).mapToObj(i->String.format("\"%s\"")).collect(Collectors.joining(", "));
-        String rownames= Arrays.stream(randomtermnumber).mapToObj(i->String.format("\"%s\"")).collect(Collectors.joining(", "));
+        String colnames= Arrays.stream(termnumber).mapToObj(i->String.format("\"%s\"",i)).collect(Collectors.joining(", "));
+        String rownames= Arrays.stream(randomtermnumber).mapToObj(i->String.format("\"%s\"",i)).collect(Collectors.joining(", "));
 
-        String barplotLegend = String.format("colnames(Z)=c(%s)\nrownames(Z)=c(%s)",colnames,rownames);
-        String barplot = String.format("barplot(Z, col=colors(), border=\"white\", font.axis=2, beside=T, " +
-                "legend=rownames(data), xlab=\"Number of terms\", font.lab=2)");
+        String barplotLegend = String.format("colnames(Z)=c(%s)\nrownames(Z)=c(%s)\n",colnames,rownames);
+        String barplot = String.format("barplot(Z, col=colors()[30:32], border=\"white\", font.axis=2, beside=T, " +
+                "legend=rownames(Z), xlab=\"Number of terms\", font.lab=2, cex.lab=2,cex.axis=1.5)\n");
+        writer.write(barplotLegend+barplot);
 
 
         writer.close();

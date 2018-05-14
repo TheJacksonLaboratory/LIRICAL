@@ -124,6 +124,20 @@ public class BackgroundForegroundTermFrequency {
         // there is some difference, but not everybody with the disease will have the
         // subterm in question--they could have another one of the subclasses.
         // therefore we need to penalize
+
+        /*
+        Get all ancestors
+        Map<TermId, Double> ancs;
+        for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
+               TermId tid = annot.getTermId();
+               double f = annot.getFrequency();
+               if tid not in map add with frequency zero
+               if f > map.get(tid) {map.put(tid,f)
+          }
+        Assign each ancestor the maximum freqeuncy of any of its descendent
+        Run the loop below with each of the ancestor terms
+         */
+
         for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
             if (isSubclass(ontology, annot.getTermId(), query)) {
                 double proportionalFrequency = getProportionalFrequencyInAncestors(query,annot.getTermId());
@@ -157,7 +171,7 @@ public class BackgroundForegroundTermFrequency {
             for (TermId tid : directChildren) {
                 f += getProportionalFrequencyInAncestors(query,tid);
             }
-            return f;
+            return f/(double)directChildren.size();
         }
     }
 

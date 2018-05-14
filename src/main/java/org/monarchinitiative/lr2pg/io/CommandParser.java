@@ -218,7 +218,7 @@ public class CommandParser {
         System.out.println(String.format("\t-s <int>: number of cases to simulate (default: %d)", DEFAULT_N_CASES_TO_SIMULATE));
         System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
         System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
-        System.out.println("--grid: Indicates a grid search over noise and imprecision should be performed");
+        System.out.println("\t--grid: Indicates a grid search over noise and imprecision should be performed");
         System.out.println();
         System.out.println("svg:");
         System.out.println("\tjava -jar Lr2pg.jar svg --disease <name> [-d <directory>] [-t <int>] [-n <int>]");
