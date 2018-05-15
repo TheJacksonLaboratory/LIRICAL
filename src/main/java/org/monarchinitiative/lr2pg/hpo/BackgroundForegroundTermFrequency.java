@@ -111,7 +111,7 @@ public class BackgroundForegroundTermFrequency {
         double cumfreq=0.0;
         boolean isAncestor=false;
         for (HpoAnnotation hpoTermId : disease.getPhenotypicAbnormalities()) {
-            if (isSubclass(ontology,query,hpoTermId.getTermId())) {
+            if (isSubclass(ontology,hpoTermId.getTermId(),query)) {
                 cumfreq=Math.max(cumfreq,hpoTermId.getFrequency());
                 isAncestor=true;
             }
@@ -139,7 +139,7 @@ public class BackgroundForegroundTermFrequency {
          */
 
         for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
-            if (isSubclass(ontology, annot.getTermId(), query)) {
+            if (isSubclass(ontology, query, annot.getTermId())){
                 double proportionalFrequency = getProportionalFrequencyInAncestors(query,annot.getTermId());
                 double queryFrequency = annot.getFrequency();
                 double f = proportionalFrequency*queryFrequency;
@@ -160,21 +160,21 @@ public class BackgroundForegroundTermFrequency {
      * @return the proportion of the frequency of diseaseTerm that is attributable to query
      */
     private double getProportionalFrequencyInAncestors(TermId query, TermId diseaseTerm) {
+        if (query.getId().equals(diseaseTerm.getId())) {
+            return 1.0;
+        }
         Set<TermId> directChildren= getChildTerms(ontology,diseaseTerm,false);
         if (directChildren.isEmpty()) {
             return 0.0;
-        }
-        if (directChildren.contains(query)) {
-            return 1.0/(double)directChildren.size();
-        } else {
-            double f=0.0;
-            for (TermId tid : directChildren) {
-                f += getProportionalFrequencyInAncestors(query,tid);
+        }     
+        double f=0.0;
+        for (TermId tid : directChildren) {
+            f += getProportionalFrequencyInAncestors(query,tid);
             }
-            return f/(double)directChildren.size();
-        }
+        return f/(double)directChildren.size();
     }
-
+    
+        
 
     /**
      * This function estimates the probability of a test finding (the HP term is present) given that the
