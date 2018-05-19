@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.formats.hpo.HpoTerm;
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.BufferedWriter;
@@ -150,7 +150,7 @@ public class Lr2Svg {
                         (int) xstart));
             }
             // add label of corresponding HPO term
-            HpoTerm term = ontology.getTermMap().get(tid);
+            Term term = ontology.getTermMap().get(tid);
             String label = String.format("%s [%s]",term.getName(),tid.getIdWithPrefix());
             writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
                         WIDTH,
@@ -163,7 +163,7 @@ public class Lr2Svg {
 
     /** The height of the middle line is the number of boxes times (BOX_HEIGHT + BOX_OFFSET)
      * plus one additional BOX_OFFSET on top.
-     * @return
+     * @return Where to place the line underneath the boxes.
      */
     private int calculateHeightOfMiddleLine() {
         int n = result.getNumberOfTests();
@@ -176,8 +176,8 @@ public class Lr2Svg {
     /**
      * Draw the central line around which the likelihood ratio 'bars' will be drawn.
      * TODO -calculate the height and offsets depending on the number of HPO terms.
-     * @param writer
-     * @throws IOException
+     * @param writer file handle
+     * @throws IOException if we cannot write the SVG file.
      */
     private void writeMiddleLine(Writer writer) throws IOException {
         int height = calculateHeightOfMiddleLine();
@@ -217,12 +217,8 @@ public class Lr2Svg {
 
     private static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
         List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
-        Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
-            @Override
-            public int compare(Map.Entry<K, V> e1, Map.Entry<K, V> e2) {
-                return (e2.getValue()).compareTo(e1.getValue());
-            }
-        });
+        // sort list according to value, i.e., the magnitude of the likelihood ratio.
+        list.sort( (e1,e2) -> (e2.getValue()).compareTo(e1.getValue()) );
 
         Map<K, V> result = new LinkedHashMap<>();
         for (Map.Entry<K, V> entry : list) {

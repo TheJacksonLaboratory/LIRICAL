@@ -80,7 +80,7 @@ public class BackgroundForegroundTermFrequency {
      * @param t1 term of interest
      * @return an ordered list of terms emanating from t1 up to the root of the ontology.
      */
-    private List<TermId> getPathsToRoot(Ontology<? extends Term, ? extends Relationship> ontology, final TermId t1) {
+    private List<TermId> getPathsToRoot(Ontology ontology, final TermId t1) {
         final DefaultDirectedGraph<TermId, IdLabeledEdge> graph = ontology.getGraph();
         List<TermId> visitedT1 = new ArrayList<>(); // this will contain all paths from query term to the root
         BreadthFirstSearch<TermId, IdLabeledEdge> bfs = new BreadthFirstSearch<>();
