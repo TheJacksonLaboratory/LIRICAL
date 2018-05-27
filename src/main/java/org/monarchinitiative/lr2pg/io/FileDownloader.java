@@ -117,9 +117,12 @@ public class FileDownloader {
             // Try to get file size.
             FTPFile[] files = ftp.listFiles(fileName);
             long fileSize = -1;
-            for (int i = 0; i < files.length; ++i)
-                if (files[i].getName().equals(fileName))
-                    fileSize = files[i].getSize();
+            for (FTPFile ftpfile : files) {
+                if (ftpfile.getName().equals(fileName)) {
+                    fileSize=ftpfile.getSize();
+                    break;
+                }
+            }
             ftp.pwd();
             ProgressBar pb = null;
             if (fileSize != -1)
