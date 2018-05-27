@@ -5,8 +5,7 @@ package org.monarchinitiative.lr2pg.hpo;
 import com.google.common.collect.ImmutableMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.monarchinitiative.lr2pg.exception.Lr2pgException;
+//import org.jgrapht.graph.DefaultDirectedGraph;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -35,7 +34,7 @@ public class BackgroundForegroundTermFrequency {
     /** Overall, i.e., background frequency of each HPO term. */
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
 
-    private final static TermId PHENOTYPIC_ABNORMALITY = ImmutableTermId.constructWithPrefix("HP:0000118");
+    private final static TermId PHENOTYPIC_ABNORMALITY = TermId.constructWithPrefix("HP:0000118");
 
     private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.000_005; // 1:20,000
 
@@ -56,9 +55,8 @@ public class BackgroundForegroundTermFrequency {
      * @param tid An HPO phenotypic abnormality
      * @param disease the disease
      * @return the likelihood ratio of observing the HPO term in the diseases
-     * @throws Lr2pgException If there is an error calculating the LR
      */
-    double getLikelihoodRatio(TermId tid, HpoDisease disease) throws Lr2pgException{
+    public double getLikelihoodRatio(TermId tid, HpoDisease disease) {
         double numerator=getFrequencyOfTermInDisease(disease,tid);
         double denominator=getBackgroundFrequency(tid);
         return numerator/denominator;
@@ -77,26 +75,6 @@ public class BackgroundForegroundTermFrequency {
 
 
     /**
-     * This will return an ordered list of terms emanating from t1 up to the root of the ontology.
-     * @param ontology An object representing the Human Phenotype Ontology
-     * @param t1 term of interest
-     * @return an ordered list of terms emanating from t1 up to the root of the ontology.
-     */
-    private List<TermId> getPathsToRoot(Ontology<? extends Term, ? extends Relationship> ontology, final TermId t1) {
-        final DefaultDirectedGraph<TermId, IdLabeledEdge> graph = ontology.getGraph();
-        List<TermId> visitedT1 = new ArrayList<>(); // this will contain all paths from query term to the root
-        BreadthFirstSearch<TermId, IdLabeledEdge> bfs = new BreadthFirstSearch<>();
-        bfs.startFromForward(
-                graph,
-                t1,
-                (g, termId) -> {
-                    visitedT1.add(termId);
-                    return true;
-                });
-        return visitedT1;
-    }
-
-    /**
      * If we get here, we are trying to find a frequency for a term in a disease but there is not
      * direct match. This function tries several ways of finding a fuzzy match
      * @param query -- the term in the patient being tested for similarity with this disease
@@ -109,16 +87,16 @@ public class BackgroundForegroundTermFrequency {
         // 1. the query term is a superclass of the disease term. Therefore,
         // our query satisfies the criteria for the disease and we can take the
         // frequency of the disease term. Since there may be multiple parents
-        // take the average
-        int n=0;
+        // take the maximum frequency (since the parent term will have at least this frequency)
         double cumfreq=0.0;
+        boolean isAncestor=false;
         for (HpoAnnotation hpoTermId : disease.getPhenotypicAbnormalities()) {
-            if (isSubclass(ontology,query,hpoTermId.getTermId())) {
-                cumfreq+=hpoTermId.getFrequency();
-                n++;
+            if (isSubclass(ontology,hpoTermId.getTermId(),query)) {
+                cumfreq=Math.max(cumfreq,hpoTermId.getFrequency());
+                isAncestor=true;
             }
         }
-        if (n>0) return cumfreq/n;
+        if (isAncestor) return cumfreq;
 
         //2. If the disease has a subclass of the query term, then
         // everybody with the subclass (e.g., nuclear cataract) also has the
@@ -126,30 +104,57 @@ public class BackgroundForegroundTermFrequency {
         // there is some difference, but not everybody with the disease will have the
         // subterm in question--they could have another one of the subclasses.
         // therefore we need to penalize
-        Set<TermId> diseaseTermIds = new HashSet<>();
-        for(HpoAnnotation diseaseHpId : disease.getPhenotypicAbnormalities()){
-            diseaseTermIds.add(diseaseHpId.getTermId());
-        }
-        Set<TermId> allAncs = getAncestorTerms(ontology, diseaseTermIds, true);
-        for (HpoAnnotation hpoTermId : disease.getPhenotypicAbnormalities()) {
-            if (isSubclass(ontology, hpoTermId.getTermId(), query)) {
-                List<TermId> pathToRoot = getPathsToRoot(ontology, query);
-                for (int i = 0; i < pathToRoot.size(); i++) {
-                    TermId td = pathToRoot.get(i);
-                    if (allAncs.contains(td)) {
-                        // the induced graph of the disease contains an ancestor of the query term
-                        if (td.equals(PHENOTYPIC_ABNORMALITY)) break; // no match!
-                        //Not sure about the numerator! 1 or td.frequency?
-                        double frequency = hpoTermId.getFrequency();
-                        return frequency / (1 + Math.log(i));
-                    }
-                }
+
+        /*
+        Get all ancestors
+        Map<TermId, Double> ancs;
+        for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
+               TermId tid = annot.getTermId();
+               double f = annot.getFrequency();
+               if tid not in map add with frequency zero
+               if f > map.get(tid) {map.put(tid,f)
+          }
+        Assign each ancestor the maximum freqeuncy of any of its descendent
+        Run the loop below with each of the ancestor terms
+         */
+
+        for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
+            if (isSubclass(ontology, query, annot.getTermId())){
+                double proportionalFrequency = getProportionalFrequencyInAncestors(query,annot.getTermId());
+                double queryFrequency = annot.getFrequency();
+                double f = proportionalFrequency*queryFrequency;
+                return Math.max(f,DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY);
             }
         }
+
         // If we get here, then there is no common ancestor between the query and any of the disease phenotype annotations.
        return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
     }
 
+
+    /**
+     * Get the overall proportion of the frequency that is made up by the query term, given that
+     * query term is a descendant of the diseaseTerm (which should be checked before this method is called).
+     * @param query A term used in the query (i.e., an annotation of the HpoCase proband)
+     * @param diseaseTerm A term that is annotated to the disease we are investigating
+     * @return the proportion of the frequency of diseaseTerm that is attributable to query
+     */
+    private double getProportionalFrequencyInAncestors(TermId query, TermId diseaseTerm) {
+        if (query.getId().equals(diseaseTerm.getId())) {
+            return 1.0;
+        }
+        Set<TermId> directChildren= getChildTerms(ontology,diseaseTerm,false);
+        if (directChildren.isEmpty()) {
+            return 0.0;
+        }     
+        double f=0.0;
+        for (TermId tid : directChildren) {
+            f += getProportionalFrequencyInAncestors(query,tid);
+            }
+        return f/(double)directChildren.size();
+    }
+    
+        
 
     /**
      * This function estimates the probability of a test finding (the HP term is present) given that the

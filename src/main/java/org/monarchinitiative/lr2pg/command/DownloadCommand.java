@@ -9,17 +9,19 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+/**
+ * Command to download the {@code hp.obo} and {@code phenotype.hpoa} files that
+ * we will need to run the LR2PG approach.
+ */
 public class DownloadCommand implements Command {
     private static final Logger logger = LogManager.getLogger();
-
+    /** Directory to which we will download the files. */
     private final String downloadDirectory;
-
-
-
+    /** URL of the hp.obo file. */
     private final static String HP_OBO="https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/master/hp.obo";
-
+    /** URL of the annotation file phenotype.hpoa. */
     private final static String HP_ANNOTATION="http://compbio.charite.de/jenkins/job/hpo.annotations.2018/lastSuccessfulBuild/artifact/misc_2018/phenotype.hpoa";
-    /** Name of the phenotype annotation file. */
+    /** Basename of the phenotype annotation file. */
     private final static String HP_ANNOTATION_FILE="phenotype.hpoa";
 
     /**

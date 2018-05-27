@@ -3,13 +3,13 @@ package org.monarchinitiative.lr2pg.hpo;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
-import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
+import org.monarchinitiative.phenol.ontology.data.TermId;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -67,14 +67,14 @@ public class BackgroundForegroundTermFrequencyTest {
      */
     @Test
     public void testFrequency1() {
-        ImmutableTermId tid = ImmutableTermId.constructWithPrefix("HP:0000028");
+        TermId tid = TermId.constructWithPrefix("HP:0000028");
         double expected = (double)1/3;
         assertEquals(expected, backForeFreq.getBackgroundFrequency(tid),EPSILON);
     }
 
     @Test
     public void testFrequency2() {
-        ImmutableTermId tid = ImmutableTermId.constructWithPrefix("HP:0000047");
+        TermId tid = TermId.constructWithPrefix("HP:0000047");
         double expected = (double)1/3;
         assertEquals(expected, backForeFreq.getBackgroundFrequency(tid),EPSILON);
     }
@@ -85,7 +85,7 @@ public class BackgroundForegroundTermFrequencyTest {
      */
     @Test
     public void testFrequency3() {
-        ImmutableTermId tid = ImmutableTermId.constructWithPrefix("HP:0000035");
+        TermId tid = TermId.constructWithPrefix("HP:0000035");
         double expected = (double)1/3;
         assertEquals(expected, backForeFreq.getBackgroundFrequency(tid),EPSILON);
     }
