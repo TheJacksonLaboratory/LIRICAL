@@ -26,14 +26,11 @@ public class HpoCase2SvgCommand implements Command {
     private final int n_terms_per_case;
     private final int n_noise_terms;
 
-    public HpoCase2SvgCommand(String datadir, String diseaseName, int terms_per_case, int noise_terms ) {
-       // hpocase = new HpoCaseOld(hpoPath,annotationPath,caseData);
-
+    public HpoCase2SvgCommand(String datadir, String diseaseName, String outfileName, int terms_per_case, int noise_terms ) {
         this.diseaseName=diseaseName;
         this.dataDirectory=datadir;
         this.n_terms_per_case=terms_per_case;
         this.n_noise_terms=noise_terms;
-
     }
 
 
@@ -42,7 +39,6 @@ public class HpoCase2SvgCommand implements Command {
         HpoCaseSimulator simulator = new HpoCaseSimulator( dataDirectory, cases_to_simulate, n_terms_per_case, n_noise_terms);
         try {
             HpoDisease disease = simulator.name2disease(diseaseName);
-            /* An object representing the Human Phenotype Ontology */ /** An object representing the Human Phenotype Ontology */
             HpoOntology ontology = simulator.getOntology();
             simulator.simulateCase(disease);
             TestResult result = simulator.getResults(disease);

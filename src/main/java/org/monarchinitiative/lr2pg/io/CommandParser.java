@@ -19,39 +19,28 @@ public class CommandParser {
      * Path to directory where we will download the needed files.
      */
     private String dataDownloadDirectory = null;
-    /**
-     * This is where we download the files to by default (otherwise, specify {@code -f <arg>}).
-     */
+    /** This is where we download the files to by default (otherwise, specify {@code -f <arg>}).*/
     private static final String DEFAULT_DATA_DOWNLOAD_DIRECTORY = "data";
-    /**
-     * The default number of "random" HPO cases to simulate.
-     */
+    /** The default number of "random" HPO cases to simulate.*/
     private static final int DEFAULT_N_CASES_TO_SIMULATE = 1000;
-    /**
-     * The default number of terms to simulate per case.
-     */
+    /** The default number of terms to simulate per case.*/
     private static final int DEFAULT_N_TERMS_PER_CASE = 5;
-    /**
-     * The default number of ranomd (noise) terms to add per simulated case
-     */
+    /** The default number of ranomd (noise) terms to add per simulated case*/
     private static final int DEFAULT_N_NOISE_TERMS_PER_CASE = 1;
-    /**
-     * The number of HPO Cases to simulate.
-     */
+    /** The number of HPO Cases to simulate.*/
     private int n_cases_to_simulate;
-    /**
-     * The number of random HPO terms to simulate in each simulated case.
-     */
+    /** The number of random HPO terms to simulate in each simulated case.*/
     private int n_terms_per_case;
-    /**
-     * The number of random noise terms to add to each simulated HPO case.
-     */
+    /** The number of random noise terms to add to each simulated HPO case.*/
     private int n_noise_terms;
-
+    /** Name of disease for the analysis. */
     private String diseaseName=null;
-
     /** If true, we do a grid search over the parameters for LR2PG clinical. */
     private boolean gridSearch=false;
+    /** Default name of the SVG file with the results of analysis. */
+    private static final String DEFAULT_SVG_OUTFILE_NAME="test.svg";
+    /** Name of the SVG file with the results of analysis. */
+    private String svgOutFileName=null;
 
     /**
      * The command object.
@@ -89,6 +78,11 @@ public class CommandParser {
 
             if (commandLine.hasOption("disease")) {
                 diseaseName=commandLine.getOptionValue("disease");
+            }
+            if (commandLine.hasOption("svg")) {
+                svgOutFileName=commandLine.getOptionValue("svg");
+            } else {
+                svgOutFileName=DEFAULT_SVG_OUTFILE_NAME;
             }
             if (commandLine.hasOption("t")) {
                 String term = commandLine.getOptionValue("t");
@@ -144,7 +138,7 @@ public class CommandParser {
                         printUsage("svg command requires --disease option");
                     }
                     //n_terms_per_case, n_noise_terms);
-                    this.command = new HpoCase2SvgCommand(this.dataDownloadDirectory,diseaseName,n_terms_per_case,n_noise_terms);
+                    this.command = new HpoCase2SvgCommand(this.dataDownloadDirectory,diseaseName,svgOutFileName,n_terms_per_case,n_noise_terms);
                     break;
 
                 default:
@@ -177,6 +171,7 @@ public class CommandParser {
                 .addOption("o", "hpo", true, "HPO OBO file path")
                 .addOption(null,"disease", true, "disease to simulate and create SVG for")
                 .addOption(null,"grid", false, "perform a grid search over parameters")
+                .addOption(null,"svg", true, "name of output SVG file")
                 .addOption("s", "simulated_cases", true, "number of cases to simulate per run")
                 .addOption("t", "terms", true, "number of HPO terms per simulated case (default: 5)");
         return gnuOptions;
@@ -221,8 +216,9 @@ public class CommandParser {
         System.out.println("\t--grid: Indicates a grid search over noise and imprecision should be performed");
         System.out.println();
         System.out.println("svg:");
-        System.out.println("\tjava -jar Lr2pg.jar svg --disease <name> [-d <directory>] [-t <int>] [-n <int>]");
+        System.out.println("\tjava -jar Lr2pg.jar svg --disease <name> [-- svg <file>] [-d <directory>] [-t <int>] [-n <int>]");
         System.out.println("\t--disease <string>: name of disease to simulate (e.g., OMIM:600321)");
+        System.out.println(String.format("\t--svg <file>: name of output SVG file (default: %s)", DEFAULT_SVG_OUTFILE_NAME));
         System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
         System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
         System.exit(0);

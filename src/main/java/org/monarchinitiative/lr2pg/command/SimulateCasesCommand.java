@@ -1,6 +1,5 @@
 package org.monarchinitiative.lr2pg.command;
 
-import com.sun.xml.internal.xsom.impl.scd.Iterators;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
@@ -25,7 +24,7 @@ public class SimulateCasesCommand implements Command {
     private final int n_cases_to_simulate;
     private final int n_terms_per_case;
     private final int n_noise_terms;
-
+    /** Flag to indicate we will perform a grid search over the parameter space. */
     private boolean gridSearch=false;
 
     /**
@@ -48,28 +47,30 @@ public class SimulateCasesCommand implements Command {
         if (gridSearch) {
             try {
                 gridsearch();
-                return;
             } catch (Lr2pgException|IOException lre) {
                 lre.printStackTrace();
             }
-        }
-        HpoCaseSimulator simulator = new HpoCaseSimulator(this.dataDirectoryPath,n_cases_to_simulate, n_terms_per_case, n_noise_terms);
-        simulator.debugPrint();
-        try {
-            simulator.simulateCases();
-        } catch (Lr2pgException e) {
-            e.printStackTrace();
+        } else {
+            HpoCaseSimulator simulator = new HpoCaseSimulator(this.dataDirectoryPath, n_cases_to_simulate, n_terms_per_case, n_noise_terms);
+            simulator.debugPrint();
+            try {
+                simulator.simulateCases();
+            } catch (Lr2pgException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-
+    /**
+     * Perform a grid search over varying numbers of terms and random terms
+     * both with and without moving the terms to parent terms (imprecision).
+     * @throws Lr2pgException
+     * @throws IOException
+     */
     private void gridsearch() throws Lr2pgException, IOException {
-
 
         int[] termnumber = {1,2,3,4,5,6,7,8,9,10};
         int[] randomtermnumber = {0,1,2,3,4,0,1,2,3,4};
-//        int[] termnumber = {1,2,3};
-//        int[] randomtermnumber = {0,1,2};
         String outfilename="gridsearch.R";
         BufferedWriter writer = new BufferedWriter(new FileWriter(outfilename));
         double[][] Z = new double[termnumber.length][randomtermnumber.length];
@@ -77,12 +78,7 @@ public class SimulateCasesCommand implements Command {
         HpoCaseSimulator simulator;
         for (int i=0;i<termnumber.length;i++) {
             for (int j=0;j<randomtermnumber.length;j++) {
-                boolean imprec;
-                if (j>4) {
-                    imprec=true;
-                } else {
-                    imprec=false;
-                }
+                boolean imprec = (j>4);
                 simulator = new HpoCaseSimulator(this.dataDirectoryPath,n_cases, termnumber[i], randomtermnumber[j],imprec);
                 simulator.simulateCases();
                 Z[i][j] = simulator.getProportionAtRank1();
@@ -125,8 +121,8 @@ public class SimulateCasesCommand implements Command {
         String rownames= Arrays.stream(randomtermnumber).mapToObj(i->String.format("\"%s\"",i)).collect(Collectors.joining(", "));
 
         String barplotLegend = String.format("colnames(Z)=c(%s)\nrownames(Z)=c(%s)\n",colnames,rownames);
-        String barplot = String.format("barplot(Z, col=colors()[30:32], border=\"white\", font.axis=2, beside=T, " +
-                "legend=rownames(Z), xlab=\"Number of terms\", font.lab=2, cex.lab=2,cex.axis=1.5)\n");
+        String barplot = "barplot(Z, col=colors()[30:32], border=\"white\", font.axis=2, beside=T, " +
+                "legend=rownames(Z), xlab=\"Number of terms\", font.lab=2, cex.lab=2,cex.axis=1.5)\n";
         writer.write(barplotLegend+barplot);
 
 

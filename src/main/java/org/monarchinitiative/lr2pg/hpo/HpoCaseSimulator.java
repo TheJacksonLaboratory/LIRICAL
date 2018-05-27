@@ -12,7 +12,6 @@ import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.*;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
-import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
@@ -60,7 +59,7 @@ public class HpoCaseSimulator {
 
 
     /** Root term id in the phenotypic abnormality subontology. */
-    private final static TermId PHENOTYPIC_ABNORMALITY = ImmutableTermId.constructWithPrefix("HP:0000118");
+    private final static TermId PHENOTYPIC_ABNORMALITY = TermId.constructWithPrefix("HP:0000118");
 
    /**
      * The constructor initializes {@link #ontology} and {@link #diseaseMap} and {@link #phenotypeterms}.

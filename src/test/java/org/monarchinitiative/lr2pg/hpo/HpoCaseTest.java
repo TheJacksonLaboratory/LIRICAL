@@ -11,8 +11,6 @@ import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
-import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
-import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
@@ -48,12 +46,12 @@ public class HpoCaseTest {
         backforeFreq=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
 
         /* these are the phenotypic abnormalties of our "case" */
-        TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
-        TermId t1 = new ImmutableTermId(HP_PREFIX,"0006855");
-        TermId t2 = new ImmutableTermId(HP_PREFIX,"0000651");
-        TermId t3 = new ImmutableTermId(HP_PREFIX,"0010545");
-        TermId t4 = new ImmutableTermId(HP_PREFIX,"0001260");
-        TermId t5 = new ImmutableTermId(HP_PREFIX,"0001332");
+        TermPrefix HP_PREFIX=new TermPrefix("HP");
+        TermId t1 = new TermId(HP_PREFIX,"0006855");
+        TermId t2 = new TermId(HP_PREFIX,"0000651");
+        TermId t3 = new TermId(HP_PREFIX,"0010545");
+        TermId t4 = new TermId(HP_PREFIX,"0001260");
+        TermId t5 = new TermId(HP_PREFIX,"0001332");
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
 

@@ -5,7 +5,7 @@ package org.monarchinitiative.lr2pg.hpo;
 import com.google.common.collect.ImmutableMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jgrapht.graph.DefaultDirectedGraph;
+//import org.jgrapht.graph.DefaultDirectedGraph;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -34,7 +34,7 @@ public class BackgroundForegroundTermFrequency {
     /** Overall, i.e., background frequency of each HPO term. */
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
 
-    private final static TermId PHENOTYPIC_ABNORMALITY = ImmutableTermId.constructWithPrefix("HP:0000118");
+    private final static TermId PHENOTYPIC_ABNORMALITY = TermId.constructWithPrefix("HP:0000118");
 
     private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.000_005; // 1:20,000
 
@@ -73,26 +73,6 @@ public class BackgroundForegroundTermFrequency {
         }
     }
 
-
-    /**
-     * This will return an ordered list of terms emanating from t1 up to the root of the ontology.
-     * @param ontology An object representing the Human Phenotype Ontology
-     * @param t1 term of interest
-     * @return an ordered list of terms emanating from t1 up to the root of the ontology.
-     */
-    private List<TermId> getPathsToRoot(Ontology ontology, final TermId t1) {
-        final DefaultDirectedGraph<TermId, IdLabeledEdge> graph = ontology.getGraph();
-        List<TermId> visitedT1 = new ArrayList<>(); // this will contain all paths from query term to the root
-        BreadthFirstSearch<TermId, IdLabeledEdge> bfs = new BreadthFirstSearch<>();
-        bfs.startFromForward(
-                graph,
-                t1,
-                (g, termId) -> {
-                    visitedT1.add(termId);
-                    return true;
-                });
-        return visitedT1;
-    }
 
     /**
      * If we get here, we are trying to find a frequency for a term in a disease but there is not

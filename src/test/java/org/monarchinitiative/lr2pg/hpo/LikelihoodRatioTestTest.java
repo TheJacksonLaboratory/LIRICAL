@@ -8,8 +8,7 @@ import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
-import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
-import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import java.io.File;
@@ -40,7 +39,7 @@ public class LikelihoodRatioTestTest {
 
     @BeforeClass
     public static void setup() throws IOException,PhenolException {
-        HP_PREFIX = new ImmutableTermPrefix("HP");
+        HP_PREFIX = new TermPrefix("HP");
         ClassLoader classLoader = BackgroundForegroundTermFrequencyTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String annotationPath = classLoader.getResource("small.hpoa").getFile();
@@ -51,7 +50,7 @@ public class LikelihoodRatioTestTest {
         diseaseMap = annotationParser.parse();
         String DEFAULT_FREQUENCY = "0040280";
         d2tf = new BackgroundForegroundTermFrequency(ontology, diseaseMap);
-        TermPrefix HP_PREFIX = new ImmutableTermPrefix("HP");
+        TermPrefix HP_PREFIX = new TermPrefix("HP");
         //ImmutableTermIdWithMetadata t1 = new ImmutableTermIdWithMetadata(new ImmutableTermId(HP_PREFIX, "0000006"));
 //        TermId t2 = ImmutableTermId.constructWithPrefix( "HP:0001265");
 //        TermId t3 = ImmutableTermId.constructWithPrefix("HP:0012074");
@@ -66,7 +65,7 @@ public class LikelihoodRatioTestTest {
      */
     @Test
     public void testGetFrequencyOfTermInDieases1_1() {
-        ImmutableTermId tid = new ImmutableTermId(HP_PREFIX,"0000185");
+        TermId tid = new TermId(HP_PREFIX,"0000185");
         String diseaseName = "OMIM:216300";
         HpoDisease disease = diseaseMap.get(diseaseName);
         assertNotNull(disease);

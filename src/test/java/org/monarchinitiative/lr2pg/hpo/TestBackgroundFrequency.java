@@ -9,8 +9,6 @@ import org.monarchinitiative.phenol.formats.hpo.HpoOnset;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
-import org.monarchinitiative.phenol.ontology.data.ImmutableTermId;
-import org.monarchinitiative.phenol.ontology.data.ImmutableTermPrefix;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
@@ -34,7 +32,7 @@ public class TestBackgroundFrequency {
 
     private static Map<String,HpoDisease> diseaseMap;
 
-    private static final TermPrefix HP_PREFIX=new ImmutableTermPrefix("HP");
+    private static final TermPrefix HP_PREFIX=new TermPrefix("HP");
 
     private static HpoFrequency defaultFrequency=null;
 
@@ -80,7 +78,7 @@ public class TestBackgroundFrequency {
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationpath,ontology);
         diseaseMap=annotationParser.parse();
         String DEFAULT_FREQUENCY="0040280";
-        final TermId DEFAULT_FREQUENCY_ID = new ImmutableTermId(HP_PREFIX,DEFAULT_FREQUENCY);
+        final TermId DEFAULT_FREQUENCY_ID = new TermId(HP_PREFIX,DEFAULT_FREQUENCY);
         defaultFrequency=HpoFrequency.fromTermId(DEFAULT_FREQUENCY_ID);
        // this.d2termFreqMap=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
     }
