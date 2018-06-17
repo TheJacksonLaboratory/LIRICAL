@@ -59,7 +59,7 @@ public class LrEvaluator {
                 double LR = bftfrequency.getLikelihoodRatio(tid,disease);
                 builder.add(LR);
             }
-            TestResult result = new TestResult(builder.build(),disease.getName(),pretest);
+            TestResult result = new TestResult(builder.build(),disease.getDiseaseDatabaseId(),pretest);
             disease2resultMap.put(disease,result);
             results.add(result);
         }
@@ -90,11 +90,11 @@ public class LrEvaluator {
                 logger.error("result at rank " + rank + " null in getRank");
                 continue;
             }
-            if (r.getDiseasename()==null) {
-                logger.error("Result::getDiseasename at rank " + rank + " null in getRank");
+            if (r.getDiseaseCurie()==null) {
+                logger.error("Result::getDiseaseCurie at rank " + rank + " null in getRank");
                 continue;
             }
-            if (r.getDiseasename().equals(disease.getName())) {
+            if (r.getDiseaseCurie().equals(disease.getDiseaseDatabaseId())) {
                 //outputResults();
                 outputLR(r,disease, rank);
                 return rank;

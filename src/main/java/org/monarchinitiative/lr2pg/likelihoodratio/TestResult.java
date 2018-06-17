@@ -2,6 +2,7 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.stream.Collectors;
 
@@ -30,9 +31,9 @@ public class TestResult implements Comparable<TestResult> {
      */
     private final double compositeLR;
     /**
-     * The name of the disease that we are testing for this time.
+     * The CURIE of the disease that we are testing (e.g., OMIM:600100).
      */
-    private final String diseasename;
+    private final TermId diseaseCurie;
 
     private final double pretestProbability;
 
@@ -40,12 +41,12 @@ public class TestResult implements Comparable<TestResult> {
      * The constructor initializes the variables and calculates {@link #compositeLR}
      *
      * @param reslist list of individual test results
-     * @param name    name of the disease being tested
+     * @param id    name of the disease being tested
      * @param pretest pretest probability of the disease
      */
-    public TestResult(ImmutableList<Double> reslist, String name, double pretest) {
+    public TestResult(ImmutableList<Double> reslist, TermId id, double pretest) {
         results = reslist;
-        diseasename = name;
+        diseaseCurie = id;
         this.pretestProbability = pretest;
         // the composite LR is the product of the individual LR's
         compositeLR=reslist.stream().reduce(1.0, (a, b) -> a * b);
@@ -94,7 +95,7 @@ public class TestResult implements Comparable<TestResult> {
     /**
      * Compare two TestResult objects based on their {@link #compositeLR} value.
      * @param other the "other" TestResult being compared.
-     * @return
+     * @return comparison result
      */
     @Override
     public int compareTo(TestResult other) {
@@ -105,7 +106,7 @@ public class TestResult implements Comparable<TestResult> {
     @Override
     public String toString() {
         String resultlist = results.stream().map(String::valueOf).collect(Collectors.joining(";"));
-        return String.format("%s: %.2f [%s]", diseasename, compositeLR, resultlist);
+        return String.format("%s: %.2f [%s]", diseaseCurie, compositeLR, resultlist);
     }
 
     /**
@@ -117,7 +118,7 @@ public class TestResult implements Comparable<TestResult> {
     }
 
     /** @return name of the disease being tested. */
-    public String getDiseasename() {
-        return diseasename;
+    public TermId getDiseaseCurie() {
+        return diseaseCurie;
     }
 }

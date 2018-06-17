@@ -93,7 +93,7 @@ public class Lr2Svg {
         writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
                 (midline - (maxTick-1)*block),
                 Y + 35,
-                result.getDiseasename()));
+                result.getDiseaseCurie()));
 
     }
 
@@ -129,7 +129,7 @@ public class Lr2Svg {
             }
             if ((int)boxwidth==0) {
                 int X=(int)xstart;
-                int Y=(int)currentY;
+                int Y=currentY;
                 int diamondsize=6;
                 writer.write(String.format("<polygon " +
                                 "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:lime;stroke:purple;stroke-width:1\" />\n",

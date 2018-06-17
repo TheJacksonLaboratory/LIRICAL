@@ -3,6 +3,7 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 import com.google.common.collect.ImmutableList;
 import org.junit.Assert;
 import org.junit.Test;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import static org.junit.Assert.assertEquals;
 
@@ -21,7 +22,7 @@ public class TestResultTest {
     @Test
     public void testGlaucomaLR1() {
         TestResult tresult;
-        String diseasename = "glaucoma";
+        TermId glaucomaId = TermId.constructWithPrefix("MONDO:123");
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
@@ -29,7 +30,7 @@ public class TestResultTest {
         // we obtain a test result with 60% sensitivity and 97% specifity
         double LR1 = ratio(0.60, 0.97);
         builder.add(LR1);
-        tresult = new TestResult(builder.build(), diseasename,prevalence);
+        tresult = new TestResult(builder.build(), glaucomaId,prevalence);
         // There should be a LR of 20 after just one test
         assertEquals(1, tresult.getNumberOfTests());
         // There should be a LR of 20
@@ -51,7 +52,7 @@ public class TestResultTest {
     @Test
     public void testGlaucomaLR2() {
         TestResult tresult;
-        String diseasename = "glaucoma";
+        TermId glaucomaId = TermId.constructWithPrefix("MONDO:123");
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
@@ -62,7 +63,7 @@ public class TestResultTest {
         // IOP: (50% sensitivity and 92% specificity[9])
         double LR2 = ratio(0.50, 0.92);
         builder.add(LR2);
-        tresult = new TestResult(builder.build(), diseasename,prevalence);
+        tresult = new TestResult(builder.build(), glaucomaId,prevalence);
         // the pretest odds are the same as with the first test because they are based only on
         // the population prevalence.
         double expectedPretestOdds = 0.02564103;
@@ -77,7 +78,7 @@ public class TestResultTest {
     @Test
     public void testCompositepositiveLR() {
         TestResult tresult;
-        String diseasename = "glaucoma";
+        TermId glaucomaId = TermId.constructWithPrefix("MONDO:123");
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
@@ -91,7 +92,7 @@ public class TestResultTest {
         double LR3 = ratio(0.60, 0.97);
         builder.add(LR3);
 
-        tresult = new TestResult(builder.build(),diseasename,prevalence);
+        tresult = new TestResult(builder.build(),glaucomaId,prevalence);
          //PretestOdds = pretest prob / (1-pretest prob) = 0.95 / 0.05 = 19.0
         double expectedPretestOdds = 0.0256410;
         Assert.assertEquals(expectedPretestOdds, tresult.pretestodds(), EPSILON);

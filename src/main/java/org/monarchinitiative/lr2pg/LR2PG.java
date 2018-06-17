@@ -8,7 +8,7 @@ import org.monarchinitiative.lr2pg.command.Command;
 import org.monarchinitiative.lr2pg.io.CommandParser;
 
 /**
- * This is the central class that coordinates the phenotype/genotype likelihood ratio test.
+ * This is the central class that coordinates the phenotype/Genotype2LR likelihood ratio test.
  * @author Vida Ravanmehr
  * @author Peter Robinson
  * @version 0.3.1 (2018-03-11)
