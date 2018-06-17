@@ -180,6 +180,9 @@ public class CommandParser {
                     this.command = new HpoCase2SvgCommand(this.dataDownloadDirectory, diseaseId,svgOutFileName,n_terms_per_case,n_noise_terms);
                     break;
                 case "phenogeno":
+                    if (this.dataDownloadDirectory == null) {
+                        this.dataDownloadDirectory = DEFAULT_DATA_DOWNLOAD_DIRECTORY;
+                    }
                     this.command = new SimulatePhenoGeneCaseCommand(this.dataDownloadDirectory,this.geneSymbol,this.varcount,this.varpath,this.diseaseId);
                     break;
                 default:
@@ -209,7 +212,7 @@ public class CommandParser {
                 addOption("a", "annotations", true, "Annotation file path")
                 .addOption("d", "download", true, "path of directory to download files")
                 .addOption("n", "noise", true, "number of noise terms per simulate case (default: 1")
-                .addOption(null,"gene", true, "symbol of affected gene")
+                .addOption(null,"gene", true, "EntrezGene id of affected gene")
                 .addOption("o", "hpo", true, "HPO OBO file path")
                 .addOption(null,"disease", true, "disease to simulate and create SVG for (e.g., OMIM:600100)")
                 .addOption(null,"grid", false, "perform a grid search over parameters")

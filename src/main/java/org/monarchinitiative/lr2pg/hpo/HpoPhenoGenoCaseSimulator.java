@@ -1,6 +1,7 @@
 package org.monarchinitiative.lr2pg.hpo;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +14,7 @@ import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import java.util.*;
 
@@ -26,7 +28,7 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getPa
 public class HpoPhenoGenoCaseSimulator {
     private static final Logger logger = LogManager.getLogger();
     /** An object representing the Human Phenotype Ontology */
-    private HpoOntology ontology =null;
+    private HpoOntology ontology;
     /** An object that calculates the foreground frequency of an HPO term in a disease as well as the background frequency */
     private BackgroundForegroundTermFrequency bftfrequency;
     /** A list of all HPO term ids in the Phenotypic abnormality subontology. */
@@ -35,6 +37,8 @@ public class HpoPhenoGenoCaseSimulator {
     private final Map<TermId,HpoDisease> diseaseMap;
     /* key: a gene CURIE such as NCBIGene:123; value: a collection of disease CURIEs such as OMIM:600123; */
     private final Multimap<TermId,TermId> gene2diseaseMultimap;
+
+    private final Map<TermId,Double> genotypeMap;
     /** Object to evaluate the results of differential diagnosis by LR analysis. */
     private LrEvaluator evaluator;
 
@@ -55,6 +59,8 @@ public class HpoPhenoGenoCaseSimulator {
     private int n_terms_per_case=5;
     private int n_noise_terms=1;
 
+    private TermPrefix NCBI_GENE_PREFIX=new TermPrefix("NCBIGene");
+
 
     /** Root term id in the phenotypic abnormality subontology. */
     private final static TermId PHENOTYPIC_ABNORMALITY = TermId.constructWithPrefix("HP:0000118");
@@ -72,14 +78,20 @@ public class HpoPhenoGenoCaseSimulator {
         this.ontology=ontology;
         this.diseaseMap=diseaseMap;
         this.gene2diseaseMultimap=gene2diseaseMultimap;
+        TermId geneId = new TermId(NCBI_GENE_PREFIX,gene);
         this.bftfrequency = new BackgroundForegroundTermFrequency(ontology,diseaseMap);
-        Set<TermId> descendents=getDescendents(ontology,PHENOTYPIC_ABNORMALITY);
+        GenotypeCollection genotypes = new GenotypeCollection(gene2diseaseMultimap.keySet(),geneId,varcount,varpath);
+        this.genotypeMap=genotypes.getGenotypeMap();
+
+            Set<TermId> descendents=getDescendents(ontology,PHENOTYPIC_ABNORMALITY);
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         for (TermId t: descendents) {
             builder.add(t);
         }
         this.phenotypeterms=builder.build();
     }
+
+
 
 
 

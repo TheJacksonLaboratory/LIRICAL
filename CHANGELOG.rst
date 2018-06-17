@@ -3,9 +3,10 @@ Changelog
 =========
 
 ------
-v0.3.3
+v0.4.0
 ------
 - refactored to use phenol 1.1.0
+- adding code to simulate genotypes
 
 ------
 v0.3.2
