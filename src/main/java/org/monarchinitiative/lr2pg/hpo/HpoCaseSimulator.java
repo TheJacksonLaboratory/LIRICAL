@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
+import org.monarchinitiative.lr2pg.io.HpoDataIngestor;
 import org.monarchinitiative.lr2pg.likelihoodratio.LrEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.base.PhenolException;
@@ -34,12 +35,8 @@ public class HpoCaseSimulator {
     private BackgroundForegroundTermFrequency bftfrequency;
     /** A list of all HPO term ids in the Phenotypic abnormality subontology. */
     private final ImmutableList<TermId> phenotypeterms;
-    /** The file name of the HPO ontology file. */
-    private static final String HP_OBO="hp.obo";
-    /** The file name of the HPO annotation file. */
-    private static final String HP_PHENOTYPE_ANNOTATION="phenotype.hpoa";
     /** Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
-    private static Map<TermId,HpoDisease> diseaseMap;
+    private final Map<TermId,HpoDisease> diseaseMap;
     /** Object to evaluate the results of differential diagnosis by LR analysis. */
     private LrEvaluator evaluator;
     /** Number of HPO terms to use for each simulated case. */
@@ -70,7 +67,10 @@ public class HpoCaseSimulator {
         this.n_cases_to_simulate=cases_to_simulate;
         this.n_terms_per_case=terms_per_case;
         this.n_noise_terms=noise_terms;
-        inputHpoOntologyAndAnnotations(datadir);
+        HpoDataIngestor ingestor = new HpoDataIngestor(datadir);
+        this.ontology=ingestor.getOntology();
+        this.diseaseMap=ingestor.getDiseaseMap();
+        this.bftfrequency = new BackgroundForegroundTermFrequency(ontology,diseaseMap);
         Set<TermId> descendents=getDescendents(ontology,PHENOTYPIC_ABNORMALITY);
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         for (TermId t: descendents) {
@@ -237,28 +237,6 @@ public class HpoCaseSimulator {
     }
 
 
-    private void inputHpoOntologyAndAnnotations(String datadir)  {
-        String hpopath=String.format("%s%s%s",datadir, File.separator,HP_OBO);
-        String annotationpath=String.format("%s%s%s",datadir,File.separator,HP_PHENOTYPE_ANNOTATION);
-        HpoOboParser parser = new HpoOboParser(new File(hpopath));
-        try {
-            this.ontology = parser.parse();
-        } catch (IOException ioe) {
-            System.err.println("Could not parse hp.obo file: " + ioe.getMessage());
-            throw new RuntimeException("Could not parse hp.obo file: " + ioe.getMessage());
-        }
-        HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationpath,ontology);
-        try {
-            diseaseMap = annotationParser.parse();
-            if (! annotationParser.validParse()) {
-                logger.error("Warning -- parse problems encountered with the annotation file at {}.", annotationpath);
-                for (String error: annotationParser.getErrors()) {
-                    logger.error(error);
-                }
-            }
-        } catch (PhenolException pe) {
-            throw new RuntimeException("Could not parse annotation file: "+pe.getMessage());
-        }
-        bftfrequency=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
-    }
+
+
 }
