@@ -3,10 +3,7 @@ package org.monarchinitiative.lr2pg.io;
 import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.monarchinitiative.lr2pg.command.Command;
-import org.monarchinitiative.lr2pg.command.DownloadCommand;
-import org.monarchinitiative.lr2pg.command.HpoCase2SvgCommand;
-import org.monarchinitiative.lr2pg.command.SimulateCasesCommand;
+import org.monarchinitiative.lr2pg.command.*;
 
 /**
  * Command line parser designed to generate and initialize {@link Command} objects.
@@ -43,6 +40,12 @@ public class CommandParser {
     private String svgOutFileName=null;
     /** If true, overwrite previously downloaded files. */
     private boolean overwrite=false;
+    /** Gene symbol for disease to be simulated. */
+    private String geneSymbol=null;
+    /** Mean pathogenicity of variants in pathogenic bin. */
+    private double varpath=1.0;
+    /** Count of variants in the pathogenic bin */
+    private int varcount=1;
 
     /**
      * The command object.
@@ -76,6 +79,36 @@ public class CommandParser {
 
             if (commandLine.hasOption("grid")) {
                 this.gridSearch = true;
+            }
+            /*
+             private String geneSymbol=null;
+
+            private double varpath=1.0;
+
+            private int varcount=1;
+             */
+            if (commandLine.hasOption("varcount")) {
+                try {
+                    varcount=Integer.parseInt(commandLine.getOptionValue("varcount"));
+                } catch (NumberFormatException e) {
+                    System.err.println("Count not parse varcount");
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+            }
+
+            if (commandLine.hasOption("varpath")) {
+                try {
+                    varpath=Double.parseDouble(commandLine.getOptionValue("varpath"));
+                } catch (NumberFormatException e) {
+                    System.err.println("Count not parse variant pathogenicity");
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+            }
+
+            if (commandLine.hasOption("gene")) {
+                this.geneSymbol=commandLine.getOptionValue("gene");
             }
 
             if (commandLine.hasOption("overwrite")) {
@@ -146,7 +179,9 @@ public class CommandParser {
                     //n_terms_per_case, n_noise_terms);
                     this.command = new HpoCase2SvgCommand(this.dataDownloadDirectory, diseaseId,svgOutFileName,n_terms_per_case,n_noise_terms);
                     break;
-
+                case "phenogeno":
+                    this.command = new SimulatePhenoGeneCaseCommand(this.dataDownloadDirectory,this.geneSymbol,this.varcount,this.varpath,this.diseaseId);
+                    break;
                 default:
                     printUsage(String.format("Did not recognize command: \"%s\"", mycommand));
             }
@@ -174,13 +209,16 @@ public class CommandParser {
                 addOption("a", "annotations", true, "Annotation file path")
                 .addOption("d", "download", true, "path of directory to download files")
                 .addOption("n", "noise", true, "number of noise terms per simulate case (default: 1")
+                .addOption(null,"gene", true, "symbol of affected gene")
                 .addOption("o", "hpo", true, "HPO OBO file path")
                 .addOption(null,"disease", true, "disease to simulate and create SVG for (e.g., OMIM:600100)")
                 .addOption(null,"grid", false, "perform a grid search over parameters")
                 .addOption(null,"overwrite", false, "if true, overwrite previously downloaded files")
                 .addOption(null,"svg", true, "name of output SVG file")
                 .addOption("s", "simulated_cases", true, "number of cases to simulate per run")
-                .addOption("t", "terms", true, "number of HPO terms per simulated case (default: 5)");
+                .addOption("t", "terms", true, "number of HPO terms per simulated case (default: 5)")
+                .addOption(null,"varcount", true, "number of variants in pathogenic bin")
+                .addOption(null,"varpath", true, "mean pathogenicity of variants in pathogenic bin");
         return gnuOptions;
     }
 
@@ -196,13 +234,8 @@ public class CommandParser {
         return version!=null?version:DEFAULT;
     }
 
-    /**
-     * Print usage information
-     */
-    private static void printUsage(String message) {
+    private static void printUsageIntro() {
         String version = getVersion();
-        System.out.println();
-        System.out.println(message);
         System.out.println();
         System.out.println("Program: LR2PG (v. "+version +")");
         System.out.println();
@@ -210,10 +243,20 @@ public class CommandParser {
         System.out.println();
         System.out.println("Available commands:");
         System.out.println();
-        System.out.println("download:");
-        System.out.println("\tjava -jar Lr2pg.jar download [-d <directory>]");
-        System.out.println("\t-d <directory>: name of directory to which HPO data will be downloaded (default:\"data\")");
-        System.out.println();
+    }
+
+    private static void phenoGenoUsage() {
+        System.out.println("phenogeno:");
+        System.out.println("\tjava -jar Lr2pg.jar phenogeno --disease <id> --gene <string> [-d <directory>] [--varcount <int>] [--varpath <double>]");
+        System.out.println("\t--disease <id>: id of disease to simulate (e.g., OMIM:600321)");
+        System.out.println("\t-d <directory>: name of directory with HPO data (default:\"data\")");
+        System.out.println(String.format("\t--svg <file>: name of output SVG file (default: %s)", DEFAULT_SVG_OUTFILE_NAME));
+        System.out.println("\t--gene <string>: symbol of affected gene");
+        System.out.println("\t--varcount <int>: number of variants in pathogenic bin (default: 1)");
+        System.out.println("\t--varpath <double>: mean pathogenicity score of variants in pathogenic bin (default: 1.0)");
+    }
+
+    private static void simulateUsage() {
         System.out.println("simulate:");
         System.out.println("\tjava -jar Lr2pg.jar simulate [-d <directory>] [-s <int>] [-t <int>] [-n <int>] [--grid]");
         System.out.println("\t-d <directory>: name of directory with HPO data (default:\"data\")");
@@ -222,12 +265,37 @@ public class CommandParser {
         System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
         System.out.println("\t--grid: Indicates a grid search over noise and imprecision should be performed");
         System.out.println();
+    }
+
+    private static void svgUsage() {
         System.out.println("svg:");
         System.out.println("\tjava -jar Lr2pg.jar svg --disease <name> [-- svg <file>] [-d <directory>] [-t <int>] [-n <int>]");
         System.out.println("\t--disease <string>: name of disease to simulate (e.g., OMIM:600321)");
         System.out.println(String.format("\t--svg <file>: name of output SVG file (default: %s)", DEFAULT_SVG_OUTFILE_NAME));
         System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
         System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
+    }
+
+    private static void downloadUsage() {
+        System.out.println("download:");
+        System.out.println("\tjava -jar Lr2pg.jar download [-d <directory>]");
+        System.out.println("\t-d <directory>: name of directory to which HPO data will be downloaded (default:\"data\")");
+        System.out.println();
+    }
+
+
+
+    /**
+     * Print usage information
+     */
+    private static void printUsage(String message) {
+        printUsageIntro();
+        System.out.println();
+        System.out.println(message);
+        downloadUsage();
+        simulateUsage();
+        phenoGenoUsage();
+        svgUsage();
         System.exit(0);
     }
 

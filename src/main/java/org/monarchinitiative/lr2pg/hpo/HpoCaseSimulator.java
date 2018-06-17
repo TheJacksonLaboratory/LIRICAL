@@ -203,7 +203,7 @@ public class HpoCaseSimulator {
             int rank = simulateCase(disease);
             System.err.println(String.format("Rank for %s was %d",disease.getName(),rank));
         }
-        return evaluator.getResult(disease);
+        return evaluator.getResult(disease.getDiseaseDatabaseId());
     }
 
     /**
@@ -221,9 +221,8 @@ public class HpoCaseSimulator {
 
     public int simulateCase(HpoDisease disease) throws Lr2pgException {
         this.currentCase = createSimulatedCase(disease);
-        List<HpoDisease> diseaselist = new ArrayList<>(diseaseMap.values());
         // the following evaluates the case for each disease with equal pretest probabilities.
-        this.evaluator = new LrEvaluator(this.currentCase, diseaselist,ontology,bftfrequency);
+        this.evaluator = new LrEvaluator(this.currentCase, diseaseMap,ontology,bftfrequency);
         evaluator.evaluate();
         return evaluator.getRank(disease);
     }
