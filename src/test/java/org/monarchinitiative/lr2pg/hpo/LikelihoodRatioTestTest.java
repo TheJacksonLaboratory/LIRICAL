@@ -32,13 +32,13 @@ public class LikelihoodRatioTestTest {
 
     private static final double EPSILON = 0.000001;
 
-    private static Map<String, HpoDisease> diseaseMap;
+    private static Map<TermId, HpoDisease> diseaseMap;
 
 
 
 
     @BeforeClass
-    public static void setup() throws IOException,PhenolException {
+    public static void setup() throws IOException,PhenolException,NullPointerException {
         HP_PREFIX = new TermPrefix("HP");
         ClassLoader classLoader = BackgroundForegroundTermFrequencyTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
@@ -66,7 +66,7 @@ public class LikelihoodRatioTestTest {
     @Test
     public void testGetFrequencyOfTermInDieases1_1() {
         TermId tid = new TermId(HP_PREFIX,"0000185");
-        String diseaseName = "OMIM:216300";
+        TermId diseaseName = TermId.constructWithPrefix("OMIM:216300");
         HpoDisease disease = diseaseMap.get(diseaseName);
         assertNotNull(disease);
         double expected =1.0;

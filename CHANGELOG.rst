@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------
+v0.3.3
+------
+- refactored to use phenol 1.1.0
+
+------
 v0.3.2
 ------
 - refactored TermId to remove superfluous interface and renamed ImmutableTermId to TermId

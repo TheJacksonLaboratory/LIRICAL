@@ -28,7 +28,7 @@ public class BackgroundForegroundTermFrequency {
     /** The HPO ontology with all of its subontologies. */
     private final HpoOntology ontology;
     /** This map has one entry for each disease in our database. Key--the disease ID, e.g., OMIM:600200.*/
-    private final Map<String, HpoDisease> diseaseMap;
+    private final Map<TermId, HpoDisease> diseaseMap;
     /** Overall, i.e., background frequency of each HPO term. */
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
 
@@ -41,7 +41,7 @@ public class BackgroundForegroundTermFrequency {
      * @param onto The HPO ontology object
      * @param diseases List of all diseases for this simulation
      */
-    BackgroundForegroundTermFrequency(HpoOntology onto, Map<String, HpoDisease> diseases) {
+    BackgroundForegroundTermFrequency(HpoOntology onto, Map<TermId, HpoDisease> diseases) {
         this.ontology=onto;
         this.diseaseMap = diseases;
         initializeFrequencyMap();

@@ -39,7 +39,7 @@ public class HpoCaseSimulator {
     /** The file name of the HPO annotation file. */
     private static final String HP_PHENOTYPE_ANNOTATION="phenotype.hpoa";
     /** Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
-    private static Map<String,HpoDisease> diseaseMap;
+    private static Map<TermId,HpoDisease> diseaseMap;
     /** Object to evaluate the results of differential diagnosis by LR analysis. */
     private LrEvaluator evaluator;
     /** Number of HPO terms to use for each simulated case. */
@@ -94,8 +94,8 @@ public class HpoCaseSimulator {
         Map<Integer,Integer> ranks=new HashMap<>();
         logger.trace(String.format("Will simulate %d diseases.",diseaseMap.size() ));
         logger.trace("Simulating n={} HPO cases with {} random terms and {} noise terms per case.",n_cases_to_simulate,n_terms_per_case,n_noise_terms);
-        for (String diseasename : diseaseMap.keySet()) {
-            HpoDisease disease = diseaseMap.get(diseasename);
+        for (TermId diseaseCurie : diseaseMap.keySet()) {
+            HpoDisease disease = diseaseMap.get(diseaseCurie);
             //logger.trace("Simulating disease "+diseasename);
             if (disease.getNumberOfPhenotypeAnnotations() == 0) {
                 logger.trace(String.format("Skipping disease %s [%s] because it has no phenotypic annotations",
@@ -206,8 +206,12 @@ public class HpoCaseSimulator {
         return evaluator.getResult(disease);
     }
 
-    public HpoDisease name2disease(String diseasename) {
-        return diseaseMap.get(diseasename);
+    /**
+     * @param diseaseCurie a term id for a disease id such as OMIM:600100
+     * @return the corresponding {@link HpoDisease} object.
+     */
+    public HpoDisease name2disease(TermId diseaseCurie) {
+        return diseaseMap.get(diseaseCurie);
     }
 
 

@@ -11,6 +11,7 @@ import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
+import javax.smartcardio.TerminalFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -31,7 +32,7 @@ public class BackgroundForegroundTermFrequencyTest {
 
 
     @BeforeClass
-    public static void setup() throws IOException,PhenolException {
+    public static void setup() throws IOException,PhenolException,NullPointerException {
         ClassLoader classLoader = BackgroundForegroundTermFrequencyTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String annotationPath = classLoader.getResource("small.hpoa").getFile();
@@ -39,7 +40,7 @@ public class BackgroundForegroundTermFrequencyTest {
         HpoOntology ontology = parser.parse();
 
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationPath,ontology);
-        Map<String,HpoDisease> diseaseMap=annotationParser.parse();
+        Map<TermId,HpoDisease> diseaseMap=annotationParser.parse();
         backForeFreq =new BackgroundForegroundTermFrequency(ontology,diseaseMap);
     }
 
