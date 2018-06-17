@@ -33,14 +33,16 @@ public class CommandParser {
     private int n_terms_per_case;
     /** The number of random noise terms to add to each simulated HPO case.*/
     private int n_noise_terms;
-    /** Name of disease for the analysis. */
-    private String diseaseName=null;
+    /** CURIE of disease (e.g., OMIM:600100) for the analysis. */
+    private String diseaseId =null;
     /** If true, we do a grid search over the parameters for LR2PG clinical. */
     private boolean gridSearch=false;
     /** Default name of the SVG file with the results of analysis. */
     private static final String DEFAULT_SVG_OUTFILE_NAME="test.svg";
     /** Name of the SVG file with the results of analysis. */
     private String svgOutFileName=null;
+    /** If true, overwrite previously downloaded files. */
+    private boolean overwrite=false;
 
     /**
      * The command object.
@@ -76,8 +78,12 @@ public class CommandParser {
                 this.gridSearch = true;
             }
 
+            if (commandLine.hasOption("overwrite")) {
+                this.overwrite=true;
+            }
+
             if (commandLine.hasOption("disease")) {
-                diseaseName=commandLine.getOptionValue("disease");
+                diseaseId =commandLine.getOptionValue("disease");
             }
             if (commandLine.hasOption("svg")) {
                 svgOutFileName=commandLine.getOptionValue("svg");
@@ -121,7 +127,7 @@ public class CommandParser {
                         this.dataDownloadDirectory = DEFAULT_DATA_DOWNLOAD_DIRECTORY;
                     }
                     logger.warn(String.format("Download command to %s", dataDownloadDirectory));
-                    this.command = new DownloadCommand(dataDownloadDirectory);
+                    this.command = new DownloadCommand(dataDownloadDirectory,overwrite);
                     break;
                 case "simulate":
                     if (this.dataDownloadDirectory == null) {
@@ -134,11 +140,11 @@ public class CommandParser {
                     if (this.dataDownloadDirectory == null) {
                         this.dataDownloadDirectory = DEFAULT_DATA_DOWNLOAD_DIRECTORY;
                     }
-                    if (diseaseName==null) {
+                    if (diseaseId ==null) {
                         printUsage("svg command requires --disease option");
                     }
                     //n_terms_per_case, n_noise_terms);
-                    this.command = new HpoCase2SvgCommand(this.dataDownloadDirectory,diseaseName,svgOutFileName,n_terms_per_case,n_noise_terms);
+                    this.command = new HpoCase2SvgCommand(this.dataDownloadDirectory, diseaseId,svgOutFileName,n_terms_per_case,n_noise_terms);
                     break;
 
                 default:
@@ -169,8 +175,9 @@ public class CommandParser {
                 .addOption("d", "download", true, "path of directory to download files")
                 .addOption("n", "noise", true, "number of noise terms per simulate case (default: 1")
                 .addOption("o", "hpo", true, "HPO OBO file path")
-                .addOption(null,"disease", true, "disease to simulate and create SVG for")
+                .addOption(null,"disease", true, "disease to simulate and create SVG for (e.g., OMIM:600100)")
                 .addOption(null,"grid", false, "perform a grid search over parameters")
+                .addOption(null,"overwrite", false, "if true, overwrite previously downloaded files")
                 .addOption(null,"svg", true, "name of output SVG file")
                 .addOption("s", "simulated_cases", true, "number of cases to simulate per run")
                 .addOption("t", "terms", true, "number of HPO terms per simulated case (default: 5)");

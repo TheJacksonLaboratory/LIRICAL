@@ -236,7 +236,8 @@ public class FileDownloader {
             out.close();
             if (pb != null && pos != pb.getMax())
                 pb.print(fileSize);
-        } catch (IOException e) {
+        } catch (IOException | IllegalStateException e) {
+            logger.error(String.format("Failed to downloaded file from %s",src.getHost()),e);
             throw new FileDownloadException("ERROR: Problem downloading file: " + e.getMessage());
         }
         return true;
