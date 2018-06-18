@@ -13,7 +13,8 @@ import java.util.Random;
  * This class will store such a collection of values.
  */
 public class GenotypeCollection {
-
+    /** Key: the termId of a gene; double -- count of variants in pathogenic bin
+     * multiplied by average pathogenicity score. */
     private ImmutableMap<TermId,Double> genotypeMap;
 
     private static final double meanLambda=0.05;
@@ -25,8 +26,14 @@ public class GenotypeCollection {
 
     public GenotypeCollection(Collection<TermId> geneIds,TermId geneId, int varcount,double path) {
         ImmutableMap.Builder<TermId,Double> builder = new ImmutableMap.Builder<>();
+        double lambda = varcount*path;
+        lambda=lambda>0.0 ? lambda : EPSILON;
+        builder.put(geneId,lambda);
         Random rand = new Random();
         for (TermId tid : geneIds) {
+            if (tid.equals(geneId)) {
+                continue; // we take the 'real' value for geneId, and simulate the rest
+            }
             double r = rand.nextDouble();
             int count=0;
             if (r<meanLambda) {
@@ -39,15 +46,13 @@ public class GenotypeCollection {
             double delta = (rand.nextDouble() - 0.5)/20;
             double p2=meanPath+delta;
             p2=Math.min(1.0,Math.max(p2,0.80));
-            double lambda = count*p2;
+            lambda = count*p2;
             lambda=lambda>0.0 ? lambda : EPSILON;
             builder.put(tid,lambda);
         }
         // now add the data for our gene
         // this will overwrite the value from above.
-        double lambda = varcount*path;
-        lambda=lambda>0.0 ? lambda : EPSILON;
-        builder.put(geneId,lambda);
+
         genotypeMap=builder.build();
     }
 

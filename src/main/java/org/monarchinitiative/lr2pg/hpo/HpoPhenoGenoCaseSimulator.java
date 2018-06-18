@@ -1,13 +1,10 @@
 package org.monarchinitiative.lr2pg.hpo;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
-import org.monarchinitiative.lr2pg.io.Disease2GeneDataIngestor;
-import org.monarchinitiative.lr2pg.io.HpoDataIngestor;
 import org.monarchinitiative.lr2pg.likelihoodratio.LrEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
@@ -39,6 +36,10 @@ public class HpoPhenoGenoCaseSimulator {
     private final Multimap<TermId,TermId> gene2diseaseMultimap;
 
     private final Map<TermId,Double> genotypeMap;
+
+    /** List of HPO terms representing phenoytpic abnormalities. */
+    private final List<TermId> hpoTerms;
+
     /** Object to evaluate the results of differential diagnosis by LR analysis. */
     private LrEvaluator evaluator;
 
@@ -71,7 +72,10 @@ public class HpoPhenoGenoCaseSimulator {
     public HpoPhenoGenoCaseSimulator(HpoOntology ontology,
                                      Map<TermId,HpoDisease> diseaseMap,
                                      Multimap<TermId,TermId> gene2diseaseMultimap,
-                                     String gene, int varcount, double varpath)  {
+                                     String gene,
+                                     int varcount,
+                                     double varpath,
+                                     List<TermId> hpoTerms)  {
         this.geneSymbol = gene;
         this.variantCount = varcount;
         this.meanVariantPathogenicity = varpath;
@@ -82,8 +86,9 @@ public class HpoPhenoGenoCaseSimulator {
         this.bftfrequency = new BackgroundForegroundTermFrequency(ontology,diseaseMap);
         GenotypeCollection genotypes = new GenotypeCollection(gene2diseaseMultimap.keySet(),geneId,varcount,varpath);
         this.genotypeMap=genotypes.getGenotypeMap();
+        this.hpoTerms=hpoTerms;
 
-            Set<TermId> descendents=getDescendents(ontology,PHENOTYPIC_ABNORMALITY);
+        Set<TermId> descendents=getDescendents(ontology,PHENOTYPIC_ABNORMALITY);
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         for (TermId t: descendents) {
             builder.add(t);
@@ -128,27 +133,13 @@ public class HpoPhenoGenoCaseSimulator {
         return ontology;
     }
 
-    private HpoCase createSimulatedCase(HpoDisease disease) throws Lr2pgException {
+    private HpoCase createCase(HpoDisease disease) throws Lr2pgException {
         if (disease==null) {
             throw new Lr2pgException("Attempt to create case from Null-value for disease");
         }
-        int n_terms=Math.min(disease.getNumberOfPhenotypeAnnotations(),n_terms_per_case);
-        int n_random=Math.min(n_terms, n_noise_terms);// do not take more random than real terms.
-        logger.trace("Create simulated case with n_terms="+n_terms + ", n_random="+n_random);
-        // the creation of a new ArrayList is needed because disease returns an immutable list.
-        List<HpoAnnotation> abnormalities = new ArrayList<>(disease.getPhenotypicAbnormalities());
+
         ImmutableList.Builder<TermId> termIdBuilder = new ImmutableList.Builder<>();
-        Collections.shuffle(abnormalities); // randomize order of phenotypes
-        // take the first n_random terms of the randomized list
-        abnormalities.stream().limit(n_terms).forEach(a-> termIdBuilder.add(a.getTermId()));
-        // now add n_random "noise" terms to the list of abnormalities of our case.
-        for(int i=0;i<n_random;i++){
-            TermId t = getRandomPhenotypeTerm();
-            if (addTermImprecision) {
-                t = getRandomParentTerm(t);
-            }
-            termIdBuilder.add(t);
-        }
+        termIdBuilder.addAll(this.hpoTerms);
         ImmutableList<TermId> termlist = termIdBuilder.build();
         return new HpoCase.Builder(termlist).build();
     }
@@ -156,7 +147,7 @@ public class HpoPhenoGenoCaseSimulator {
 
     public TestResult getResults(TermId diseaseId) throws Lr2pgException {
         if (this.evaluator==null) {
-            int rank = simulateCase(diseaseId);
+            int rank = evaluateCase(diseaseId);
             System.err.println(String.format("Rank for %s was %d", diseaseId.getIdWithPrefix(),rank));
         }
         return evaluator.getResult(diseaseId);
@@ -175,9 +166,9 @@ public class HpoPhenoGenoCaseSimulator {
         return currentCase;
     }
 
-    public int simulateCase(TermId diseaseId) throws Lr2pgException {
+    public int evaluateCase(TermId diseaseId) throws Lr2pgException {
         HpoDisease disease = this.diseaseMap.get(diseaseId);
-        this.currentCase = createSimulatedCase(disease);
+        this.currentCase = createCase(disease);
         // the following evaluates the case for each disease with equal pretest probabilities.
         this.evaluator = new LrEvaluator(this.currentCase, diseaseMap,ontology,bftfrequency);
         evaluator.evaluate();

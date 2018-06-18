@@ -16,7 +16,6 @@ import org.monarchinitiative.lr2pg.io.CommandParser;
 public class LR2PG {
     private static final Logger logger = LogManager.getLogger();
     static public void main(String [] args) {
-        logger.trace("MAIN");
         long startTime = System.currentTimeMillis();
         CommandParser cmdline= new CommandParser(args);
         Command command = cmdline.getCommand();

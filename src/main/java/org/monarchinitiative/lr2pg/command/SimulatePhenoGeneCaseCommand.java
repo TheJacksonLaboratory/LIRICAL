@@ -4,7 +4,6 @@ import com.google.common.collect.Multimap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
-import org.monarchinitiative.lr2pg.hpo.HpoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.io.Disease2GeneDataIngestor;
 import org.monarchinitiative.lr2pg.io.HpoDataIngestor;
@@ -12,7 +11,8 @@ import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class SimulatePhenoGeneCaseCommand implements Command {
@@ -29,17 +29,25 @@ public class SimulatePhenoGeneCaseCommand implements Command {
     private final double meanVariantPathogenicity;
 
     private TermId diseaseCurie;
+    /** List of HPO terms representing phenoytpic abnormalities. */
+    private final List<TermId> hpoTerms;
 
 
     /**
      * @param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
      */
-    public SimulatePhenoGeneCaseCommand(String datadir, String gene, int varcount, double varpath, String disease) {
+    public SimulatePhenoGeneCaseCommand(String datadir, String gene, int varcount, double varpath, String disease, String HpoTermList) {
         dataDirectoryPath = datadir;
         this.geneSymbol = gene;
         this.variantCount = varcount;
         this.meanVariantPathogenicity = varpath;
         this.diseaseCurie=TermId.constructWithPrefix(disease);
+        String a[] = HpoTermList.split(",");
+        hpoTerms=new ArrayList<>();
+        for (String hpo : a) {
+            TermId tid = TermId.constructWithPrefix(hpo);
+            hpoTerms.add(tid);
+        }
     }
 
     public void execute() {
@@ -54,10 +62,11 @@ public class SimulatePhenoGeneCaseCommand implements Command {
                 gene2diseaseMultimap,
                 geneSymbol,
                 variantCount,
-                meanVariantPathogenicity);
+                meanVariantPathogenicity,
+                hpoTerms);
         simulator.debugPrint();
         try {
-            simulator.simulateCase(diseaseCurie);
+            simulator.evaluateCase(diseaseCurie);
         } catch (Lr2pgException e) {
             e.printStackTrace();
         }

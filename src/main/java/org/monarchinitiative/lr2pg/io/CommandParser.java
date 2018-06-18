@@ -40,16 +40,18 @@ public class CommandParser {
     private String svgOutFileName=null;
     /** If true, overwrite previously downloaded files. */
     private boolean overwrite=false;
-    /** Gene symbol for disease to be simulated. */
-    private String geneSymbol=null;
+    /** Gene id (e.g., 2200 for FBN1) for disease to be simulated. */
+    private String entrezGeneId =null;
     /** Mean pathogenicity of variants in pathogenic bin. */
     private double varpath=1.0;
     /** Count of variants in the pathogenic bin */
     private int varcount=1;
+    /** Comma separated list of HPO ids */
+    private String termList=null;
+    /** Path to the file produced by G2GIT - with frequencies for background pathogenic mutations per gene */
+    private String backgroundFreq=null;
 
-    /**
-     * The command object.
-     */
+    /**The command object.*/
     private Command command = null;
 
 
@@ -80,13 +82,9 @@ public class CommandParser {
             if (commandLine.hasOption("grid")) {
                 this.gridSearch = true;
             }
-            /*
-             private String geneSymbol=null;
-
-            private double varpath=1.0;
-
-            private int varcount=1;
-             */
+            if (commandLine.hasOption("term-list")) {
+                this.termList = commandLine.getOptionValue("term-list");
+            }
             if (commandLine.hasOption("varcount")) {
                 try {
                     varcount=Integer.parseInt(commandLine.getOptionValue("varcount"));
@@ -107,8 +105,8 @@ public class CommandParser {
                 }
             }
 
-            if (commandLine.hasOption("gene")) {
-                this.geneSymbol=commandLine.getOptionValue("gene");
+            if (commandLine.hasOption("geneid")) {
+                this.entrezGeneId =commandLine.getOptionValue("geneid");
             }
 
             if (commandLine.hasOption("overwrite")) {
@@ -183,7 +181,27 @@ public class CommandParser {
                     if (this.dataDownloadDirectory == null) {
                         this.dataDownloadDirectory = DEFAULT_DATA_DOWNLOAD_DIRECTORY;
                     }
-                    this.command = new SimulatePhenoGeneCaseCommand(this.dataDownloadDirectory,this.geneSymbol,this.varcount,this.varpath,this.diseaseId);
+                    if (termList==null) {
+                        System.err.println("[ERROR] --term-list with list of HPO ids required");
+                        phenoGenoUsage();
+                        System.exit(1);
+                    }
+                    if (diseaseId==null){
+                        System.err.println("[ERROR] --disease option (e.g., OMIM:600100) required");
+                        phenoGenoUsage();
+                        System.exit(1);
+                    }
+                    if (entrezGeneId==null){
+                        System.err.println("[ERROR] --geneid option (e.g., 2200) required");
+                        phenoGenoUsage();
+                        System.exit(1);
+                    }
+                    this.command = new SimulatePhenoGeneCaseCommand(this.dataDownloadDirectory,
+                            this.entrezGeneId,
+                            this.varcount,
+                            this.varpath,
+                            this.diseaseId,
+                            this.termList);
                     break;
                 default:
                     printUsage(String.format("Did not recognize command: \"%s\"", mycommand));
@@ -210,9 +228,10 @@ public class CommandParser {
         final Options gnuOptions = new Options();
         gnuOptions.
                 addOption("a", "annotations", true, "Annotation file path")
+                .addOption("b", "background", true, "path to background-freq.txt file")
                 .addOption("d", "download", true, "path of directory to download files")
                 .addOption("n", "noise", true, "number of noise terms per simulate case (default: 1")
-                .addOption(null,"gene", true, "EntrezGene id of affected gene")
+                .addOption(null,"geneid", true, "EntrezGene id of affected gene")
                 .addOption("o", "hpo", true, "HPO OBO file path")
                 .addOption(null,"disease", true, "disease to simulate and create SVG for (e.g., OMIM:600100)")
                 .addOption(null,"grid", false, "perform a grid search over parameters")
@@ -220,13 +239,14 @@ public class CommandParser {
                 .addOption(null,"svg", true, "name of output SVG file")
                 .addOption("s", "simulated_cases", true, "number of cases to simulate per run")
                 .addOption("t", "terms", true, "number of HPO terms per simulated case (default: 5)")
+                .addOption(null, "term-list", true, "comma-separate list of HPO ids")
                 .addOption(null,"varcount", true, "number of variants in pathogenic bin")
                 .addOption(null,"varpath", true, "mean pathogenicity of variants in pathogenic bin");
         return gnuOptions;
     }
 
     private static String getVersion() {
-        String DEFAULT="0.2.1";// default, should be overwritten by the following.
+        String DEFAULT="0.4.0";// default, should be overwritten by the following.
         String version=null;
         try {
             Package p = CommandParser.class.getPackage();
@@ -250,11 +270,14 @@ public class CommandParser {
 
     private static void phenoGenoUsage() {
         System.out.println("phenogeno:");
-        System.out.println("\tjava -jar Lr2pg.jar phenogeno --disease <id> --gene <string> [-d <directory>] [--varcount <int>] [--varpath <double>]");
+        System.out.println("\tjava -jar Lr2pg.jar phenogeno --disease <id> --geneid <string> \\\n" +
+                "\t\t--term-list <string> [-d <directory>] [--varcount <int>]\\\n" +
+                "\t\t-b <file> [--varpath <double>]");
         System.out.println("\t--disease <id>: id of disease to simulate (e.g., OMIM:600321)");
         System.out.println("\t-d <directory>: name of directory with HPO data (default:\"data\")");
-        System.out.println(String.format("\t--svg <file>: name of output SVG file (default: %s)", DEFAULT_SVG_OUTFILE_NAME));
-        System.out.println("\t--gene <string>: symbol of affected gene");
+        System.out.println("\t-b <file>: path to background-freq.txt file");
+        System.out.println("\t--geneid <string>: symbol of affected gene");
+        System.out.println("\t--term-list <string>: comma-separated list of HPO ids");
         System.out.println("\t--varcount <int>: number of variants in pathogenic bin (default: 1)");
         System.out.println("\t--varpath <double>: mean pathogenicity score of variants in pathogenic bin (default: 1.0)");
     }
