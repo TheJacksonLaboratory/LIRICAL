@@ -11,6 +11,7 @@ import java.util.Random;
  * THis is a convenience class that will store the relevant values for the genotypes as observed in a VCF file.
  * For the LR2PG algorithm, we need to know the number of disease-bin variants and their mean Exomiser pathogenicity score.
  * This class will store such a collection of values.
+ * NOTE THIS IS JUST FOR DEVLEOPMENT/TESTING/DEBUGGING, in the real application we get this dataq from a VCF file
  */
 public class GenotypeCollection {
     /** Key: the termId of a gene; double -- count of variants in pathogenic bin

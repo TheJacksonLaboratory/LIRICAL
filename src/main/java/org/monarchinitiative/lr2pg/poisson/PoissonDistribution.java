@@ -16,6 +16,12 @@ public class PoissonDistribution {
         this.mean=m;
     }
 
+
+
+
+
+
+
     /**
      * Get the mean for the distribution.
      *

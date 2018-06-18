@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.LrEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
-import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
+import org.monarchinitiative.lr2pg.model.Model;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -33,7 +33,7 @@ public class HpoPhenoGenoCaseSimulator {
     /** Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
     private final Map<TermId,HpoDisease> diseaseMap;
     /* key: a gene CURIE such as NCBIGene:123; value: a collection of disease CURIEs such as OMIM:600123; */
-    private final Multimap<TermId,TermId> gene2diseaseMultimap;
+    private final Multimap<TermId,TermId> disease2geneMultimap;
 
     private final Map<TermId,Double> genotypeMap;
 
@@ -43,7 +43,8 @@ public class HpoPhenoGenoCaseSimulator {
     /** Object to evaluate the results of differential diagnosis by LR analysis. */
     private LrEvaluator evaluator;
 
-    private final String geneSymbol;
+    Model model;
+
 
     private final int variantCount;
 
@@ -61,6 +62,9 @@ public class HpoPhenoGenoCaseSimulator {
     private int n_noise_terms=1;
 
     private TermPrefix NCBI_GENE_PREFIX=new TermPrefix("NCBIGene");
+    private final TermId entrezGeneId;
+
+    Map<TermId,Double> gene2backgroundFrequency;
 
 
     /** Root term id in the phenotypic abnormality subontology. */
@@ -71,22 +75,25 @@ public class HpoPhenoGenoCaseSimulator {
      */
     public HpoPhenoGenoCaseSimulator(HpoOntology ontology,
                                      Map<TermId,HpoDisease> diseaseMap,
-                                     Multimap<TermId,TermId> gene2diseaseMultimap,
-                                     String gene,
+                                     Multimap<TermId,TermId> disease2geneMultimap,
+                                     String entrezGeneNumber,
                                      int varcount,
                                      double varpath,
-                                     List<TermId> hpoTerms)  {
-        this.geneSymbol = gene;
+                                     List<TermId> hpoTerms,
+                                     Map<TermId,Double> gene2backgroundFrequency)  {
         this.variantCount = varcount;
         this.meanVariantPathogenicity = varpath;
         this.ontology=ontology;
         this.diseaseMap=diseaseMap;
-        this.gene2diseaseMultimap=gene2diseaseMultimap;
-        TermId geneId = new TermId(NCBI_GENE_PREFIX,gene);
+        this.disease2geneMultimap =disease2geneMultimap;
+        this.entrezGeneId = new TermId(NCBI_GENE_PREFIX,entrezGeneNumber);
         this.bftfrequency = new BackgroundForegroundTermFrequency(ontology,diseaseMap);
-        GenotypeCollection genotypes = new GenotypeCollection(gene2diseaseMultimap.keySet(),geneId,varcount,varpath);
+        GenotypeCollection genotypes = new GenotypeCollection(disease2geneMultimap.keySet(), entrezGeneId,varcount,varpath);
         this.genotypeMap=genotypes.getGenotypeMap();
         this.hpoTerms=hpoTerms;
+
+        this.model = new Model(varcount, varpath, entrezGeneId,hpoTerms, ontology,diseaseMap,disease2geneMultimap);
+        this.model.setGenotypeCollection(genotypes);
 
         Set<TermId> descendents=getDescendents(ontology,PHENOTYPIC_ABNORMALITY);
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
@@ -94,37 +101,8 @@ public class HpoPhenoGenoCaseSimulator {
             builder.add(t);
         }
         this.phenotypeterms=builder.build();
-    }
-
-
-
-
-
-
-
-    /**
-     * This is a term that was observed in the simulated patient (note that it should not be a HpoTermId, which
-     * contains metadata about the term in a disease entity, such as overall frequency. Instead, we are simulating an
-     * individual patient and this is a definite observation.
-     * @return a random term from the phenotype subontology.
-     */
-    private TermId getRandomPhenotypeTerm() {
-        int n=phenotypeterms.size();
-        int r = (int)Math.floor(n*Math.random());
-        return phenotypeterms.get(r);
-    }
-
-    private TermId getRandomParentTerm(TermId tid) {
-        Set<TermId> parents = getParentTerms(ontology,tid,false);
-        int r = (int)Math.floor(parents.size()*Math.random());
-        int i=0;
-        for (TermId t : parents) {
-            if (i==r) return t;
-            i++;
-        }
-        // we should never get here
-        // the following is to satisfy the compiler that we need to return something.
-        return null;
+        this.gene2backgroundFrequency=gene2backgroundFrequency;
+        this.model.setBackgroundFrequency(gene2backgroundFrequency);
     }
 
 
@@ -133,15 +111,18 @@ public class HpoPhenoGenoCaseSimulator {
         return ontology;
     }
 
-    private HpoCase createCase(HpoDisease disease) throws Lr2pgException {
+    private void createCase(HpoDisease disease) throws Lr2pgException {
         if (disease==null) {
             throw new Lr2pgException("Attempt to create case from Null-value for disease");
+        } else {
+            this.model.setDiseaseCurie(disease.getDiseaseDatabaseId());
         }
 
         ImmutableList.Builder<TermId> termIdBuilder = new ImmutableList.Builder<>();
         termIdBuilder.addAll(this.hpoTerms);
         ImmutableList<TermId> termlist = termIdBuilder.build();
-        return new HpoCase.Builder(termlist).build();
+        HpoCase c = (new HpoCase.Builder(termlist)).build();
+        this.model.setHpoCase(c);
     }
 
 
@@ -168,9 +149,9 @@ public class HpoPhenoGenoCaseSimulator {
 
     public int evaluateCase(TermId diseaseId) throws Lr2pgException {
         HpoDisease disease = this.diseaseMap.get(diseaseId);
-        this.currentCase = createCase(disease);
+        createCase(disease);
         // the following evaluates the case for each disease with equal pretest probabilities.
-        this.evaluator = new LrEvaluator(this.currentCase, diseaseMap,ontology,bftfrequency);
+        this.evaluator = new LrEvaluator(this.model);
         evaluator.evaluate();
         return evaluator.getRank(disease);
     }
