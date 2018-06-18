@@ -2,6 +2,7 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.stream.Collectors;
 
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  * @author <a href="mailto:vida.ravanmehr@jax.org">Vida Ravanmehr</a>
- * @version 0.2.2 (2017-12-15)
+ * @version 0.3.3 (2018-05-15)
  */
 public class TestResult implements Comparable<TestResult> {
 
@@ -25,45 +26,59 @@ public class TestResult implements Comparable<TestResult> {
      * that is tested for the {@link HpoCase} object.
      */
     private final ImmutableList<Double> results;
-    /** This is the product of the individual test results */
-    private double compositeLR;
-    /** The name of the disease that we are testing for this time. */
-    private final String diseasename;
+    /**
+     * This is the product of the individual test results
+     */
+    private final double compositeLR;
+    /**
+     * The CURIE of the disease that we are testing (e.g., OMIM:600100).
+     */
+    private final TermId diseaseCurie;
 
     private final double pretestProbability;
 
-
-    public TestResult(ImmutableList<Double> reslist, String name, double pretest) {
+    /**
+     * The constructor initializes the variables and calculates {@link #compositeLR}
+     *
+     * @param reslist list of individual test results
+     * @param id    name of the disease being tested
+     * @param pretest pretest probability of the disease
+     */
+    public TestResult(ImmutableList<Double> reslist, TermId id, double pretest) {
         results = reslist;
-        diseasename = name;
-        this.pretestProbability=pretest;
-        calculateCompositeLikelihoodRatio();
+        diseaseCurie = id;
+        this.pretestProbability = pretest;
+        // the composite LR is the product of the individual LR's
+        compositeLR=reslist.stream().reduce(1.0, (a, b) -> a * b);
     }
 
-    /** @return the composite likelihood ratio (product of the LRs of the individual tests). */
+    /**
+     * @return the composite likelihood ratio (product of the LRs of the individual tests).
+     */
     public double getCompositeLR() {
         return compositeLR;
     }
-    /** @return the total count of tests performed. */
-    public int getNumberOfTests() { return results.size();  }
+
+    /**
+     * @return the total count of tests performed.
+     */
+    public int getNumberOfTests() {
+        return results.size();
+    }
 
     /**
      * @return the pretest odds.
      */
-    public double pretestodds() {return pretestProbability/(1.0-pretestProbability);}
+    public double pretestodds() {
+        return pretestProbability / (1.0 - pretestProbability);
+    }
 
     /**
      * @return the post-test odds
      */
     public double posttestodds() {
-        double pretestodds=pretestodds();
-        return pretestodds*getCompositeLR();
-    }
-
-
-    private void calculateCompositeLikelihoodRatio() {
-        compositeLR = 1.0;
-        results.forEach( r -> compositeLR *= r);
+        double pretestodds = pretestodds();
+        return pretestodds * getCompositeLR();
     }
 
 
@@ -72,33 +87,38 @@ public class TestResult implements Comparable<TestResult> {
     }
 
     public double getPosttestProbability() {
-        double po=posttestodds();
-        return po/(1+po);
-   }
+        double po = posttestodds();
+        return po / (1 + po);
+    }
 
 
-
-
+    /**
+     * Compare two TestResult objects based on their {@link #compositeLR} value.
+     * @param other the "other" TestResult being compared.
+     * @return comparison result
+     */
     @Override
     public int compareTo(TestResult other) {
-        if (compositeLR>other.compositeLR) return 1;
-        else if (other.compositeLR>compositeLR) return -1;
-        else return 0;
+        return Double.compare(compositeLR, other.compositeLR);
     }
 
 
     @Override
     public String toString() {
-        String resultlist=results.stream().map(String::valueOf).collect(Collectors.joining(";"));
-        return String.format("%s: %.2f [%s]",diseasename,compositeLR,resultlist);
+        String resultlist = results.stream().map(String::valueOf).collect(Collectors.joining(";"));
+        return String.format("%s: %.2f [%s]", diseaseCurie, compositeLR, resultlist);
     }
 
-
+    /**
+     * @param i index of the test we are interested in
+     * @return the likelihood ratio of the i'th test
+     */
     public double getRatio(int i) {
         return this.results.get(i);
     }
 
-    public String getDiseasename() {
-        return diseasename;
+    /** @return name of the disease being tested. */
+    public TermId getDiseaseCurie() {
+        return diseaseCurie;
     }
 }

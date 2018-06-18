@@ -19,10 +19,10 @@ import java.util.*;
 public class LrEvaluator {
     private static final Logger logger = LogManager.getLogger();
     private final HpoCase hpocase;
-    private final List<HpoDisease> diseaselist;
+    private final Map<TermId,HpoDisease> diseaseMap;
 
     private final Map<HpoDisease,TestResult> disease2resultMap;
-    private final List<Double> pretestProbabilities;
+    private final Map<TermId,Double> pretestProbabilityMap;
     private final BackgroundForegroundTermFrequency bftfrequency;
     /** Reference to the Human Phenotype Ontology object. */
     private final HpoOntology ontology;
@@ -30,36 +30,37 @@ public class LrEvaluator {
     private final List<TestResult> results;
 
 
-    public LrEvaluator(HpoCase hpcase, List<HpoDisease> diseases, HpoOntology ont,BackgroundForegroundTermFrequency bftfrequency) {
+    public LrEvaluator(HpoCase hpcase, Map<TermId,HpoDisease> diseaseMap, HpoOntology ont,BackgroundForegroundTermFrequency bftfrequency) {
         this.hpocase=hpcase;
-        this.diseaselist=diseases;
+        this.diseaseMap=diseaseMap;
         this.disease2resultMap = new HashMap<>();
         this.bftfrequency=bftfrequency;
 
         // initialize to all equal pretest probabilities.
-        int n=diseaselist.size();
-        this.pretestProbabilities=new ArrayList<>(n);
+        int n=diseaseMap.size();
+        this.pretestProbabilityMap =new HashMap<>();
         double prob=1.0/(double)n;
-        for (int i=0;i<n;i++) { pretestProbabilities.add(i,prob); }
+        for (TermId tid : diseaseMap.keySet()) {
+         pretestProbabilityMap.put(tid,prob);
+        }
         this.ontology=ont;
         results=new ArrayList<>();
     }
 
 
     /** This method evaluates the likilihood ratio for each disease in
-     * {@link #diseaselist}. After this, it sorts the results (the best hit is then at index 0, etc).
+     * {@link #diseaseMap}. After this, it sorts the results (the best hit is then at index 0, etc).
      */
     public void evaluate()  {
-        assert diseaselist.size()==pretestProbabilities.size();
-        for (int i=0;i<diseaselist.size();i++) {
-            HpoDisease disease = diseaselist.get(i);
-            double pretest = pretestProbabilities.get(i);
+        assert diseaseMap.size()== pretestProbabilityMap.size();
+        for (HpoDisease disease : diseaseMap.values()) {
+            double pretest = pretestProbabilityMap.get(disease.getDiseaseDatabaseId());
             ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
             for (TermId tid : this.hpocase.getObservedAbnormalities()) {
                 double LR = bftfrequency.getLikelihoodRatio(tid,disease);
                 builder.add(LR);
             }
-            TestResult result = new TestResult(builder.build(),disease.getName(),pretest);
+            TestResult result = new TestResult(builder.build(),disease.getDiseaseDatabaseId(),pretest);
             disease2resultMap.put(disease,result);
             results.add(result);
         }
@@ -67,8 +68,8 @@ public class LrEvaluator {
     }
 
 
-    public TestResult getResult(HpoDisease disease) {
-        return disease2resultMap.get(disease);
+    public TestResult getResult(TermId diseaseId) {
+        return disease2resultMap.get(diseaseId);
     }
 
 
@@ -90,11 +91,11 @@ public class LrEvaluator {
                 logger.error("result at rank " + rank + " null in getRank");
                 continue;
             }
-            if (r.getDiseasename()==null) {
-                logger.error("Result::getDiseasename at rank " + rank + " null in getRank");
+            if (r.getDiseaseCurie()==null) {
+                logger.error("Result::getDiseaseCurie at rank " + rank + " null in getRank");
                 continue;
             }
-            if (r.getDiseasename().equals(disease.getName())) {
+            if (r.getDiseaseCurie().equals(disease.getDiseaseDatabaseId())) {
                 //outputResults();
                 outputLR(r,disease, rank);
                 return rank;

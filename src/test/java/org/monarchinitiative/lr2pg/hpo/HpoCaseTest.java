@@ -34,7 +34,7 @@ public class HpoCaseTest {
 
 
     @BeforeClass
-    public static void setup() throws IOException,PhenolException {
+    public static void setup() throws IOException,PhenolException,NullPointerException {
         ClassLoader classLoader = BackgroundForegroundTermFrequencyTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String annotationPath = classLoader.getResource("small.hpoa").getFile();
@@ -42,7 +42,7 @@ public class HpoCaseTest {
         HpoOboParser parser = new HpoOboParser(new File(hpoPath));
         ontology =parser.parse();
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationPath,ontology);
-        Map<String,HpoDisease> diseaseMap=annotationParser.parse();
+        Map<TermId,HpoDisease> diseaseMap=annotationParser.parse();
         backforeFreq=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
 
         /* these are the phenotypic abnormalties of our "case" */

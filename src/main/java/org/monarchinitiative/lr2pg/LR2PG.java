@@ -8,7 +8,7 @@ import org.monarchinitiative.lr2pg.command.Command;
 import org.monarchinitiative.lr2pg.io.CommandParser;
 
 /**
- * This is the central class that coordinates the phenotype/genotype likelihood ratio test.
+ * This is the central class that coordinates the phenotype/Genotype2LR likelihood ratio test.
  * @author Vida Ravanmehr
  * @author Peter Robinson
  * @version 0.3.1 (2018-03-11)
@@ -16,7 +16,6 @@ import org.monarchinitiative.lr2pg.io.CommandParser;
 public class LR2PG {
     private static final Logger logger = LogManager.getLogger();
     static public void main(String [] args) {
-        logger.trace("MAIN");
         long startTime = System.currentTimeMillis();
         CommandParser cmdline= new CommandParser(args);
         Command command = cmdline.getCommand();

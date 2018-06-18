@@ -9,8 +9,6 @@ import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.graph.IdLabeledEdge;
-import org.monarchinitiative.phenol.graph.algo.BreadthFirstSearch;
 import org.monarchinitiative.phenol.ontology.data.*;
 
 import java.util.*;
@@ -30,7 +28,7 @@ public class BackgroundForegroundTermFrequency {
     /** The HPO ontology with all of its subontologies. */
     private final HpoOntology ontology;
     /** This map has one entry for each disease in our database. Key--the disease ID, e.g., OMIM:600200.*/
-    private final Map<String, HpoDisease> diseaseMap;
+    private final Map<TermId, HpoDisease> diseaseMap;
     /** Overall, i.e., background frequency of each HPO term. */
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
 
@@ -43,7 +41,7 @@ public class BackgroundForegroundTermFrequency {
      * @param onto The HPO ontology object
      * @param diseases List of all diseases for this simulation
      */
-    BackgroundForegroundTermFrequency(HpoOntology onto, Map<String, HpoDisease> diseases) {
+    BackgroundForegroundTermFrequency(HpoOntology onto, Map<TermId, HpoDisease> diseases) {
         this.ontology=onto;
         this.diseaseMap = diseases;
         initializeFrequencyMap();
@@ -105,19 +103,6 @@ public class BackgroundForegroundTermFrequency {
         // subterm in question--they could have another one of the subclasses.
         // therefore we need to penalize
 
-        /*
-        Get all ancestors
-        Map<TermId, Double> ancs;
-        for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
-               TermId tid = annot.getTermId();
-               double f = annot.getFrequency();
-               if tid not in map add with frequency zero
-               if f > map.get(tid) {map.put(tid,f)
-          }
-        Assign each ancestor the maximum freqeuncy of any of its descendent
-        Run the loop below with each of the ancestor terms
-         */
-
         for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
             if (isSubclass(ontology, query, annot.getTermId())){
                 double proportionalFrequency = getProportionalFrequencyInAncestors(query,annot.getTermId());
@@ -163,7 +148,7 @@ public class BackgroundForegroundTermFrequency {
      */
     double getBackgroundFrequency(TermId termId) {
         if (! hpoTerm2OverallFrequency.containsKey(termId)) {
-            logger.fatal(String.format("Map did not contain data for term %s",termId.getIdWithPrefix() ));
+            logger.error(String.format("Map did not contain data for term %s",termId.getIdWithPrefix() ));
             // todo throw error
             System.exit(1);
         }
@@ -172,8 +157,7 @@ public class BackgroundForegroundTermFrequency {
 
     /**
      * Initialize the {@link #hpoTerm2OverallFrequency} object that has the background frequencies of each of the
-     * HPO terms in the ontology.
-     */
+     * HPO terms in the ontology. */
     private void initializeFrequencyMap() {
         Map<TermId, Double> mp = new HashMap<>();
         for (TermId tid : getDescendents(ontology, PHENOTYPIC_ABNORMALITY)) {
@@ -206,12 +190,9 @@ public class BackgroundForegroundTermFrequency {
             imb.put(me.getKey(), f);
         }
         hpoTerm2OverallFrequency = imb.build();
-        //
         logger.trace("Got data on background frequency for " + hpoTerm2OverallFrequency.size() + " terms");
-        // ToDo: we need to define some background frequency for the terms used to anotate our corpus
-        // We will use a heuristic that will distribute the probabilities of parent terms
-        // to the (unannotated) terms beneath them in the tree.
     }
+
     /** @return the number of diseases we are using for the calculations. */
     int getNumberOfDiseases() {
         return diseaseMap.size();

@@ -30,7 +30,7 @@ public class TestBackgroundFrequency {
 
     private BackgroundForegroundTermFrequency d2termFreqMap;
 
-    private static Map<String,HpoDisease> diseaseMap;
+    private static Map<TermId,HpoDisease> diseaseMap;
 
     private static final TermPrefix HP_PREFIX=new TermPrefix("HP");
 
@@ -68,7 +68,7 @@ public class TestBackgroundFrequency {
 
 
     @Before
-    public void init() throws IOException, PhenolException {
+    public void init() throws IOException, PhenolException,NullPointerException {
         ClassLoader classLoader = TestBackgroundFrequency.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String annotationpath=classLoader.getResource(HP_PHENOTYPE_ANNOTATION_PATH).getFile();

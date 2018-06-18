@@ -17,75 +17,76 @@ public class DownloadCommand implements Command {
     private static final Logger logger = LogManager.getLogger();
     /** Directory to which we will download the files. */
     private final String downloadDirectory;
-    /** URL of the hp.obo file. */
-    private final static String HP_OBO="https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/master/hp.obo";
-    /** URL of the annotation file phenotype.hpoa. */
-    private final static String HP_ANNOTATION="http://compbio.charite.de/jenkins/job/hpo.annotations.2018/lastSuccessfulBuild/artifact/misc_2018/phenotype.hpoa";
-    /** Basename of the phenotype annotation file. */
-    private final static String HP_ANNOTATION_FILE="phenotype.hpoa";
+    /** If true, download new version whether or not the file is already present. */
+    private final boolean overwrite;
 
-    /**
-     * Download all three files that we need for the analysis.
-     * @param path path to directory to which to download the files.
-     */
+    private final static String HP_OBO = "hp.obo";
+    /** URL of the hp.obo file. */
+    private final static String HP_OBO_URL ="https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/master/hp.obo";
+    /** URL of the annotation file phenotype.hpoa. */
+    private final static String HP_ANNOTATION_URL ="http://compbio.charite.de/jenkins/job/hpo.annotations.2018/lastSuccessfulBuild/artifact/misc_2018/phenotype.hpoa";
+    /** Basename of the phenotype annotation file. */
+    private final static String HP_ANNOTATION ="phenotype.hpoa";
+
+    private final static String MIM2GENE_MEDGEN = "mim2gene_medgen";
+
+    private final static String MIM2GENE_MEDGEN_URL = "ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/mim2gene_medgen";
+
+    private final static String GENE_INFO = "Homo_sapiens_gene_info.gz";
+
+    private final static String GENE_INFO_URL = "ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz";
+
+
+
     public DownloadCommand(String path){
-        this.downloadDirectory=path;
+        this(path,false);
     }
 
+    public DownloadCommand(String path,boolean overwrite){
+        this.downloadDirectory=path;
+        this.overwrite=overwrite;
+    }
 
     /**
-     * Download the hp.obo and the phenotype_annotation.tab files.
+     * Download the files unless they are already present.
      */
     public void execute() {
-        downloadHpOntologyIfNeeded();
-        downloadHpPhenotypeAnnotationFileIfNeeded();
-    }
-
-    private void downloadHpOntologyIfNeeded() {
-        File f = new File(String.format("%s%shp.obo",downloadDirectory,File.separator));
-        if (f.exists()) {
-            logger.trace(String.format("Cowardly refusing to download hp.obo since we found it at %s",f.getAbsolutePath()));
-            return;
-        }
-        FileDownloader downloader=new FileDownloader();
-        try {
-            URL url = new URL(HP_OBO);
-            logger.debug("Created url from "+HP_OBO+": "+url.toString());
-            downloader.copyURLToFile(url, new File(f.getAbsolutePath()));
-        } catch (MalformedURLException e) {
-            logger.error("Malformed URL for hp.obo");
-            logger.error(e,e);
-        } catch (FileDownloadException e) {
-            logger.error("Error downloading hp.obo");
-            logger.error(e,e);
-        }
-        logger.trace(String.format("Successfully downloaded hp.obo file at %s",f.getAbsolutePath()));
+        downloadFileIfNeeded(HP_OBO,HP_OBO_URL);
+        downloadFileIfNeeded(HP_ANNOTATION,HP_ANNOTATION_URL);
+        downloadFileIfNeeded(GENE_INFO,GENE_INFO_URL);
+        downloadFileIfNeeded(MIM2GENE_MEDGEN,MIM2GENE_MEDGEN_URL);
     }
 
 
 
-    private void  downloadHpPhenotypeAnnotationFileIfNeeded() {
-        File f = new File(String.format("%s%s%s",downloadDirectory,File.separator,HP_ANNOTATION_FILE));
-        if (f.exists()) {
+
+
+
+
+    private void downloadFileIfNeeded(String filename, String webAddress) {
+        File f = new File(String.format("%s%s%s",downloadDirectory,File.separator,filename));
+        if (f.exists() && (! overwrite)) {
             logger.trace(String.format("Cowardly refusing to download %s since we found it at %s",
-                    HP_ANNOTATION_FILE,
+                    filename,
                     f.getAbsolutePath()));
             return;
         }
         FileDownloader downloader=new FileDownloader();
         try {
-            URL url = new URL(HP_ANNOTATION);
-            logger.debug("Created url from "+HP_ANNOTATION+": "+url.toString());
+            URL url = new URL(webAddress);
+            logger.debug("Created url from "+webAddress+": "+url.toString());
             downloader.copyURLToFile(url, new File(f.getAbsolutePath()));
         } catch (MalformedURLException e) {
-            logger.error("Malformed URL for {}",HP_ANNOTATION_FILE);
+            logger.error(String.format("Malformed URL for %s [%s]",filename, webAddress));
             logger.error(e,e);
         } catch (FileDownloadException e) {
-            logger.error("Error downloading {}",HP_ANNOTATION_FILE);
+            logger.error(String.format("Error downloading %s from %s" ,filename, webAddress));
             logger.error(e,e);
         }
-        logger.trace(String.format("Successfully downloaded HPO annotation file at %s",f.getAbsolutePath()));
     }
+
+
+
 
 
 }
