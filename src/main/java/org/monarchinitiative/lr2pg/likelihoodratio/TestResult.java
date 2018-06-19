@@ -29,61 +29,46 @@ public class TestResult implements Comparable<TestResult> {
 
     /** Result of the lieklhood ratio test for the genotype. */
     private Double genotypeLR=null;
-
-    private String entrezGeneId=null;
-
-
-    /**
-     * This is the product of the individual test results
-     */
+    /** The id of the gene associated with ths disease being tested here. */
+    private TermId entrezGeneId=null;
+    /** This is the product of the individual test results. */
     private final double compositeLR;
-    /**
-     * The CURIE of the disease that we are testing (e.g., OMIM:600100).
-     */
+    /** The CURIE of the disease that we are testing (e.g., OMIM:600100).*/
     private final TermId diseaseCurie;
-
+    /** The probability of some result before the first test is done.*/
     private final double pretestProbability;
 
     /**
      * The constructor initializes the variables and calculates {@link #compositeLR}
      *
      * @param reslist list of individual test results
-     * @param id    name of the disease being tested
+     * @param diseaseId    name of the disease being tested
      * @param pretest pretest probability of the disease
      */
-    public TestResult(ImmutableList<Double> reslist, TermId id, double pretest) {
+    public TestResult(ImmutableList<Double> reslist, TermId diseaseId, double pretest) {
         results = reslist;
-        diseaseCurie = id;
+        diseaseCurie = diseaseId;
         this.pretestProbability = pretest;
         // the composite LR is the product of the individual LR's
         compositeLR=reslist.stream().reduce(1.0, (a, b) -> a * b);
     }
 
-    /**
-     * @return the composite likelihood ratio (product of the LRs of the individual tests).
-     */
+    /** @return the composite likelihood ratio (product of the LRs of the individual tests).*/
     public double getCompositeLR() {
-        if (genotypeLR!=null) return genotypeLR*compositeLR;
-        else return compositeLR;
+        return genotypeLR!=null ? genotypeLR*compositeLR : compositeLR;
     }
 
-    /**
-     * @return the total count of tests performed.
-     */
+    /** @return the total count of tests performed (including one for the genotype if done).*/
     public int getNumberOfTests() {
-        return results.size();
+        return genotypeLR==null?results.size():results.size()+1;
     }
 
-    /**
-     * @return the pretest odds.
-     */
+    /** @return the pretest odds.*/
     public double pretestodds() {
         return pretestProbability / (1.0 - pretestProbability);
     }
 
-    /**
-     * @return the post-test odds
-     */
+    /** @return the post-test odds. */
     public double posttestodds() {
         double pretestodds = pretestodds();
         return pretestodds * getCompositeLR();
@@ -130,7 +115,7 @@ public class TestResult implements Comparable<TestResult> {
         return diseaseCurie;
     }
 
-    public void setGeneLikelihoodRatio(Double LR, String geneId) {
+    public void setGeneLikelihoodRatio(Double LR, TermId geneId) {
         this.genotypeLR=LR;
         this.entrezGeneId=geneId;
     }
@@ -141,7 +126,7 @@ public class TestResult implements Comparable<TestResult> {
         return genotypeLR;
     }
 
-    public String getEntrezGeneId() {
+    public TermId getEntrezGeneId() {
         return entrezGeneId;
     }
 }

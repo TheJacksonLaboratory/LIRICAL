@@ -11,7 +11,6 @@ import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
-import javax.smartcardio.TerminalFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;

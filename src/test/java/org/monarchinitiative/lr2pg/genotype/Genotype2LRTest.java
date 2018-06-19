@@ -3,12 +3,8 @@ package org.monarchinitiative.lr2pg.genotype;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
-import org.monarchinitiative.lr2pg.io.HPOOntologyParserTest;
-import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 

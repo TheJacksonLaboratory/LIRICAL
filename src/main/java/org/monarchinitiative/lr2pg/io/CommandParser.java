@@ -204,7 +204,7 @@ public class CommandParser {
                     if (backgroundFreq==null) {
                         backgroundFreq=DEFAULT_BACKGROUND_FREQ;
                     }
-                    this.command = new SimulatePhenoGeneCaseCommand(this.dataDownloadDirectory,
+                    this.command = new SimulatePhenoGenoCaseCommand(this.dataDownloadDirectory,
                             this.entrezGeneId,
                             this.varcount,
                             this.varpath,

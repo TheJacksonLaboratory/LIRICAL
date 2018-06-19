@@ -1,6 +1,5 @@
 package org.monarchinitiative.lr2pg.model;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import org.monarchinitiative.lr2pg.hpo.BackgroundForegroundTermFrequency;
 import org.monarchinitiative.lr2pg.hpo.GenotypeCollection;

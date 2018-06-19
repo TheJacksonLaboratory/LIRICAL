@@ -1,9 +1,7 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
-import com.sun.xml.internal.bind.v2.model.impl.BuiltinLeafInfoImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.BackgroundForegroundTermFrequency;
@@ -47,11 +45,11 @@ public class LrEvaluator {
 
 
     /** {@link TermId} for "X-linked recessive inheritance. */
-    public static final TermId X_LINKED_RECESSIVE = TermId.constructWithPrefix("HP:0001419");
+    private static final TermId X_LINKED_RECESSIVE = TermId.constructWithPrefix("HP:0001419");
     /** {@link TermId} for "autosomal recessive inheritance. */
-    public static final TermId AUTOSOMAL_RECESSIVE = TermId.constructWithPrefix("HP:0000007");
+    private static final TermId AUTOSOMAL_RECESSIVE = TermId.constructWithPrefix("HP:0000007");
     /** {@link TermId} for "autosomal dominant inheritance. */
-    public static final TermId AUTOSOMAL_DOMINANT = TermId.constructWithPrefix("HP:0000006");
+    private static final TermId AUTOSOMAL_DOMINANT = TermId.constructWithPrefix("HP:0000006");
 
 
     public LrEvaluator(HpoCase hpcase, Map<TermId,HpoDisease> diseaseMap, HpoOntology ont,BackgroundForegroundTermFrequency bftfrequency) {
@@ -97,7 +95,7 @@ public class LrEvaluator {
 
     TermId fbn1 = TermId.constructWithPrefix("NCBIGene:2200");
 
-    public Double evaluateGenotype(HpoDisease disease, TermId geneId) {
+    private Double evaluateGenotype(HpoDisease disease, TermId geneId) {
         List<TermId> inheritancemodes=disease.getModesOfInheritance();
         double lambda_disease=1.0;
         if (inheritancemodes!=null && inheritancemodes.size()>0) {
@@ -106,12 +104,7 @@ public class LrEvaluator {
                 lambda_disease=2.0;
             }
         }
-        double lambda_background;
-        if (this.gene2backgroundFrequency.containsKey(geneId)) {
-            lambda_background=this.gene2backgroundFrequency.get(geneId);
-        } else {
-            lambda_background=DEFAULT_LAMBDA_BACKGROUND;
-        }
+        double lambda_background = this.gene2backgroundFrequency.getOrDefault(geneId, DEFAULT_LAMBDA_BACKGROUND);
         if (! this.genotypeMap.containsKey(geneId)) {
             return null;
         }
@@ -159,7 +152,7 @@ public class LrEvaluator {
                     }
                 }
                 if (max!=null) {
-                    result.setGeneLikelihoodRatio(max,entrezGeneId.getIdWithPrefix());
+                    result.setGeneLikelihoodRatio(max,entrezGeneId);
                 }
             }
             disease2resultMap.put(disease,result);

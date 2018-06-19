@@ -8,6 +8,7 @@ import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.LrEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.lr2pg.model.Model;
+import org.monarchinitiative.lr2pg.svg.Lr2Svg;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -16,7 +17,6 @@ import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 import java.util.*;
 
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
-import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getParentTerms;
 
 /**
  * This class is intended to try out some architectures for the genotype-phenotype
@@ -43,7 +43,7 @@ public class HpoPhenoGenoCaseSimulator {
     /** Object to evaluate the results of differential diagnosis by LR analysis. */
     private LrEvaluator evaluator;
 
-    Model model;
+    private Model model;
 
 
     private final int variantCount;
@@ -64,7 +64,7 @@ public class HpoPhenoGenoCaseSimulator {
     private TermPrefix NCBI_GENE_PREFIX=new TermPrefix("NCBIGene");
     private final TermId entrezGeneId;
 
-    Map<TermId,Double> gene2backgroundFrequency;
+    private Map<TermId,Double> gene2backgroundFrequency;
 
 
     /** Root term id in the phenotypic abnormality subontology. */
@@ -153,6 +153,10 @@ public class HpoPhenoGenoCaseSimulator {
         // the following evaluates the case for each disease with equal pretest probabilities.
         this.evaluator = new LrEvaluator(this.model);
         evaluator.evaluate();
+        TestResult result = evaluator.getResult( diseaseId);
+        Lr2Svg l2svg = new Lr2Svg(this.currentCase,result,this.ontology);
+        String fname = String.format("%s.svg",diseaseId.getIdWithPrefix().replace(':','_') );
+        l2svg.writeSvg(fname);
         return evaluator.getRank(disease);
     }
 

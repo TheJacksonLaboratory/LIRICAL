@@ -50,13 +50,18 @@ public class Lr2Svg {
 
 
 
-    public void writeSvg(String path) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
-        writeHeader(writer);
-        writeMiddleLine(writer);
-        writeLrBoxes(writer);
-        writeFooter(writer);
-        writer.close();
+    public void writeSvg(String path) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+            writeHeader(writer);
+            writeMiddleLine(writer);
+            writeLrBoxes(writer);
+            writeFooter(writer);
+            writer.close();
+        } catch (IOException e) {
+            System.err.println("[ERROR] Unable to write SVG file: "+path);
+            e.printStackTrace();
+        }
     }
 
     private void writeScale(Writer writer, double maxAmp, double scaling) throws IOException {
@@ -98,7 +103,6 @@ public class Lr2Svg {
     }
 
     private void writeLrBoxes(Writer writer) throws IOException {
-        // <rect id="svg_3" height="32" width="159" y="58" x="319" stroke-width="5" stroke="#000000" fill="#FF0000"/>
         int currentY= MIN_VERTICAL_OFFSET + BOX_OFFSET*2;
         int midline=WIDTH/2;
         List<TermId> termIdList=hpocase.getObservedAbnormalities();
@@ -175,14 +179,11 @@ public class Lr2Svg {
 
     /**
      * Draw the central line around which the likelihood ratio 'bars' will be drawn.
-     * TODO -calculate the height and offsets depending on the number of HPO terms.
      * @param writer file handle
      * @throws IOException if we cannot write the SVG file.
      */
     private void writeMiddleLine(Writer writer) throws IOException {
-        int height = calculateHeightOfMiddleLine();
-
-        int midline=WIDTH/2;
+           int midline=WIDTH/2;
         int topY=MIN_VERTICAL_OFFSET;
         int bottomY=topY + calculateHeightOfMiddleLine();
         writer.write("<line fill=\"none\" stroke=\"midnightblue\" stroke-width=\"2\" " +
@@ -200,14 +201,6 @@ public class Lr2Svg {
                 "xmlns:svg=\"http://www.w3.org/2000/svg\">\n");
         writer.write("<!-- Created by Exomiser - https://monarchinitiative.org -->\n");
         writer.write("<g>\n");
-
-
-//  <title>Layer 1</title>
-//  <line fill="none" stroke="#000000" stroke-width="2" x1="299" y1="60" x2="299" y2="378" id="svg_1"/>
-//  <rect id="svg_2" height="22" width="136" y="78" x="300" stroke="#000000" fill="#7fff00"/>
-//  <text xml:space="preserve" text-anchor="middle" font-family="serif" font-size="24" id="svg_3" y="90" x="72" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" stroke="#000000" fill="#000000">Abnormal X</text>
-//  <text xml:space="preserve" text-anchor="middle" font-family="serif" font-size="24" id="svg_4" y="187" x="136" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="0" stroke="#000000" fill="#000000"/>
-
     }
 
     private void writeFooter(Writer writer) throws IOException {
