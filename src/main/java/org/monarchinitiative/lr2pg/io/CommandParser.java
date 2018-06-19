@@ -5,6 +5,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.command.*;
 
+import java.io.File;
+
 /**
  * Command line parser designed to generate and initialize {@link Command} objects.
  *
@@ -50,6 +52,9 @@ public class CommandParser {
     private String termList=null;
     /** Path to the file produced by G2GIT - with frequencies for background pathogenic mutations per gene */
     private String backgroundFreq=null;
+
+    private static final String DEFAULT_BACKGROUND_FREQ=String.format("%s%s%s",
+            DEFAULT_DATA_DOWNLOAD_DIRECTORY, File.separator,"background-freq.txt");
 
     /**The command object.*/
     private Command command = null;
@@ -196,12 +201,16 @@ public class CommandParser {
                         phenoGenoUsage();
                         System.exit(1);
                     }
+                    if (backgroundFreq==null) {
+                        backgroundFreq=DEFAULT_BACKGROUND_FREQ;
+                    }
                     this.command = new SimulatePhenoGeneCaseCommand(this.dataDownloadDirectory,
                             this.entrezGeneId,
                             this.varcount,
                             this.varpath,
                             this.diseaseId,
-                            this.termList);
+                            this.termList,
+                            this.backgroundFreq);
                     break;
                 default:
                     printUsage(String.format("Did not recognize command: \"%s\"", mycommand));

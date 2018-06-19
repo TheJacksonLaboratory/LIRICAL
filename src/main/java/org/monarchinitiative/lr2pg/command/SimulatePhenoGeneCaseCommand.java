@@ -6,7 +6,9 @@ import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.io.Disease2GeneDataIngestor;
+import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.lr2pg.io.HpoDataIngestor;
+import org.monarchinitiative.lr2pg.model.Model;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -32,11 +34,15 @@ public class SimulatePhenoGeneCaseCommand implements Command {
     /** List of HPO terms representing phenoytpic abnormalities. */
     private final List<TermId> hpoTerms;
 
+    private final String backgroundFreqPath;
+
+    private Model model;
+
 
     /**
      * @param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
      */
-    public SimulatePhenoGeneCaseCommand(String datadir, String gene, int varcount, double varpath, String disease, String HpoTermList) {
+    public SimulatePhenoGeneCaseCommand(String datadir, String gene, int varcount, double varpath, String disease, String HpoTermList,String backgroundFreq) {
         dataDirectoryPath = datadir;
         this.geneSymbol = gene;
         this.variantCount = varcount;
@@ -48,6 +54,7 @@ public class SimulatePhenoGeneCaseCommand implements Command {
             TermId tid = TermId.constructWithPrefix(hpo);
             hpoTerms.add(tid);
         }
+        this.backgroundFreqPath=backgroundFreq;
     }
 
     public void execute() {
@@ -56,14 +63,17 @@ public class SimulatePhenoGeneCaseCommand implements Command {
         HpoOntology ontology=ingestor.getOntology();
         Map<TermId,HpoDisease> diseaseMap=ingestor.getDiseaseMap();
         Disease2GeneDataIngestor d2gIngestor = new Disease2GeneDataIngestor(this.dataDirectoryPath);
-        Multimap<TermId,TermId> gene2diseaseMultimap=d2gIngestor.getGene2diseaseMultimap();
+        Multimap<TermId,TermId> disease2geneMultimap=d2gIngestor.getDisease2geneMultimap();
+        GenotypeDataIngestor gdingestor = new GenotypeDataIngestor(backgroundFreqPath);
+        Map<TermId,Double> gene2backgroundFrequency= gdingestor.parse();
         HpoPhenoGenoCaseSimulator simulator = new HpoPhenoGenoCaseSimulator(ontology,
                 diseaseMap,
-                gene2diseaseMultimap,
+                disease2geneMultimap,
                 geneSymbol,
                 variantCount,
                 meanVariantPathogenicity,
-                hpoTerms);
+                hpoTerms,
+                gene2backgroundFrequency);
         simulator.debugPrint();
         try {
             simulator.evaluateCase(diseaseCurie);

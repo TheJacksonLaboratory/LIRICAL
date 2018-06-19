@@ -15,8 +15,10 @@ public class Disease2GeneDataIngestor {
 
     private final String GENE_INFO_FILENAME="Homo_sapiens_gene_info.gz";
     private final String MIM2GENE_MEDGEN_FILENAME="mim2gene_medgen";
-    /* key: a gene CURIE such as NCBIGene:123; value: a collection of disease CURIEs such as OMIM:600123; */
+    /* key: a gene CURIE such as NCBIGene:123; value: a collection of disease CURIEs such as OMIM:600123. */
     private Multimap<TermId,TermId> gene2diseaseMultimap;
+    /* key: disease CURIEs such as OMIM:600123; value: a collection of gene CURIEs such as NCBIGene:123.  */
+    private Multimap<TermId,TermId> disease2geneMultimap;
 
     public Disease2GeneDataIngestor(String datadir) {
         this.dataDirectoryPath=datadir;
@@ -32,13 +34,17 @@ public class Disease2GeneDataIngestor {
                 this.dataDirectoryPath,
                 File.separator,
                 MIM2GENE_MEDGEN_FILENAME);
-        //Homo_sapiens_gene_info.gz
         HpoDisease2GeneParser parser = new HpoDisease2GeneParser(geneinfopath,mim2gene_medgenPath);
-        this.gene2diseaseMultimap = parser.getGene2DiseaseIdMap();
+        this.gene2diseaseMultimap = parser.getGeneId2DiseaseIdMap();
+        this.disease2geneMultimap = parser.getDiseaseId2GeneIdMap();
     }
 
     public Multimap<TermId,TermId> getGene2diseaseMultimap() {
         return this.gene2diseaseMultimap;
+    }
+
+    public Multimap<TermId,TermId> getDisease2geneMultimap() {
+        return this.disease2geneMultimap;
     }
 
 }

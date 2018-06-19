@@ -41,7 +41,7 @@ public class BackgroundForegroundTermFrequency {
      * @param onto The HPO ontology object
      * @param diseases List of all diseases for this simulation
      */
-    BackgroundForegroundTermFrequency(HpoOntology onto, Map<TermId, HpoDisease> diseases) {
+    public BackgroundForegroundTermFrequency(HpoOntology onto, Map<TermId, HpoDisease> diseases) {
         this.ontology=onto;
         this.diseaseMap = diseases;
         initializeFrequencyMap();

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  * @author <a href="mailto:vida.ravanmehr@jax.org">Vida Ravanmehr</a>
- * @version 0.3.3 (2018-05-15)
+ * @version 0.3.4 (2018-06-18)
  */
 public class TestResult implements Comparable<TestResult> {
 
@@ -26,6 +26,13 @@ public class TestResult implements Comparable<TestResult> {
      * that is tested for the {@link HpoCase} object.
      */
     private final ImmutableList<Double> results;
+
+    /** Result of the lieklhood ratio test for the genotype. */
+    private Double genotypeLR=null;
+
+    private String entrezGeneId=null;
+
+
     /**
      * This is the product of the individual test results
      */
@@ -56,7 +63,8 @@ public class TestResult implements Comparable<TestResult> {
      * @return the composite likelihood ratio (product of the LRs of the individual tests).
      */
     public double getCompositeLR() {
-        return compositeLR;
+        if (genotypeLR!=null) return genotypeLR*compositeLR;
+        else return compositeLR;
     }
 
     /**
@@ -106,7 +114,7 @@ public class TestResult implements Comparable<TestResult> {
     @Override
     public String toString() {
         String resultlist = results.stream().map(String::valueOf).collect(Collectors.joining(";"));
-        return String.format("%s: %.2f [%s]", diseaseCurie, compositeLR, resultlist);
+        return String.format("%s: %.2f [%s]", diseaseCurie, getCompositeLR(), resultlist);
     }
 
     /**
@@ -120,5 +128,20 @@ public class TestResult implements Comparable<TestResult> {
     /** @return name of the disease being tested. */
     public TermId getDiseaseCurie() {
         return diseaseCurie;
+    }
+
+    public void setGeneLikelihoodRatio(Double LR, String geneId) {
+        this.genotypeLR=LR;
+        this.entrezGeneId=geneId;
+    }
+
+    public boolean hasGenotype(){ return genotypeLR!=null;}
+
+    public Double getGenotypeLR() {
+        return genotypeLR;
+    }
+
+    public String getEntrezGeneId() {
+        return entrezGeneId;
     }
 }
