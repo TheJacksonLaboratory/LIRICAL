@@ -1,7 +1,5 @@
 package org.monarchinitiative.lr2pg.io;
 
-import com.google.common.collect.ImmutableMap;
-import org.monarchinitiative.lr2pg.genotype.Genotype2LR;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
@@ -25,7 +23,7 @@ public class GenotypeDataIngestor {
     /**
      * symbol	geneID	freqsum-benign	count-benign	freqsum-path	count-path
 
-     * @return
+     * @return a map with key: EntrezGene id, value: sum of frequencies
      */
     public Map<TermId,Double> parse() {
         //ImmutableMap.Builder<TermId,Double> builder = new ImmutableMap.Builder<>();

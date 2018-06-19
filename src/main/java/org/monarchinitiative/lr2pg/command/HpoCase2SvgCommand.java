@@ -11,8 +11,6 @@ import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.io.IOException;
-
 /**
  * Analyze the likelihood ratios for a case represented by a list of HPO terms.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
@@ -50,9 +48,6 @@ public class HpoCase2SvgCommand implements Command {
         } catch (Lr2pgException e) {
             e.printStackTrace();
             System.err.println("Could not simulate case");
-        } catch (IOException ioe) {
-            System.err.println("I/O issue");
-            ioe.printStackTrace();
         }
     }
 

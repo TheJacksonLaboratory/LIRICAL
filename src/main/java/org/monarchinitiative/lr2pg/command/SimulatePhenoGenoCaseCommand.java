@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class SimulatePhenoGeneCaseCommand implements Command {
+public class SimulatePhenoGenoCaseCommand implements Command {
     private static final Logger logger = LogManager.getLogger();
     /**
      * Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
@@ -42,7 +42,7 @@ public class SimulatePhenoGeneCaseCommand implements Command {
     /**
      * @param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
      */
-    public SimulatePhenoGeneCaseCommand(String datadir, String gene, int varcount, double varpath, String disease, String HpoTermList,String backgroundFreq) {
+    public SimulatePhenoGenoCaseCommand(String datadir, String gene, int varcount, double varpath, String disease, String HpoTermList, String backgroundFreq) {
         dataDirectoryPath = datadir;
         this.geneSymbol = gene;
         this.variantCount = varcount;

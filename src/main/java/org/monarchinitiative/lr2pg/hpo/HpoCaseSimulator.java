@@ -9,14 +9,9 @@ import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoDataIngestor;
 import org.monarchinitiative.lr2pg.likelihoodratio.LrEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
-import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.*;
-import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
-import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
