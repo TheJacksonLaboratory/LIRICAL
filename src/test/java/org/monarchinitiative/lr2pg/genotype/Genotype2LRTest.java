@@ -21,14 +21,14 @@ public class Genotype2LRTest {
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String backgroundFreqPath="/home/robinp/IdeaProjects/LR2PG/background-freq.txt";
         GenotypeDataIngestor ingestor = new GenotypeDataIngestor(backgroundFreqPath);
-        gene2backgroundFrequency=ingestor.parse();
+//        gene2backgroundFrequency=ingestor.parse();
     }
 
-
-    @Test
-    public void testit(){
-        assertNotNull(gene2backgroundFrequency);
-    }
+//
+//    @Test
+//    public void testit(){
+//        assertNotNull(gene2backgroundFrequency);
+//    }
 
 
 }
