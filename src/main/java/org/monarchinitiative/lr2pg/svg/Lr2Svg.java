@@ -170,7 +170,11 @@ public class Lr2Svg {
      * @return Where to place the line underneath the boxes.
      */
     private int calculateHeightOfMiddleLine() {
+        Objects.requireNonNull(result);
         int n = result.getNumberOfTests();
+        if (result.hasGenotype()) {
+            n++; // add another unit for the genotype
+        }
         return 2*BOX_OFFSET + n*(BOX_HEIGHT+BOX_OFFSET);
     }
 

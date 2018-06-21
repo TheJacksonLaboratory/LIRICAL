@@ -51,10 +51,11 @@ public class BackgroundForegroundTermFrequency {
      * Calculate and return the likelihood ratio of observing the HPO feature tid in an individual
      * with the disease "diseaseName"
      * @param tid An HPO phenotypic abnormality
-     * @param disease the disease
+     * @param diseaseId The CURIE (e.g., OMIM:600300) of the disease
      * @return the likelihood ratio of observing the HPO term in the diseases
      */
-    public double getLikelihoodRatio(TermId tid, HpoDisease disease) {
+    public double getLikelihoodRatio(TermId tid, TermId diseaseId) {
+        HpoDisease disease = this.diseaseMap.get(diseaseId);
         double numerator=getFrequencyOfTermInDisease(disease,tid);
         double denominator=getBackgroundFrequency(tid);
         return numerator/denominator;

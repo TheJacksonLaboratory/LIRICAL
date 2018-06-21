@@ -13,7 +13,7 @@ import java.util.Random;
  * This class will store such a collection of values.
  * NOTE THIS IS JUST FOR DEVLEOPMENT/TESTING/DEBUGGING, in the real application we get this dataq from a VCF file
  */
-public class GenotypeCollection {
+public class VcfSimulator {
     /** Key: the termId of a gene; double -- count of variants in pathogenic bin
      * multiplied by average pathogenicity score. */
     private ImmutableMap<TermId,Double> genotypeMap;
@@ -25,7 +25,7 @@ public class GenotypeCollection {
     private static final double EPSILON=0.000001;
 
 
-    public GenotypeCollection(Collection<TermId> geneIds,TermId geneId, int varcount,double path) {
+    public VcfSimulator(Collection<TermId> geneIds, TermId geneId, int varcount, double path) {
         ImmutableMap.Builder<TermId,Double> builder = new ImmutableMap.Builder<>();
         double lambda = varcount*path;
         lambda=lambda>0.0 ? lambda : EPSILON;

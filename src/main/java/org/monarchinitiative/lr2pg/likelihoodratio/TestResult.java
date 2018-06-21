@@ -60,7 +60,7 @@ public class TestResult implements Comparable<TestResult> {
 
     /** @return the total count of tests performed (including one for the genotype if done).*/
     public int getNumberOfTests() {
-        return genotypeLR==null?results.size():results.size()+1;
+        return results.size();
     }
 
     /** @return the pretest odds.*/

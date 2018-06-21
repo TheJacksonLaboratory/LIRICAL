@@ -7,7 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoDataIngestor;
-import org.monarchinitiative.lr2pg.likelihoodratio.LrEvaluator;
+import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.formats.hpo.*;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -33,7 +33,7 @@ public class HpoCaseSimulator {
     /** Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
     private final Map<TermId,HpoDisease> diseaseMap;
     /** Object to evaluate the results of differential diagnosis by LR analysis. */
-    private LrEvaluator evaluator;
+    private CaseEvaluator evaluator;
     /** Number of HPO terms to use for each simulated case. */
     private final int n_terms_per_case;
     /** Number of "noise" (unrelated) HPO terms to use for each simulated case. */
@@ -217,9 +217,10 @@ public class HpoCaseSimulator {
     public int simulateCase(HpoDisease disease) throws Lr2pgException {
         this.currentCase = createSimulatedCase(disease);
         // the following evaluates the case for each disease with equal pretest probabilities.
-        this.evaluator = new LrEvaluator(this.currentCase, diseaseMap,ontology,bftfrequency);
-        evaluator.evaluate();
-        return evaluator.getRank(disease);
+//        this.evaluator = new CaseEvaluator(this.currentCase, diseaseMap,ontology,bftfrequency);
+//        evaluator.evaluate();
+//        return evaluator.getRank(disease.getDiseaseDatabaseId());
+        return 42;// todo - implement phenotype only version
     }
 
 

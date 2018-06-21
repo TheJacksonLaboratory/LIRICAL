@@ -8,7 +8,6 @@ import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.io.Disease2GeneDataIngestor;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.lr2pg.io.HpoDataIngestor;
-import org.monarchinitiative.lr2pg.model.Model;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -36,7 +35,7 @@ public class SimulatePhenoGenoCaseCommand implements Command {
 
     private final String backgroundFreqPath;
 
-    private Model model;
+
 
 
     /**
@@ -74,7 +73,6 @@ public class SimulatePhenoGenoCaseCommand implements Command {
                 meanVariantPathogenicity,
                 hpoTerms,
                 gene2backgroundFrequency);
-        simulator.debugPrint();
         try {
             simulator.evaluateCase(diseaseCurie);
         } catch (Lr2pgException e) {
