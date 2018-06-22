@@ -43,9 +43,9 @@ public class GenotypeDataIngestor {
                     continue; // no EntrezId available -- this happens with many genes
                 }
                 TermId entrezId=new TermId(ENTREZ_GENE_PREFIX,entrezNumber);
-                String fsumpath=a[9];
+                String fsumpath=a[5];
                 try {
-                    Double pathSum = Double.parseDouble(a[9]);
+                    Double pathSum = Double.parseDouble(fsumpath);
                     //builder.put(entrezId,pathSum);
                     gene2freq.put(entrezId,pathSum);
                 } catch (NumberFormatException e) {
