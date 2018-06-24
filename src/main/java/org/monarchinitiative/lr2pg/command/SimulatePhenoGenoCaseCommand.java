@@ -4,10 +4,13 @@ import com.google.common.collect.Multimap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
+import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.io.Disease2GeneDataIngestor;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.lr2pg.io.HpoDataIngestor;
+import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
+import org.monarchinitiative.lr2pg.svg.Lr2Svg;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -41,7 +44,13 @@ public class SimulatePhenoGenoCaseCommand implements Command {
     /**
      * @param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
      */
-    public SimulatePhenoGenoCaseCommand(String datadir, String gene, int varcount, double varpath, String disease, String HpoTermList, String backgroundFreq) {
+    public SimulatePhenoGenoCaseCommand(String datadir,
+                                        String gene,
+                                        int varcount,
+                                        double varpath,
+                                        String disease,
+                                        String HpoTermList,
+                                        String backgroundFreq) {
         dataDirectoryPath = datadir;
         this.geneSymbol = gene;
         this.variantCount = varcount;
@@ -74,8 +83,14 @@ public class SimulatePhenoGenoCaseCommand implements Command {
                 hpoTerms,
                 gene2backgroundFrequency);
 
-        simulator.evaluateCase(diseaseCurie);
-
+        HpoCase hpocase = simulator.evaluateCase();
+        hpocase.outputLrToShell(diseaseCurie,ontology);
+        Lr2Svg lr2svg = new Lr2Svg(hpocase,diseaseCurie,ontology);
+        // Output file
+        String fname = diseaseCurie.getIdWithPrefix().replace(":","_") + ".svg";
+        lr2svg.writeSvg(fname);
     }
+
+
 
 }

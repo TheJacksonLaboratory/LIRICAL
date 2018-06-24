@@ -23,7 +23,11 @@ public class Lr2Svg {
     /** An object representing the Human Phenotype Ontology */
     private final HpoOntology ontology;
     private final HpoCase hpocase;
+
+    private final TermId diseaseCURIE;
+
     private final TestResult result;
+
     /** Height of entire image in px */
     private final static int HEIGHT=480;
     /** width of the bars part of the image in px */
@@ -43,9 +47,10 @@ public class Lr2Svg {
 
     private final int heightOfMiddleLine;
 
-    public Lr2Svg(HpoCase hcase,TestResult result,HpoOntology ont) {
+    public Lr2Svg(HpoCase hcase,TermId diseaseId,HpoOntology ont) {
         this.hpocase=hcase;
-        this.result=result;
+        this.diseaseCURIE=diseaseId;
+        this.result = hpocase.getResult(diseaseId);
         this.ontology=ont;
         this.heightOfMiddleLine=calculateHeightOfMiddleLine();
     }

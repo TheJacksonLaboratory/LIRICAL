@@ -5,10 +5,12 @@ import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.DecimalFormat;
+import java.util.*;
 
 
 /**
@@ -27,15 +29,15 @@ public final class HpoCase {
     private final Sex sex;
     /** Age of the proband, if known. */
     private final Age age;
-    /** a set of test results -- the evaluation of each HPO term for the disease. */
-    private final List<TestResult> results;
 
-    private HpoCase(List<TermId> observedAbn,  List<TermId> excludedAbn, Sex sex, Age age) {
+    private final Map<TermId,TestResult> disease2resultMap;
+
+    private HpoCase(List<TermId> observedAbn,  List<TermId> excludedAbn, Map<TermId,TestResult> d2rmap, Sex sex, Age age) {
         this.observedAbnormalities=observedAbn;
         this.excludedAbnormalities=excludedAbn;
+        this.disease2resultMap=d2rmap;
         this.sex=sex;
         this.age=age;
-        this.results=new ArrayList<>();
     }
 
 
@@ -47,16 +49,63 @@ public final class HpoCase {
     public Sex getSex() { return sex;  }
     /** The {@link Age} of the person being evaluated.*/
     public Age getAge() { return age; }
-    /** @return List of {@link TestResult} objects for each diseases in the differential diagnosis. */
-    public List<TestResult> getResults() { return results; }
+    /** @return Sort List of {@link TestResult} objects for each diseases in the differential diagnosis. */
+    public List<TestResult> getResults() {
+        List<TestResult> trlist = new ArrayList<>(this.disease2resultMap.values());
+        trlist.sort(Collections.reverseOrder());
+        return trlist;
+    }
     /** * @return total number of positive and negative phenotype observations for this case.*/
     public int getNumberOfObservations() {
         return observedAbnormalities.size() + excludedAbnormalities.size();
     }
 
+    public TestResult getResult(TermId diseaseId) {
+        return this.disease2resultMap.get(diseaseId);
+    }
 
+    /**
+     * @param diseaseId CURIE (e.g., OMIM:600100) of the disease whose rank we want to know
+     * @return the rank of the disease within all of the test results
+     */
+    public int getRank(TermId diseaseId){
+        TestResult result = this.disease2resultMap.get(diseaseId);
+        return result==null?Integer.MAX_VALUE : result.getRank();
+    }
 
+    /** Output the results for a specific HPO disease.
+     * This is ugly and just for development. TODO refactor and put this somewhere else or delete it*/
+    public void outputLrToShell(TermId diseaseId, HpoOntology ontology) {
+        int rank = getRank(diseaseId);
+        System.err.println("Rank " + rank);
+        TestResult r = getResult(diseaseId);
+        DecimalFormat df = new DecimalFormat("0.000E0");
+        System.err.println(String.format("Pretest probability: %s; Composite LR: %.2f; Posttest probability: %s ",
+                niceFormat(r.getPretestProbability()),
+                r.getCompositeLR(),
+                niceFormat(r.getPosttestProbability())));
+        for (int i = 0; i < r.getNumberOfTests(); i++) {
+            double ratio = r.getRatio(i);
+            TermId tid = getObservedAbnormalities().get(i);
+            String term = String.format("%s [%s]", ontology.getTermMap().get(tid).getName(), tid.getIdWithPrefix());
+            System.err.println(String.format("%s: ratio=%s", term, niceFormat(ratio)));
+        }
+        if (r.hasGenotype()) {
+            System.err.println(String.format("Genotype LR for %s: %f", r.getEntrezGeneId(), r.getGenotypeLR()));
+        }
+        System.err.println();
+    }
 
+    private String niceFormat(double d) {
+        DecimalFormat df = new DecimalFormat("0.000E0");
+        if (d > 1.0) {
+            return String.format("%.2f", d);
+        } else if (d > 0.005) {
+            return String.format("%.4f", d);
+        } else {
+            return df.format(d);
+        }
+    }
 
 
     /** Convenience class to construct an {@link HpoCase} object. */
@@ -64,7 +113,9 @@ public final class HpoCase {
         /** List of Hpo terms for our case. */
         private final List<TermId> observedAbnormalities;
         /** List of excluded Hpo terms for our case. */
-        private List<TermId> excludedAbnormalities;
+        private List<TermId> excludedAbnormalities=null;
+        /** List of results . */
+        private Map<TermId,TestResult> testResultMap;
         /** One of Male, Female, Unknown. See {@link Sex}. */
         private Sex sex;
         /** Age of the proband, if known. */
@@ -92,8 +143,14 @@ public final class HpoCase {
             return this;
         }
 
+        public Builder results(Map<TermId,TestResult> trlist) {
+            this.testResultMap =trlist;
+            return this;
+        }
+
         public HpoCase build() {
-            return new HpoCase(observedAbnormalities,excludedAbnormalities,sex,age);
+            Objects.requireNonNull(testResultMap);
+            return new HpoCase(observedAbnormalities,excludedAbnormalities, testResultMap,sex,age);
         }
     }
 

@@ -22,34 +22,25 @@ import java.util.*;
  */
 public class HpoPhenoGenoCaseSimulator {
     private static final Logger logger = LogManager.getLogger();
-
-
     /** Object to evaluate the results of differential diagnosis by LR analysis. */
     private final CaseEvaluator evaluator;
-
-     private final int variantCount;
-
-    private final double meanVariantPathogenicity;
-    /** If true, we exchange each of the non-noise terms with a direct parent except if that would mean going to
-     * the root of the phenotype ontology.
-     */
-    private boolean addTermImprecision = false;
-    /** The proportion of cases at rank 1 in the current simulation */
-    private double proportionAtRank1=0.0;
-
-
-
-
     private TermPrefix NCBI_GENE_PREFIX=new TermPrefix("NCBIGene");
+    /** This simulation assumes there is a pathogenic mutation in one gene (this one). The EntrezId is initialized in the
+     * constructor.
+     */
     private final TermId entrezGeneId;
 
-
-
-    /** Root term id in the phenotypic abnormality subontology. */
-    private final static TermId PHENOTYPIC_ABNORMALITY = TermId.constructWithPrefix("HP:0000118");
+    HpoCase hpocase;
 
     /**
-     * The constructor
+     * @param ontology reference to the {@link HpoOntology} object
+     * @param diseaseMap key: a disease CURIE (e.g., OMIM:600100); value-corresponding disease object
+     * @param disease2geneMultimap key: id of a disease; value: COllection of EntrezGene ids that correspond to the disease (zero, one, or many, but not null)
+     * @param entrezGeneNumber String representing the EntrezGene id, e.g., "2200" for NCBIGene:2200.
+     * @param varcount Count of called pathogenic variants in this gene
+     * @param varpath Mean pathgenicity score of all pathogenic variants in this gene
+     * @param hpoTerms List of phenotypic abnormalities seen in this disease
+     * @param gene2backgroundFrequency Background (population) frequencies of called pathogenic variants in genes.
      */
     public HpoPhenoGenoCaseSimulator(HpoOntology ontology,
                                      Map<TermId,HpoDisease> diseaseMap,
@@ -70,23 +61,28 @@ public class HpoPhenoGenoCaseSimulator {
                 .diseaseMap(diseaseMap)
                 .disease2geneMultimap(disease2geneMultimap)
                 .genotypeMap(genotypes.getGenotypeMap())
+                .phenotypeLr(phenoLr)
                 .genotypeLr(genoLr);
 
         this.evaluator = caseBuilder.build();
 
 
-        this.variantCount = varcount;
-        this.meanVariantPathogenicity = varpath;
     }
 
+    public TestResult getResult(TermId diseaseId) {
+        return this.evaluator.getResult(diseaseId);
+    }
+
+//    public HpoCase getHpoCase() {
+//        return evaluator.getHpoCase();
+//    }
 
 
-
-    public int evaluateCase(TermId diseaseId) {
-        evaluator.evaluate();
-        TestResult result = evaluator.getResult( diseaseId);
-        System.err.println(diseaseId.getIdWithPrefix() +" "+ result);
-        return evaluator.getRank(diseaseId);
+    public HpoCase evaluateCase() {
+        return evaluator.evaluate();
+//        TestResult result = evaluator.getResult( diseaseId);
+//        System.err.println(diseaseId.getIdWithPrefix() +" "+ result);
+//        return evaluator.getRank(diseaseId);
     }
 
 
