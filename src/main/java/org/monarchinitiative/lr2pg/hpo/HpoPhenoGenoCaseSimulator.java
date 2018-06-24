@@ -6,6 +6,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
+import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
+import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -16,14 +18,14 @@ import java.util.*;
 
 /**
  * This class is intended to try out some architectures for the genotype-phenotype
- * LR test. Much of the code is copied from {@link HpoCaseSimulator}
+ * LR test. Much of the code is copied from {@link PhenotypeOnlyHpoCaseSimulator}
  */
 public class HpoPhenoGenoCaseSimulator {
     private static final Logger logger = LogManager.getLogger();
 
 
     /** Object to evaluate the results of differential diagnosis by LR analysis. */
-    private CaseEvaluator evaluator;
+    private final CaseEvaluator evaluator;
 
      private final int variantCount;
 
@@ -60,12 +62,16 @@ public class HpoPhenoGenoCaseSimulator {
         this.entrezGeneId = new TermId(NCBI_GENE_PREFIX,entrezGeneNumber);
         VcfSimulator genotypes = new VcfSimulator(disease2geneMultimap.keySet(), entrezGeneId,varcount,varpath);
 
+        PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
+        GenotypeLikelihoodRatio genoLr = new GenotypeLikelihoodRatio(gene2backgroundFrequency);
+
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(hpoTerms)
                 .ontology(ontology)
                 .diseaseMap(diseaseMap)
                 .disease2geneMultimap(disease2geneMultimap)
                 .genotypeMap(genotypes.getGenotypeMap())
-                .gene2backgroundFrequency(gene2backgroundFrequency);
+                .genotypeLr(genoLr);
+
         this.evaluator = caseBuilder.build();
 
 
@@ -76,7 +82,7 @@ public class HpoPhenoGenoCaseSimulator {
 
 
 
-    public int evaluateCase(TermId diseaseId) throws Lr2pgException {
+    public int evaluateCase(TermId diseaseId) {
         evaluator.evaluate();
         TestResult result = evaluator.getResult( diseaseId);
         System.err.println(diseaseId.getIdWithPrefix() +" "+ result);

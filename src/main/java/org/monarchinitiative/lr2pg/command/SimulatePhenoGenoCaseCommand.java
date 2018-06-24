@@ -29,7 +29,7 @@ public class SimulatePhenoGenoCaseCommand implements Command {
 
     private final double meanVariantPathogenicity;
 
-    private TermId diseaseCurie;
+    private final TermId diseaseCurie;
     /** List of HPO terms representing phenoytpic abnormalities. */
     private final List<TermId> hpoTerms;
 
@@ -73,11 +73,9 @@ public class SimulatePhenoGenoCaseCommand implements Command {
                 meanVariantPathogenicity,
                 hpoTerms,
                 gene2backgroundFrequency);
-        try {
-            simulator.evaluateCase(diseaseCurie);
-        } catch (Lr2pgException e) {
-            e.printStackTrace();
-        }
+
+        simulator.evaluateCase(diseaseCurie);
+
     }
 
 }

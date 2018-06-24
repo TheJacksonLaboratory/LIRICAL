@@ -37,10 +37,13 @@ public class Lr2Svg {
 
     private final static int BOX_HEIGHT=15;
 
+    private final static String RGB_GREEN="#00FF00";
+    private final static String RGB_RED="#FF0000";
+
 
     private final int heightOfMiddleLine;
 
-    public Lr2Svg(HpoCase hcase,  TestResult result,HpoOntology ont) {
+    public Lr2Svg(HpoCase hcase,TestResult result,HpoOntology ont) {
         this.hpocase=hcase;
         this.result=result;
         this.ontology=ont;
@@ -64,6 +67,13 @@ public class Lr2Svg {
         }
     }
 
+    /**
+     * Writes a horizontal scale ("X axis") with tick points.
+     * @param writer File handle
+     * @param maxAmp
+     * @param scaling
+     * @throws IOException
+     */
     private void writeScale(Writer writer, double maxAmp, double scaling) throws IOException {
         int Y = heightOfMiddleLine +  MIN_VERTICAL_OFFSET + BOX_OFFSET*4;
         int maxTick = (int) Math.ceil(maxAmp);
@@ -102,6 +112,29 @@ public class Lr2Svg {
 
     }
 
+
+    private void writeDiamond(Writer writer,int X, int Y) throws IOException
+    {
+        int diamondsize=6;
+        writer.write(String.format("<polygon " +
+                        "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:lime;stroke:purple;stroke-width:1\" />\n",
+                X,
+                Y,
+                X+diamondsize,
+                Y+diamondsize,
+                X,
+                Y+2*diamondsize,
+                X-diamondsize,
+                Y+diamondsize));
+    }
+
+
+    /**
+     * Writes the set of boxes representing the log10 amplitudes of the likelihood ratios for individual
+     * features.
+     * @param writer
+     * @throws IOException
+     */
     private void writeLrBoxes(Writer writer) throws IOException {
         int currentY= MIN_VERTICAL_OFFSET + BOX_OFFSET*2;
         int midline=WIDTH/2;
@@ -134,24 +167,17 @@ public class Lr2Svg {
             if ((int)boxwidth==0) {
                 int X=(int)xstart;
                 int Y=currentY;
-                int diamondsize=6;
-                writer.write(String.format("<polygon " +
-                                "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:lime;stroke:purple;stroke-width:1\" />\n",
-                        X,
-                        Y,
-                        X+diamondsize,
-                        Y+diamondsize,
-                        X,
-                        Y+2*diamondsize,
-                        X-diamondsize,
-                        Y+diamondsize));
+                writeDiamond(writer,X,Y);
             } else {
+                // red for features that do not support the diagnosis, green for those that do
+                String color = xstart<midline ? RGB_RED : RGB_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
-                                "stroke-width=\"1\" stroke=\"#000000\" fill=\"#FF0000\"/>\n",
+                                "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
                         BOX_HEIGHT,
                         (int) boxwidth,
                         currentY,
-                        (int) xstart));
+                        (int) xstart,
+                        color));
             }
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);
@@ -161,6 +187,39 @@ public class Lr2Svg {
                         currentY + BOX_HEIGHT,
                         label));
             currentY += BOX_HEIGHT+BOX_OFFSET;
+        }
+        if (result.hasGenotype()) {
+            double ratio = result.getGenotypeLR();
+            double lgratio = Math.log10(ratio);
+            String color = lgratio<0?RGB_RED:RGB_GREEN;
+            double boxwidth=lgratio*scaling;
+            double xstart = midline;
+            if (ratio<0) {
+                boxwidth=Math.abs(boxwidth);
+                xstart = 1+ midline - boxwidth;
+            }
+            if ((int)boxwidth==0) {
+                int X=(int)xstart;
+                int Y=currentY;
+                writeDiamond(writer,X,Y);
+            } else {
+                // red for features that do not support the diagnosis, green for those that do
+                color = xstart<midline ? RGB_RED : RGB_GREEN;
+                writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
+                                "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
+                        BOX_HEIGHT,
+                        (int) boxwidth,
+                        currentY,
+                        (int) xstart,
+                        color));
+            }
+            // add label of Genotype
+            String id = String.format("NCBIGene:%s",result.getEntrezGeneId());
+            // TODO add Gene Symbol
+            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
+                    WIDTH,
+                    currentY + BOX_HEIGHT,
+                    id));
         }
         writeScale(writer,maxAmp,scaling);
     }
@@ -173,7 +232,7 @@ public class Lr2Svg {
         Objects.requireNonNull(result);
         int n = result.getNumberOfTests();
         if (result.hasGenotype()) {
-            n++; // add another unit for the genotype
+            n+=2; // add another unit for the genotype
         }
         return 2*BOX_OFFSET + n*(BOX_HEIGHT+BOX_OFFSET);
     }

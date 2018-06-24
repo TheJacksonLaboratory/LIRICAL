@@ -1,6 +1,8 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -18,7 +20,7 @@ import java.util.stream.Collectors;
  * @version 0.3.4 (2018-06-18)
  */
 public class TestResult implements Comparable<TestResult> {
-
+    private static final Logger logger = LogManager.getLogger();
     /**
      * A list of results for the tests performed in a {@link HpoCase} case.
      * To save space, we only record the result of the test, and we assume that the order of the test is the same
@@ -26,7 +28,6 @@ public class TestResult implements Comparable<TestResult> {
      * that is tested for the {@link HpoCase} object.
      */
     private final ImmutableList<Double> results;
-
     /** Result of the lieklhood ratio test for the genotype. */
     private Double genotypeLR=null;
     /** The id of the gene associated with ths disease being tested here. */
@@ -37,6 +38,8 @@ public class TestResult implements Comparable<TestResult> {
     private final TermId diseaseCurie;
     /** The probability of some result before the first test is done.*/
     private final double pretestProbability;
+    /** The overall rank of the the result withint the differential diagnosis. */
+    private int rank;
 
     /**
      * The constructor initializes the variables and calculates {@link #compositeLR}
@@ -52,6 +55,27 @@ public class TestResult implements Comparable<TestResult> {
         // the composite LR is the product of the individual LR's
         compositeLR=reslist.stream().reduce(1.0, (a, b) -> a * b);
     }
+
+    /**
+     * This constructor should be used if we have a genotype for this gene/disease.
+     * @param reslist list of individual test results
+     * @param diseaseId name of the disease being tested
+     * @param genotypeLr LR result for the genotype
+     * @param geneId gene id of the gene being tested
+     * @param pretest pretest probability of the disease
+     */
+    public TestResult(ImmutableList<Double> reslist, TermId diseaseId, Double genotypeLr,TermId geneId,double pretest) {
+        results = reslist;
+        diseaseCurie = diseaseId;
+        this.pretestProbability = pretest;
+        this.genotypeLR=genotypeLr;
+        this.entrezGeneId=geneId;
+        // the composite ratio is equal to the product of the phenotype LR's
+        // multiplied by the genotype LR.
+        compositeLR=reslist.stream().reduce(1.0, (a, b) -> a * b) * genotypeLr;
+    }
+
+
 
     /** @return the composite likelihood ratio (product of the LRs of the individual tests).*/
     public double getCompositeLR() {
@@ -84,6 +108,13 @@ public class TestResult implements Comparable<TestResult> {
         return po / (1 + po);
     }
 
+    public int getRank() {
+        return rank;
+    }
+
+    public void setRank(int rank) {
+        this.rank = rank;
+    }
 
     /**
      * Compare two TestResult objects based on their {@link #compositeLR} value.
@@ -113,11 +144,6 @@ public class TestResult implements Comparable<TestResult> {
     /** @return name of the disease being tested. */
     public TermId getDiseaseCurie() {
         return diseaseCurie;
-    }
-
-    public void setGeneLikelihoodRatio(Double LR, TermId geneId) {
-        this.genotypeLR=LR;
-        this.entrezGeneId=geneId;
     }
 
     public boolean hasGenotype(){ return genotypeLR!=null;}

@@ -16,7 +16,7 @@ import java.util.Random;
 public class VcfSimulator {
     /** Key: the termId of a gene; double -- count of variants in pathogenic bin
      * multiplied by average pathogenicity score. */
-    private ImmutableMap<TermId,Double> genotypeMap;
+    private final ImmutableMap<TermId,Double> genotypeMap;
 
     private static final double meanLambda=0.05;
 

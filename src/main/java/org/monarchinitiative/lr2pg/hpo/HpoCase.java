@@ -27,36 +27,6 @@ public final class HpoCase {
     private final Sex sex;
     /** Age of the proband, if known. */
     private final Age age;
-
-    public List<TermId> getObservedAbnormalities() {
-        return observedAbnormalities;
-    }
-
-    public List<TermId> getExcludedAbnormalities() {
-        return excludedAbnormalities;
-    }
-
-    public Sex getSex() {
-        return sex;
-    }
-
-    public Age getAge() {
-        return age;
-    }
-
-    public List<TestResult> getResults() {
-        return results;
-    }
-
-    /**
-     * @return total number of positive and negative phenotype observations for this case.
-     */
-    public int getNumberOfObservations() {
-        return observedAbnormalities.size() + excludedAbnormalities.size();
-    }
-
-
-
     /** a set of test results -- the evaluation of each HPO term for the disease. */
     private final List<TestResult> results;
 
@@ -69,7 +39,27 @@ public final class HpoCase {
     }
 
 
+    /** @return A list of the HPO terms representing the phenotypic abnormalities in the person being evaluated.*/
+    public List<TermId> getObservedAbnormalities() { return observedAbnormalities;  }
+    /** @return A list of the HPO terms representing abnormalities that were excluded in the person being evaluated.*/
+    public List<TermId> getExcludedAbnormalities() {  return excludedAbnormalities;  }
+    /** @return the sex of the person being evaluated. */
+    public Sex getSex() { return sex;  }
+    /** The {@link Age} of the person being evaluated.*/
+    public Age getAge() { return age; }
+    /** @return List of {@link TestResult} objects for each diseases in the differential diagnosis. */
+    public List<TestResult> getResults() { return results; }
+    /** * @return total number of positive and negative phenotype observations for this case.*/
+    public int getNumberOfObservations() {
+        return observedAbnormalities.size() + excludedAbnormalities.size();
+    }
 
+
+
+
+
+
+    /** Convenience class to construct an {@link HpoCase} object. */
     public static class Builder {
         /** List of Hpo terms for our case. */
         private final List<TermId> observedAbnormalities;
@@ -82,7 +72,7 @@ public final class HpoCase {
 
         public Builder(List<TermId> abnormalPhenotypes) {
             this.observedAbnormalities = ImmutableList.copyOf(abnormalPhenotypes);
-            excludedAbnormalities=ImmutableList.of();
+            excludedAbnormalities=ImmutableList.of(); // default empty list
             sex=Sex.UNKNOWN;
             age=Age.ageNotKnown();
         }
@@ -105,9 +95,6 @@ public final class HpoCase {
         public HpoCase build() {
             return new HpoCase(observedAbnormalities,excludedAbnormalities,sex,age);
         }
-
-
-
     }
 
 }

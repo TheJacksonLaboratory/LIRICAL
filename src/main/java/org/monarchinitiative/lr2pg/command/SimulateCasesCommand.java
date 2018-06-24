@@ -3,7 +3,7 @@ package org.monarchinitiative.lr2pg.command;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
-import org.monarchinitiative.lr2pg.hpo.HpoCaseSimulator;
+import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -51,7 +51,7 @@ public class SimulateCasesCommand implements Command {
                 lre.printStackTrace();
             }
         } else {
-            HpoCaseSimulator simulator = new HpoCaseSimulator(this.dataDirectoryPath, n_cases_to_simulate, n_terms_per_case, n_noise_terms);
+            PhenotypeOnlyHpoCaseSimulator simulator = new PhenotypeOnlyHpoCaseSimulator(this.dataDirectoryPath, n_cases_to_simulate, n_terms_per_case, n_noise_terms);
             simulator.debugPrint();
             try {
                 simulator.simulateCases();
@@ -75,11 +75,11 @@ public class SimulateCasesCommand implements Command {
         BufferedWriter writer = new BufferedWriter(new FileWriter(outfilename));
         double[][] Z = new double[termnumber.length][randomtermnumber.length];
         int n_cases=100;
-        HpoCaseSimulator simulator;
+        PhenotypeOnlyHpoCaseSimulator simulator;
         for (int i=0;i<termnumber.length;i++) {
             for (int j=0;j<randomtermnumber.length;j++) {
                 boolean imprec = (j>4);
-                simulator = new HpoCaseSimulator(this.dataDirectoryPath,n_cases, termnumber[i], randomtermnumber[j],imprec);
+                simulator = new PhenotypeOnlyHpoCaseSimulator(this.dataDirectoryPath,n_cases, termnumber[i], randomtermnumber[j],imprec);
                 simulator.simulateCases();
                 Z[i][j] = simulator.getProportionAtRank1();
                 writer.write(String.format("terms: %d; noise terms: %d; percentage at rank 1: %.2f\n",
