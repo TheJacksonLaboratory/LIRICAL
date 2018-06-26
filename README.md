@@ -45,5 +45,7 @@ java -jar Lr2pg.jar phenogeno --disease OMIM:154700  --geneid 2200 \
 ```
 
 
+Differential diagnosis: Stickler syndrome OMIM:108300.
+
 
 

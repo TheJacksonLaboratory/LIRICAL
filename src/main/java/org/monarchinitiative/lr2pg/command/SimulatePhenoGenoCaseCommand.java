@@ -38,7 +38,7 @@ public class SimulatePhenoGenoCaseCommand implements Command {
 
     private final String backgroundFreqPath;
 
-
+    private Map<TermId,String> geneId2SymbolMap;
 
 
     /**
@@ -71,6 +71,7 @@ public class SimulatePhenoGenoCaseCommand implements Command {
         HpoOntology ontology=ingestor.getOntology();
         Map<TermId,HpoDisease> diseaseMap=ingestor.getDiseaseMap();
         Disease2GeneDataIngestor d2gIngestor = new Disease2GeneDataIngestor(this.dataDirectoryPath);
+        this.geneId2SymbolMap = d2gIngestor.getGeneId2SymbolMap();
         Multimap<TermId,TermId> disease2geneMultimap=d2gIngestor.getDisease2geneMultimap();
         GenotypeDataIngestor gdingestor = new GenotypeDataIngestor(backgroundFreqPath);
         Map<TermId,Double> gene2backgroundFrequency= gdingestor.parse();
@@ -84,11 +85,9 @@ public class SimulatePhenoGenoCaseCommand implements Command {
                 gene2backgroundFrequency);
 
         HpoCase hpocase = simulator.evaluateCase();
-        hpocase.outputLrToShell(diseaseCurie,ontology);
-        Lr2Svg lr2svg = new Lr2Svg(hpocase,diseaseCurie,ontology);
-        // Output file
-        String fname = diseaseCurie.getIdWithPrefix().replace(":","_") + ".svg";
-        lr2svg.writeSvg(fname);
+        HpoDisease disease = diseaseMap.get(diseaseCurie);
+        String diseaseName = disease.getName();
+        simulator.outputSvg(diseaseCurie,diseaseName,ontology,geneId2SymbolMap);
     }
 
 

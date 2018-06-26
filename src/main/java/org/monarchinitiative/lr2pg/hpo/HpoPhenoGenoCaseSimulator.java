@@ -9,6 +9,7 @@ import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
+import org.monarchinitiative.lr2pg.svg.Lr2Svg;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -69,20 +70,27 @@ public class HpoPhenoGenoCaseSimulator {
 
     }
 
-    public TestResult getResult(TermId diseaseId) {
-        return this.evaluator.getResult(diseaseId);
-    }
 
-//    public HpoCase getHpoCase() {
-//        return evaluator.getHpoCase();
-//    }
 
 
     public HpoCase evaluateCase() {
-        return evaluator.evaluate();
+        this.hpocase = evaluator.evaluate();
+        return hpocase;
 //        TestResult result = evaluator.getResult( diseaseId);
 //        System.err.println(diseaseId.getIdWithPrefix() +" "+ result);
 //        return evaluator.getRank(diseaseId);
+    }
+
+
+    public void outputSvg(TermId diseaseCurie,String diseaseName,HpoOntology ontology, Map<TermId,String> geneId2SymbolMap) {
+        hpocase.outputLrToShell(diseaseCurie,ontology);
+        TermId geneId = this.hpocase.getResult(diseaseCurie).getEntrezGeneId();
+        String symbol = geneId2SymbolMap.get(geneId);
+        symbol = String.format("%s [%s]",symbol,geneId.getIdWithPrefix());
+        Lr2Svg lr2svg = new Lr2Svg(hpocase,diseaseCurie,diseaseName,ontology, symbol);
+        // Output file
+        String fname = diseaseCurie.getIdWithPrefix().replace(":","_") + ".svg";
+        lr2svg.writeSvg(fname);
     }
 
 

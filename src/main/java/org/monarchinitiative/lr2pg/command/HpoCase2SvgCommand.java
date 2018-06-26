@@ -41,9 +41,8 @@ public class HpoCase2SvgCommand implements Command {
             HpoDisease disease = simulator.name2disease(diseaseCurie);
             HpoOntology ontology = simulator.getOntology();
             simulator.simulateCase(disease);
-            TestResult result = simulator.getResults(disease);
             HpoCase hpocase = simulator.getCurrentCase();
-            Lr2Svg l2svg = new Lr2Svg(hpocase,result, ontology);
+            Lr2Svg l2svg = new Lr2Svg(hpocase,diseaseCurie,disease.getName(), ontology,null);
             l2svg.writeSvg("test.svg");
         } catch (Lr2pgException e) {
             e.printStackTrace();

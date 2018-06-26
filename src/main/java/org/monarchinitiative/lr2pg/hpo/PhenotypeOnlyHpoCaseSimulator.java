@@ -189,13 +189,13 @@ public class PhenotypeOnlyHpoCaseSimulator {
     }
 
 
-    public TestResult getResults(HpoDisease disease) throws Lr2pgException {
-        if (this.evaluator==null) {
-            int rank = simulateCase(disease);
-            System.err.println(String.format("Rank for %s was %d",disease.getName(),rank));
-        }
-        return evaluator.getResult(disease.getDiseaseDatabaseId());
-    }
+//    public TestResult getResults(HpoDisease disease) throws Lr2pgException {
+//        if (this.evaluator==null) {
+//            int rank = simulateCase(disease);
+//            System.err.println(String.format("Rank for %s was %d",disease.getName(),rank));
+//        }
+//        return evaluator.getResult(disease.getDiseaseDatabaseId());
+//    }
 
     /**
      * @param diseaseCurie a term id for a disease id such as OMIM:600100
