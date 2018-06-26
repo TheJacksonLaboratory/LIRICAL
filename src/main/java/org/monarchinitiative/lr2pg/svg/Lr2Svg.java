@@ -78,7 +78,7 @@ public class Lr2Svg {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(path));
             writeHeader(writer);
-            writeMiddleLine(writer);
+            writeVerticalLine(writer);
             writeLrBoxes(writer);
             writeFooter(writer);
             writer.close();
@@ -92,7 +92,7 @@ public class Lr2Svg {
      * Writes a horizontal scale ("X axis") with tick points.
      * @param writer File handle
      * @param maxAmp
-     * @param scaling
+     * @param scaling proportion of width that should be taken up by the scale
      * @throws IOException
      */
     private void writeScale(Writer writer, double maxAmp, double scaling) throws IOException {
@@ -138,7 +138,7 @@ public class Lr2Svg {
 
     }
 
-
+    /** If the LR score is 1, then we draw a diamond around the middle axis. */
     private void writeDiamond(Writer writer,int X, int Y) throws IOException
     {
         int diamondsize=6;
@@ -222,7 +222,7 @@ public class Lr2Svg {
             String color = lgratio<0?RGB_RED:RGB_GREEN;
             double boxwidth=lgratio*scaling;
             double xstart = midline;
-            if (ratio<0) {
+            if (lgratio<0) {
                 boxwidth=Math.abs(boxwidth);
                 xstart = 1+ midline - boxwidth;
             }
@@ -271,7 +271,7 @@ public class Lr2Svg {
      * @param writer file handle
      * @throws IOException if we cannot write the SVG file.
      */
-    private void writeMiddleLine(Writer writer) throws IOException {
+    private void writeVerticalLine(Writer writer) throws IOException {
            int midline=WIDTH/2;
         int topY=MIN_VERTICAL_OFFSET;
         int bottomY=topY + calculateHeightOfMiddleLine();

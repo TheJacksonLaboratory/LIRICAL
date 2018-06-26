@@ -41,17 +41,7 @@ public class Gamma {
     /** Avoid repeated computation of log of 2 PI in logGamma */
     private static final double HALF_LOG_2_PI = 0.5 * Math.log(2.0 * PI);
 
-    /** The constant value of &radic;(2&pi;). */
-    private static final double SQRT_TWO_PI = 2.506628274631000502;
-
-    // limits for switching algorithm in digamma
-    /** C limit. */
-    private static final double C_LIMIT = 49;
-
-    /** S limit. */
-    private static final double S_LIMIT = 1e-5;
-
-    /*
+  /*
      * Constants for the computation of double invGamma1pm1(double).
      * Copied from DGAM1 in the NSWC library.
      */

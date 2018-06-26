@@ -9,7 +9,6 @@ import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoDataIngestor;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
-import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.formats.hpo.*;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 

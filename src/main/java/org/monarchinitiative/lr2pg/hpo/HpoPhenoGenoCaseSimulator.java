@@ -4,11 +4,9 @@ package org.monarchinitiative.lr2pg.hpo;
 import com.google.common.collect.Multimap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.lr2pg.svg.Lr2Svg;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -31,7 +29,7 @@ public class HpoPhenoGenoCaseSimulator {
      */
     private final TermId entrezGeneId;
 
-    HpoCase hpocase;
+    private HpoCase hpocase;
 
     /**
      * @param ontology reference to the {@link HpoOntology} object
@@ -76,17 +74,19 @@ public class HpoPhenoGenoCaseSimulator {
     public HpoCase evaluateCase() {
         this.hpocase = evaluator.evaluate();
         return hpocase;
-//        TestResult result = evaluator.getResult( diseaseId);
-//        System.err.println(diseaseId.getIdWithPrefix() +" "+ result);
-//        return evaluator.getRank(diseaseId);
     }
 
 
     public void outputSvg(TermId diseaseCurie,String diseaseName,HpoOntology ontology, Map<TermId,String> geneId2SymbolMap) {
         hpocase.outputLrToShell(diseaseCurie,ontology);
         TermId geneId = this.hpocase.getResult(diseaseCurie).getEntrezGeneId();
-        String symbol = geneId2SymbolMap.get(geneId);
-        symbol = String.format("%s [%s]",symbol,geneId.getIdWithPrefix());
+        String symbol;
+        if (geneId==null) {
+            symbol="n/a";
+        } else {
+            symbol = geneId2SymbolMap.get(geneId);
+            symbol = String.format("%s [%s]", symbol, geneId.getIdWithPrefix());
+        }
         Lr2Svg lr2svg = new Lr2Svg(hpocase,diseaseCurie,diseaseName,ontology, symbol);
         // Output file
         String fname = diseaseCurie.getIdWithPrefix().replace(":","_") + ".svg";

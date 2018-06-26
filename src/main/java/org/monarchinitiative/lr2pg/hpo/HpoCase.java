@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -113,7 +112,7 @@ public final class HpoCase {
         /** List of Hpo terms for our case. */
         private final List<TermId> observedAbnormalities;
         /** List of excluded Hpo terms for our case. */
-        private List<TermId> excludedAbnormalities=null;
+        private List<TermId> excludedAbnormalities;
         /** List of results . */
         private Map<TermId,TestResult> testResultMap;
         /** One of Male, Female, Unknown. See {@link Sex}. */

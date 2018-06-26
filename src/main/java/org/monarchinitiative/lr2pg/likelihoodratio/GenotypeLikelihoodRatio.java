@@ -3,7 +3,6 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.poisson.PoissonDistribution;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;
@@ -28,6 +27,8 @@ public class GenotypeLikelihoodRatio {
     /** Default value for background for genes for which we have no information. */
     private static final double DEFAULT_LAMBDA_BACKGROUND=0.1;
 
+    private static final double EPSILON=1e-5;
+
     /** Entrez gene Curie, e.g., NCBIGene:2200; value--corresponding background frequency sum of pathogenic bin variants. */
     private final Map<TermId,Double> gene2backgroundFrequency;
 
@@ -45,7 +46,7 @@ public class GenotypeLikelihoodRatio {
      * @param geneId EntrezGene id of the gene we are investigating.
      * @return likelihood ratio of the genotype given the disease/geniId combination
      */
-    public Optional<Double> evaluateGenotype(double observedPathogenicVarCount, List<TermId> inheritancemodes, TermId geneId) {
+    Optional<Double> evaluateGenotype(double observedPathogenicVarCount, List<TermId> inheritancemodes, TermId geneId) {
         double lambda_disease=1.0;
         if (inheritancemodes!=null && inheritancemodes.size()>0) {
             TermId tid = inheritancemodes.get(0);
@@ -57,8 +58,13 @@ public class GenotypeLikelihoodRatio {
         if (! this.gene2backgroundFrequency.containsKey(geneId)) {
             return Optional.empty();
         }
-        PoissonDistribution pdDisease = new PoissonDistribution(lambda_disease);
-        double D = pdDisease.probability(observedPathogenicVarCount);
+        Double D;
+        if (observedPathogenicVarCount<EPSILON) {
+            D=0.05; // heuristic--chance of zero variants given this is disease is 5%
+        } else {
+            PoissonDistribution pdDisease = new PoissonDistribution(lambda_disease);
+            D = pdDisease.probability(observedPathogenicVarCount);
+        }
         PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
         double B = pdBackground.probability(observedPathogenicVarCount);
         if (B>0 && D>0) {

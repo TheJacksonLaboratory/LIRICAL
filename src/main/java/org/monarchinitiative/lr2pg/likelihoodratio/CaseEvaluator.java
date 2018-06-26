@@ -10,7 +10,6 @@ import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -117,14 +116,27 @@ public class CaseEvaluator {
                 mapbuilder.put(diseaseId, result);
             }
         }
+        Map<TermId,TestResult> results = evaluateRanks(mapbuilder.build());
         HpoCase.Builder casebuilder = new HpoCase.Builder(phenotypicAbnormalities)
-                .results(mapbuilder.build());
+                .results(results);
         return casebuilder.build();
     }
 
 
 
-
+    private Map<TermId,TestResult> evaluateRanks(Map<TermId,TestResult> resultMap) {
+        List<TestResult> results = new ArrayList<>(resultMap.values());
+        results.sort(Collections.reverseOrder());
+        int rank=0;
+        for (TestResult res : results) {
+            rank++;
+            res.setRank(rank);
+            if (rank<11) {
+                System.err.println(String.format("Rank #%d: %s",rank,res.getDiseaseCurie()));
+            }
+        }
+        return resultMap;
+    }
 
 
 

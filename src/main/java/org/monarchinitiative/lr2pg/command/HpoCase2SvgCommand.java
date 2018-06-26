@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
-import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.lr2pg.svg.Lr2Svg;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;

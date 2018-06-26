@@ -4,7 +4,6 @@ import org.junit.BeforeClass;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.io.IOException;
 import java.util.Map;
 
 public class Genotype2LRTest {
