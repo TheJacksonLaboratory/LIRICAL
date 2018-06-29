@@ -2,12 +2,14 @@ package org.monarchinitiative.lr2pg.hpo;
 
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatioTest;
+import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -56,8 +58,13 @@ public class HpoCaseTest {
         TermId t5 = new TermId(HP_PREFIX,"0001332");
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
+        // We need to provide a list of TestResult objects for the API, but they are not required for this unit test
+        // therefore, pass an empty list.
+        ImmutableMap<TermId,TestResult> results = ImmutableMap.of();
+        HpoCase.Builder casebuilder = new HpoCase.Builder(builder.build()).
+                results(results);
 
-        hpocase = new HpoCase.Builder(builder.build()).build();
+        hpocase = casebuilder.build();
     }
 
 
