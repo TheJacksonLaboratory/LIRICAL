@@ -132,7 +132,9 @@ public class CaseEvaluator {
             rank++;
             res.setRank(rank);
             if (rank<11) {
-                System.err.println(String.format("Rank #%d: %s",rank,res.getDiseaseCurie()));
+                TermId diseaseCurie = res.getDiseaseCurie();
+                String name = diseaseMap.get(diseaseCurie).getName();
+                System.err.println(String.format("Rank #%d: %s [%s]",rank,name,diseaseCurie.getIdWithPrefix()));
             }
         }
         return resultMap;
