@@ -84,6 +84,10 @@ public class PhenotypeOnlyHpoCaseSimulator {
         return proportionAtRank1;
     }
 
+    /** This will run simulations according to the parameters {@link #n_cases_to_simulate},
+     * {@link #n_terms_per_case} and {@link #n_noise_terms}.
+     * @throws Lr2pgException
+     */
     public void simulateCases() throws Lr2pgException {
         int c=0;
         Map<Integer,Integer> ranks=new HashMap<>();
@@ -99,9 +103,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
                 continue;
             }
             int rank = simulateCase(disease);
-            if (!ranks.containsKey(rank)) {
-                ranks.put(rank, 0);
-            }
+            ranks.putIfAbsent(rank,0);
             ranks.put(rank, ranks.get(rank) + 1);
             if (++c>n_cases_to_simulate) {
                 break; // finished!
@@ -162,10 +164,12 @@ public class PhenotypeOnlyHpoCaseSimulator {
         return ontology;
     }
 
-    private HpoCase createSimulatedCase(HpoDisease disease) throws Lr2pgException {
-        if (disease==null) {
-            throw new Lr2pgException("Attempt to create case from Null-value for disease");
-        }
+    /**
+     * This creates a simulated, phenotype-only case based on our annotations for the disease
+     * @param disease Disease for which we will simulate the case
+     * @return HpoCase object with a randomized selection of phenotypes from the disease
+     */
+    private List<TermId> getRandomTermsFromDisease(HpoDisease disease) {
         int n_terms=Math.min(disease.getNumberOfPhenotypeAnnotations(),n_terms_per_case);
         int n_random=Math.min(n_terms, n_noise_terms);// do not take more random than real terms.
         logger.trace("Creating simulated case with n_terms="+n_terms + ", n_random="+n_random);
@@ -183,18 +187,10 @@ public class PhenotypeOnlyHpoCaseSimulator {
             }
             termIdBuilder.add(t);
         }
-        ImmutableList<TermId> termlist = termIdBuilder.build();
-        return new HpoCase.Builder(termlist).build();
+        return termIdBuilder.build();
     }
 
 
-//    public TestResult getResults(HpoDisease disease) throws Lr2pgException {
-//        if (this.evaluator==null) {
-//            int rank = simulateCase(disease);
-//            System.err.println(String.format("Rank for %s was %d",disease.getName(),rank));
-//        }
-//        return evaluator.getResult(disease.getDiseaseDatabaseId());
-//    }
 
     /**
      * @param diseaseCurie a term id for a disease id such as OMIM:600100
@@ -210,12 +206,20 @@ public class PhenotypeOnlyHpoCaseSimulator {
     }
 
     public int simulateCase(HpoDisease disease) throws Lr2pgException {
-        this.currentCase = createSimulatedCase(disease);
+        if (disease == null) {
+            // should never happen!
+            throw new Lr2pgException("Attempt to create case from Null-value for disease");
+        }
+        List<TermId> randomizedTerms = getRandomTermsFromDisease(disease);
+
+        CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(randomizedTerms)
+                .ontology(this.ontology)
+                .diseaseMap(diseaseMap)
+                .phenotypeLr(this.phenotypeLrEvaluator);
         // the following evaluates the case for each disease with equal pretest probabilities.
-//        this.evaluator = new CaseEvaluator(this.currentCase, diseaseMap,ontology,phenotypeLrEvaluator);
-//        evaluator.evaluate();
-//        return evaluator.getRank(disease.getDiseaseDatabaseId());
-        return 42;// todo - implement phenotype only version
+        this.evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
+        HpoCase hpocase = evaluator.evaluate();
+        return hpocase.getRank(disease.getDiseaseDatabaseId());
     }
 
 

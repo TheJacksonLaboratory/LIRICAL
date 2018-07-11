@@ -2,6 +2,7 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,6 +39,36 @@ public class CaseEvaluator {
     /** Reference to the Human Phenotype Ontology object. */
     private final HpoOntology ontology;
 
+    private final boolean phenotypeOnly;
+
+    /**
+     * This constructor is used for phenotype-only cases.
+     * @param hpoTerms List of phenotypic abnormalityes observed in the patient
+     * @param ontology Reference to HPO ontology
+     * @param diseaseMap key: disease CURIE, e.h., OMIM:600100; value: HpoDisease object
+     * @param phenotypeLrEvaluator class to evaluate phenotype likelihood ratios.
+     */
+    private CaseEvaluator(List<TermId> hpoTerms,
+                          HpoOntology ontology,
+                          Map<TermId,HpoDisease> diseaseMap,
+                          PhenotypeLikelihoodRatio phenotypeLrEvaluator) {
+        this.phenotypicAbnormalities=hpoTerms;
+        this.ontology=ontology;
+        this.diseaseMap=diseaseMap;
+        this.phenotypeLRevaluator=phenotypeLrEvaluator;
+        this.genotypeMap=ImmutableMap.of();
+        this.disease2geneMultimap=ImmutableMultimap.of();
+        this.genotypeLrEvalutator=null;
+        // For now, assume equal pretest probabilities
+        this.pretestProbabilityMap =new HashMap<>();
+        int n=diseaseMap.size();
+        double prob=1.0/(double)n;
+        for (TermId tid : diseaseMap.keySet()) {
+            pretestProbabilityMap.put(tid,prob);
+        }
+        this.phenotypeOnly=true;
+    }
+
 
 
 
@@ -65,7 +96,7 @@ public class CaseEvaluator {
             pretestProbabilityMap.put(tid,prob);
         }
         this.genotypeMap=genotypeMap;
-
+        this.phenotypeOnly=false;
     }
 
 
@@ -75,8 +106,7 @@ public class CaseEvaluator {
      */
     public HpoCase evaluate()  {
         assert diseaseMap.size()== pretestProbabilityMap.size();
-        /** Results of the LR calculations. */
-        ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder();
+        ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder<>();
         for (TermId diseaseId : diseaseMap.keySet()) {
             HpoDisease disease = this.diseaseMap.get(diseaseId);
             double pretest = pretestProbabilityMap.get(diseaseId);
@@ -197,6 +227,14 @@ public class CaseEvaluator {
             Objects.requireNonNull(diseaseMap);
             Objects.requireNonNull(disease2geneMultimap);
             return new CaseEvaluator(hpoTerms,ontology,diseaseMap,disease2geneMultimap,phenotypeLR,genotypeLR,genotypeMap);
+        }
+
+
+        public CaseEvaluator buildPhenotypeOnlyEvaluator() {
+            Objects.requireNonNull(hpoTerms);
+            Objects.requireNonNull(ontology);
+            Objects.requireNonNull(phenotypeLR);
+            return new CaseEvaluator(hpoTerms,ontology,diseaseMap,phenotypeLR);
         }
 
 
