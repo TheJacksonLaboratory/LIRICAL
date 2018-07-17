@@ -7,6 +7,7 @@ import org.monarchinitiative.phenol.io.gene2phen.HpoDisease2GeneParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
+import java.util.Map;
 
 public class Disease2GeneDataIngestor {
     private static final Logger logger = LogManager.getLogger();
@@ -19,6 +20,8 @@ public class Disease2GeneDataIngestor {
     private Multimap<TermId,TermId> gene2diseaseMultimap;
     /* key: disease CURIEs such as OMIM:600123; value: a collection of gene CURIEs such as NCBIGene:123.  */
     private Multimap<TermId,TermId> disease2geneMultimap;
+    /** key: a gene id, e.g., NCBIGene:2020; value: the corresponding symbol. */
+    private Map<TermId,String> geneId2symbolMap;
 
     public Disease2GeneDataIngestor(String datadir) {
         this.dataDirectoryPath=datadir;
@@ -37,6 +40,7 @@ public class Disease2GeneDataIngestor {
         HpoDisease2GeneParser parser = new HpoDisease2GeneParser(geneinfopath,mim2gene_medgenPath);
         this.gene2diseaseMultimap = parser.getGeneId2DiseaseIdMap();
         this.disease2geneMultimap = parser.getDiseaseId2GeneIdMap();
+        this.geneId2symbolMap=parser.getGeneId2SymbolMap();
     }
 
     public Multimap<TermId,TermId> getGene2diseaseMultimap() {
@@ -46,5 +50,7 @@ public class Disease2GeneDataIngestor {
     public Multimap<TermId,TermId> getDisease2geneMultimap() {
         return this.disease2geneMultimap;
     }
+
+    public Map<TermId,String> getGeneId2SymbolMap() { return this.geneId2symbolMap;}
 
 }

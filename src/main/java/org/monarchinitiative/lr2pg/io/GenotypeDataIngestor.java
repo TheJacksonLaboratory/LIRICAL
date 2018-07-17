@@ -34,8 +34,9 @@ public class GenotypeDataIngestor {
             // TODO put # on header line from G2GIT
             while ((line=br.readLine())!=null) {
                 String a[] = line.split("\t");
-                if (a.length != 6) {
-                    System.err.println("[ERROR] malformed line: " + line);
+                if (a.length <10) {
+                    System.err.println(String.format("[ERROR GenotypeDataIngestor] malformed line with %d instead of 10 fields: %s",
+                            a.length, line));
                 }
                 String symbol=a[0];
                 String entrezNumber=a[1]; // e.g., 2200 for FBN1
@@ -43,15 +44,14 @@ public class GenotypeDataIngestor {
                     continue; // no EntrezId available -- this happens with many genes
                 }
                 TermId entrezId=new TermId(ENTREZ_GENE_PREFIX,entrezNumber);
-                String fsumpath=a[4];
+                String fsumpath=a[9];
                 try {
-                    Double pathSum = Double.parseDouble(a[4]);
-                    //builder.put(entrezId,pathSum);
+                    Double pathSum = Double.parseDouble(fsumpath);
                     gene2freq.put(entrezId,pathSum);
                 } catch (NumberFormatException e) {
                     e.printStackTrace();// should really never happen--TODO throw Exception
                 }
-                System.out.println(symbol + "\t" + entrezId.getIdWithPrefix() +"\t"+fsumpath);
+                //System.out.println(symbol + "\t" + entrezId.getIdWithPrefix() +"\t"+fsumpath);
             }
             br.close();
         } catch (IOException e) {

@@ -1,11 +1,11 @@
-package org.monarchinitiative.lr2pg.hpo;
+package org.monarchinitiative.lr2pg.likelihoodratio;
 
 
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-//import org.jgrapht.graph.DefaultDirectedGraph;
+import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -23,7 +23,7 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.*;
  * @author <a href="mailto:vida.ravanmehr@jax.org">Vida Ravanmehr</a>
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class BackgroundForegroundTermFrequency {
+public class PhenotypeLikelihoodRatio {
     private static final Logger logger = LogManager.getLogger();
     /** The HPO ontology with all of its subontologies. */
     private final HpoOntology ontology;
@@ -41,7 +41,7 @@ public class BackgroundForegroundTermFrequency {
      * @param onto The HPO ontology object
      * @param diseases List of all diseases for this simulation
      */
-    public BackgroundForegroundTermFrequency(HpoOntology onto, Map<TermId, HpoDisease> diseases) {
+    public PhenotypeLikelihoodRatio(HpoOntology onto, Map<TermId, HpoDisease> diseases) {
         this.ontology=onto;
         this.diseaseMap = diseases;
         initializeFrequencyMap();
@@ -51,16 +51,21 @@ public class BackgroundForegroundTermFrequency {
      * Calculate and return the likelihood ratio of observing the HPO feature tid in an individual
      * with the disease "diseaseName"
      * @param tid An HPO phenotypic abnormality
-     * @param disease the disease
+     * @param diseaseId The CURIE (e.g., OMIM:600300) of the disease
      * @return the likelihood ratio of observing the HPO term in the diseases
      */
-    public double getLikelihoodRatio(TermId tid, HpoDisease disease) {
+    public double getLikelihoodRatio(TermId tid, TermId diseaseId) {
+        HpoDisease disease = this.diseaseMap.get(diseaseId);
         double numerator=getFrequencyOfTermInDisease(disease,tid);
         double denominator=getBackgroundFrequency(tid);
         return numerator/denominator;
     }
 
-
+    /**
+     * Calcultates the frequency of a phenotypic abnormality represented by the TermId tid in the disease.
+     * If the disease is not annotated to tid, the method {@link #getFrequencyIfNotAnnotated(TermId, HpoDisease)}
+     * is called to provide an estimate.
+     * @return the Frequency of tid in the disease */
     double getFrequencyOfTermInDisease(HpoDisease disease, TermId tid) {
         HpoAnnotation hpoTid = disease.getAnnotation(tid);
         if (hpoTid==null) {
@@ -96,12 +101,9 @@ public class BackgroundForegroundTermFrequency {
         }
         if (isAncestor) return cumfreq;
 
-        //2. If the disease has a subclass of the query term, then
-        // everybody with the subclass (e.g., nuclear cataract) also has the
-        // parent (e.g., cataract). Hard to say if our query is just inexact or if
-        // there is some difference, but not everybody with the disease will have the
+        //2. If the query term is a subclass of one or more disease terms, then
+        // we weight the frequency in the disease--- because not everybody with the disease will have the
         // subterm in question--they could have another one of the subclasses.
-        // therefore we need to penalize
 
         for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
             if (isSubclass(ontology, query, annot.getTermId())){
@@ -111,7 +113,6 @@ public class BackgroundForegroundTermFrequency {
                 return Math.max(f,DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY);
             }
         }
-
         // If we get here, then there is no common ancestor between the query and any of the disease phenotype annotations.
        return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
     }
@@ -135,7 +136,7 @@ public class BackgroundForegroundTermFrequency {
         double f=0.0;
         for (TermId tid : directChildren) {
             f += getProportionalFrequencyInAncestors(query,tid);
-            }
+        }
         return f/(double)directChildren.size();
     }
     

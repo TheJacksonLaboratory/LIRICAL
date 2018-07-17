@@ -2,10 +2,14 @@ package org.monarchinitiative.lr2pg.hpo;
 
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
+import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatioTest;
+import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -30,12 +34,12 @@ public class HpoCaseTest {
     private static String diseasename="108500";
     private static HpoCase hpocase;
     private static HpoOntology ontology;
-    private static BackgroundForegroundTermFrequency backforeFreq;
+    private static PhenotypeLikelihoodRatio backforeFreq;
 
 
     @BeforeClass
     public static void setup() throws IOException,PhenolException,NullPointerException {
-        ClassLoader classLoader = BackgroundForegroundTermFrequencyTest.class.getClassLoader();
+        ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String annotationPath = classLoader.getResource("small.hpoa").getFile();
         /* parse ontology */
@@ -43,7 +47,7 @@ public class HpoCaseTest {
         ontology =parser.parse();
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationPath,ontology);
         Map<TermId,HpoDisease> diseaseMap=annotationParser.parse();
-        backforeFreq=new BackgroundForegroundTermFrequency(ontology,diseaseMap);
+        backforeFreq=new PhenotypeLikelihoodRatio(ontology,diseaseMap);
 
         /* these are the phenotypic abnormalties of our "case" */
         TermPrefix HP_PREFIX=new TermPrefix("HP");
@@ -54,8 +58,13 @@ public class HpoCaseTest {
         TermId t5 = new TermId(HP_PREFIX,"0001332");
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
+        // We need to provide a list of TestResult objects for the API, but they are not required for this unit test
+        // therefore, pass an empty list.
+        ImmutableMap<TermId,TestResult> results = ImmutableMap.of();
+        HpoCase.Builder casebuilder = new HpoCase.Builder(builder.build()).
+                results(results);
 
-        hpocase = new HpoCase.Builder(builder.build()).build();
+        hpocase = casebuilder.build();
     }
 
 

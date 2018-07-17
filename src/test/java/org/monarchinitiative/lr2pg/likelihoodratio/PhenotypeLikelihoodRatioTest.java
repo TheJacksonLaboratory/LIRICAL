@@ -1,4 +1,4 @@
-package org.monarchinitiative.lr2pg.hpo;
+package org.monarchinitiative.lr2pg.likelihoodratio;
 
 
 import org.junit.BeforeClass;
@@ -23,30 +23,33 @@ import static org.junit.Assert.assertNotNull;
  * Simple test that we get the right frequencies. There are 37 annotations in the file
  * small.hpoa. Each annotation is unique.
  */
-public class BackgroundForegroundTermFrequencyTest {
+public class PhenotypeLikelihoodRatioTest {
 
-    private static BackgroundForegroundTermFrequency backForeFreq =null;
+    private static PhenotypeLikelihoodRatio phenotypeLrCalculator =null;
+
+    private static Map<TermId, HpoDisease> diseaseMap;
+
 
     private static final double EPSILON=0.000001;
 
 
     @BeforeClass
     public static void setup() throws IOException,PhenolException,NullPointerException {
-        ClassLoader classLoader = BackgroundForegroundTermFrequencyTest.class.getClassLoader();
+        ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String annotationPath = classLoader.getResource("small.hpoa").getFile();
         HpoOboParser parser = new HpoOboParser(new File(hpoPath));
         HpoOntology ontology = parser.parse();
 
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationPath,ontology);
-        Map<TermId,HpoDisease> diseaseMap=annotationParser.parse();
-        backForeFreq =new BackgroundForegroundTermFrequency(ontology,diseaseMap);
+        diseaseMap=annotationParser.parse();
+        phenotypeLrCalculator =new PhenotypeLikelihoodRatio(ontology,diseaseMap);
     }
 
 
     @Test
     public void notNullTest() {
-        assertNotNull(backForeFreq);
+        assertNotNull(phenotypeLrCalculator);
     }
 
     /**
@@ -56,7 +59,7 @@ public class BackgroundForegroundTermFrequencyTest {
     @Test
     public void testGetNumberOfDiseases() {
         int expected = 3;
-        assertEquals(expected, backForeFreq.getNumberOfDiseases());
+        assertEquals(expected, phenotypeLrCalculator.getNumberOfDiseases());
     }
 
     /**
@@ -69,14 +72,14 @@ public class BackgroundForegroundTermFrequencyTest {
     public void testFrequency1() {
         TermId tid = TermId.constructWithPrefix("HP:0000028");
         double expected = (double)1/3;
-        assertEquals(expected, backForeFreq.getBackgroundFrequency(tid),EPSILON);
+        assertEquals(expected, phenotypeLrCalculator.getBackgroundFrequency(tid),EPSILON);
     }
 
     @Test
     public void testFrequency2() {
         TermId tid = TermId.constructWithPrefix("HP:0000047");
         double expected = (double)1/3;
-        assertEquals(expected, backForeFreq.getBackgroundFrequency(tid),EPSILON);
+        assertEquals(expected, phenotypeLrCalculator.getBackgroundFrequency(tid),EPSILON);
     }
 
 
@@ -87,7 +90,21 @@ public class BackgroundForegroundTermFrequencyTest {
     public void testFrequency3() {
         TermId tid = TermId.constructWithPrefix("HP:0000035");
         double expected = (double)1/3;
-        assertEquals(expected, backForeFreq.getBackgroundFrequency(tid),EPSILON);
+        assertEquals(expected, phenotypeLrCalculator.getBackgroundFrequency(tid),EPSILON);
+    }
+
+
+    /**
+     * The term HP:0001265 is a phenotype term in the disease 103100. The frequency of term in disease is 1.
+     */
+    @Test
+    public void testGetFrequencyOfTermInDieases1_1() {
+        TermId tid = TermId.constructWithPrefix("HP:0000185");
+        TermId diseaseName = TermId.constructWithPrefix("OMIM:216300");
+        HpoDisease disease = diseaseMap.get(diseaseName);
+        assertNotNull(disease);
+        double expected =1.0;
+        assertEquals(expected, phenotypeLrCalculator.getFrequencyOfTermInDisease(disease,tid),EPSILON);
     }
 
 

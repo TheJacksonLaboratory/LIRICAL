@@ -4,8 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
-import org.monarchinitiative.lr2pg.hpo.HpoCaseSimulator;
-import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
+import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.svg.Lr2Svg;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -36,14 +35,13 @@ public class HpoCase2SvgCommand implements Command {
 
     public void execute() {
         int cases_to_simulate=1;
-        HpoCaseSimulator simulator = new HpoCaseSimulator( dataDirectory, cases_to_simulate, n_terms_per_case, n_noise_terms);
+        PhenotypeOnlyHpoCaseSimulator simulator = new PhenotypeOnlyHpoCaseSimulator( dataDirectory, cases_to_simulate, n_terms_per_case, n_noise_terms);
         try {
             HpoDisease disease = simulator.name2disease(diseaseCurie);
             HpoOntology ontology = simulator.getOntology();
             simulator.simulateCase(disease);
-            TestResult result = simulator.getResults(disease);
             HpoCase hpocase = simulator.getCurrentCase();
-            Lr2Svg l2svg = new Lr2Svg(hpocase,result, ontology);
+            Lr2Svg l2svg = new Lr2Svg(hpocase,diseaseCurie,disease.getName(), ontology,null);
             l2svg.writeSvg("test.svg");
         } catch (Lr2pgException e) {
             e.printStackTrace();

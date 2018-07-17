@@ -22,8 +22,17 @@ public class Lr2Svg {
     private static final Logger logger = LogManager.getLogger();
     /** An object representing the Human Phenotype Ontology */
     private final HpoOntology ontology;
+
     private final HpoCase hpocase;
+
+    private final TermId diseaseCURIE;
+
+    private final String diseaseName;
+
     private final TestResult result;
+
+    private int maxX;
+
     /** Height of entire image in px */
     private final static int HEIGHT=480;
     /** width of the bars part of the image in px */
@@ -37,13 +46,28 @@ public class Lr2Svg {
 
     private final static int BOX_HEIGHT=15;
 
+    private final static String RGB_GREEN="#00FF00";
+    private final static String RGB_RED="#FF0000";
+
+    private final String geneSymbol;
+
 
     private final int heightOfMiddleLine;
 
-    public Lr2Svg(HpoCase hcase,  TestResult result,HpoOntology ont) {
+    public Lr2Svg(HpoCase hcase,TermId diseaseId,String diseaseName, HpoOntology ont, String symbol) {
         this.hpocase=hcase;
-        this.result=result;
+        this.diseaseCURIE=diseaseId;
+        // shorten the name to everything up to the first ;
+        int i = diseaseName.indexOf(";");
+        if (i>0) {
+            this.diseaseName = diseaseName.substring(0,i);
+        } else {
+            this.diseaseName=diseaseName;
+        }
+        this.result = hpocase.getResult(diseaseId);
+        this.geneSymbol = symbol;
         this.ontology=ont;
+
         this.heightOfMiddleLine=calculateHeightOfMiddleLine();
     }
 
@@ -54,7 +78,7 @@ public class Lr2Svg {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(path));
             writeHeader(writer);
-            writeMiddleLine(writer);
+            writeVerticalLine(writer);
             writeLrBoxes(writer);
             writeFooter(writer);
             writer.close();
@@ -64,10 +88,17 @@ public class Lr2Svg {
         }
     }
 
+    /**
+     * Writes a horizontal scale ("X axis") with tick points.
+     * @param writer File handle
+     * @param maxAmp
+     * @param scaling proportion of width that should be taken up by the scale
+     * @throws IOException
+     */
     private void writeScale(Writer writer, double maxAmp, double scaling) throws IOException {
         int Y = heightOfMiddleLine +  MIN_VERTICAL_OFFSET + BOX_OFFSET*4;
         int maxTick = (int) Math.ceil(maxAmp);
-        int maxX = (int)(maxTick * scaling);
+        this.maxX = (int)(maxTick * scaling);
         int midline=WIDTH/2;
         writer.write("<line fill=\"none\" stroke=\"midnightblue\" stroke-width=\"2\" " +
                 "x1=\""+(midline-maxX)+"\" y1=\""+Y+"\" x2=\""+(midline+maxX)+"\" y2=\""+Y+"\"/>\n");
@@ -95,13 +126,41 @@ public class Lr2Svg {
         writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">0</text>\n",
                 (midline),
                 Y + 15));
+
+
+        int rank=hpocase.getResult(diseaseCURIE).getRank();
+        double ptp = hpocase.getResult(diseaseCURIE).getPosttestProbability();
+        String diseaseLabel=String.format("%s [%s]: Rank: #%d Posttest probability: %f",diseaseName,diseaseCURIE.getIdWithPrefix(),rank,ptp);
         writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
                 (midline - (maxTick-1)*block),
                 Y + 35,
-                result.getDiseaseCurie()));
+                diseaseLabel));
 
     }
 
+    /** If the LR score is 1, then we draw a diamond around the middle axis. */
+    private void writeDiamond(Writer writer,int X, int Y) throws IOException
+    {
+        int diamondsize=6;
+        writer.write(String.format("<polygon " +
+                        "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:lime;stroke:purple;stroke-width:1\" />\n",
+                X,
+                Y,
+                X+diamondsize,
+                Y+diamondsize,
+                X,
+                Y+2*diamondsize,
+                X-diamondsize,
+                Y+diamondsize));
+    }
+
+
+    /**
+     * Writes the set of boxes representing the log10 amplitudes of the likelihood ratios for individual
+     * features.
+     * @param writer
+     * @throws IOException
+     */
     private void writeLrBoxes(Writer writer) throws IOException {
         int currentY= MIN_VERTICAL_OFFSET + BOX_OFFSET*2;
         int midline=WIDTH/2;
@@ -134,24 +193,17 @@ public class Lr2Svg {
             if ((int)boxwidth==0) {
                 int X=(int)xstart;
                 int Y=currentY;
-                int diamondsize=6;
-                writer.write(String.format("<polygon " +
-                                "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:lime;stroke:purple;stroke-width:1\" />\n",
-                        X,
-                        Y,
-                        X+diamondsize,
-                        Y+diamondsize,
-                        X,
-                        Y+2*diamondsize,
-                        X-diamondsize,
-                        Y+diamondsize));
+                writeDiamond(writer,X,Y);
             } else {
+                // red for features that do not support the diagnosis, green for those that do
+                String color = xstart<midline ? RGB_RED : RGB_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
-                                "stroke-width=\"1\" stroke=\"#000000\" fill=\"#FF0000\"/>\n",
+                                "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
                         BOX_HEIGHT,
                         (int) boxwidth,
                         currentY,
-                        (int) xstart));
+                        (int) xstart,
+                        color));
             }
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);
@@ -162,6 +214,39 @@ public class Lr2Svg {
                         label));
             currentY += BOX_HEIGHT+BOX_OFFSET;
         }
+        if (result.hasGenotype()) {
+            currentY += 0.5*(BOX_HEIGHT+BOX_OFFSET);
+
+            double ratio = result.getGenotypeLR();
+            double lgratio = Math.log10(ratio);
+            String color = lgratio<0?RGB_RED:RGB_GREEN;
+            double boxwidth=lgratio*scaling;
+            double xstart = midline;
+            if (lgratio<0) {
+                boxwidth=Math.abs(boxwidth);
+                xstart = 1+ midline - boxwidth;
+            }
+            if ((int)boxwidth==0) {
+                int X=(int)xstart;
+                int Y=currentY;
+                writeDiamond(writer,X,Y);
+            } else {
+                // red for features that do not support the diagnosis, green for those that do
+                color = xstart<midline ? RGB_RED : RGB_GREEN;
+                writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
+                                "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
+                        BOX_HEIGHT,
+                        (int) boxwidth,
+                        currentY,
+                        (int) xstart,
+                        color));
+            }
+            // add label of Genotype
+            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
+                    WIDTH,
+                    currentY + BOX_HEIGHT,
+                    geneSymbol));
+        }
         writeScale(writer,maxAmp,scaling);
     }
 
@@ -170,7 +255,11 @@ public class Lr2Svg {
      * @return Where to place the line underneath the boxes.
      */
     private int calculateHeightOfMiddleLine() {
+        Objects.requireNonNull(result);
         int n = result.getNumberOfTests();
+        if (result.hasGenotype()) {
+            n+=2; // add another unit for the genotype
+        }
         return 2*BOX_OFFSET + n*(BOX_HEIGHT+BOX_OFFSET);
     }
 
@@ -182,7 +271,7 @@ public class Lr2Svg {
      * @param writer file handle
      * @throws IOException if we cannot write the SVG file.
      */
-    private void writeMiddleLine(Writer writer) throws IOException {
+    private void writeVerticalLine(Writer writer) throws IOException {
            int midline=WIDTH/2;
         int topY=MIN_VERTICAL_OFFSET;
         int bottomY=topY + calculateHeightOfMiddleLine();
