@@ -1,6 +1,9 @@
 package org.monarchinitiative.lr2pg.poisson;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
 
@@ -8,6 +11,9 @@ import static org.junit.Assert.assertEquals;
  * This is just testing that our adaptation of the Apache math Poisson implemention is working.
  * The expected values were calculated in R with commands such as {@code dpois(3,2.2)}.
  */
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class PoissonTest {
 
     private final double EPSILON=0.00001;

@@ -50,13 +50,18 @@ public class HpoDataIngestor {
             this.diseaseMap = annotationParser.parse();
             if (! annotationParser.validParse()) {
                 logger.error("Warning -- parse problems encountered with the annotation file at {}.", annotationpath);
+                int n = annotationParser.getErrors().size();
+                int i=0;
                 for (String error: annotationParser.getErrors()) {
-                    logger.error(error);
+                    i++;
+                    logger.error(i +"/"+n+") "+error);
                 }
+                logger.trace("Done showing errors");
             }
         } catch (PhenolException pe) {
             throw new RuntimeException("Could not parse annotation file: "+pe.getMessage());
         }
+        logger.trace("Done parsing; diseasemap has {} entries", diseaseMap.size());
     }
 
     public HpoOntology getOntology() {

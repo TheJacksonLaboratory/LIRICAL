@@ -10,6 +10,13 @@
     <name>lr2pg</name>
     <url>http://maven.apache.org</url>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.0.4.RELEASE</version><relativePath/>
+        <!-- lookup parent from repository -->
+    </parent>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -17,7 +24,7 @@
         <jdk.version>1.8</jdk.version>
         <junit.version>4.12</junit.version>
         <phenol.version>1.2.1</phenol.version>
-        <jgrapht.version>1.2.0</jgrapht.version>
+       <!-- <jgrapht.version>1.2.0</jgrapht.version> -->
     </properties>
 
 
@@ -75,6 +82,23 @@
         </dependency>-->
 
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
         </dependency>
@@ -83,11 +107,7 @@
             <artifactId>log4j-core</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.jgrapht</groupId>
-            <artifactId>jgrapht-core</artifactId>
-            <version>${jgrapht.version}</version>
-        </dependency>
+
 
         <!-- Libraries for testing -->
         <dependency>
@@ -155,25 +175,29 @@
     </dependencyManagement>
     <build>
         <finalName>Lr2pg</finalName>
-        <resources>
+       <!-- <resources>
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
-                    <!--Won't be in JAR, but still will be accessible during project build -->
                     <exclude>assembly/**</exclude>
                 </excludes>
             </resource>
-        </resources>
+        </resources> -->
         <plugins>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
             <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESOURCES %%%%%%%%% RESOURCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-            <!-- From effective pom.xml -->
+            <!-- From effective pom.xml
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.2</version>
                 <executions>
                     <execution>
-                        <!-- Resources for the assembly package -->
+
                         <id>copy-distribution-resources</id>
                         <phase>validate</phase>
                         <goals>
@@ -187,14 +211,14 @@
                                     <filtering>true</filtering>
                                     <includes>
                                         <include>templateParameters.yml</include>
-                                        <!--<include>data/**</include>-->
+
                                     </includes>
                                 </resource>
                             </resources>
                         </configuration>
                     </execution>
                     <execution>
-                        <!-- Resources that will land inside JAR/in the classpath -->
+
                         <id>copy-build-resources</id>
                         <phase>validate</phase>
                         <goals>
@@ -212,8 +236,8 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COMPILER %%%%%%%%%%%%%%%% COMPILER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+            </plugin>-->
+            <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COMPILER %%%%%%%%%%%%%%%% COMPILER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -222,15 +246,15 @@
                     <source>${jdk.version}</source>
                     <target>${jdk.version}</target>
                 </configuration>
-            </plugin>
-            <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TESTS %%%%%%%%%%%%%%%% TESTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+            </plugin>-->
+            <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TESTS %%%%%%%%%%%%%%%% TESTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <!--TODO - logging configuration during tests-->
+
                 <version>2.19.1</version>
             </plugin>
-            <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DEPENDENCIES %%%%%%%%% DEPENDENCIES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -244,21 +268,18 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                            <!--<overWriteReleases>false</overWriteReleases>-->
-                            <!--<overWriteSnapshots>false</overWriteSnapshots>-->
-                            <!--<overWriteIfNewer>true</overWriteIfNewer>-->
-                        </configuration>
+
                     </execution>
                 </executions>
             </plugin>
-            <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% JAR %%%%%%%%%%%%%%%%%%%%% JAR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.6</version>
                 <configuration>
                     <archive>
-                        <!--<index>true</index>-->
+
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
@@ -298,7 +319,7 @@
                 <version>2.7</version>
             </plugin>
 
-
+-->
 
         </plugins>
 

@@ -1,4 +1,4 @@
-package util;
+package org.monarchinitiative.lr2pg.util;
 
 
 /**
