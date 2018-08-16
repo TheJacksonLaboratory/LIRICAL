@@ -3,7 +3,8 @@ package org.monarchinitiative.lr2pg.io;
 import com.google.common.collect.Multimap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.monarchinitiative.phenol.io.gene2phen.HpoDisease2GeneParser;
+import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.io.assoc.HpoAssociationParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
@@ -23,12 +24,12 @@ public class Disease2GeneDataIngestor {
     /** key: a gene id, e.g., NCBIGene:2020; value: the corresponding symbol. */
     private Map<TermId,String> geneId2symbolMap;
 
-    public Disease2GeneDataIngestor(String datadir) {
+    public Disease2GeneDataIngestor(String datadir, HpoOntology ontology) {
         this.dataDirectoryPath=datadir;
-        inputData();
+        inputData(ontology);
     }
 
-    private void inputData() {
+    private void inputData(HpoOntology ontology) {
         String geneinfopath=String.format("%s%s%s",
                 this.dataDirectoryPath,
                 File.separator,
@@ -37,10 +38,15 @@ public class Disease2GeneDataIngestor {
                 this.dataDirectoryPath,
                 File.separator,
                 MIM2GENE_MEDGEN_FILENAME);
-        HpoDisease2GeneParser parser = new HpoDisease2GeneParser(geneinfopath,mim2gene_medgenPath);
+        /*HpoDisease2GeneParser parser = new HpoDisease2GeneParser(geneinfopath,mim2gene_medgenPath);
         this.gene2diseaseMultimap = parser.getGeneId2DiseaseIdMap();
         this.disease2geneMultimap = parser.getDiseaseId2GeneIdMap();
-        this.geneId2symbolMap=parser.getGeneId2SymbolMap();
+        this.geneId2symbolMap=parser.getGeneId2SymbolMap();*/
+        File orphafilePlaceholder=null;
+        HpoAssociationParser assocParser = new HpoAssociationParser(new File(geneinfopath),new File(mim2gene_medgenPath),orphafilePlaceholder,ontology);
+        this.gene2diseaseMultimap = assocParser.getGeneToDiseaseIdMap();
+        this.disease2geneMultimap = assocParser.getDiseaseToGeneIdMap();
+        this.geneId2symbolMap = assocParser.getGeneIdToSymbolMap();
     }
 
     public Multimap<TermId,TermId> getGene2diseaseMultimap() {

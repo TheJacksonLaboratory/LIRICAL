@@ -14,7 +14,7 @@ import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
-import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
+import org.monarchinitiative.phenol.io.obo.hpo.HpOboParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
@@ -43,7 +43,7 @@ public class HpoCaseTest {
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String annotationPath = classLoader.getResource("small.hpoa").getFile();
         /* parse ontology */
-        HpoOboParser parser = new HpoOboParser(new File(hpoPath));
+        HpOboParser parser = new HpOboParser(new File(hpoPath));
         ontology =parser.parse();
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationPath,ontology);
         Map<TermId,HpoDisease> diseaseMap=annotationParser.parse();

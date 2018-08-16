@@ -5,12 +5,11 @@ import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.io.obo.hpo.HpOboParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
-import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -39,10 +38,10 @@ public class HpoDataIngestor {
     private void inputHpoOntologyAndAnnotations()  {
         String hpopath=String.format("%s%s%s",dataDirectoryPath, File.separator,HP_OBO);
         String annotationpath=String.format("%s%s%s",dataDirectoryPath,File.separator,HP_PHENOTYPE_ANNOTATION);
-        HpoOboParser parser = new HpoOboParser(new File(hpopath));
+        HpOboParser parser = new HpOboParser(new File(hpopath));
         try {
             this.ontology = parser.parse();
-        } catch (IOException ioe) {
+        } catch (PhenolException ioe) {
             System.err.println("Could not parse hp.obo file: " + ioe.getMessage());
             throw new RuntimeException("Could not parse hp.obo file: " + ioe.getMessage());
         }

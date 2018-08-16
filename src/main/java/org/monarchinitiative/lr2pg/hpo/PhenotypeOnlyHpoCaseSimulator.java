@@ -25,15 +25,13 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getPa
 public class PhenotypeOnlyHpoCaseSimulator {
     private static final Logger logger = LogManager.getLogger();
     /** An object representing the Human Phenotype Ontology */
-    private HpoOntology ontology =null;
+    private HpoOntology ontology;
     /** An object that calculates the foreground frequency of an HPO term in a disease as well as the background frequency */
     private final PhenotypeLikelihoodRatio phenotypeLrEvaluator;
     /** A list of all HPO term ids in the Phenotypic abnormality subontology. */
     private final ImmutableList<TermId> phenotypeterms;
     /** Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
     private final Map<TermId,HpoDisease> diseaseMap;
-    /** Object to evaluate the results of differential diagnosis by LR analysis. */
-    private CaseEvaluator evaluator;
     /** Number of HPO terms to use for each simulated case. */
     private final int n_terms_per_case;
     /** Number of "noise" (unrelated) HPO terms to use for each simulated case. */
@@ -217,7 +215,8 @@ public class PhenotypeOnlyHpoCaseSimulator {
                 .diseaseMap(diseaseMap)
                 .phenotypeLr(this.phenotypeLrEvaluator);
         // the following evaluates the case for each disease with equal pretest probabilities.
-        this.evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
+        /** Object to evaluate the results of differential diagnosis by LR analysis. */
+        CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
         HpoCase hpocase = evaluator.evaluate();
         return hpocase.getRank(disease.getDiseaseDatabaseId());
     }

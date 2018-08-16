@@ -31,8 +31,6 @@ public class Lr2Svg {
 
     private final TestResult result;
 
-    private int maxX;
-
     /** Height of entire image in px */
     private final static int HEIGHT=480;
     /** width of the bars part of the image in px */
@@ -98,11 +96,11 @@ public class Lr2Svg {
     private void writeScale(Writer writer, double maxAmp, double scaling) throws IOException {
         int Y = heightOfMiddleLine +  MIN_VERTICAL_OFFSET + BOX_OFFSET*4;
         int maxTick = (int) Math.ceil(maxAmp);
-        this.maxX = (int)(maxTick * scaling);
+        int maxX = (int) (maxTick * scaling);
         int midline=WIDTH/2;
         writer.write("<line fill=\"none\" stroke=\"midnightblue\" stroke-width=\"2\" " +
-                "x1=\""+(midline-maxX)+"\" y1=\""+Y+"\" x2=\""+(midline+maxX)+"\" y2=\""+Y+"\"/>\n");
-        int block = maxX/maxTick;
+                "x1=\""+(midline- maxX)+"\" y1=\""+Y+"\" x2=\""+(midline+ maxX)+"\" y2=\""+Y+"\"/>\n");
+        int block = maxX /maxTick;
         for (int i=1;i<=maxTick;++i) {
             int offset=block*i;
             // negative tick

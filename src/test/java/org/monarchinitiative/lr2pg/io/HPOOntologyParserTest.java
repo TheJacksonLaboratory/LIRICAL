@@ -3,14 +3,14 @@ package org.monarchinitiative.lr2pg.io;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoInheritanceTermIds;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.io.obo.hpo.HpoOboParser;
+import org.monarchinitiative.phenol.io.obo.hpo.HpOboParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,7 +19,9 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getAn
 
 /**
  * This class is intended to show how to use the HPO Ontology parser.
+ * No longer needed to test LR2PG!
  */
+@Deprecated
 public class HPOOntologyParserTest {
 
     private static HpoOntology ontology =null;
@@ -29,10 +31,10 @@ public class HPOOntologyParserTest {
 
 
     @BeforeClass
-    public static void setup() throws IOException {
+    public static void setup() throws PhenolException {
         ClassLoader classLoader = HPOOntologyParserTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
-        HpoOboParser parser = new HpoOboParser(new File(hpoPath));
+        HpOboParser parser = new HpOboParser(new File(hpoPath));
         ontology=parser.parse();
         HPO_PREFIX = new TermPrefix("HP");
     }
@@ -69,18 +71,22 @@ public class HPOOntologyParserTest {
         Assert.assertTrue(existsPath(ontology,otitisMedia, PHENOTYPIC_ABNORMALITY));
     }
 
-    /** Abnormality of the middle ear (HP:0000370) should have the ancestors Abnormality of the ear (HP:0000598)
+    /** Abnormality of the middle ear (HP:0000370) should have the ancestors
+     * Abnormality of the ear (HP:0000598)
+     *  Abnormal ear morphology HP:0031703
      * and Phenotypic abnormality (HP:0000118). Note that ancestors includes the term itself! */
     @Test
     public void testGetAncestors() {
         TermId abnMiddleEar = new TermId(HPO_PREFIX,"0000370");
         TermId abnEar = new TermId(HPO_PREFIX,"0000598");
+        TermId abnEarMorph = new TermId(HPO_PREFIX,"0031703");
         TermId rootId = new TermId(HPO_PREFIX,"0000118");
         Set<TermId> ancTermIds = getAncestorTerms(ontology,abnMiddleEar);
         TermId root = TermId.constructWithPrefix("HP:0000001"); // the very root of the ontology
         Set<TermId> expected = new HashSet<>();
         expected.add(rootId);
         expected.add(abnEar);
+        expected.add(abnEarMorph);
         expected.add(abnMiddleEar);
         if (ancTermIds.contains(root)) { expected.add(root); }
         Assert.assertEquals(expected,ancTermIds);

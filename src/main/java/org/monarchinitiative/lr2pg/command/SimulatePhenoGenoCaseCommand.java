@@ -35,8 +35,6 @@ public class SimulatePhenoGenoCaseCommand implements Command {
 
     private final String backgroundFreqPath;
 
-    private Map<TermId,String> geneId2SymbolMap;
-
 
     /**
      * @param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
@@ -67,8 +65,8 @@ public class SimulatePhenoGenoCaseCommand implements Command {
         HpoDataIngestor ingestor = new HpoDataIngestor(this.dataDirectoryPath);
         HpoOntology ontology=ingestor.getOntology();
         Map<TermId,HpoDisease> diseaseMap=ingestor.getDiseaseMap();
-        Disease2GeneDataIngestor d2gIngestor = new Disease2GeneDataIngestor(this.dataDirectoryPath);
-        this.geneId2SymbolMap = d2gIngestor.getGeneId2SymbolMap();
+        Disease2GeneDataIngestor d2gIngestor = new Disease2GeneDataIngestor(this.dataDirectoryPath, ontology);
+        Map<TermId, String> geneId2SymbolMap = d2gIngestor.getGeneId2SymbolMap();
         Multimap<TermId,TermId> disease2geneMultimap=d2gIngestor.getDisease2geneMultimap();
         GenotypeDataIngestor gdingestor = new GenotypeDataIngestor(backgroundFreqPath);
         Map<TermId,Double> gene2backgroundFrequency= gdingestor.parse();
@@ -84,7 +82,7 @@ public class SimulatePhenoGenoCaseCommand implements Command {
         HpoCase hpocase = simulator.evaluateCase();
         HpoDisease disease = diseaseMap.get(diseaseCurie);
         String diseaseName = disease.getName();
-        simulator.outputSvg(diseaseCurie,diseaseName,ontology,geneId2SymbolMap);
+        simulator.outputSvg(diseaseCurie,diseaseName,ontology, geneId2SymbolMap);
     }
 
 
