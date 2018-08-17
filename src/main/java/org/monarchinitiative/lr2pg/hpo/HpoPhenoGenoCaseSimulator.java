@@ -13,7 +13,8 @@ import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class is intended to try out some architectures for the genotype-phenotype

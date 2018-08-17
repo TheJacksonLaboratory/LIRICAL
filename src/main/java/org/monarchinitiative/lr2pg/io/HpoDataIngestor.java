@@ -48,7 +48,9 @@ public class HpoDataIngestor {
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationpath,ontology);
         try {
             this.diseaseMap = annotationParser.parse();
-            if (! annotationParser.validParse()) {
+            logger.error("disease map size="+diseaseMap.size());
+            boolean bla=false;
+            if (bla && ! annotationParser.validParse()) {
                 logger.error("Warning -- parse problems encountered with the annotation file at {}.", annotationpath);
                 int n = annotationParser.getErrors().size();
                 int i=0;

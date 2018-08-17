@@ -1,15 +1,16 @@
 package org.monarchinitiative.lr2pg.hpo;
 
 
-
 import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.HpoDataIngestor;
-import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
-import org.monarchinitiative.phenol.formats.hpo.*;
+import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
+import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.*;

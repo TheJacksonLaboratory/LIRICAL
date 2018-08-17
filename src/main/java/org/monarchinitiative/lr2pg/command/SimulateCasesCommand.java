@@ -43,7 +43,7 @@ public class SimulateCasesCommand implements Command {
     }
 
     public void execute() {
-        logger.trace("Executing HpoCase simulation");
+        logger.error("Executing HpoCase simulation");
         if (gridSearch) {
             try {
                 gridsearch();

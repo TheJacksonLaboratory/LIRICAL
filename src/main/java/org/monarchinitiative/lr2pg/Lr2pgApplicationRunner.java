@@ -226,7 +226,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
         }
 
         command.execute();
-
+        logger.trace("done execution");
 
 
     }
@@ -292,8 +292,9 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
 
     private static void downloadUsage() {
         System.out.println("download:");
-        System.out.println("\tjava -jar Lr2pg.jar download [-d <directory>]");
+        System.out.println("\tjava -jar Lr2pg.jar download [-d <directory>] [--overwrite]");
         System.out.println("\t-d <directory>: name of directory to which HPO data will be downloaded (default:\"data\")");
+        System.out.println("\t--overwrite: do not skip even if file already downloaded");
         System.out.println();
     }
 

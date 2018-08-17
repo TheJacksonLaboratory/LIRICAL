@@ -45,6 +45,7 @@ public class DownloadCommand implements Command {
     public DownloadCommand(String path,boolean overwrite){
         this.downloadDirectory=path;
         this.overwrite=overwrite;
+        logger.error("overwrte="+overwrite);
     }
 
     /**
