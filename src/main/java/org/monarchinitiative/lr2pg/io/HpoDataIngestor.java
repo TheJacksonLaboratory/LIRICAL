@@ -42,28 +42,26 @@ public class HpoDataIngestor {
         try {
             this.ontology = parser.parse();
         } catch (PhenolException ioe) {
-            System.err.println("Could not parse hp.obo file: " + ioe.getMessage());
             throw new RuntimeException("Could not parse hp.obo file: " + ioe.getMessage());
         }
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationpath,ontology);
         try {
             this.diseaseMap = annotationParser.parse();
-            logger.error("disease map size="+diseaseMap.size());
-            boolean bla=false;
-            if (bla && ! annotationParser.validParse()) {
-                logger.error("Warning -- parse problems encountered with the annotation file at {}.", annotationpath);
+            logger.info("disease map size="+diseaseMap.size());
+            if (! annotationParser.validParse()) {
+                logger.debug("Parse problems encountered with the annotation file at {}.", annotationpath);
                 int n = annotationParser.getErrors().size();
                 int i=0;
                 for (String error: annotationParser.getErrors()) {
                     i++;
-                    logger.error(i +"/"+n+") "+error);
+                    logger.debug(i +"/"+n+") "+error);
                 }
-                logger.trace("Done showing errors");
+                logger.debug("Done showing errors");
             }
         } catch (PhenolException pe) {
             throw new RuntimeException("Could not parse annotation file: "+pe.getMessage());
         }
-        logger.trace("Done parsing; diseasemap has {} entries", diseaseMap.size());
+        logger.info("Done parsing; diseasemap has {} entries", diseaseMap.size());
     }
 
     public HpoOntology getOntology() {
