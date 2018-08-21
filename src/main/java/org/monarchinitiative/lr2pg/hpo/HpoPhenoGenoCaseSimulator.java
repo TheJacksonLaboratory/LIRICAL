@@ -50,6 +50,7 @@ public class HpoPhenoGenoCaseSimulator {
                                      List<TermId> hpoTerms,
                                      Map<TermId,Double> gene2backgroundFrequency)  {
         this.entrezGeneId = new TermId(NCBI_GENE_PREFIX,entrezGeneNumber);
+        Objects.requireNonNull(disease2geneMultimap);
         VcfSimulator genotypes = new VcfSimulator(disease2geneMultimap.keySet(), entrezGeneId,varcount,varpath);
 
         PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);

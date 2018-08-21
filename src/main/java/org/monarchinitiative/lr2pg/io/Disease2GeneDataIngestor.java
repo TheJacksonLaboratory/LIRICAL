@@ -38,12 +38,9 @@ public class Disease2GeneDataIngestor {
                 this.dataDirectoryPath,
                 File.separator,
                 MIM2GENE_MEDGEN_FILENAME);
-        /*HpoDisease2GeneParser parser = new HpoDisease2GeneParser(geneinfopath,mim2gene_medgenPath);
-        this.gene2diseaseMultimap = parser.getGeneId2DiseaseIdMap();
-        this.disease2geneMultimap = parser.getDiseaseId2GeneIdMap();
-        this.geneId2symbolMap=parser.getGeneId2SymbolMap();*/
         File orphafilePlaceholder=null;
         HpoAssociationParser assocParser = new HpoAssociationParser(new File(geneinfopath),new File(mim2gene_medgenPath),orphafilePlaceholder,ontology);
+        assocParser.parse();
         this.gene2diseaseMultimap = assocParser.getGeneToDiseaseIdMap();
         this.disease2geneMultimap = assocParser.getDiseaseToGeneIdMap();
         this.geneId2symbolMap = assocParser.getGeneIdToSymbolMap();
