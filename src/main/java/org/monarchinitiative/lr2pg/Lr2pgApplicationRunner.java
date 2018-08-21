@@ -7,8 +7,12 @@ import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.io.CommandParser;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ApplicationContext;
@@ -18,52 +22,23 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class Lr2pgApplicationRunner implements ApplicationRunner  {
     public static final Logger logger = LoggerFactory.getLogger(Lr2pgApplicationRunner.class);
 
-    /**
-     * Path to directory where we will download the needed files.
-     */
-    private String dataDownloadDirectory = null;
-    /** This is where we download the files to by default (otherwise, specify {@code -f <arg>}).*/
-    private static final String DEFAULT_DATA_DOWNLOAD_DIRECTORY = "data";
-    /** The default number of "random" HPO cases to simulate.*/
-    private static final int DEFAULT_N_CASES_TO_SIMULATE = 25;
-    /** The default number of terms to simulate per case.*/
-    private static final int DEFAULT_N_TERMS_PER_CASE = 5;
-    /** The default number of ranomd (noise) terms to add per simulated case*/
-    private static final int DEFAULT_N_NOISE_TERMS_PER_CASE = 1;
-    /** The number of HPO Cases to simulate.*/
-    private int n_cases_to_simulate;
-    /** The number of random HPO terms to simulate in each simulated case.*/
-    private int n_terms_per_case;
-    /** The number of random noise terms to add to each simulated HPO case.*/
-    private int n_noise_terms;
-    /** CURIE of disease (e.g., OMIM:600100) for the analysis. */
-    private String diseaseId =null;
-    /** If true, we do a grid search over the parameters for LR2PG clinical. */
-    private boolean gridSearch=false;
-    /** Default name of the SVG file with the results of analysis. */
-    private static final String DEFAULT_SVG_OUTFILE_NAME="test.svg";
-    /** Name of the SVG file with the results of analysis. */
-    private String svgOutFileName=null;
-    /** If true, overwrite previously downloaded files. */
-    private boolean overwrite=false;
-    /** Gene id (e.g., 2200 for FBN1) for disease to be simulated. */
-    private String entrezGeneId =null;
-    /** Mean pathogenicity of variants in pathogenic bin. */
-    private double varpath=1.0;
-    /** Count of variants in the pathogenic bin */
-    private int varcount=1;
-    /** Comma separated list of HPO ids */
-    private String termList=null;
-    /** Path to the file produced by G2GIT - with frequencies for background pathogenic mutations per gene */
-    private String backgroundFreq=null;
+    @Autowired
+    private HpoOntology ontology;
 
-    private static final String DEFAULT_BACKGROUND_FREQ=String.format("%s%s%s",
-            DEFAULT_DATA_DOWNLOAD_DIRECTORY, File.separator,"background-freq.txt");
+    @Autowired
+    private Map<TermId,HpoDisease> diseaseMap;
+
+
+
+    private String dataDownloadDirectory;
+
+
 
     /**The command object.*/
     private Command command = null;
@@ -94,16 +69,12 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
 
         switch (mycommand) {
             case "download":
-                if (this.dataDownloadDirectory == null) {
-                    this.dataDownloadDirectory = DEFAULT_DATA_DOWNLOAD_DIRECTORY;
-                }
+                boolean overwrite=false;
                 logger.warn(String.format("Download command to %s", dataDownloadDirectory));
                 this.command = new DownloadCommand(dataDownloadDirectory, overwrite);
                 break;
             case "simulate":
-                if (this.dataDownloadDirectory == null) {
-                    this.dataDownloadDirectory = DEFAULT_DATA_DOWNLOAD_DIRECTORY;
-                }
+
                 System.err.println("SIMULATE");
                 runPhenoSimulation();
                 System.err.println("END");
@@ -112,45 +83,41 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
 //                        n_cases_to_simulate, n_terms_per_case, n_noise_terms, gridSearch);
                 break;
             case "svg":
-                if (this.dataDownloadDirectory == null) {
-                    this.dataDownloadDirectory = DEFAULT_DATA_DOWNLOAD_DIRECTORY;
-                }
-                if (diseaseId ==null) {
-                    printUsage("svg command requires --disease option");
-                }
+
+//                if (diseaseId ==null) {
+//                    printUsage("svg command requires --disease option");
+//                }
                 //n_terms_per_case, n_noise_terms);
-                this.command = new HpoCase2SvgCommand(this.dataDownloadDirectory, diseaseId,svgOutFileName,n_terms_per_case,n_noise_terms);
+                //this.command = new HpoCase2SvgCommand(this.dataDownloadDirectory, diseaseId,svgOutFileName,n_terms_per_case,n_noise_terms);
                 break;
             case "phenogeno":
-                if (this.dataDownloadDirectory == null) {
-                    this.dataDownloadDirectory = DEFAULT_DATA_DOWNLOAD_DIRECTORY;
-                }
-                if (termList==null) {
-                    System.err.println("[ERROR] --term-list with list of HPO ids required");
-                    phenoGenoUsage();
-                    System.exit(1);
-                }
-                if (diseaseId==null){
-                    System.err.println("[ERROR] --disease option (e.g., OMIM:600100) required");
-                    phenoGenoUsage();
-                    System.exit(1);
-                }
-                if (entrezGeneId==null){
-                    System.err.println("[ERROR] --geneid option (e.g., 2200) required");
-                    phenoGenoUsage();
-                    System.exit(1);
-                }
-                if (backgroundFreq==null) {
-                    backgroundFreq=DEFAULT_BACKGROUND_FREQ;
-                }
-                this.command = new SimulatePhenoGenoCaseCommand(this.dataDownloadDirectory,
-                        this.entrezGeneId,
-                        this.varcount,
-                        this.varpath,
-                        this.diseaseId,
-                        this.termList,
-                        this.backgroundFreq);
-                break;
+
+//                if (termList==null) {
+//                    System.err.println("[ERROR] --term-list with list of HPO ids required");
+//                    phenoGenoUsage();
+//                    System.exit(1);
+//                }
+//                if (diseaseId==null){
+//                    System.err.println("[ERROR] --disease option (e.g., OMIM:600100) required");
+//                    phenoGenoUsage();
+//                    System.exit(1);
+//                }
+//                if (entrezGeneId==null){
+//                    System.err.println("[ERROR] --geneid option (e.g., 2200) required");
+//                    phenoGenoUsage();
+//                    System.exit(1);
+//                }
+//                if (backgroundFreq==null) {
+//                    backgroundFreq=DEFAULT_BACKGROUND_FREQ;
+//                }
+//                this.command = new SimulatePhenoGenoCaseCommand(this.dataDownloadDirectory,
+//                        this.entrezGeneId,
+//                        this.varcount,
+//                        this.varpath,
+//                        this.diseaseId,
+//                        this.termList,
+//                        this.backgroundFreq);
+//                break;
             default:
                 printUsage(String.format("Did not recognize command: \"%s\"", mycommand));
         }
@@ -162,7 +129,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
 
     private void runGenoPhenoSimulation() {
         ApplicationContext context = new AnnotationConfigApplicationContext(Lr2pgConfiguration.class);
-        HpoPhenoGenoCaseSimulator simulator = context.getBean(HpoPhenoGenoCaseSimulator.class)
+        HpoPhenoGenoCaseSimulator simulator = context.getBean(HpoPhenoGenoCaseSimulator.class);
     }
 
 
@@ -221,10 +188,10 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
         System.out.println("simulate:");
         System.out.println("\tjava -jar Lr2pg.jar simulate [-d <directory>] [-s <int>] [-t <int>] [-n <int>] [--grid]");
         System.out.println("\t-d <directory>: name of directory with HPO data (default:\"data\")");
-        System.out.println(String.format("\t-s <int>: number of cases to simulate (default: %d)", DEFAULT_N_CASES_TO_SIMULATE));
-        System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
-        System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
-        System.out.println("\t--grid: Indicates a grid search over noise and imprecision should be performed");
+//        System.out.println(String.format("\t-s <int>: number of cases to simulate (default: %d)", DEFAULT_N_CASES_TO_SIMULATE));
+//        System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
+//        System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
+//        System.out.println("\t--grid: Indicates a grid search over noise and imprecision should be performed");
         System.out.println();
     }
 
@@ -232,9 +199,9 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
         System.out.println("svg:");
         System.out.println("\tjava -jar Lr2pg.jar svg --disease <name> [-- svg <file>] [-d <directory>] [-t <int>] [-n <int>]");
         System.out.println("\t--disease <string>: name of disease to simulate (e.g., OMIM:600321)");
-        System.out.println(String.format("\t--svg <file>: name of output SVG file (default: %s)", DEFAULT_SVG_OUTFILE_NAME));
-        System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
-        System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
+//        System.out.println(String.format("\t--svg <file>: name of output SVG file (default: %s)", DEFAULT_SVG_OUTFILE_NAME));
+//        System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
+//        System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
     }
 
     private static void downloadUsage() {
