@@ -51,13 +51,13 @@ public class SimulateCasesCommand implements Command {
                 lre.printStackTrace();
             }
         } else {
-            PhenotypeOnlyHpoCaseSimulator simulator = new PhenotypeOnlyHpoCaseSimulator(this.dataDirectoryPath, n_cases_to_simulate, n_terms_per_case, n_noise_terms);
-            simulator.debugPrint();
-            try {
-                simulator.simulateCases();
-            } catch (Lr2pgException e) {
-                e.printStackTrace();
-            }
+//            PhenotypeOnlyHpoCaseSimulator simulator = new PhenotypeOnlyHpoCaseSimulator(this.dataDirectoryPath, n_cases_to_simulate, n_terms_per_case, n_noise_terms);
+//            simulator.debugPrint();
+//            try {
+//                simulator.simulateCases();
+//            } catch (Lr2pgException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 
@@ -80,9 +80,9 @@ public class SimulateCasesCommand implements Command {
             for (int i = 0; i < termnumber.length; i++) {
                 for (int j = 0; j < randomtermnumber.length; j++) {
                     boolean imprec = (j > 4);
-                    simulator = new PhenotypeOnlyHpoCaseSimulator(this.dataDirectoryPath, n_cases, termnumber[i], randomtermnumber[j], imprec);
-                    simulator.simulateCases();
-                    Z[i][j] = simulator.getProportionAtRank1();
+//                    simulator = new PhenotypeOnlyHpoCaseSimulator(this.dataDirectoryPath, n_cases, termnumber[i], randomtermnumber[j], imprec);
+//                    simulator.simulateCases();
+//                    Z[i][j] = simulator.getProportionAtRank1();
                     writer.write(String.format("terms: %d; noise terms: %d; percentage at rank 1: %.2f\n",
                             termnumber[i],
                             randomtermnumber[j],

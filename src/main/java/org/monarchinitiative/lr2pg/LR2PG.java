@@ -1,10 +1,11 @@
 package org.monarchinitiative.lr2pg;
 
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+
 
 /**
  * This is the central class that coordinates the phenotype/Genotype2LR likelihood ratio test.
@@ -15,7 +16,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class LR2PG {
-    private static final Logger logger = LogManager.getLogger();
     static public void main(String [] args) {
         long startTime = System.currentTimeMillis();
         SpringApplication.run(LR2PG.class, args);

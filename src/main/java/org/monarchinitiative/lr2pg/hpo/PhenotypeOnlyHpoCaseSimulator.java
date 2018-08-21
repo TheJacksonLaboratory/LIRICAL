@@ -12,6 +12,7 @@ import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
@@ -54,16 +55,19 @@ public class PhenotypeOnlyHpoCaseSimulator {
 
    /**
      * The constructor initializes {@link #ontology} and {@link #diseaseMap} and {@link #phenotypeterms}.
-     * @param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
+     * param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
      */
-    public PhenotypeOnlyHpoCaseSimulator(String datadir, int cases_to_simulate, int terms_per_case, int noise_terms ) {
+   @Autowired
+    public PhenotypeOnlyHpoCaseSimulator(HpoOntology ontology,
+                                         Map<TermId,HpoDisease> diseaseMap,
+                                         int cases_to_simulate, int terms_per_case, int noise_terms ) {
 
         this.n_cases_to_simulate=cases_to_simulate;
         this.n_terms_per_case=terms_per_case;
         this.n_noise_terms=noise_terms;
-        HpoDataIngestor ingestor = new HpoDataIngestor(datadir);
-        this.ontology=ingestor.getOntology();
-        this.diseaseMap=ingestor.getDiseaseMap();
+        //HpoDataIngestor ingestor = new HpoDataIngestor(datadir);
+        this.ontology=ontology;//ingestor.getOntology();
+        this.diseaseMap=diseaseMap;//ingestor.getDiseaseMap();
         this.phenotypeLrEvaluator = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
         Set<TermId> descendents=getDescendents(ontology,PHENOTYPIC_ABNORMALITY);
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
@@ -73,8 +77,10 @@ public class PhenotypeOnlyHpoCaseSimulator {
         this.phenotypeterms=builder.build();
     }
 
-    public PhenotypeOnlyHpoCaseSimulator(String datadir, int cases_to_simulate, int terms_per_case, int noise_terms, boolean imprecise ) {
-        this(datadir,cases_to_simulate,terms_per_case,noise_terms);
+    @Autowired
+    public PhenotypeOnlyHpoCaseSimulator(HpoOntology ontology,
+                                         Map<TermId,HpoDisease> diseaseMap, int cases_to_simulate, int terms_per_case, int noise_terms, boolean imprecise ) {
+        this(ontology,diseaseMap,cases_to_simulate,terms_per_case,noise_terms);
         this.addTermImprecision=imprecise;
     }
 
@@ -219,6 +225,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
         /** Object to evaluate the results of differential diagnosis by LR analysis. */
         CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
         HpoCase hpocase = evaluator.evaluate();
+        System.err.println(hpocase.toString());
         return hpocase.getRank(disease.getDiseaseDatabaseId());
     }
 
@@ -226,8 +233,8 @@ public class PhenotypeOnlyHpoCaseSimulator {
 
 
     public void debugPrint() {
-        logger.trace(String.format("Got %d terms and %d diseases",ontology.getAllTermIds().size(),
-                diseaseMap.size()));
+        String.format("Got %d terms and %d diseases",ontology.getAllTermIds().size(),
+                diseaseMap.size());
     }
 
 

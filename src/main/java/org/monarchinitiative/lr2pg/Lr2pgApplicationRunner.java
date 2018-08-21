@@ -2,11 +2,17 @@ package org.monarchinitiative.lr2pg;
 
 
 import org.monarchinitiative.lr2pg.command.*;
+import org.monarchinitiative.lr2pg.configuration.Lr2pgConfiguration;
+import org.monarchinitiative.lr2pg.exception.Lr2pgException;
+import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
+import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.io.CommandParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -24,7 +30,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
     /** This is where we download the files to by default (otherwise, specify {@code -f <arg>}).*/
     private static final String DEFAULT_DATA_DOWNLOAD_DIRECTORY = "data";
     /** The default number of "random" HPO cases to simulate.*/
-    private static final int DEFAULT_N_CASES_TO_SIMULATE = 1000;
+    private static final int DEFAULT_N_CASES_TO_SIMULATE = 25;
     /** The default number of terms to simulate per case.*/
     private static final int DEFAULT_N_TERMS_PER_CASE = 5;
     /** The default number of ranomd (noise) terms to add per simulated case*/
@@ -85,86 +91,6 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
         String mycommand = nonoptionargs.get(0);
 
         // collect the options
-        if (args.containsOption("download")) {
-            this.dataDownloadDirectory = args.getOptionValues("download").get(0);
-        }
-
-        if (args.containsOption("grid")) {
-            this.gridSearch = true;
-        }
-        if (args.containsOption("term-list")) {
-            this.termList = args.getOptionValues("term-list").get(0);
-        }
-        if (args.containsOption("varcount")) {
-            try {
-                varcount=Integer.parseInt(args.getOptionValues("varcount").get(0));
-            } catch (NumberFormatException e) {
-                System.err.println("Count not parse varcount");
-                e.printStackTrace();
-                System.exit(1);
-            }
-        }
-
-        if (args.containsOption("varpath")) {
-            try {
-                varpath=Double.parseDouble(args.getOptionValues("varpath").get(0));
-            } catch (NumberFormatException e) {
-                System.err.println("Count not parse variant pathogenicity");
-                e.printStackTrace();
-                System.exit(1);
-            }
-        }
-
-        if (args.containsOption("geneid")) {
-            this.entrezGeneId =args.getOptionValues("geneid").get(0);
-        }
-
-        if (args.containsOption("overwrite")) {
-            this.overwrite=true;
-        }
-
-        if (args.containsOption("disease")) {
-            diseaseId =args.getOptionValues("disease").get(0);
-        }
-        if (args.containsOption("svg")) {
-            svgOutFileName=args.getOptionValues("svg").get(0);
-        } else {
-            svgOutFileName=DEFAULT_SVG_OUTFILE_NAME;
-        }
-        if (args.containsOption("t")) {
-            String term = args.getOptionValues("t").get(0);
-            try {
-                n_terms_per_case = Integer.parseInt(term);
-            } catch (NumberFormatException nfe) {
-                printUsage("[ERROR] Malformed argument for -t option (must be integer)");
-            }
-        } else {
-            n_terms_per_case = DEFAULT_N_TERMS_PER_CASE;
-        }
-        if (args.containsOption("n")) {
-            String noise = args.getOptionValues("n").get(0);
-            try {
-                n_noise_terms = Integer.parseInt(noise);
-            } catch (NumberFormatException nfe) {
-                printUsage("[ERROR] Malformed argument for -n option (must be integer)");
-            }
-        } else {
-            n_noise_terms = DEFAULT_N_NOISE_TERMS_PER_CASE;
-        }
-        if (args.containsOption("s")) {
-            String simul = args.getOptionValues("s").get(0);
-            try {
-                n_cases_to_simulate = Integer.parseInt(simul);
-            } catch (NumberFormatException nfe) {
-                printUsage("[ERROR] Malformed argument for -s option (must be integer)");
-            }
-        } else {
-            n_cases_to_simulate = DEFAULT_N_CASES_TO_SIMULATE;
-        }
-
-
-
-
 
         switch (mycommand) {
             case "download":
@@ -178,8 +104,12 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
                 if (this.dataDownloadDirectory == null) {
                     this.dataDownloadDirectory = DEFAULT_DATA_DOWNLOAD_DIRECTORY;
                 }
-                this.command = new SimulateCasesCommand(this.dataDownloadDirectory,
-                        n_cases_to_simulate, n_terms_per_case, n_noise_terms, gridSearch);
+                System.err.println("SIMULATE");
+                runPhenoSimulation();
+                System.err.println("END");
+                System.exit(1);
+//                this.command = new SimulateCasesCommand(this.dataDownloadDirectory,
+//                        n_cases_to_simulate, n_terms_per_case, n_noise_terms, gridSearch);
                 break;
             case "svg":
                 if (this.dataDownloadDirectory == null) {
@@ -227,8 +157,25 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
 
         command.execute();
         logger.trace("done execution");
+    }
 
 
+    private void runGenoPhenoSimulation() {
+        ApplicationContext context = new AnnotationConfigApplicationContext(Lr2pgConfiguration.class);
+        HpoPhenoGenoCaseSimulator simulator = context.getBean(HpoPhenoGenoCaseSimulator.class)
+    }
+
+
+
+    private void runPhenoSimulation() {
+        ApplicationContext context = new AnnotationConfigApplicationContext(Lr2pgConfiguration.class);
+        PhenotypeOnlyHpoCaseSimulator simulator = context.getBean(PhenotypeOnlyHpoCaseSimulator.class);
+        simulator.debugPrint();
+        try {
+            simulator.simulateCases();
+        } catch (Lr2pgException e) {
+            e.printStackTrace();
+        }
     }
 
 

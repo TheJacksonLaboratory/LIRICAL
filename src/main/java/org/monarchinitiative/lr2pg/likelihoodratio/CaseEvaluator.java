@@ -155,9 +155,6 @@ public class CaseEvaluator {
 
 
     private Map<TermId,TestResult> evaluateRanks(Map<TermId,TestResult> resultMap) {
-//        AtomicInteger i=new AtomicInteger(0);
-//        resultMap.values().stream().sorted(Comparator.comparingDouble(TestResult::getPosttestProbability).reversed() ).forEach(tr ->tr.setRank(i.incrementAndGet()));
-
         List<TestResult> results = new ArrayList<>(resultMap.values());
        results.sort(Collections.reverseOrder());
         int rank=0;

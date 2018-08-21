@@ -35,18 +35,18 @@ public class HpoCase2SvgCommand implements Command {
 
     public void execute() {
         int cases_to_simulate=1;
-        PhenotypeOnlyHpoCaseSimulator simulator = new PhenotypeOnlyHpoCaseSimulator( dataDirectory, cases_to_simulate, n_terms_per_case, n_noise_terms);
-        try {
-            HpoDisease disease = simulator.name2disease(diseaseCurie);
-            HpoOntology ontology = simulator.getOntology();
-            simulator.simulateCase(disease);
-            HpoCase hpocase = simulator.getCurrentCase();
-            Lr2Svg l2svg = new Lr2Svg(hpocase,diseaseCurie,disease.getName(), ontology,null);
-            l2svg.writeSvg("test.svg");
-        } catch (Lr2pgException e) {
-            e.printStackTrace();
-            System.err.println("Could not simulate case");
-        }
+//        PhenotypeOnlyHpoCaseSimulator simulator = new PhenotypeOnlyHpoCaseSimulator( dataDirectory, cases_to_simulate, n_terms_per_case, n_noise_terms);
+//        try {
+//            HpoDisease disease = simulator.name2disease(diseaseCurie);
+//            HpoOntology ontology = simulator.getOntology();
+//            simulator.simulateCase(disease);
+//            HpoCase hpocase = simulator.getCurrentCase();
+//            Lr2Svg l2svg = new Lr2Svg(hpocase,diseaseCurie,disease.getName(), ontology,null);
+//            l2svg.writeSvg("test.svg");
+//        } catch (Lr2pgException e) {
+//            e.printStackTrace();
+//            System.err.println("Could not simulate case");
+//        }
     }
 
 }
