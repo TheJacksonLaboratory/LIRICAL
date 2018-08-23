@@ -1,9 +1,11 @@
 package org.monarchinitiative.lr2pg.configuration;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.VcfSimulator;
+import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -23,7 +25,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
-import javax.annotation.Resource;
 
 import java.io.File;
 import java.util.List;
@@ -33,7 +34,7 @@ import java.util.Map;
 @PropertySource("classpath:application.properties")
 public class Lr2pgConfiguration {
 
-    public static final Logger logger = LoggerFactory.getLogger(Lr2pgConfiguration.class);
+    private static final Logger logger = LoggerFactory.getLogger(Lr2pgConfiguration.class);
     @Value("${data.path}")
     private String datapath;
     @Value("${cases_to_simulate}")
@@ -50,29 +51,40 @@ public class Lr2pgConfiguration {
     private String varpath;
     @Value("${entrezgene.id}")
     private String entrezgeneid;
+    @Value("${disease.id}")
+    private String diseaseId;
+    @Value("${term.list}")
+    private String termlist;
 
     @Bean(name = "hpoOboFile")
     public File hpoOboFile() {
-        File namedFile = new File("data/hp.obo");
-        return namedFile;
+        return new File("data/hp.obo");
     }
 
     @Bean(name = "phenotype.hpoa")
     public File annotationFile() {
-        File phenotypeHpoa = new File("data/phenotype.hpoa");
-        return phenotypeHpoa;
+        return new File("data/phenotype.hpoa");
     }
 
 
-    @Autowired
-    private final Environment env;
-
-    public Lr2pgConfiguration(Environment env) {
-        this.env = env;
+    public Lr2pgConfiguration() {
 
     }
 
-
+    /**
+     * We expect to get an argument such as
+     * --term.list=HP:0002751,HP:0001166,HP:0004933,HP:0001083,HP:0003179
+     *
+     * @return list of termid for this patient
+     */
+    @Bean
+    List<TermId> termIdList() {
+        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
+        for (String id : this.termlist.split(",")) {
+            TermId tid = TermId.constructWithPrefix(id);
+        }
+        return builder.build();
+    }
 
     @Bean
     @Primary
@@ -114,8 +126,6 @@ public class Lr2pgConfiguration {
     }
 
 
-
-
     @Bean
     @Primary
     PhenotypeOnlyHpoCaseSimulator phenotypeOnlyHpoCaseSimulator(HpoOntology ontology, Map<TermId, HpoDisease> diseaseMap) {
@@ -131,6 +141,37 @@ public class Lr2pgConfiguration {
                 n_terms_per_case,
                 n_noise_terms,
                 imprecise_phenotype);
+    }
+
+    @Bean(name = "gene2backgroundFrequency")
+    Map<TermId, Double> gene2backgroundFrequency() {
+        String path = String.format("%s%s%s",datapath,File.separator,"background-freq.txt");
+        GenotypeDataIngestor gdingestor = new GenotypeDataIngestor(path);
+        Map<TermId, Double> gene2backgroundFrequency = gdingestor.parse();
+        return gene2backgroundFrequency;
+    }
+
+    @Bean
+    HpoPhenoGenoCaseSimulator hpoPhenoGenoCaseSimulator(HpoOntology ontology,
+                                                        Map<TermId, HpoDisease> diseaseMap,
+                                                        @Autowired @Qualifier("disease2geneMultimap") Multimap<TermId, TermId> disease2geneMultimap,
+                                                        List<TermId> termIdList,
+                                                        @Autowired @Qualifier("gene2backgroundFrequency") Map<TermId, Double> backgroundfreq
+                                                        ){
+        String geneSymbol="fake"; // todo
+        Integer variantCount=Integer.parseInt(varcount);
+        Double meanVarPathogenicity=Double.parseDouble(varpath);
+
+        HpoPhenoGenoCaseSimulator simulator = new HpoPhenoGenoCaseSimulator(ontology,
+                diseaseMap,
+                disease2geneMultimap,
+                geneSymbol,
+                variantCount,
+                meanVarPathogenicity,
+                termIdList,
+                backgroundfreq);
+
+        return simulator;
     }
 
 
@@ -155,6 +196,7 @@ public class Lr2pgConfiguration {
                 mim2genemedgenFile,
                 orphafilePlaceholder,
                 ontology);
+        assocParser.parse();
         return assocParser;
     }
 
@@ -182,35 +224,10 @@ public class Lr2pgConfiguration {
         TermId entrezId = new TermId(ENTREZ,entrezgeneid);
         Integer vcount = Integer.parseInt(varcount);
         Double vpath=Double.parseDouble(varpath);
-        if (disease2geneMultimap==null) {
-            System.err.println("[ERROR]--disease2geneMultimap null");System.exit(1);
-        }
         return new  VcfSimulator(disease2geneMultimap.keySet(),entrezId,vcount,vpath);
     }
 
 
-
-
-
-
-
-
-    @Bean
-    HpoPhenoGenoCaseSimulator hpoPhenoGenoCaseSimulator(HpoOntology ontology,
-                                                        Map<TermId,HpoDisease> diseaseMap) {
-
-    /*
-        HpoPhenoGenoCaseSimulator(HpoOntology ontology,
-                Map<TermId,HpoDisease> diseaseMap,
-                Multimap<TermId,TermId> disease2geneMultimap,
-                String entrezGeneNumber,
-        int varcount,
-        double varpath,
-        List<TermId> hpoTerms,
-        Map<TermId,Double> gene2backgroundFrequency)
-        */
-    return null;
-    }
 
 
 

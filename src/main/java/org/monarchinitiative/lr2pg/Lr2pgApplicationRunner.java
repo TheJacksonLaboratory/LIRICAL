@@ -4,6 +4,7 @@ package org.monarchinitiative.lr2pg;
 import org.monarchinitiative.lr2pg.command.*;
 import org.monarchinitiative.lr2pg.configuration.Lr2pgConfiguration;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
+import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.io.CommandParser;
@@ -19,14 +20,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 @Component
 public class Lr2pgApplicationRunner implements ApplicationRunner  {
-    public static final Logger logger = LoggerFactory.getLogger(Lr2pgApplicationRunner.class);
+    private static final Logger logger = LoggerFactory.getLogger(Lr2pgApplicationRunner.class);
 
     @Autowired
     private HpoOntology ontology;
@@ -38,10 +38,13 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
 
     private String dataDownloadDirectory;
 
-
-
-    /**The command object.*/
-    private Command command = null;
+    @Autowired
+    private
+    HpoPhenoGenoCaseSimulator hpoPhenoGenoCaseSimulatorsimulator;
+    //
+    @Autowired
+    private
+    Map<TermId, String> geneId2SymbolMap;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -60,8 +63,12 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
 
         List<String> nonoptionargs = args.getNonOptionArgs();
         if (nonoptionargs.size() != 1) {
-            printUsage("[ERROR] No program command given");
+            printUsage("[ERROR] No program command given-size="+nonoptionargs.size());
+            for (String s:nonoptionargs) {
+                System.err.println("noa="+s);
+            }
         }
+        ApplicationContext context = new AnnotationConfigApplicationContext(Lr2pgConfiguration.class);
         // if we get here, we have one command
         String mycommand = nonoptionargs.get(0);
 
@@ -71,16 +78,17 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
             case "download":
                 boolean overwrite=false;
                 logger.warn(String.format("Download command to %s", dataDownloadDirectory));
-                this.command = new DownloadCommand(dataDownloadDirectory, overwrite);
+               // TODO -- implement download command here
                 break;
             case "simulate":
-
                 System.err.println("SIMULATE");
-                runPhenoSimulation();
-                System.err.println("END");
-                System.exit(1);
-//                this.command = new SimulateCasesCommand(this.dataDownloadDirectory,
-//                        n_cases_to_simulate, n_terms_per_case, n_noise_terms, gridSearch);
+                PhenotypeOnlyHpoCaseSimulator simulator = context.getBean(PhenotypeOnlyHpoCaseSimulator.class);
+                simulator.debugPrint();
+                try {
+                    simulator.simulateCases();
+                } catch (Lr2pgException e) {
+                    e.printStackTrace();
+                }
                 break;
             case "svg":
 
@@ -92,58 +100,24 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
                 break;
             case "phenogeno":
 
-//                if (termList==null) {
-//                    System.err.println("[ERROR] --term-list with list of HPO ids required");
-//                    phenoGenoUsage();
-//                    System.exit(1);
-//                }
-//                if (diseaseId==null){
-//                    System.err.println("[ERROR] --disease option (e.g., OMIM:600100) required");
-//                    phenoGenoUsage();
-//                    System.exit(1);
-//                }
-//                if (entrezGeneId==null){
-//                    System.err.println("[ERROR] --geneid option (e.g., 2200) required");
-//                    phenoGenoUsage();
-//                    System.exit(1);
-//                }
-//                if (backgroundFreq==null) {
-//                    backgroundFreq=DEFAULT_BACKGROUND_FREQ;
-//                }
-//                this.command = new SimulatePhenoGenoCaseCommand(this.dataDownloadDirectory,
-//                        this.entrezGeneId,
-//                        this.varcount,
-//                        this.varpath,
-//                        this.diseaseId,
-//                        this.termList,
-//                        this.backgroundFreq);
-//                break;
+                HpoCase hpocase = this.hpoPhenoGenoCaseSimulatorsimulator.evaluateCase();
+                System.err.println(hpocase.toString());
+                TermId diseaseCurie=TermId.constructWithPrefix("OMIM:154700");
+                HpoDisease disease = diseaseMap.get(diseaseCurie);
+                String diseaseName = disease.getName();
+                //Map<TermId, String> geneId2SymbolMap=(Map<TermId, String>)context.getAutowireCapableBeanFactory().getBean("geneId2SymbolMap");
+                this.hpoPhenoGenoCaseSimulatorsimulator.outputSvg(diseaseCurie,diseaseName,ontology, this.geneId2SymbolMap);
+                System.err.println(this.hpoPhenoGenoCaseSimulatorsimulator.toString());
+
+                break;
             default:
                 printUsage(String.format("Did not recognize command: \"%s\"", mycommand));
         }
 
-        command.execute();
         logger.trace("done execution");
     }
 
 
-    private void runGenoPhenoSimulation() {
-        ApplicationContext context = new AnnotationConfigApplicationContext(Lr2pgConfiguration.class);
-        HpoPhenoGenoCaseSimulator simulator = context.getBean(HpoPhenoGenoCaseSimulator.class);
-    }
-
-
-
-    private void runPhenoSimulation() {
-        ApplicationContext context = new AnnotationConfigApplicationContext(Lr2pgConfiguration.class);
-        PhenotypeOnlyHpoCaseSimulator simulator = context.getBean(PhenotypeOnlyHpoCaseSimulator.class);
-        simulator.debugPrint();
-        try {
-            simulator.simulateCases();
-        } catch (Lr2pgException e) {
-            e.printStackTrace();
-        }
-    }
 
 
 
@@ -217,7 +191,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
     /**
      * Print usage information
      */
-    public static void printUsage(String message) {
+    private static void printUsage(String message) {
         printUsageIntro();
         System.out.println();
         System.out.println(message);
