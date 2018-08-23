@@ -66,6 +66,9 @@ public class Lr2pgConfiguration {
         return new File("data/phenotype.hpoa");
     }
 
+    @Bean(name ="diseaseId")
+    public String diseaseId(){return diseaseId;}
+
 
     public Lr2pgConfiguration() {
 
