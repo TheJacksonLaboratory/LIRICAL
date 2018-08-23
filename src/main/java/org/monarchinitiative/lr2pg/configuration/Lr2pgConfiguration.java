@@ -34,7 +34,8 @@ import java.util.Map;
 public class Lr2pgConfiguration {
 
     public static final Logger logger = LoggerFactory.getLogger(Lr2pgConfiguration.class);
-
+    @Value("${data.path}")
+    private String datapath;
     @Value("${cases_to_simulate}")
     private String cases_to_simulate;
     @Value("${terms_per_case}")
@@ -43,6 +44,12 @@ public class Lr2pgConfiguration {
     private String noise_terms;
     @Value("${imprecise}")
     private String imprecise;
+    @Value("${var.count}")
+    private String varcount;
+    @Value("${var.path}")
+    private String varpath;
+    @Value("${entrezgene.id}")
+    private String entrezgeneid;
 
     @Bean(name = "hpoOboFile")
     public File hpoOboFile() {
@@ -127,8 +134,7 @@ public class Lr2pgConfiguration {
     }
 
 
-    @Value("${data.path}")
-    private String datapath;
+
 
     @Bean
     HpoAssociationParser hpoAssociationParser(HpoOntology ontology) {
@@ -177,7 +183,7 @@ public class Lr2pgConfiguration {
         Integer vcount = Integer.parseInt(varcount);
         Double vpath=Double.parseDouble(varpath);
         if (disease2geneMultimap==null) {
-            System.err.println("di22 null");System.exit(1);
+            System.err.println("[ERROR]--disease2geneMultimap null");System.exit(1);
         }
         return new  VcfSimulator(disease2geneMultimap.keySet(),entrezId,vcount,vpath);
     }
@@ -186,12 +192,7 @@ public class Lr2pgConfiguration {
 
 
 
-    @Value("${varcount}")
-    private String varcount;
-    @Value("${varpath}")
-    private String varpath;
-    @Value("${entrezgeneid}")
-    private String entrezgeneid;
+
 
 
     @Bean
