@@ -57,7 +57,6 @@ public class PhenotypeOnlyHpoCaseSimulator {
      * The constructor initializes {@link #ontology} and {@link #diseaseMap} and {@link #phenotypeterms}.
      * param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
      */
-   @Autowired
     public PhenotypeOnlyHpoCaseSimulator(HpoOntology ontology,
                                          Map<TermId,HpoDisease> diseaseMap,
                                          int cases_to_simulate, int terms_per_case, int noise_terms ) {
@@ -65,9 +64,8 @@ public class PhenotypeOnlyHpoCaseSimulator {
         this.n_cases_to_simulate=cases_to_simulate;
         this.n_terms_per_case=terms_per_case;
         this.n_noise_terms=noise_terms;
-        //HpoDataIngestor ingestor = new HpoDataIngestor(datadir);
-        this.ontology=ontology;//ingestor.getOntology();
-        this.diseaseMap=diseaseMap;//ingestor.getDiseaseMap();
+        this.ontology=ontology;
+        this.diseaseMap=diseaseMap;
         this.phenotypeLrEvaluator = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
         Set<TermId> descendents=getDescendents(ontology,PHENOTYPIC_ABNORMALITY);
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
@@ -77,7 +75,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
         this.phenotypeterms=builder.build();
     }
 
-    @Autowired
+
     public PhenotypeOnlyHpoCaseSimulator(HpoOntology ontology,
                                          Map<TermId,HpoDisease> diseaseMap, int cases_to_simulate, int terms_per_case, int noise_terms, boolean imprecise ) {
         this(ontology,diseaseMap,cases_to_simulate,terms_per_case,noise_terms);
@@ -97,7 +95,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
         int c=0;
         Map<Integer,Integer> ranks=new HashMap<>();
         logger.trace(String.format("Will simulate %d diseases.",diseaseMap.size() ));
-        logger.trace("Simulating n={} HPO cases with {} random terms and {} noise terms per case.",n_cases_to_simulate,n_terms_per_case,n_noise_terms);
+        System.err.println(String.format("Simulating n=%d HPO cases with %d random terms and %d noise terms per case.",n_cases_to_simulate,n_terms_per_case,n_noise_terms));
         for (TermId diseaseCurie : diseaseMap.keySet()) {
             HpoDisease disease = diseaseMap.get(diseaseCurie);
             //logger.trace("Simulating disease "+diseasename);
@@ -108,6 +106,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
                 continue;
             }
             int rank = simulateCase(disease);
+            System.err.println(String.format("%s: rank=%d",disease.getName(),rank));
             ranks.putIfAbsent(rank,0);
             ranks.put(rank, ranks.get(rank) + 1);
             if (++c>n_cases_to_simulate) {

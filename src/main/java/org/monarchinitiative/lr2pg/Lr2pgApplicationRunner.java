@@ -8,6 +8,8 @@ import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.io.CommandParser;
+import org.monarchinitiative.lr2pg.io.HpoDownloader;
+import org.monarchinitiative.lr2pg.svg.Lr2Svg;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -25,16 +27,20 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class Lr2pgApplicationRunner implements ApplicationRunner  {
+public class Lr2pgApplicationRunner implements ApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(Lr2pgApplicationRunner.class);
 
     @Autowired
     private HpoOntology ontology;
 
     @Autowired
-    private Map<TermId,HpoDisease> diseaseMap;
+    private Map<TermId, HpoDisease> diseaseMap;
 
+    @Autowired
+    private PhenotypeOnlyHpoCaseSimulator phenotypeOnlyHpoCaseSimulator;
 
+    @Autowired
+    private String diseaseId;
 
     private String dataDownloadDirectory;
 
@@ -53,7 +59,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
 
         logger.info("NonOptionArgs: {}", args.getNonOptionArgs());
         logger.info("OptionNames: {}", args.getOptionNames());
-        for (String name : args.getOptionNames()){
+        for (String name : args.getOptionNames()) {
             logger.info("arg-" + name + "=" + args.getOptionValues(name));
         }
 
@@ -63,50 +69,63 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
 
         List<String> nonoptionargs = args.getNonOptionArgs();
         if (nonoptionargs.size() != 1) {
-            printUsage("[ERROR] No program command given-size="+nonoptionargs.size());
-            for (String s:nonoptionargs) {
-                System.err.println("noa="+s);
+            for (String s : nonoptionargs) {
+                System.err.println("noa=" + s);
             }
+            printUsage("[ERROR] No program command given-size=" + nonoptionargs.size());
+
+            return;
         }
         ApplicationContext context = new AnnotationConfigApplicationContext(Lr2pgConfiguration.class);
         // if we get here, we have one command
         String mycommand = nonoptionargs.get(0);
 
-        // collect the options
 
         switch (mycommand) {
             case "download":
-                boolean overwrite=false;
+                boolean overwrite = false;
                 logger.warn(String.format("Download command to %s", dataDownloadDirectory));
-               // TODO -- implement download command here
+                HpoDownloader downloader = new HpoDownloader(dataDownloadDirectory, overwrite);
+                downloader.download();
                 break;
             case "simulate":
                 System.err.println("SIMULATE");
-                PhenotypeOnlyHpoCaseSimulator simulator = context.getBean(PhenotypeOnlyHpoCaseSimulator.class);
-                simulator.debugPrint();
+                phenotypeOnlyHpoCaseSimulator.debugPrint();
                 try {
-                    simulator.simulateCases();
+                    phenotypeOnlyHpoCaseSimulator.simulateCases();
                 } catch (Lr2pgException e) {
                     e.printStackTrace();
                 }
                 break;
             case "svg":
-
-//                if (diseaseId ==null) {
-//                    printUsage("svg command requires --disease option");
-//                }
-                //n_terms_per_case, n_noise_terms);
-                //this.command = new HpoCase2SvgCommand(this.dataDownloadDirectory, diseaseId,svgOutFileName,n_terms_per_case,n_noise_terms);
+                // do SVG with pheno only
+                int cases_to_simulate = 1;
+                if (this.diseaseId == null || this.diseaseId.isEmpty()) {
+                    System.err.println("Error diseaseId not defined");
+                    return;
+                }
+                TermId diseaseCurie = TermId.constructWithPrefix(diseaseId);
+                // simulator = new PhenotypeOnlyHpoCaseSimulator( dataDirectory, cases_to_simulate, n_terms_per_case, n_noise_terms);
+                try {
+                    HpoDisease disease = phenotypeOnlyHpoCaseSimulator.name2disease(diseaseCurie);
+                    phenotypeOnlyHpoCaseSimulator.simulateCase(disease);
+                    HpoCase hpocase = phenotypeOnlyHpoCaseSimulator.getCurrentCase();
+                    Lr2Svg l2svg = new Lr2Svg(hpocase, diseaseCurie, disease.getName(), ontology, null);
+                    l2svg.writeSvg("test.svg");
+                } catch (Lr2pgException e) {
+                    e.printStackTrace();
+                    System.err.println("Could not simulate case");
+                }
                 break;
             case "phenogeno":
 
                 HpoCase hpocase = this.hpoPhenoGenoCaseSimulatorsimulator.evaluateCase();
                 System.err.println(hpocase.toString());
-                TermId diseaseCurie=TermId.constructWithPrefix("OMIM:154700");
+                 diseaseCurie = TermId.constructWithPrefix("OMIM:154700");
                 HpoDisease disease = diseaseMap.get(diseaseCurie);
                 String diseaseName = disease.getName();
                 //Map<TermId, String> geneId2SymbolMap=(Map<TermId, String>)context.getAutowireCapableBeanFactory().getBean("geneId2SymbolMap");
-                this.hpoPhenoGenoCaseSimulatorsimulator.outputSvg(diseaseCurie,diseaseName,ontology, this.geneId2SymbolMap);
+                this.hpoPhenoGenoCaseSimulatorsimulator.outputSvg(diseaseCurie, diseaseName, ontology, this.geneId2SymbolMap);
                 System.err.println(this.hpoPhenoGenoCaseSimulatorsimulator.toString());
 
                 break;
@@ -118,25 +137,22 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
     }
 
 
-
-
-
     private static String getVersion() {
-        String DEFAULT="0.4.0";// default, should be overwritten by the following.
-        String version=null;
+        String DEFAULT = "0.4.0";// default, should be overwritten by the following.
+        String version = null;
         try {
             Package p = CommandParser.class.getPackage();
             version = p.getImplementationVersion();
         } catch (Exception e) {
             // do nothing
         }
-        return version!=null?version:DEFAULT;
+        return version != null ? version : DEFAULT;
     }
 
     private static void printUsageIntro() {
         String version = getVersion();
         System.out.println();
-        System.out.println("Program: LR2PG (v. "+version +")");
+        System.out.println("Program: LR2PG (v. " + version + ")");
         System.out.println();
         System.out.println("Usage: java -jar Lr2pg.jar <command> [options]");
         System.out.println();
@@ -185,7 +201,6 @@ public class Lr2pgApplicationRunner implements ApplicationRunner  {
         System.out.println("\t--overwrite: do not skip even if file already downloaded");
         System.out.println();
     }
-
 
 
     /**

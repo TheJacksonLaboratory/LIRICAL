@@ -1,4 +1,4 @@
-package org.monarchinitiative.lr2pg.command;
+package org.monarchinitiative.lr2pg.io;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +13,7 @@ import java.net.URL;
  * Command to download the {@code hp.obo} and {@code phenotype.hpoa} files that
  * we will need to run the LR2PG approach.
  */
-public class DownloadCommand implements Command {
+public class HpoDownloader {
     private static final Logger logger = LogManager.getLogger();
     /** Directory to which we will download the files. */
     private final String downloadDirectory;
@@ -38,11 +38,11 @@ public class DownloadCommand implements Command {
 
 
 
-    public DownloadCommand(String path){
+    public HpoDownloader(String path){
         this(path,false);
     }
 
-    public DownloadCommand(String path,boolean overwrite){
+    public HpoDownloader(String path, boolean overwrite){
         this.downloadDirectory=path;
         this.overwrite=overwrite;
         logger.error("overwrte="+overwrite);
@@ -51,7 +51,7 @@ public class DownloadCommand implements Command {
     /**
      * Download the files unless they are already present.
      */
-    public void execute() {
+    public void download() {
         downloadFileIfNeeded(HP_OBO,HP_OBO_URL);
         downloadFileIfNeeded(HP_ANNOTATION,HP_ANNOTATION_URL);
         downloadFileIfNeeded(GENE_INFO,GENE_INFO_URL);

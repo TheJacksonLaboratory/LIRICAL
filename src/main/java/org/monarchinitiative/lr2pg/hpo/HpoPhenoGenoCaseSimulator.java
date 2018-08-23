@@ -29,7 +29,7 @@ public class HpoPhenoGenoCaseSimulator {
      * constructor.
      */
     private final TermId entrezGeneId;
-
+    /** Object containing the observed phenotypes and results of testing. */
     private HpoCase hpocase;
 
     /**

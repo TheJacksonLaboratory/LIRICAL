@@ -57,12 +57,12 @@ public class Lr2pgConfiguration {
     private String termlist;
 
     @Bean(name = "hpoOboFile")
-    public File hpoOboFile() {
+    File hpoOboFile() {
         return new File("data/hp.obo");
     }
 
     @Bean(name = "phenotype.hpoa")
-    public File annotationFile() {
+    File annotationFile() {
         return new File("data/phenotype.hpoa");
     }
 
@@ -82,6 +82,7 @@ public class Lr2pgConfiguration {
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         for (String id : this.termlist.split(",")) {
             TermId tid = TermId.constructWithPrefix(id);
+            builder.add(tid);
         }
         return builder.build();
     }
