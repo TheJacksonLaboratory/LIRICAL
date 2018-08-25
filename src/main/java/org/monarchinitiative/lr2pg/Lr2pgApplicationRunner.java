@@ -1,15 +1,17 @@
 package org.monarchinitiative.lr2pg;
 
 
-import org.monarchinitiative.lr2pg.command.*;
+import com.sun.xml.internal.bind.v2.runtime.Location;
+import de.charite.compbio.jannovar.data.JannovarData;
+import org.monarchinitiative.lr2pg.analysis.GridSearch;
 import org.monarchinitiative.lr2pg.configuration.Lr2pgConfiguration;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
-import org.monarchinitiative.lr2pg.io.CommandParser;
 import org.monarchinitiative.lr2pg.io.HpoDownloader;
 import org.monarchinitiative.lr2pg.svg.Lr2Svg;
+import org.monarchinitiative.lr2pg.vcf.VcfParser;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -20,6 +22,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -36,7 +39,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
     @Autowired
     private Map<TermId, HpoDisease> diseaseMap;
 
-    @Autowired
+    @Autowired @Lazy
     private PhenotypeOnlyHpoCaseSimulator phenotypeOnlyHpoCaseSimulator;
 
     @Autowired
@@ -44,17 +47,21 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
 
     private String dataDownloadDirectory;
 
-    @Autowired
-    private
-    HpoPhenoGenoCaseSimulator hpoPhenoGenoCaseSimulatorsimulator;
+    @Autowired @Lazy
+    private HpoPhenoGenoCaseSimulator hpoPhenoGenoCaseSimulatorsimulator;
     //
-    @Autowired
-    private
-    Map<TermId, String> geneId2SymbolMap;
+    @Autowired @Lazy
+    private  Map<TermId, String> geneId2SymbolMap;
+
+    @Autowired @Lazy
+    private GridSearch gridSearch;
+
+    @Autowired @Lazy
+    private JannovarData jannovarData;
 
     @Override
     public void run(ApplicationArguments args) {
-        logger.info("Application started with command-line arguments: {}", Arrays.toString(args.getSourceArgs()));
+        logger.info("Application started with analysis-line arguments: {}", Arrays.toString(args.getSourceArgs()));
 
 
         logger.info("NonOptionArgs: {}", args.getNonOptionArgs());
@@ -72,19 +79,19 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
             for (String s : nonoptionargs) {
                 System.err.println("noa=" + s);
             }
-            printUsage("[ERROR] No program command given-size=" + nonoptionargs.size());
+            printUsage("[ERROR] No program analysis given-size=" + nonoptionargs.size());
 
             return;
         }
         ApplicationContext context = new AnnotationConfigApplicationContext(Lr2pgConfiguration.class);
-        // if we get here, we have one command
+        // if we get here, we have one analysis
         String mycommand = nonoptionargs.get(0);
 
 
         switch (mycommand) {
             case "download":
                 boolean overwrite = false;
-                logger.warn(String.format("Download command to %s", dataDownloadDirectory));
+                logger.warn(String.format("Download analysis to %s", dataDownloadDirectory));
                 HpoDownloader downloader = new HpoDownloader(dataDownloadDirectory, overwrite);
                 downloader.download();
                 break;
@@ -129,8 +136,20 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
                 System.err.println(this.hpoPhenoGenoCaseSimulatorsimulator.toString());
 
                 break;
+            case "grid":
+                try {
+                    gridSearch.gridsearch();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "vcf":
+                String vcf="/Users/peterrobinson/Desktop/Pfeifer.vcf";
+                VcfParser parsevcf=new VcfParser(vcf,jannovarData);
+                parsevcf.parse(vcf);
+                break;
             default:
-                printUsage(String.format("Did not recognize command: \"%s\"", mycommand));
+                printUsage(String.format("Did not recognize analysis: \"%s\"", mycommand));
         }
 
         logger.trace("done execution");
@@ -141,7 +160,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
         String DEFAULT = "0.4.0";// default, should be overwritten by the following.
         String version = null;
         try {
-            Package p = CommandParser.class.getPackage();
+            Package p = Lr2pgApplicationRunner.class.getPackage();
             version = p.getImplementationVersion();
         } catch (Exception e) {
             // do nothing
@@ -154,7 +173,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
         System.out.println();
         System.out.println("Program: LR2PG (v. " + version + ")");
         System.out.println();
-        System.out.println("Usage: java -jar Lr2pg.jar <command> [options]");
+        System.out.println("Usage: java -jar Lr2pg.jar <analysis> [options]");
         System.out.println();
         System.out.println("Available commands:");
         System.out.println();

@@ -2,6 +2,11 @@ package org.monarchinitiative.lr2pg.configuration;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.JannovarDataSerializer;
+import de.charite.compbio.jannovar.data.SerializationException;
+import org.monarchinitiative.lr2pg.analysis.GridSearch;
+import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.VcfSimulator;
@@ -23,13 +28,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
 
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This is the Spring configuration file for Lr2Pg.
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ */
 @Configuration
 @PropertySource("classpath:application.properties")
 public class Lr2pgConfiguration {
@@ -64,6 +73,11 @@ public class Lr2pgConfiguration {
     @Bean(name = "phenotype.hpoa")
     File annotationFile() {
         return new File("data/phenotype.hpoa");
+    }
+
+    @Bean(name = "jannovarTranscriptFile")
+    File jannovarHg19File() {
+        return new File("data/hg19_refseq.ser");
     }
 
     @Bean(name ="diseaseId")
@@ -186,13 +200,13 @@ public class Lr2pgConfiguration {
         String geneInfoPath = String.format("%s%s%s", datapath, File.separator, "Homo_sapiens_gene_info.gz");
         File geneInfoFile = new File(geneInfoPath);
         if (!geneInfoFile.exists()) {
-            System.err.println("Could not find gene info file at " + geneInfoPath + ". Run download command");
+            System.err.println("Could not find gene info file at " + geneInfoPath + ". Run download analysis");
             System.exit(1);
         }
         String mim2genemedgen = String.format("%s%s%s", datapath, File.separator, "mim2gene_medgen");
         File mim2genemedgenFile = new File(mim2genemedgen);
         if (!mim2genemedgenFile.exists()) {
-            System.err.println("Could not find medgen file at " + mim2genemedgen + ". Run download command");
+            System.err.println("Could not find medgen file at " + mim2genemedgen + ". Run download analysis");
             System.exit(1);
         }
         File orphafilePlaceholder = null;
@@ -233,6 +247,26 @@ public class Lr2pgConfiguration {
 
 
 
+    @Bean
+    JannovarData jannovarData( File jannovarTranscriptFile ) throws Lr2pgException{
+        System.err.println("jannovar = "+jannovarTranscriptFile.getAbsolutePath());
+        try {
+            return new JannovarDataSerializer(jannovarTranscriptFile.getAbsolutePath()).load();
+        } catch (SerializationException e) {
+            throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
+                    jannovarTranscriptFile, e.getMessage()));
+        }
+    }
+
+
+    @Bean
+    GridSearch gridSearch() {
+        Integer casesToSimulate = Integer.parseInt(cases_to_simulate);
+        Integer termsPerCase = Integer.parseInt(terms_per_case);
+        Integer noiseTerms = Integer.parseInt( noise_terms );
+       GridSearch gs = new GridSearch(hpoOntology(),diseaseMap(hpoOntology()),casesToSimulate,termsPerCase,noiseTerms);
+       return gs;
+    }
 
 
 }

@@ -1,9 +1,12 @@
-package org.monarchinitiative.lr2pg.command;
+package org.monarchinitiative.lr2pg.analysis;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -11,55 +14,38 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * This is a demonstration of the likelihood ratio algorithm that uses simulated cases to assess the performance of the
  * algorithm.
  */
-public class SimulateCasesCommand implements Command {
+public class GridSearch  {
     private static final Logger logger = LogManager.getLogger();
     /** Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}. */
-    private final String dataDirectoryPath;
+    private final Map<TermId, HpoDisease> diseaseMap;
     private final int n_cases_to_simulate;
     private final int n_terms_per_case;
     private final int n_noise_terms;
-    /** Flag to indicate we will perform a grid search over the parameter space. */
-    private boolean gridSearch=false;
+    private final HpoOntology ontology;
+
 
     /**
-     * @param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
+     *
      */
-    public SimulateCasesCommand(String datadir, int cases_to_simulate, int terms_per_case, int noise_terms ) {
-        dataDirectoryPath=datadir;
+    public GridSearch(HpoOntology ontology, Map<TermId, HpoDisease> diseaseMap,int cases_to_simulate, int terms_per_case, int noise_terms ) {
+
         this.n_cases_to_simulate=cases_to_simulate;
         this.n_terms_per_case=terms_per_case;
         this.n_noise_terms=noise_terms;
+        this.ontology=ontology;
+        this.diseaseMap=diseaseMap;
     }
 
-    public SimulateCasesCommand(String datadir, int cases_to_simulate, int terms_per_case, int noise_terms, boolean grid ) {
-        this(datadir,cases_to_simulate,terms_per_case,noise_terms);
-        this.gridSearch=grid;
-    }
 
-    public void execute() {
-        logger.info("Executing HpoCase simulation");
-        if (gridSearch) {
-            try {
-                gridsearch();
-            } catch (Lr2pgException|IOException lre) {
-                lre.printStackTrace();
-            }
-        } else {
-//            PhenotypeOnlyHpoCaseSimulator simulator = new PhenotypeOnlyHpoCaseSimulator(this.dataDirectoryPath, n_cases_to_simulate, n_terms_per_case, n_noise_terms);
-//            simulator.debugPrint();
-//            try {
-//                simulator.simulateCases();
-//            } catch (Lr2pgException e) {
-//                e.printStackTrace();
-//            }
-        }
-    }
+
+
 
     /**
      * Perform a grid search over varying numbers of terms and random terms
@@ -67,7 +53,7 @@ public class SimulateCasesCommand implements Command {
      * @throws Lr2pgException
      * @throws IOException
      */
-    private void gridsearch() throws Lr2pgException, IOException {
+    public void gridsearch() throws Lr2pgException, IOException {
 
         int[] termnumber = {1,2,3,4,5,6,7,8,9,10};
         int[] randomtermnumber = {0,1,2,3,4,0,1,2,3,4};
@@ -80,7 +66,7 @@ public class SimulateCasesCommand implements Command {
             for (int i = 0; i < termnumber.length; i++) {
                 for (int j = 0; j < randomtermnumber.length; j++) {
                     boolean imprec = (j > 4);
-//                    simulator = new PhenotypeOnlyHpoCaseSimulator(this.dataDirectoryPath, n_cases, termnumber[i], randomtermnumber[j], imprec);
+                    simulator = new PhenotypeOnlyHpoCaseSimulator( ontology,diseaseMap,n_cases, termnumber[i], randomtermnumber[j], imprec);
 //                    simulator.simulateCases();
 //                    Z[i][j] = simulator.getProportionAtRank1();
                     writer.write(String.format("terms: %d; noise terms: %d; percentage at rank 1: %.2f\n",
