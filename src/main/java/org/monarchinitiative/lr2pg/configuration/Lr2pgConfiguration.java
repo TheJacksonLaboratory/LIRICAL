@@ -31,6 +31,7 @@ import org.springframework.context.annotation.PropertySource;
 
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -107,12 +108,13 @@ public class Lr2pgConfiguration {
     @Bean
     @Primary
     public HpoOntology hpoOntology() {
-        HpOboParser parser = new HpOboParser(hpoOboFile());
+
         HpoOntology ontology;
         try {
+            HpOboParser parser = new HpOboParser(hpoOboFile());
             ontology = parser.parse();
             return ontology;
-        } catch (PhenolException ioe) {
+        } catch (PhenolException | FileNotFoundException ioe) {
             System.err.println("Could not parse hp.obo file: " + ioe.getMessage());
             throw new RuntimeException("Could not parse hp.obo file: " + ioe.getMessage());
         }
