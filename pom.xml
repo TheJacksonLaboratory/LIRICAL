@@ -26,6 +26,7 @@
         <junit.version>4.12</junit.version>
         <phenol.version>1.2.2</phenol.version>
         <jannovar.version>0.24</jannovar.version>
+        <exomiser.version>11.0.0-SNAPSHOT</exomiser.version>
     </properties>
 
 
@@ -38,6 +39,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.monarchinitiative.exomiser</groupId>
+            <artifactId>exomiser-core</artifactId>
+            <version>${exomiser.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.monarchinitiative.exomiser</groupId>
+            <artifactId>exomiser-spring-boot-autoconfigure</artifactId>
+            <version>${exomiser.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

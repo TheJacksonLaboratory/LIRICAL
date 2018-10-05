@@ -11,6 +11,7 @@ import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.VcfSimulator;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
+import org.monarchinitiative.lr2pg.vcf.VcfParser;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -245,7 +246,19 @@ public class Lr2pgConfiguration {
         return new  VcfSimulator(disease2geneMultimap.keySet(),entrezId,vcount,vpath);
     }
 
-
+    @Bean
+    VcfParser vcfParser( File jannovarTranscriptFile ) throws Lr2pgException{
+        System.err.println("jannovar = "+jannovarTranscriptFile.getAbsolutePath());
+        try {
+            String transcriptFilePath=jannovarTranscriptFile.getAbsolutePath();
+            String vcf="/Users/peterrobinson/Desktop/Pfeifer.vcf";
+            JannovarData jdata = new JannovarDataSerializer(transcriptFilePath).load();
+            return new VcfParser(vcf,jdata);
+        } catch (SerializationException e) {
+            throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
+                    jannovarTranscriptFile, e.getMessage()));
+        }
+    }
 
     @Bean
     JannovarData jannovarData( File jannovarTranscriptFile ) throws Lr2pgException{

@@ -26,6 +26,7 @@
 package org.monarchinitiative.lr2pg.vcf;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 
 import java.util.List;
 

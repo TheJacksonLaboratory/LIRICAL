@@ -57,7 +57,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
     private GridSearch gridSearch;
 
     @Autowired @Lazy
-    private JannovarData jannovarData;
+    private VcfParser vcfParser;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -145,8 +145,9 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
                 break;
             case "vcf":
                 String vcf="/Users/peterrobinson/Desktop/Pfeifer.vcf";
-                VcfParser parsevcf=new VcfParser(vcf,jannovarData);
-                parsevcf.parse(vcf);
+               // TODO
+                vcfParser.parse(vcf);
+
                 break;
             default:
                 printUsage(String.format("Did not recognize analysis: \"%s\"", mycommand));

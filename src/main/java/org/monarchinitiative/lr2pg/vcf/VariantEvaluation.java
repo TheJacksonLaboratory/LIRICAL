@@ -30,6 +30,7 @@ import htsjdk.variant.variantcontext.*;
 import org.monarchinitiative.exomiser.core.filters.FilterResult;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
@@ -113,7 +114,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
         pathogenicityData = builder.pathogenicityData;
     }
 
-    @Override
+   // @Override
     public GenomeAssembly getGenomeAssembly() {
         return genomeAssembly;
     }

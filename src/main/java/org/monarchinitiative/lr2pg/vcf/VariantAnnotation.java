@@ -23,6 +23,7 @@ package org.monarchinitiative.lr2pg.vcf;
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 
 import java.util.List;
 import java.util.Objects;
@@ -97,7 +98,7 @@ public class VariantAnnotation implements Variant {
         return variantEffect;
     }
 
-    public List<TranscriptAnnotation> getTranscriptAnnotations() {
+    public List<TranscriptAnnotation>  getTranscriptAnnotations() {
         return annotations;
     }
 
