@@ -11,6 +11,7 @@ import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -31,7 +32,7 @@ public class PhenotypeLikelihoodRatioTest {
 
 
     @BeforeClass
-    public static void setup() throws PhenolException,NullPointerException {
+    public static void setup() throws PhenolException, FileNotFoundException,NullPointerException {
         ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
         String annotationPath = classLoader.getResource("small.hpoa").getFile();
