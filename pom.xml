@@ -95,6 +95,11 @@
         </dependency>
         <dependency>
             <groupId>de.charite.compbio</groupId>
+            <artifactId>jannovar-cli</artifactId>
+            <version>${jannovar.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-htsjdk</artifactId>
             <version>${jannovar.version}</version>
         </dependency>
@@ -111,6 +116,13 @@
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
             <version>3.6</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.h2database/h2-mvstore -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2-mvstore</artifactId>
+            <version>1.4.197</version>
         </dependency>
 
 

@@ -115,7 +115,7 @@ public class Lr2pgConfiguration {
             HpOboParser parser = new HpOboParser(hpoOboFile());
             ontology = parser.parse();
             return ontology;
-        } catch (PhenolException | FileNotFoundException ioe) {
+        } catch (PhenolException ioe) {
             System.err.println("Could not parse hp.obo file: " + ioe.getMessage());
             throw new RuntimeException("Could not parse hp.obo file: " + ioe.getMessage());
         }
