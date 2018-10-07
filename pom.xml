@@ -4,7 +4,7 @@
 
     <groupId>org.monarchinitiative.lr2pg</groupId>
     <artifactId>lr2pg</artifactId>
-    <version>0.4.4</version>
+    <version>0.4.5</version>
     <packaging>jar</packaging>
 
     <name>lr2pg</name>
@@ -45,11 +45,11 @@
             <artifactId>exomiser-core</artifactId>
             <version>${exomiser.version}</version>
         </dependency>
-        <dependency>
+       <!-- <dependency>
             <groupId>org.monarchinitiative.exomiser</groupId>
             <artifactId>exomiser-spring-boot-autoconfigure</artifactId>
             <version>${exomiser.version}</version>
-        </dependency>
+        </dependency> -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>

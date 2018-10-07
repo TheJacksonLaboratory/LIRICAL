@@ -2,15 +2,22 @@ package org.monarchinitiative.lr2pg.configuration;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
+import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
+import org.h2.mvstore.MVStore;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.VariantDataService;
+import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.lr2pg.analysis.GridSearch;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.VcfSimulator;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
+import org.monarchinitiative.lr2pg.vcf.Lr2pgVariantAnnotator;
+import org.monarchinitiative.lr2pg.vcf.PredPathCalculator;
 import org.monarchinitiative.lr2pg.vcf.VcfParser;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
@@ -29,6 +36,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
+
+import org.h2.mvstore.MVStore;
 
 
 import java.io.File;
@@ -85,9 +95,10 @@ public class Lr2pgConfiguration {
     @Bean(name ="diseaseId")
     public String diseaseId(){return diseaseId;}
 
-
-    public Lr2pgConfiguration() {
-
+    @SuppressWarnings("FieldCanBeLocal")
+    private final Environment env;
+    public Lr2pgConfiguration(Environment environment) {
+        this.env=environment;
     }
 
     /**
@@ -271,6 +282,40 @@ public class Lr2pgConfiguration {
             throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
                     jannovarTranscriptFile, e.getMessage()));
         }
+    }
+
+
+
+
+    @Bean
+    GenomeAssembly hg38genomeAssembly() {
+        return GenomeAssembly.HG38;
+    }
+
+
+    @Value("${exomiser.mv.store}")
+    private String mvPath;
+    @Bean
+    MVStore hg19MvStore() {
+            return new MVStore.Builder()
+                    .fileName(mvPath)
+                    .readOnly()
+                    .open();
+    }
+
+
+    @Bean
+    Lr2pgVariantAnnotator lr2pgVariantAnnotator(GenomeAssembly hg38genomeAssembly,JannovarData jannovarData){
+    return new Lr2pgVariantAnnotator(hg38genomeAssembly,jannovarData);
+    }
+
+
+    @Bean
+    PredPathCalculator predPathCalculator(Lr2pgVariantAnnotator variantAnnotator,
+                                          MVStore mvStore,
+                                          VariantDataService variantDataService) {
+        PredPathCalculator ppc = new PredPathCalculator(variantAnnotator,mvStore,variantDataService);
+        return ppc;
     }
 
 

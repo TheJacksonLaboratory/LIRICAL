@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.genome.JannovarAnnotationService;
 import org.monarchinitiative.exomiser.core.genome.VariantAnnotator;
 import org.monarchinitiative.exomiser.core.model.AllelePosition;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
@@ -22,9 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Lr2pgVariantAnnotator implements VariantAnnotator {
-    private static final Logger logger = LoggerFactory.getLogger(org.monarchinitiative.exomiser.core.genome.JannovarVariantAnnotator.class);
+    private static final Logger logger = LoggerFactory.getLogger(Lr2pgVariantAnnotator.class);
     private final GenomeAssembly genomeAssembly;
-    private final org.monarchinitiative.exomiser.core.genome.JannovarAnnotationService jannovarAnnotationService;
+    private final JannovarAnnotationService jannovarAnnotationService;
 
     public Lr2pgVariantAnnotator(GenomeAssembly genomeAssembly, JannovarData jannovarData) {
         this.genomeAssembly = genomeAssembly;
@@ -54,10 +53,10 @@ public class Lr2pgVariantAnnotator implements VariantAnnotator {
 
     private List<TranscriptAnnotation> buildTranscriptAnnotations(List<Annotation> annotations) {
         List<TranscriptAnnotation> transcriptAnnotations = new ArrayList(annotations.size());
-        Iterator var3 = annotations.iterator();
+        Iterator iter = annotations.iterator();
 
-        while(var3.hasNext()) {
-            Annotation annotation = (Annotation)var3.next();
+        while(iter.hasNext()) {
+            Annotation annotation = (Annotation)iter.next();
             transcriptAnnotations.add(this.toTranscriptAnnotation(annotation));
         }
 

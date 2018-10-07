@@ -3,6 +3,10 @@ package org.monarchinitiative.lr2pg;
 
 import com.sun.xml.internal.bind.v2.runtime.Location;
 import de.charite.compbio.jannovar.data.JannovarData;
+import org.h2.mvstore.MVStore;
+import org.monarchinitiative.exomiser.core.genome.VariantAnnotator;
+import org.monarchinitiative.exomiser.core.genome.VariantDataService;
+import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.lr2pg.analysis.GridSearch;
 import org.monarchinitiative.lr2pg.configuration.Lr2pgConfiguration;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
@@ -11,6 +15,7 @@ import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.io.HpoDownloader;
 import org.monarchinitiative.lr2pg.svg.Lr2Svg;
+import org.monarchinitiative.lr2pg.vcf.PredPathCalculator;
 import org.monarchinitiative.lr2pg.vcf.VcfParser;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -57,7 +62,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
     private GridSearch gridSearch;
 
     @Autowired @Lazy
-    private VcfParser vcfParser;
+    private PredPathCalculator ppcalcalculator;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -145,8 +150,10 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
                 break;
             case "vcf":
                 String vcf="/Users/peterrobinson/Desktop/Pfeifer.vcf";
-               // TODO
-                vcfParser.parse(vcf);
+
+
+
+            // vcfParser.parse(vcf);
 
                 break;
             default:

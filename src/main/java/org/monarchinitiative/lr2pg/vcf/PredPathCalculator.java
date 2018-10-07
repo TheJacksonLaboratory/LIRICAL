@@ -83,7 +83,7 @@ public class PredPathCalculator {
     }
 
     private void initJannovarOptions() {
-        this.options=new JannovarAnnotateVCFOptions();
+        new JannovarAnnotateVCFOptions();
     }
 
 
