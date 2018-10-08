@@ -45,11 +45,11 @@
             <artifactId>exomiser-core</artifactId>
             <version>${exomiser.version}</version>
         </dependency>
-       <!-- <dependency>
+       <dependency>
             <groupId>org.monarchinitiative.exomiser</groupId>
             <artifactId>exomiser-spring-boot-autoconfigure</artifactId>
             <version>${exomiser.version}</version>
-        </dependency> -->
+        </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>

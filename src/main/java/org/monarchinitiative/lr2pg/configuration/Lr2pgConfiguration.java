@@ -16,6 +16,7 @@ import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.VcfSimulator;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
+import org.monarchinitiative.lr2pg.vcf.GenicIntoleranceCalculator;
 import org.monarchinitiative.lr2pg.vcf.Lr2pgVariantAnnotator;
 import org.monarchinitiative.lr2pg.vcf.PredPathCalculator;
 import org.monarchinitiative.lr2pg.vcf.VcfParser;
@@ -310,12 +311,17 @@ public class Lr2pgConfiguration {
     }
 
 
-    @Bean
-    PredPathCalculator predPathCalculator(Lr2pgVariantAnnotator variantAnnotator,
-                                          MVStore mvStore,
-                                          VariantDataService variantDataService) {
-        PredPathCalculator ppc = new PredPathCalculator(variantAnnotator,mvStore,variantDataService);
-        return ppc;
+//    @Bean
+//    PredPathCalculator predPathCalculator(Lr2pgVariantAnnotator variantAnnotator,
+//                                          MVStore mvStore,
+//                                          VariantDataService variantDataService) {
+//        PredPathCalculator ppc = new PredPathCalculator(variantAnnotator,mvStore,variantDataService);
+//        return ppc;
+//    }
+
+    @Bean @Primary
+    public GenicIntoleranceCalculator hg19GenicIntoleranceCalculator(org.monarchinitiative.exomiser.core.genome.VariantAnnotator hg19variantAnnotator, MVStore hg19mvStore, VariantDataService hg19variantDataService){
+        return new GenicIntoleranceCalculator(hg19variantAnnotator, hg19mvStore, hg19variantDataService);
     }
 
 

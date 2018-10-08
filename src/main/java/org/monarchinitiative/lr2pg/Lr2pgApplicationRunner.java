@@ -61,8 +61,8 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
     @Autowired @Lazy
     private GridSearch gridSearch;
 
-    @Autowired @Lazy
-    private PredPathCalculator ppcalcalculator;
+//    @Autowired @Lazy
+//    private PredPathCalculator ppcalcalculator;
 
     @Override
     public void run(ApplicationArguments args) {
