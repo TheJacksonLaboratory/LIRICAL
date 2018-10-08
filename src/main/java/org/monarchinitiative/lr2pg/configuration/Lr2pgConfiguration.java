@@ -2,23 +2,19 @@ package org.monarchinitiative.lr2pg.configuration;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.VariantDataService;
-import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.lr2pg.analysis.GridSearch;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.VcfSimulator;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
-import org.monarchinitiative.lr2pg.vcf.GenicIntoleranceCalculator;
 import org.monarchinitiative.lr2pg.vcf.Lr2pgVariantAnnotator;
-import org.monarchinitiative.lr2pg.vcf.PredPathCalculator;
 import org.monarchinitiative.lr2pg.vcf.VcfParser;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
@@ -39,12 +35,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
-import org.h2.mvstore.MVStore;
-
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -79,12 +72,12 @@ public class Lr2pgConfiguration {
     private String termlist;
 
     @Bean(name = "hpoOboFile")
-    File hpoOboFile() {
+    private File hpoOboFile() {
         return new File("data/hp.obo");
     }
 
     @Bean(name = "phenotype.hpoa")
-    File annotationFile() {
+    private File annotationFile() {
         return new File("data/phenotype.hpoa");
     }
 
@@ -127,7 +120,7 @@ public class Lr2pgConfiguration {
             HpOboParser parser = new HpOboParser(hpoOboFile());
             ontology = parser.parse();
             return ontology;
-        } catch (PhenolException ioe) {
+        } catch (PhenolException | FileNotFoundException ioe) {
             System.err.println("Could not parse hp.obo file: " + ioe.getMessage());
             throw new RuntimeException("Could not parse hp.obo file: " + ioe.getMessage());
         }
@@ -224,7 +217,7 @@ public class Lr2pgConfiguration {
             System.err.println("Could not find medgen file at " + mim2genemedgen + ". Run download analysis");
             System.exit(1);
         }
-        File orphafilePlaceholder = null;
+        File orphafilePlaceholder = null;//we do not need this for now
         HpoAssociationParser assocParser = new HpoAssociationParser(geneInfoFile,
                 mim2genemedgenFile,
                 orphafilePlaceholder,
@@ -319,10 +312,7 @@ public class Lr2pgConfiguration {
 //        return ppc;
 //    }
 
-    @Bean @Primary
-    public GenicIntoleranceCalculator hg19GenicIntoleranceCalculator(org.monarchinitiative.exomiser.core.genome.VariantAnnotator hg19variantAnnotator, MVStore hg19mvStore, VariantDataService hg19variantDataService){
-        return new GenicIntoleranceCalculator(hg19variantAnnotator, hg19mvStore, hg19variantDataService);
-    }
+
 
 
     @Bean

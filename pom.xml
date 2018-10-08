@@ -20,13 +20,13 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jannovar.version>0.23</jannovar.version>
+        <jannovar.version>0.26</jannovar.version>
         <jdk.version>1.8</jdk.version>
         <java.version>1.8</java.version>
         <junit.version>4.12</junit.version>
-        <phenol.version>1.2.2</phenol.version>
+        <phenol.version>1.2.6</phenol.version>
         <jannovar.version>0.24</jannovar.version>
-        <exomiser.version>11.0.0-SNAPSHOT</exomiser.version>
+        <exomiser.version>11.0.0</exomiser.version>
     </properties>
 
 
@@ -60,6 +60,14 @@
             <artifactId>log4j-core</artifactId>
             <version>2.11.1</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/net.sourcefo
+        rge.owlapi/owlapi-api
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-api</artifactId>
+            <version>5.1.7</version>
+        </dependency>-->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

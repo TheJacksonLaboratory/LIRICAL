@@ -43,7 +43,7 @@ public class HpoDataIngestor {
         try {
             parser = new HpOboParser(new File(hpopath));
             this.ontology = parser.parse();
-        } catch (PhenolException  ioe) {
+        } catch (PhenolException | FileNotFoundException ioe) {
             throw new RuntimeException("Could not parse hp.obo file: " + ioe.getMessage());
         }
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationpath,ontology);

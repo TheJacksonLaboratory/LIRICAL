@@ -112,34 +112,34 @@ public class PredPathCalculator {
      * This function writes all of the pathogenicity scores for any variant classified as pathogenic by ClinVar to
      * a file.
      */
-    private void calculateGenotypePathScoreOLDs(String vcfPath) {
-        try {
-            BufferedWriter cvwriter = new BufferedWriter(new FileWriter("clinvarpath.txt"));
-            for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : alleleMap.entrySet()) {
-                AlleleProto.AlleleKey alleleKey = entry.getKey();
-                AlleleProto.AlleleProperties alleleProperties = entry.getValue();
-                org.monarchinitiative.exomiser.core.model.VariantAnnotation variantAnnotation = variantAnnotator.annotate(String.valueOf(alleleKey.getChr()), alleleKey.getPosition(), alleleKey.getRef(), alleleKey.getAlt());
-                VariantEffect variantEffect = variantAnnotation.getVariantEffect();
-                if (!variantEffect.isOffExome()) {
-                    PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
-                    if (pathogenicityData.isEmpty()) {
-                        //pathDataEmpty++;
-                        continue; // should almost never happen
-                    }
-                    float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
-                    ClinVarData clinVarData = pathogenicityData.getClinVarData();
-                    // ClinVar have three 'pathogenic' significance values - pathogenic, pathogenic_or_likely_pathogenic and likely_pathogenic
-                    // they also have a review status which will tell you how much confidence you might want to assign a given interpretation.
-                    // see https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/
-                    if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
-                        cvwriter.write(pathogenicity + "\n");
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void calculateGenotypePathScoreOLDs(String vcfPath) {
+//        try {
+//            BufferedWriter cvwriter = new BufferedWriter(new FileWriter("clinvarpath.txt"));
+//            for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : alleleMap.entrySet()) {
+//                AlleleProto.AlleleKey alleleKey = entry.getKey();
+//                AlleleProto.AlleleProperties alleleProperties = entry.getValue();
+//                VariantAnnotation variantAnnotation = variantAnnotator.annotate(String.valueOf(alleleKey.getChr()), alleleKey.getPosition(), alleleKey.getRef(), alleleKey.getAlt());
+//                VariantEffect variantEffect = variantAnnotation.getVariantEffect();
+//                if (!variantEffect.isOffExome()) {
+//                    PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
+//                    if (pathogenicityData.isEmpty()) {
+//                        //pathDataEmpty++;
+//                        continue; // should almost never happen
+//                    }
+//                    float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
+//                    ClinVarData clinVarData = pathogenicityData.getClinVarData();
+//                    // ClinVar have three 'pathogenic' significance values - pathogenic, pathogenic_or_likely_pathogenic and likely_pathogenic
+//                    // they also have a review status which will tell you how much confidence you might want to assign a given interpretation.
+//                    // see https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/
+//                    if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
+//                        cvwriter.write(pathogenicity + "\n");
+//                    }
+//                }
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
 
     int otherAll=0;
@@ -244,63 +244,63 @@ public class PredPathCalculator {
      * predicted pathogenic bin (i.e., Exomiser score of 0.9 to 1.0).
      * @throws IOException thrown if there is an issue writing to file.
      */
-    private void binPathogenicityData() {
-        logger.trace("Binning pathogenicity data...");
-        for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : alleleMap.entrySet()) {
-            AlleleProto.AlleleKey alleleKey = entry.getKey();
-            AlleleProto.AlleleProperties alleleProperties = entry.getValue();
-            VariantAnnotation variantAnnotation = variantAnnotator.annotate(String.valueOf(alleleKey.getChr()), alleleKey.getPosition(), alleleKey.getRef(), alleleKey.getAlt());
-            VariantEffect variantEffect = variantAnnotation.getVariantEffect();
-            if (!variantEffect.isOffExome()) {
-                //package org.monarchinitiative.exomiser.core.model.frequency;
-                // Note that frequency data are expressed as percentages
-                FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProperties);
-                PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
-                if (pathogenicityData.isEmpty()) {
-                   // pathDataEmpty++;
-                }
-                String SOvarEffect = variantEffect.getSequenceOID();
-                if (SOvarEffect.equals(SO_SPLICE_REGION_VARIANT)) {
-                    continue; // skip the +3..+6 splice region vars etc
-                }
-                // The following is the population (background) frequency, expressed as a percentage
-                // If we have not information  about the frequency, assume the variant is rare and
-                // use the default value
-                if (! frequencyData.hasKnownFrequency())
-                    continue; // skip unknown's
-
-
-                // ClinVar annotations are often assigned to variants without any pathogenicity data from dbNSFP, in these cases they would receive a score of zero
-                // in these cases we'll give them a default score based on their variant effect - these are often frameshift types.
-                float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
-                String genesymbol = variantAnnotation.getGeneSymbol();
-                String id = variantAnnotation.getGeneId();
-//                ClinVarData clinVarData = pathogenicityData.getClinVarData();
-//                // ClinVar have three 'pathogenic' significance values - pathogenic, pathogenic_or_likely_pathogenic and likely_pathogenic
-//                // they also have a review status which will tell you how much confidence you might want to assign a given interpretation.
-//                // see https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/
-//                if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
-//                  // We skip any pathogenic variants in this dataset
+//    private void binPathogenicityData() {
+//        logger.trace("Binning pathogenicity data...");
+//        for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : alleleMap.entrySet()) {
+//            AlleleProto.AlleleKey alleleKey = entry.getKey();
+//            AlleleProto.AlleleProperties alleleProperties = entry.getValue();
+//            VariantAnnotation variantAnnotation = variantAnnotator.annotate(String.valueOf(alleleKey.getChr()), alleleKey.getPosition(), alleleKey.getRef(), alleleKey.getAlt());
+//            VariantEffect variantEffect = variantAnnotation.getVariantEffect();
+//            if (!variantEffect.isOffExome()) {
+//                //package org.monarchinitiative.exomiser.core.model.frequency;
+//                // Note that frequency data are expressed as percentages
+//                FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProperties);
+//                PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
+//                if (pathogenicityData.isEmpty()) {
+//                   // pathDataEmpty++;
 //                }
-
-                Frequency afr = frequencyData.getFrequencyForSource(GNOMAD_E_AFR);
-                if (afr==null) {
-                    afr = frequencyData.getFrequencyForSource(GNOMAD_G_AFR);
-                }
-
-                Frequency eas = frequencyData.getFrequencyForSource(GNOMAD_E_EAS);
-                if (eas==null) {
-                    eas=frequencyData.getFrequencyForSource(GNOMAD_G_EAS);
-                }
-                if (eas!=null) {
-                    float frequencyAsPercentage = eas.getFrequency();
-                    //addToBin(genesymbol, id, frequencyAsPercentage, pathogenicity, GNOMAD_E_EAS);
-                }
-
-            }
-
-        }
-    }
+//                String SOvarEffect = variantEffect.getSequenceOID();
+//                if (SOvarEffect.equals(SO_SPLICE_REGION_VARIANT)) {
+//                    continue; // skip the +3..+6 splice region vars etc
+//                }
+//                // The following is the population (background) frequency, expressed as a percentage
+//                // If we have not information  about the frequency, assume the variant is rare and
+//                // use the default value
+//                if (! frequencyData.hasKnownFrequency())
+//                    continue; // skip unknown's
+//
+//
+//                // ClinVar annotations are often assigned to variants without any pathogenicity data from dbNSFP, in these cases they would receive a score of zero
+//                // in these cases we'll give them a default score based on their variant effect - these are often frameshift types.
+//                float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
+//                String genesymbol = variantAnnotation.getGeneSymbol();
+//                String id = variantAnnotation.getGeneId();
+////                ClinVarData clinVarData = pathogenicityData.getClinVarData();
+////                // ClinVar have three 'pathogenic' significance values - pathogenic, pathogenic_or_likely_pathogenic and likely_pathogenic
+////                // they also have a review status which will tell you how much confidence you might want to assign a given interpretation.
+////                // see https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/
+////                if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
+////                  // We skip any pathogenic variants in this dataset
+////                }
+//
+//                Frequency afr = frequencyData.getFrequencyForSource(GNOMAD_E_AFR);
+//                if (afr==null) {
+//                    afr = frequencyData.getFrequencyForSource(GNOMAD_G_AFR);
+//                }
+//
+//                Frequency eas = frequencyData.getFrequencyForSource(GNOMAD_E_EAS);
+//                if (eas==null) {
+//                    eas=frequencyData.getFrequencyForSource(GNOMAD_G_EAS);
+//                }
+//                if (eas!=null) {
+//                    float frequencyAsPercentage = eas.getFrequency();
+//                    //addToBin(genesymbol, id, frequencyAsPercentage, pathogenicity, GNOMAD_E_EAS);
+//                }
+//
+//            }
+//
+//        }
+//    }
 
     /**
      * Calculate a pathogenicity score for the current variant in the same way that the Exomiser does.

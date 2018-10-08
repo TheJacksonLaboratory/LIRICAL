@@ -15,6 +15,7 @@ import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * This class is intended to try out some architectures for the genotype-phenotype
