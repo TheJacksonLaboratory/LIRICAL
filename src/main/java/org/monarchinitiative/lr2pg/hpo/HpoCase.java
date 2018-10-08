@@ -10,6 +10,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -104,6 +105,20 @@ public final class HpoCase {
         } else {
             return df.format(d);
         }
+    }
+
+    @Override
+    public String toString() {
+        String observed=this.observedAbnormalities.
+                stream().
+                map(TermId::getIdWithPrefix).
+                collect(Collectors.joining("; "));
+        String excluded=this.excludedAbnormalities.stream().
+                map(TermId::getIdWithPrefix).
+                collect(Collectors.joining("; "));
+        int n_results=this.getResults().size();
+        return "HPO Case\n" + "observed: " + observed +"\nexcluded: " + excluded +"\nTests: n="+n_results;
+
     }
 
 
