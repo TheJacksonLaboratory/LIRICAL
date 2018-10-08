@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------
+v0.4.4
+------
+- refactored as SpringBoot application
+
+------
 v0.4.0
 ------
 - refactored to use phenol 1.1.0

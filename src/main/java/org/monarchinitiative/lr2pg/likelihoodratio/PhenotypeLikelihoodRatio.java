@@ -1,7 +1,6 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
 
-
 import com.google.common.collect.ImmutableMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,9 +8,11 @@ import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.ontology.data.*;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.*;
 

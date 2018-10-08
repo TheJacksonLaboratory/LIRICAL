@@ -21,3 +21,6 @@ dependency-reduced-pom.xml
 .settings
 .project
 .classpath
+/src/main/main.iml
+src/main/main.iml
+src/test/test.iml

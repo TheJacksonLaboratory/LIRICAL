@@ -10,6 +10,7 @@ import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Map;
 
 /**
@@ -38,25 +39,31 @@ public class HpoDataIngestor {
     private void inputHpoOntologyAndAnnotations()  {
         String hpopath=String.format("%s%s%s",dataDirectoryPath, File.separator,HP_OBO);
         String annotationpath=String.format("%s%s%s",dataDirectoryPath,File.separator,HP_PHENOTYPE_ANNOTATION);
-        HpOboParser parser = new HpOboParser(new File(hpopath));
+        HpOboParser parser;
         try {
+            parser = new HpOboParser(new File(hpopath));
             this.ontology = parser.parse();
-        } catch (PhenolException ioe) {
-            System.err.println("Could not parse hp.obo file: " + ioe.getMessage());
+        } catch (PhenolException  ioe) {
             throw new RuntimeException("Could not parse hp.obo file: " + ioe.getMessage());
         }
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationpath,ontology);
         try {
             this.diseaseMap = annotationParser.parse();
+            logger.info("disease map size="+diseaseMap.size());
             if (! annotationParser.validParse()) {
-                logger.error("Warning -- parse problems encountered with the annotation file at {}.", annotationpath);
+                logger.debug("Parse problems encountered with the annotation file at {}.", annotationpath);
+                int n = annotationParser.getErrors().size();
+                int i=0;
                 for (String error: annotationParser.getErrors()) {
-                    logger.error(error);
+                    i++;
+                    logger.debug(i +"/"+n+") "+error);
                 }
+                logger.debug("Done showing errors");
             }
         } catch (PhenolException pe) {
             throw new RuntimeException("Could not parse annotation file: "+pe.getMessage());
         }
+        logger.info("Done parsing; diseasemap has {} entries", diseaseMap.size());
     }
 
     public HpoOntology getOntology() {

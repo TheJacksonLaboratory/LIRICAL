@@ -101,6 +101,7 @@ public class CaseEvaluator {
 
 
 
+
     /** This method evaluates the likilihood ratio for each disease in
      * {@link #diseaseMap}. After this, it sorts the results (the best hit is then at index 0, etc).
      */
@@ -117,9 +118,9 @@ public class CaseEvaluator {
                 builder.add(LR);
             }
             // 2. get genotype LR if available
-            Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
             Double LR = null;
             TermId geneId = null;
+            Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
             if (associatedGenes != null && associatedGenes.size() > 0) {
                 for (TermId entrezGeneId : associatedGenes) {
                     double observedWeightedPathogenicVariantCount = this.genotypeMap.getOrDefault(entrezGeneId, 0.0);
@@ -137,14 +138,15 @@ public class CaseEvaluator {
                         }
                     }
                 }
-                TestResult result;
-                if (LR != null) {
-                    result = new TestResult(builder.build(), diseaseId, LR, geneId, pretest);
-                } else {
-                    result = new TestResult(builder.build(), diseaseId, pretest);
-                }
-                mapbuilder.put(diseaseId, result);
             }
+            TestResult result;
+            if (LR != null) {
+                result = new TestResult(builder.build(), diseaseId, LR, geneId, pretest);
+            } else {
+                result = new TestResult(builder.build(), diseaseId, pretest);
+            }
+            mapbuilder.put(diseaseId, result);
+
         }
         Map<TermId,TestResult> results = evaluateRanks(mapbuilder.build());
         HpoCase.Builder casebuilder = new HpoCase.Builder(phenotypicAbnormalities)
@@ -156,7 +158,7 @@ public class CaseEvaluator {
 
     private Map<TermId,TestResult> evaluateRanks(Map<TermId,TestResult> resultMap) {
         List<TestResult> results = new ArrayList<>(resultMap.values());
-        results.sort(Collections.reverseOrder());
+       results.sort(Collections.reverseOrder());
         int rank=0;
         for (TestResult res : results) {
             rank++;
