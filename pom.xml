@@ -4,7 +4,7 @@
 
     <groupId>org.monarchinitiative.lr2pg</groupId>
     <artifactId>lr2pg</artifactId>
-    <version>0.4.5</version>
+    <version>0.4.6</version>
     <packaging>jar</packaging>
 
     <name>lr2pg</name>
@@ -45,11 +45,11 @@
             <artifactId>exomiser-core</artifactId>
             <version>${exomiser.version}</version>
         </dependency>
-       <dependency>
+      <!--  <dependency>
             <groupId>org.monarchinitiative.exomiser</groupId>
             <artifactId>exomiser-spring-boot-autoconfigure</artifactId>
             <version>${exomiser.version}</version>
-        </dependency>
+        </dependency> -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
@@ -118,6 +118,14 @@
             <artifactId>commons-cli</artifactId>
             <version>1.4</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.6.1</version>
+        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
         <dependency>

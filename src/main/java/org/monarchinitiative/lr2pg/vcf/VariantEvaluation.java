@@ -46,7 +46,7 @@ import java.util.*;
  * @author Peter Robinson <peter.robinson@charite.de>
  */
 @JsonPropertyOrder({"genomeAssembly", "chromosomeName", "chromosome", "position", "ref", "alt", "phredScore", "variantEffect", "nonCodingVariant", "filterStatus", "variantScore", "frequencyScore", "pathogenicityScore", "predictedPathogenic", "passedFilterTypes", "failedFilterTypes", "frequencyData", "pathogenicityData", "compatibleInheritanceModes", "contributingInheritanceModes", "transcriptAnnotations"})
-public class VariantEvaluation implements Comparable<VariantEvaluation>, Filterable, Inheritable, Variant {
+public class VariantEvaluation implements Comparable<VariantEvaluation>, Filterable, Inheritable, Lr2pgVariant {
 
     //threshold over which a variant effect score is considered pathogenic
     private static final float DEFAULT_PATHOGENICITY_THRESHOLD = 0.5f;

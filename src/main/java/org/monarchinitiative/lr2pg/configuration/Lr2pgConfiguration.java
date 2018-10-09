@@ -70,14 +70,16 @@ public class Lr2pgConfiguration {
     private String diseaseId;
     @Value("${term.list}")
     private String termlist;
+    @Value("${hp.obo.path}")
+    private String hpOboPath;
 
     @Bean(name = "hpoOboFile")
-    private File hpoOboFile() {
+    File hpoOboFile() {
         return new File("data/hp.obo");
     }
 
     @Bean(name = "phenotype.hpoa")
-    private File annotationFile() {
+    File annotationFile() {
         return new File("data/phenotype.hpoa");
     }
 
@@ -111,9 +113,8 @@ public class Lr2pgConfiguration {
         return builder.build();
     }
 
-    @Bean
-    @Primary
-    public HpoOntology hpoOntology() {
+
+    private HpoOntology hpoOntology() {
 
         HpoOntology ontology;
         try {
@@ -135,15 +136,15 @@ public class Lr2pgConfiguration {
             Map<TermId, HpoDisease> diseaseMap = annotationParser.parse();
             logger.info("disease map size=" + diseaseMap.size());
             if (!annotationParser.validParse()) {
-                logger.debug("Parse problems encountered with the annotation file at {}.",
+                logger.error("Parse problems encountered with the annotation file at {}.",
                         annotationFile().getAbsolutePath());
                 int n = annotationParser.getErrors().size();
                 int i = 0;
                 for (String error : annotationParser.getErrors()) {
                     i++;
-                    logger.debug(i + "/" + n + ") " + error);
+                    logger.error(i + "/" + n + ") " + error);
                 }
-                logger.debug("Done showing errors");
+                logger.error("Done showing errors");
             }
             return diseaseMap;
         } catch (PhenolException pe) {
@@ -253,19 +254,19 @@ public class Lr2pgConfiguration {
         return new  VcfSimulator(disease2geneMultimap.keySet(),entrezId,vcount,vpath);
     }
 
-    @Bean
-    VcfParser vcfParser( File jannovarTranscriptFile ) throws Lr2pgException{
-        System.err.println("jannovar = "+jannovarTranscriptFile.getAbsolutePath());
-        try {
-            String transcriptFilePath=jannovarTranscriptFile.getAbsolutePath();
-            String vcf="/Users/peterrobinson/Desktop/Pfeifer.vcf";
-            JannovarData jdata = new JannovarDataSerializer(transcriptFilePath).load();
-            return new VcfParser(vcf,jdata);
-        } catch (SerializationException e) {
-            throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
-                    jannovarTranscriptFile, e.getMessage()));
-        }
-    }
+//    @Bean
+//    VcfParser vcfParser( File jannovarTranscriptFile ) throws Lr2pgException{
+//        System.err.println("jannovar = "+jannovarTranscriptFile.getAbsolutePath());
+//        try {
+//            String transcriptFilePath=jannovarTranscriptFile.getAbsolutePath();
+//            String vcf="/Users/peterrobinson/Desktop/Pfeifer.vcf";
+//            JannovarData jdata = new JannovarDataSerializer(transcriptFilePath).load();
+//            return new VcfParser(vcf,jdata);
+//        } catch (SerializationException e) {
+//            throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
+//                    jannovarTranscriptFile, e.getMessage()));
+//        }
+//    }
 
     @Bean
     JannovarData jannovarData( File jannovarTranscriptFile ) throws Lr2pgException{

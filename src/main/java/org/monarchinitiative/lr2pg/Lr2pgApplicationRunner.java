@@ -1,13 +1,8 @@
 package org.monarchinitiative.lr2pg;
 
 
-import com.sun.xml.internal.bind.v2.runtime.Location;
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.h2.mvstore.MVStore;
-import org.monarchinitiative.exomiser.core.genome.VariantAnnotator;
-import org.monarchinitiative.exomiser.core.genome.VariantDataService;
-import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.lr2pg.analysis.GridSearch;
+import org.monarchinitiative.lr2pg.configuration.Configurator;
 import org.monarchinitiative.lr2pg.configuration.Lr2pgConfiguration;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
@@ -15,8 +10,6 @@ import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.io.HpoDownloader;
 import org.monarchinitiative.lr2pg.svg.Lr2Svg;
-import org.monarchinitiative.lr2pg.vcf.PredPathCalculator;
-import org.monarchinitiative.lr2pg.vcf.VcfParser;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -38,10 +31,10 @@ import java.util.Map;
 public class Lr2pgApplicationRunner implements ApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(Lr2pgApplicationRunner.class);
 
-    @Autowired
+
     private HpoOntology ontology;
 
-    @Autowired
+    @Autowired @Lazy
     private Map<TermId, HpoDisease> diseaseMap;
 
     @Autowired @Lazy
@@ -61,18 +54,26 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
     @Autowired @Lazy
     private GridSearch gridSearch;
 
+    @Autowired
+    private String hpOboPath;
+
 //    @Autowired @Lazy
 //    private PredPathCalculator ppcalcalculator;
 
     @Override
     public void run(ApplicationArguments args) {
+        Configurator configurator = new Configurator(this.hpOboPath);
+        this.ontology=configurator.get();
+
+
         logger.info("Application started with analysis-line arguments: {}", Arrays.toString(args.getSourceArgs()));
 
-
-        logger.info("NonOptionArgs: {}", args.getNonOptionArgs());
-        logger.info("OptionNames: {}", args.getOptionNames());
+        System.err.println("TOP");
+        logger.error("NonOptionArgs: {}", args.getNonOptionArgs());
+        logger.error("OptionNames: {}", args.getOptionNames());
         for (String name : args.getOptionNames()) {
             logger.info("arg-" + name + "=" + args.getOptionValues(name));
+            System.err.println("SB arg="+name);
         }
 
         if (args.containsOption("help") || args.containsOption("h")) {
@@ -91,7 +92,8 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
         ApplicationContext context = new AnnotationConfigApplicationContext(Lr2pgConfiguration.class);
         // if we get here, we have one analysis
         String mycommand = nonoptionargs.get(0);
-
+        logger.trace("Command="+mycommand);
+        System.exit(1);
 
         switch (mycommand) {
             case "download":
@@ -229,6 +231,14 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
         System.out.println();
     }
 
+    private static void vcfUsage() {
+        System.out.println("VCF:");
+        System.out.println("\tjava -jar Lr2pg.jar VCF [--V <VCF FILE>] ");
+        System.out.println("\t-d <directory>: name of directory to which HPO data will be downloaded (default:\"data\")");
+        System.out.println("\t--overwrite: do not skip even if file already downloaded");
+        System.out.println();
+    }
+
 
     /**
      * Print usage information
@@ -241,6 +251,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
         simulateUsage();
         phenoGenoUsage();
         svgUsage();
+        vcfUsage();
         System.exit(0);
     }
 }

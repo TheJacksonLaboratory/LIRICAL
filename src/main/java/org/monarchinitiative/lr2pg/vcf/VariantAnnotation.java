@@ -33,7 +33,7 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class VariantAnnotation implements Variant {
+public class VariantAnnotation implements Lr2pgVariant {
 
     private static final VariantAnnotation EMPTY = new Builder().build();
 

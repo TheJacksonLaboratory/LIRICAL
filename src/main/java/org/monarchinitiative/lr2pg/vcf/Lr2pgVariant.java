@@ -25,42 +25,29 @@
  */
 package org.monarchinitiative.lr2pg.vcf;
 
+import de.charite.compbio.jannovar.annotation.VariantEffect;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
+
+import java.util.List;
 
 /**
  *
- *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public interface VariantCoordinates {
+public interface Lr2pgVariant extends Lr2pgVariantCoordinates {
 
-  //  public GenomeAssembly getGenomeAssembly();
+    public String getGeneSymbol();
 
-    /**
-     * @return integer representation of the chromosome
-     */
-    public int getChromosome();
+    public String getGeneId();
 
-    /**
-     * @return String representation of the chromosome. Chromosomes 1-22 will return
-     * a string value of their number. Sex chromosomes 23=X 24=Y and mitochondrial 25=MT.
-     */
-    public String getChromosomeName();
+    public VariantEffect getVariantEffect();
 
-    /**
-     * @return 1-based position of the variant on the chromosome
-     */
-    public int getPosition();
+    public List<TranscriptAnnotation> getTranscriptAnnotations();
 
-    /**
-     * @return String with the reference allele in the variant, without common
-     * suffix or prefix to reference allele.
-     */
-    public String getRef();
+    public boolean hasTranscriptAnnotations();
 
-    /**
-     * @return String with the alternative allele in the variant, without common
-     * suffix or prefix to reference allele.
-     */
-    public String getAlt();
+    public default boolean isNonCodingVariant() {
+        return VariantEffectUtility.isNonCodingVariant(getVariantEffect());
+    }
 
 }
