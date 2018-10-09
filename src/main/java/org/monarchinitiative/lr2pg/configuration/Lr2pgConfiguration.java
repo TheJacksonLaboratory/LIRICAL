@@ -36,6 +36,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
 
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -268,29 +269,29 @@ public class Lr2pgConfiguration {
 //        }
 //    }
 
-    @Bean
-    JannovarData jannovarData( File jannovarTranscriptFile ) throws Lr2pgException{
-        System.err.println("jannovar = "+jannovarTranscriptFile.getAbsolutePath());
-        try {
-            return new JannovarDataSerializer(jannovarTranscriptFile.getAbsolutePath()).load();
-        } catch (SerializationException e) {
-            throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
-                    jannovarTranscriptFile, e.getMessage()));
-        }
-    }
+//    @Bean
+//    JannovarData jannovarData( File jannovarTranscriptFile ) throws Lr2pgException{
+//        System.err.println("jannovar = "+jannovarTranscriptFile.getAbsolutePath());
+//        try {
+//            return new JannovarDataSerializer(jannovarTranscriptFile.getAbsolutePath()).load();
+//        } catch (SerializationException e) {
+//            throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
+//                    jannovarTranscriptFile, e.getMessage()));
+//        }
+//    }
 
 
 
 
-    @Bean
-    GenomeAssembly hg38genomeAssembly() {
-        return GenomeAssembly.HG38;
-    }
+//    @Bean
+//    GenomeAssembly hg38genomeAssembly() {
+//        return GenomeAssembly.HG38;
+//    }
 
 
     @Value("${exomiser.mv.store}")
     private String mvPath;
-    @Bean
+    @Bean @Singleton
     MVStore hg19MvStore() {
             return new MVStore.Builder()
                     .fileName(mvPath)
@@ -299,10 +300,10 @@ public class Lr2pgConfiguration {
     }
 
 
-    @Bean
-    Lr2pgVariantAnnotator lr2pgVariantAnnotator(GenomeAssembly hg38genomeAssembly,JannovarData jannovarData){
-    return new Lr2pgVariantAnnotator(hg38genomeAssembly,jannovarData);
-    }
+//    @Bean
+//    Lr2pgVariantAnnotator lr2pgVariantAnnotator(GenomeAssembly hg38genomeAssembly,JannovarData jannovarData){
+//    return new Lr2pgVariantAnnotator(hg38genomeAssembly,jannovarData);
+//    }
 
 
 //    @Bean
