@@ -114,7 +114,7 @@ public class Lr2pgConfiguration {
     }
 
 
-    private HpoOntology hpoOntology() {
+    @Bean @Primary  public HpoOntology hpoOntology() {
 
         HpoOntology ontology;
         try {

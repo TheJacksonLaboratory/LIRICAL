@@ -31,7 +31,7 @@ import java.util.Map;
 public class Lr2pgApplicationRunner implements ApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(Lr2pgApplicationRunner.class);
 
-
+    @Autowired
     private HpoOntology ontology;
 
     @Autowired @Lazy
@@ -62,8 +62,8 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        Configurator configurator = new Configurator(this.hpOboPath);
-        this.ontology=configurator.get();
+//        Configurator configurator = new Configurator(this.hpOboPath);
+//        this.ontology=configurator.get();
 
 
         logger.info("Application started with analysis-line arguments: {}", Arrays.toString(args.getSourceArgs()));
