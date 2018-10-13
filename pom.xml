@@ -4,7 +4,7 @@
 
     <groupId>org.monarchinitiative.lr2pg</groupId>
     <artifactId>lr2pg</artifactId>
-    <version>0.4.6</version>
+    <version>0.4.7</version>
     <packaging>jar</packaging>
 
     <name>lr2pg</name>
@@ -24,7 +24,7 @@
         <jdk.version>1.8</jdk.version>
         <java.version>1.8</java.version>
         <junit.version>4.12</junit.version>
-        <phenol.version>1.2.6</phenol.version>
+        <phenol.version>1.3.0-SNAPSHOT</phenol.version>
         <jannovar.version>0.24</jannovar.version>
         <exomiser.version>11.0.0</exomiser.version>
     </properties>

@@ -3,8 +3,11 @@ package org.monarchinitiative.lr2pg;
 
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.lr2pg.analysis.Genotype;
 import org.monarchinitiative.lr2pg.analysis.GridSearch;
-import org.monarchinitiative.lr2pg.configuration.Configurator;
+import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
+import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.configuration.Lr2pgConfiguration;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
@@ -19,16 +22,12 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,34 +36,31 @@ import java.util.Map;
 public class Lr2pgApplicationRunner implements ApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(Lr2pgApplicationRunner.class);
 
-    @Autowired
+
     private HpoOntology ontology;
 
-    @Autowired @Lazy
     private Map<TermId, HpoDisease> diseaseMap;
 
-    @Autowired @Lazy
+
     private PhenotypeOnlyHpoCaseSimulator phenotypeOnlyHpoCaseSimulator;
 
-    @Autowired
+
     private String diseaseId;
 
     private String dataDownloadDirectory;
 
-    @Autowired @Lazy
+
     private HpoPhenoGenoCaseSimulator hpoPhenoGenoCaseSimulatorsimulator;
     //
-    @Autowired @Lazy
+
     private  Map<TermId, String> geneId2SymbolMap;
 
-    @Autowired @Lazy
+
     private GridSearch gridSearch;
 
     @Autowired
     private String hpOboPath;
 
-    @Autowired @Qualifier("jannovarTranscriptFile")
-    File  jannovarHg19File;
 
 
 //    @Autowired
@@ -104,8 +100,22 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
         String mycommand = nonoptionargs.get(0);
         logger.error("Command="+mycommand);
 
-        String yml="src/main/resources/yaml/demo1.yml";
+        String yml="src/main/resources/yaml/demo2.yml";
         YamlParser yparser = new YamlParser(yml);
+        Lr2PgFactory factory=null;
+        try {
+            Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().
+                    hp_obo(yparser.getHpOboPath()).
+                    mvStore(yparser.getMvStorePath())
+                    .mim2genemedgen(yparser.getMedgen())
+                    .geneInfo(yparser.getGeneInfo())
+                    .phenotypeAnnotation(yparser.phenotypeAnnotation())
+                    .vcf(yparser.vcfPath()).
+                    jannovarFile(yparser.jannovarFile());
+            factory=builder.build();
+        } catch (Lr2pgException e){
+            e.printStackTrace();
+        }
 
 
         switch (mycommand) {
@@ -164,15 +174,19 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
                 }
                 break;
             case "vcf":
-                String vcf="/Users/peterrobinson/Desktop/Pfeifer.vcf";
-                String mvStoreAbsolutePath=yparser.getMvStorePath();
-                MVStore mvs =  new MVStore.Builder()
-                        .fileName(mvStoreAbsolutePath.toString())
-                        .readOnly()
-                        .open();
+                try {
+                    String vcf = factory.vcfPath();
+                    MVStore mvstore = factory.mvStore();
+                    JannovarData jannovarData = factory.jannovarData();
+                    Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcf,jannovarData,mvstore,GenomeAssembly.HG19);
+                    Map<TermId,Genotype> genotypeMap=vcf2geno.vcf2genotypeMap();
+                } catch (Lr2pgException e) {
+                    e.printStackTrace();
+                }
 
-                System.err.println("FILE="+jannovarHg19File.getAbsolutePath());
-                System.err.println("mvs="+mvs.toString());
+
+//                System.err.println("FILE="+jannovarHg19File.getAbsolutePath());
+
 
             // vcfParser.parse(vcf);
 

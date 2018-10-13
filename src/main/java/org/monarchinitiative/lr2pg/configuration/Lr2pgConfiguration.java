@@ -2,26 +2,12 @@ package org.monarchinitiative.lr2pg.configuration;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
-import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.JannovarDataSerializer;
-import de.charite.compbio.jannovar.data.SerializationException;
-import org.h2.mvstore.MVStore;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.genome.VariantDataService;
-import org.monarchinitiative.lr2pg.analysis.GridSearch;
-import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.VcfSimulator;
-import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
-import org.monarchinitiative.lr2pg.vcf.Lr2pgVariantAnnotator;
-import org.monarchinitiative.lr2pg.vcf.VcfParser;
-import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.io.assoc.HpoAssociationParser;
-import org.monarchinitiative.phenol.io.obo.hpo.HpOboParser;
-import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
+
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 import org.slf4j.Logger;
@@ -31,14 +17,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
 
-import javax.inject.Singleton;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 
@@ -116,7 +99,7 @@ public class Lr2pgConfiguration {
      *
      * @return list of termid for this patient
      */
-    @Bean
+
     List<TermId> termIdList() {
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         for (String id : this.termlist.split(",")) {
@@ -127,49 +110,14 @@ public class Lr2pgConfiguration {
     }
 
 
-    @Bean @Primary  public HpoOntology hpoOntology() {
-
-        HpoOntology ontology;
-        try {
-            HpOboParser parser = new HpOboParser(hpoOboFile());
-            ontology = parser.parse();
-            return ontology;
-        } catch (PhenolException | FileNotFoundException ioe) {
-            System.err.println("Could not parse hp.obo file: " + ioe.getMessage());
-            throw new RuntimeException("Could not parse hp.obo file: " + ioe.getMessage());
-        }
-    }
 
 
-    @Bean
-    @Primary
-    public Map<TermId, HpoDisease> diseaseMap(HpoOntology ontology) {
-        HpoDiseaseAnnotationParser annotationParser = new HpoDiseaseAnnotationParser(annotationFile(), ontology);
-        try {
-            Map<TermId, HpoDisease> diseaseMap = annotationParser.parse();
-            logger.info("disease map size=" + diseaseMap.size());
-            if (!annotationParser.validParse()) {
-                int n = annotationParser.getErrors().size();
-                logger.error("Parse problems encountered with the annotation file at {}. Got {} errors",
-                        annotationFile().getAbsolutePath(),n);
-               /*
-                int i = 0;
-                for (String error : annotationParser.getErrors()) {
-                    i++;
-                    logger.error(i + "/" + n + ") " + error);
-                }
-                logger.error("Done showing errors");
-                */
-            }
-            return diseaseMap;
-        } catch (PhenolException pe) {
-            throw new RuntimeException("Could not parse annotation file: " + pe.getMessage());
-        }
-    }
 
 
-    @Bean
-    @Primary
+
+
+
+
     PhenotypeOnlyHpoCaseSimulator phenotypeOnlyHpoCaseSimulator(HpoOntology ontology, Map<TermId, HpoDisease> diseaseMap) {
         int n_cases_to_simulate = Integer.parseInt(cases_to_simulate);
         int n_terms_per_case = Integer.parseInt(terms_per_case);
@@ -185,15 +133,9 @@ public class Lr2pgConfiguration {
                 imprecise_phenotype);
     }
 
-    @Bean(name = "gene2backgroundFrequency")
-    Map<TermId, Double> gene2backgroundFrequency() {
-        String path = String.format("%s%s%s",datapath,File.separator,"background-freq.txt");
-        GenotypeDataIngestor gdingestor = new GenotypeDataIngestor(path);
-        Map<TermId, Double> gene2backgroundFrequency = gdingestor.parse();
-        return gene2backgroundFrequency;
-    }
 
-    @Bean
+
+
     HpoPhenoGenoCaseSimulator hpoPhenoGenoCaseSimulator(HpoOntology ontology,
                                                         Map<TermId, HpoDisease> diseaseMap,
                                                         @Autowired @Qualifier("disease2geneMultimap") Multimap<TermId, TermId> disease2geneMultimap,
@@ -219,48 +161,12 @@ public class Lr2pgConfiguration {
 
 
 
-    @Bean
-    HpoAssociationParser hpoAssociationParser(HpoOntology ontology) {
-        String geneInfoPath = String.format("%s%s%s", datapath, File.separator, "Homo_sapiens_gene_info.gz");
-        File geneInfoFile = new File(geneInfoPath);
-        if (!geneInfoFile.exists()) {
-            System.err.println("Could not find gene info file at " + geneInfoPath + ". Run download analysis");
-            System.exit(1);
-        }
-        String mim2genemedgen = String.format("%s%s%s", datapath, File.separator, "mim2gene_medgen");
-        File mim2genemedgenFile = new File(mim2genemedgen);
-        if (!mim2genemedgenFile.exists()) {
-            System.err.println("Could not find medgen file at " + mim2genemedgen + ". Run download analysis");
-            System.exit(1);
-        }
-        File orphafilePlaceholder = null;//we do not need this for now
-        HpoAssociationParser assocParser = new HpoAssociationParser(geneInfoFile,
-                mim2genemedgenFile,
-                orphafilePlaceholder,
-                ontology);
-        assocParser.parse();
-        return assocParser;
-    }
 
 
-    /**  key: a gene CURIE such as NCBIGene:123; value: a collection of disease CURIEs such as OMIM:600123. */
-    @Bean(name="gene2diseaseMultimap")
-    Multimap<TermId,TermId> gene2diseaseMultimap(HpoAssociationParser parser) {
-        return parser.getGeneToDiseaseIdMap();
-    }
-    /* key: disease CURIEs such as OMIM:600123; value: a collection of gene CURIEs such as NCBIGene:123.  */
 
-    @Bean(name="disease2geneMultimap")
-    Multimap<TermId,TermId> disease2geneMultimap(HpoAssociationParser parser) {
-        return parser.getDiseaseToGeneIdMap();
-    }
-    /** key: a gene id, e.g., NCBIGene:2020; value: the corresponding symbol. */
-    @Bean(name="geneId2symbolMap")
-    Map<TermId,String> geneId2symbolMap(HpoAssociationParser parser) {
-        return parser.getGeneIdToSymbolMap();
-    }
 
-    @Bean
+
+
     VcfSimulator vcfSimulator(@Autowired @Qualifier("disease2geneMultimap") Multimap<TermId, TermId> disease2geneMultimap) {
         TermPrefix ENTREZ=new TermPrefix("NCBIGene");
         TermId entrezId = new TermId(ENTREZ,entrezgeneid);
@@ -321,14 +227,14 @@ public class Lr2pgConfiguration {
 
 
 
-    @Bean
-    GridSearch gridSearch() {
-        Integer casesToSimulate = Integer.parseInt(cases_to_simulate);
-        Integer termsPerCase = Integer.parseInt(terms_per_case);
-        Integer noiseTerms = Integer.parseInt( noise_terms );
-       GridSearch gs = new GridSearch(hpoOntology(),diseaseMap(hpoOntology()),casesToSimulate,termsPerCase,noiseTerms);
-       return gs;
-    }
+//    @Bean
+//    GridSearch gridSearch() {
+//        Integer casesToSimulate = Integer.parseInt(cases_to_simulate);
+//        Integer termsPerCase = Integer.parseInt(terms_per_case);
+//        Integer noiseTerms = Integer.parseInt( noise_terms );
+//       GridSearch gs = new GridSearch(hpoOntology(),diseaseMap(hpoOntology()),casesToSimulate,termsPerCase,noiseTerms);
+//       return gs;
+//    }
 
 
 }
