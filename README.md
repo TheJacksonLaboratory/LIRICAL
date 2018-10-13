@@ -12,8 +12,8 @@ To run a demo, execute the following commands in the LR2PG directory.
 
 ```
 $ mvn clean package
-$ java -jar target/LR2PG-0.0.1-SNAPSHOT.jar download
-$ java -jar target/LR2PG-0.0.1-SNAPSHOT.jar simulate
+$ java -jar target/LR2PG-0.4.6.jar download
+$ java -jar target/LR2PG-0.4.6.jar simulate
 ```
 
 

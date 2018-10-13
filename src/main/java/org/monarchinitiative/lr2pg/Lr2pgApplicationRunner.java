@@ -1,6 +1,8 @@
 package org.monarchinitiative.lr2pg;
 
 
+import de.charite.compbio.jannovar.data.JannovarData;
+import org.h2.mvstore.MVStore;
 import org.monarchinitiative.lr2pg.analysis.GridSearch;
 import org.monarchinitiative.lr2pg.configuration.Configurator;
 import org.monarchinitiative.lr2pg.configuration.Lr2pgConfiguration;
@@ -9,6 +11,7 @@ import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lr2pg.io.HpoDownloader;
+import org.monarchinitiative.lr2pg.io.YamlParser;
 import org.monarchinitiative.lr2pg.svg.Lr2Svg;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -16,6 +19,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.ApplicationContext;
@@ -23,6 +27,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -57,23 +63,27 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
     @Autowired
     private String hpOboPath;
 
+    @Autowired @Qualifier("jannovarTranscriptFile")
+    File  jannovarHg19File;
+
+
+//    @Autowired
+//    JannovarData jannovarData;
+
+
 //    @Autowired @Lazy
 //    private PredPathCalculator ppcalcalculator;
 
     @Override
     public void run(ApplicationArguments args) {
-//        Configurator configurator = new Configurator(this.hpOboPath);
-//        this.ontology=configurator.get();
 
-
-        logger.info("Application started with analysis-line arguments: {}", Arrays.toString(args.getSourceArgs()));
-
-        System.err.println("TOP");
+        logger.error("Application started with command-line arguments: {}", Arrays.toString(args.getSourceArgs()));
         logger.error("NonOptionArgs: {}", args.getNonOptionArgs());
         logger.error("OptionNames: {}", args.getOptionNames());
+
+
         for (String name : args.getOptionNames()) {
-            logger.info("arg-" + name + "=" + args.getOptionValues(name));
-            System.err.println("SB arg="+name);
+            logger.error("arg: " + name + "=" + args.getOptionValues(name));
         }
 
         if (args.containsOption("help") || args.containsOption("h")) {
@@ -92,8 +102,11 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
         ApplicationContext context = new AnnotationConfigApplicationContext(Lr2pgConfiguration.class);
         // if we get here, we have one analysis
         String mycommand = nonoptionargs.get(0);
-        logger.trace("Command="+mycommand);
-        System.exit(1);
+        logger.error("Command="+mycommand);
+
+        String yml="src/main/resources/yaml/demo1.yml";
+        YamlParser yparser = new YamlParser(yml);
+
 
         switch (mycommand) {
             case "download":
@@ -152,8 +165,14 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
                 break;
             case "vcf":
                 String vcf="/Users/peterrobinson/Desktop/Pfeifer.vcf";
+                String mvStoreAbsolutePath=yparser.getMvStorePath();
+                MVStore mvs =  new MVStore.Builder()
+                        .fileName(mvStoreAbsolutePath.toString())
+                        .readOnly()
+                        .open();
 
-
+                System.err.println("FILE="+jannovarHg19File.getAbsolutePath());
+                System.err.println("mvs="+mvs.toString());
 
             // vcfParser.parse(vcf);
 
@@ -232,8 +251,8 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
     }
 
     private static void vcfUsage() {
-        System.out.println("VCF:");
-        System.out.println("\tjava -jar Lr2pg.jar VCF [--V <VCF FILE>] ");
+        System.out.println("vcf:");
+        System.out.println("\tjava -jar Lr2pg.jar vcf [--V <VCF FILE>] ");
         System.out.println("\t-d <directory>: name of directory to which HPO data will be downloaded (default:\"data\")");
         System.out.println("\t--overwrite: do not skip even if file already downloaded");
         System.out.println();

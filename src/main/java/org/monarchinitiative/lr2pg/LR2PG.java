@@ -18,9 +18,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class LR2PG {
     static public void main(String [] args) {
         long startTime = System.currentTimeMillis();
+        System.out.println("COMMAND LINE PRIOR TO RUN");
         for(String arg:args) {
             System.out.println(arg);
         }
+        System.out.println("##########");
         SpringApplication.run(LR2PG.class, args);
         long stopTime = System.currentTimeMillis();
         System.out.println("LRPG: Elapsed time was " + (stopTime - startTime)*(1.0)/1000 + " seconds.");

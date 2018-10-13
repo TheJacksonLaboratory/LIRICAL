@@ -88,6 +88,18 @@ public class Lr2pgConfiguration {
     File jannovarHg19File() {
         return new File("data/hg19_refseq.ser");
     }
+/*
+    @Bean
+    JannovarData jannovarData( File jannovarTranscriptFile ) throws Lr2pgException{
+        System.err.println("jannovar = "+jannovarTranscriptFile.getAbsolutePath());
+        try {
+            return new JannovarDataSerializer(jannovarTranscriptFile.getAbsolutePath()).load();
+        } catch (SerializationException e) {
+            throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
+                    jannovarTranscriptFile, e.getMessage()));
+        }
+    }
+*/
 
     @Bean(name ="diseaseId")
     public String diseaseId(){return diseaseId;}
@@ -137,15 +149,17 @@ public class Lr2pgConfiguration {
             Map<TermId, HpoDisease> diseaseMap = annotationParser.parse();
             logger.info("disease map size=" + diseaseMap.size());
             if (!annotationParser.validParse()) {
-                logger.error("Parse problems encountered with the annotation file at {}.",
-                        annotationFile().getAbsolutePath());
                 int n = annotationParser.getErrors().size();
+                logger.error("Parse problems encountered with the annotation file at {}. Got {} errors",
+                        annotationFile().getAbsolutePath(),n);
+               /*
                 int i = 0;
                 for (String error : annotationParser.getErrors()) {
                     i++;
                     logger.error(i + "/" + n + ") " + error);
                 }
                 logger.error("Done showing errors");
+                */
             }
             return diseaseMap;
         } catch (PhenolException pe) {
@@ -269,16 +283,6 @@ public class Lr2pgConfiguration {
 //        }
 //    }
 
-//    @Bean
-//    JannovarData jannovarData( File jannovarTranscriptFile ) throws Lr2pgException{
-//        System.err.println("jannovar = "+jannovarTranscriptFile.getAbsolutePath());
-//        try {
-//            return new JannovarDataSerializer(jannovarTranscriptFile.getAbsolutePath()).load();
-//        } catch (SerializationException e) {
-//            throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
-//                    jannovarTranscriptFile, e.getMessage()));
-//        }
-//    }
 
 
 
@@ -288,7 +292,7 @@ public class Lr2pgConfiguration {
 //        return GenomeAssembly.HG38;
 //    }
 
-
+/*
     @Value("${exomiser.mv.store}")
     private String mvPath;
     @Bean @Singleton
@@ -298,7 +302,7 @@ public class Lr2pgConfiguration {
                     .readOnly()
                     .open();
     }
-
+*/
 
 //    @Bean
 //    Lr2pgVariantAnnotator lr2pgVariantAnnotator(GenomeAssembly hg38genomeAssembly,JannovarData jannovarData){
