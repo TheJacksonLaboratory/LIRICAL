@@ -1,5 +1,6 @@
 package org.monarchinitiative.lr2pg.analysis;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
@@ -21,11 +22,9 @@ import htsjdk.variant.vcf.VCFHeader;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.JannovarVariantAnnotator;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
-import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
-import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
@@ -113,12 +112,15 @@ public class Vcf2GenotypeMap {
                             new VariantContextAnnotator.Options());
             VariantAnnotator van = variantEffectAnnotator.getAnnotator();
 
-            Lr2pgVariantAnnotator lpgannotator = new Lr2pgVariantAnnotator(genomeAssembly, jannovarData);
+            //Lr2pgVariantAnnotator lpgannotator = new Lr2pgVariantAnnotator(genomeAssembly, jannovarData);
+            List<RegulatoryFeature> emtpylist = ImmutableList.of();
+            ChromosomalRegionIndex<RegulatoryFeature> emptyRegionIndex = ChromosomalRegionIndex.of(emtpylist);
+            JannovarVariantAnnotator lgpannotator = new JannovarVariantAnnotator(genomeAssembly,jannovarData,emptyRegionIndex);
             while (iter.hasNext()) {
                 VariantContext vc = iter.next();
                 vc = variantEffectAnnotator.annotateVariantContext(vc);
                 // todo -- what about multiple alleles on one position?
-                VariantAnnotation va = lpgannotator.annotate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), vc.getAlternateAllele(0).getBaseString());
+                VariantAnnotation va = lgpannotator.annotate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), vc.getAlternateAllele(0).getBaseString());
                 VariantEffect variantEffect = va.getVariantEffect();
                 if (!variantEffect.isOffExome()) {
                     String genIdString = va.getGeneId();
@@ -127,6 +129,7 @@ public class Vcf2GenotypeMap {
                     AlleleProto.AlleleProperties alleleProp = alleleMap.get(alleleKey);
                     if (alleleProp==null) {
                         System.out.println("Allele prop is NULL for " + veval);
+                        continue;
                     }
                     PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);
                     if (pathogenicityData.isEmpty()) {
@@ -139,10 +142,10 @@ public class Vcf2GenotypeMap {
                     // they also have a review status which will tell you how much confidence you might want to assign a given interpretation.
                     // see https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/
                     if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
-                        System.err.println(pathogenicity + "\n");
+                        System.err.println("PATH="+pathogenicity + "\n");
                     }
                     FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
-                    System.err.println(genIdString + ": path="+pathogenicity + ", freq="+frequencyData.toString()+", "+vc.toString());
+                    System.err.println("VEVAL=:"+veval+": "+genIdString + ": path="+pathogenicity + ", freq="+frequencyData.toString()+", "+vc.toString());
                 }
 
 
