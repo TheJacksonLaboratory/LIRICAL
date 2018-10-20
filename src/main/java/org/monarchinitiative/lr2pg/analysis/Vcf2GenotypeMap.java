@@ -32,6 +32,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPath
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.lr2pg.vcf.Lr2pgVariantAnnotator;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import java.io.File;
 import java.util.*;
@@ -39,6 +40,8 @@ import java.util.*;
 public class Vcf2GenotypeMap {
 
     private final String vcfPath;
+
+    private final TermPrefix NCBI_ENTREZ_GENE_PREFIX=new TermPrefix("NCBIGene");
 
     private final JannovarData jannovarData;
 
@@ -115,36 +118,42 @@ public class Vcf2GenotypeMap {
             //Lr2pgVariantAnnotator lpgannotator = new Lr2pgVariantAnnotator(genomeAssembly, jannovarData);
             List<RegulatoryFeature> emtpylist = ImmutableList.of();
             ChromosomalRegionIndex<RegulatoryFeature> emptyRegionIndex = ChromosomalRegionIndex.of(emtpylist);
-            JannovarVariantAnnotator lgpannotator = new JannovarVariantAnnotator(genomeAssembly,jannovarData,emptyRegionIndex);
+            JannovarVariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(genomeAssembly,jannovarData,emptyRegionIndex);
             while (iter.hasNext()) {
                 VariantContext vc = iter.next();
                 vc = variantEffectAnnotator.annotateVariantContext(vc);
                 // todo -- what about multiple alleles on one position?
-                VariantAnnotation va = lgpannotator.annotate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), vc.getAlternateAllele(0).getBaseString());
+                VariantAnnotation va = jannovarVariantAnnotator.annotate(vc.getContig(), vc.getStart(), vc.getReference().getBaseString(), vc.getAlternateAllele(0).getBaseString());
                 VariantEffect variantEffect = va.getVariantEffect();
                 if (!variantEffect.isOffExome()) {
-                    String genIdString = va.getGeneId();
+                    String genIdString = va.getGeneId(); // for now assume this is an Entrez Gene ID
+                    String symbol=va.getGeneSymbol();
+                    TermId geneId=new TermId(NCBI_ENTREZ_GENE_PREFIX,genIdString);
+                    gene2genotypeMap.putIfAbsent(geneId,new Genotype(geneId,symbol));
+                    Genotype genotype = gene2genotypeMap.get(geneId);
                     VariantEvaluation veval = buildVariantEvaluation(vc,  va );
                     AlleleProto.AlleleKey alleleKey =AlleleProtoAdaptor.toAlleleKey(veval);
                     AlleleProto.AlleleProperties alleleProp = alleleMap.get(alleleKey);
                     if (alleleProp==null) {
                         System.out.println("Allele prop is NULL for " + veval);
+                        System.exit(1);
                         continue;
                     }
+                    FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
                     PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);
-                    if (pathogenicityData.isEmpty()) {
-                        //pathDataEmpty++;
-                        continue; // should almost never happen
-                    }
                     float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
                     ClinVarData clinVarData = pathogenicityData.getClinVarData();
-                    // ClinVar have three 'pathogenic' significance values - pathogenic, pathogenic_or_likely_pathogenic and likely_pathogenic
-                    // they also have a review status which will tell you how much confidence you might want to assign a given interpretation.
-                    // see https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/
                     if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
                         System.err.println("PATH="+pathogenicity + "\n");
                     }
-                    FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
+
+
+
+                    // ClinVar have three 'pathogenic' significance values - pathogenic, pathogenic_or_likely_pathogenic and likely_pathogenic
+                    // they also have a review status which will tell you how much confidence you might want to assign a given interpretation.
+                    // see https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/
+
+
                     System.err.println("VEVAL=:"+veval+": "+genIdString + ": path="+pathogenicity + ", freq="+frequencyData.toString()+", "+vc.toString());
                 }
 
@@ -152,11 +161,12 @@ public class Vcf2GenotypeMap {
 
 
 
-                if (progressReporter != null)
-                    progressReporter.done();
+
 
             }
         }
+        if (progressReporter != null)
+            progressReporter.done();
         return gene2genotypeMap;
     }
 
@@ -168,13 +178,14 @@ public class Vcf2GenotypeMap {
      * @return the predicted pathogenicity score.
      */
     private float calculatePathogenicity(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
-        float predictedScore = pathogenicityData.getScore();
         float variantEffectScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
+        if (pathogenicityData.isEmpty()) return variantEffectScore;
+        float predictedScore = pathogenicityData.getScore();
         switch (variantEffect) {
             case MISSENSE_VARIANT:
                 return pathogenicityData.hasPredictedScore() ? predictedScore : variantEffectScore;
             case SYNONYMOUS_VARIANT:
-                // there are cases where synonymous variants have been assigned a high MutationTaser score.
+                // there are cases where synonymous variants have been assigned a high MutationTaster score.
                 // These looked to have been wrongly mapped and are therefore probably wrong. So we'll use the default score for these.
                 return variantEffectScore;
             default:

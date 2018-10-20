@@ -100,7 +100,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
         String mycommand = nonoptionargs.get(0);
         logger.error("Command="+mycommand);
 
-        String yml="src/main/resources/yaml/demo1.yml";
+        String yml="src/main/resources/yaml/demo2.yml";
         YamlParser yparser = new YamlParser(yml);
         Lr2PgFactory factory=null;
         try {
