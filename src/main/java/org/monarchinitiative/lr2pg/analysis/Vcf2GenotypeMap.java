@@ -43,6 +43,12 @@ public class Vcf2GenotypeMap {
 
     private final TermPrefix NCBI_ENTREZ_GENE_PREFIX=new TermPrefix("NCBIGene");
 
+    /** We will assume a frequency of 1:100,000 if no frequency data is available. */
+    private final float DEFAULT_FREQUENCY = 0.00001F;
+
+    /** We will assume a frequency of 1:100,000 if no frequency data is available. */
+    private final float DEFAULT_PATHOGENICITY = 0.0F;
+
     private final JannovarData jannovarData;
 
     private final ReferenceDictionary referenceDictionary;
@@ -108,8 +114,8 @@ public class Vcf2GenotypeMap {
             iter = vcfReader.iterator();
 
             // Add step for annotating with variant effect
-            VariantEffectHeaderExtender extender = new VariantEffectHeaderExtender();
-            extender.addHeaders(vcfHeader);
+//            VariantEffectHeaderExtender extender = new VariantEffectHeaderExtender();
+//            extender.addHeaders(vcfHeader);
             VariantContextAnnotator variantEffectAnnotator =
                     new VariantContextAnnotator(this.referenceDictionary, this.chromosomeMap,
                             new VariantContextAnnotator.Options());
@@ -134,27 +140,40 @@ public class Vcf2GenotypeMap {
                     VariantEvaluation veval = buildVariantEvaluation(vc,  va );
                     AlleleProto.AlleleKey alleleKey =AlleleProtoAdaptor.toAlleleKey(veval);
                     AlleleProto.AlleleProperties alleleProp = alleleMap.get(alleleKey);
+                    int chrom = veval.getChromosome();
+                    int pos = veval.getPosition();
+                    String ref = veval.getRef();
+                    String alt = veval.getAlt();
+                    List<TranscriptAnnotation> transcriptAnnotationList = veval.getTranscriptAnnotations();
+                    String genotypeString = veval.getGenotypeString();
+                    float freq;
+                    float path;
+                    boolean isClinVarPath=false;
+                    ClinVarData.ClinSig clinvarSig=null;
                     if (alleleProp==null) {
                         System.out.println("Allele prop is NULL for " + veval);
-                        System.exit(1);
-                        continue;
+                        freq=DEFAULT_FREQUENCY;
+                        path=VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
+                        genotype.addVariant(chrom,pos,ref,alt,transcriptAnnotationList,genotypeString);
+                    } else {
+                        FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
+                        PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);
+                        freq=frequencyData.getMaxFreq();
+                        path=pathogenicityData.getMostPathogenicScore().getScore();
+                        float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
+                        ClinVarData clinVarData = pathogenicityData.getClinVarData();
+                        if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
+                            isClinVarPath=true;
+                            clinvarSig=clinVarData.getPrimaryInterpretation();
+                        }
                     }
-                    FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
-                    PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);
-                    float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
-                    ClinVarData clinVarData = pathogenicityData.getClinVarData();
-                    if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
-                        System.err.println("PATH="+pathogenicity + "\n");
-                    }
-
-
 
                     // ClinVar have three 'pathogenic' significance values - pathogenic, pathogenic_or_likely_pathogenic and likely_pathogenic
                     // they also have a review status which will tell you how much confidence you might want to assign a given interpretation.
                     // see https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/
 
 
-                    System.err.println("VEVAL=:"+veval+": "+genIdString + ": path="+pathogenicity + ", freq="+frequencyData.toString()+", "+vc.toString());
+                    //System.err.println("VEVAL=:"+veval+": "+genIdString + ": path="+pathogenicity + ", freq="+frequencyData.toString()+", "+vc.toString());
                 }
 
 

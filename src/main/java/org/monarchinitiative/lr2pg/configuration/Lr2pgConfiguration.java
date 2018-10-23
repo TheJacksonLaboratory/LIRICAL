@@ -71,18 +71,7 @@ public class Lr2pgConfiguration {
     File jannovarHg19File() {
         return new File("data/hg19_refseq.ser");
     }
-/*
-    @Bean
-    JannovarData jannovarData( File jannovarTranscriptFile ) throws Lr2pgException{
-        System.err.println("jannovar = "+jannovarTranscriptFile.getAbsolutePath());
-        try {
-            return new JannovarDataSerializer(jannovarTranscriptFile.getAbsolutePath()).load();
-        } catch (SerializationException e) {
-            throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
-                    jannovarTranscriptFile, e.getMessage()));
-        }
-    }
-*/
+
 
     @Bean(name ="diseaseId")
     public String diseaseId(){return diseaseId;}
@@ -146,7 +135,7 @@ public class Lr2pgConfiguration {
         Integer variantCount=Integer.parseInt(varcount);
         Double meanVarPathogenicity=Double.parseDouble(varpath);
 
-        HpoPhenoGenoCaseSimulator simulator = new HpoPhenoGenoCaseSimulator(ontology,
+       return new HpoPhenoGenoCaseSimulator(ontology,
                 diseaseMap,
                 disease2geneMultimap,
                 geneSymbol,
@@ -154,8 +143,6 @@ public class Lr2pgConfiguration {
                 meanVarPathogenicity,
                 termIdList,
                 backgroundfreq);
-
-        return simulator;
     }
 
 
@@ -175,66 +162,6 @@ public class Lr2pgConfiguration {
         return new  VcfSimulator(disease2geneMultimap.keySet(),entrezId,vcount,vpath);
     }
 
-//    @Bean
-//    VcfParser vcfParser( File jannovarTranscriptFile ) throws Lr2pgException{
-//        System.err.println("jannovar = "+jannovarTranscriptFile.getAbsolutePath());
-//        try {
-//            String transcriptFilePath=jannovarTranscriptFile.getAbsolutePath();
-//            String vcf="/Users/peterrobinson/Desktop/Pfeifer.vcf";
-//            JannovarData jdata = new JannovarDataSerializer(transcriptFilePath).load();
-//            return new VcfParser(vcf,jdata);
-//        } catch (SerializationException e) {
-//            throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
-//                    jannovarTranscriptFile, e.getMessage()));
-//        }
-//    }
-
-
-
-
-
-//    @Bean
-//    GenomeAssembly hg38genomeAssembly() {
-//        return GenomeAssembly.HG38;
-//    }
-
-/*
-    @Value("${exomiser.mv.store}")
-    private String mvPath;
-    @Bean @Singleton
-    MVStore hg19MvStore() {
-            return new MVStore.Builder()
-                    .fileName(mvPath)
-                    .readOnly()
-                    .open();
-    }
-*/
-
-//    @Bean
-//    Lr2pgVariantAnnotator lr2pgVariantAnnotator(GenomeAssembly hg38genomeAssembly,JannovarData jannovarData){
-//    return new Lr2pgVariantAnnotator(hg38genomeAssembly,jannovarData);
-//    }
-
-
-//    @Bean
-//    PredPathCalculator predPathCalculator(Lr2pgVariantAnnotator variantAnnotator,
-//                                          MVStore mvStore,
-//                                          VariantDataService variantDataService) {
-//        PredPathCalculator ppc = new PredPathCalculator(variantAnnotator,mvStore,variantDataService);
-//        return ppc;
-//    }
-
-
-
-
-//    @Bean
-//    GridSearch gridSearch() {
-//        Integer casesToSimulate = Integer.parseInt(cases_to_simulate);
-//        Integer termsPerCase = Integer.parseInt(terms_per_case);
-//        Integer noiseTerms = Integer.parseInt( noise_terms );
-//       GridSearch gs = new GridSearch(hpoOntology(),diseaseMap(hpoOntology()),casesToSimulate,termsPerCase,noiseTerms);
-//       return gs;
-//    }
 
 
 }
