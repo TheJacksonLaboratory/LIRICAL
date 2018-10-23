@@ -11,7 +11,6 @@ import de.charite.compbio.jannovar.data.Chromosome;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
-import de.charite.compbio.jannovar.htsjdk.VariantEffectHeaderExtender;
 import de.charite.compbio.jannovar.progress.GenomeRegionListFactoryFromSAMSequenceDictionary;
 import de.charite.compbio.jannovar.progress.ProgressReporter;
 import htsjdk.samtools.SAMSequenceDictionary;
@@ -30,7 +29,6 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
-import org.monarchinitiative.lr2pg.vcf.Lr2pgVariantAnnotator;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
@@ -60,6 +58,8 @@ public class Vcf2GenotypeMap {
 
     private final GenomeAssembly genomeAssembly;
 
+    private Map<TermId, Gene2Genotype> gene2genotypeMap;
+
 
     private final MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap;
 
@@ -84,11 +84,11 @@ public class Vcf2GenotypeMap {
     }
 
 
-    public Map<TermId, Genotype> vcf2genotypeMap() {
+    public Map<TermId, Gene2Genotype> vcf2genotypeMap() {
         // whether or not to require availability of an index
         final boolean useInterval = false;
-        Map<TermId, Genotype> gene2genotypeMap=new HashMap<>();
-
+        this.gene2genotypeMap=new HashMap<>();
+        verbose=true;
         try (VCFFileReader vcfReader = new VCFFileReader(new File(vcfPath), useInterval)) {
             if (verbose) {
                 final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(vcfPath));
@@ -135,8 +135,8 @@ public class Vcf2GenotypeMap {
                     String genIdString = va.getGeneId(); // for now assume this is an Entrez Gene ID
                     String symbol=va.getGeneSymbol();
                     TermId geneId=new TermId(NCBI_ENTREZ_GENE_PREFIX,genIdString);
-                    gene2genotypeMap.putIfAbsent(geneId,new Genotype(geneId,symbol));
-                    Genotype genotype = gene2genotypeMap.get(geneId);
+                    gene2genotypeMap.putIfAbsent(geneId,new Gene2Genotype(geneId,symbol));
+                    Gene2Genotype genotype = gene2genotypeMap.get(geneId);
                     VariantEvaluation veval = buildVariantEvaluation(vc,  va );
                     AlleleProto.AlleleKey alleleKey =AlleleProtoAdaptor.toAlleleKey(veval);
                     AlleleProto.AlleleProperties alleleProp = alleleMap.get(alleleKey);
@@ -154,39 +154,40 @@ public class Vcf2GenotypeMap {
                         System.out.println("Allele prop is NULL for " + veval);
                         freq=DEFAULT_FREQUENCY;
                         path=VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
-                        genotype.addVariant(chrom,pos,ref,alt,transcriptAnnotationList,genotypeString);
+                        genotype.addVariant(chrom,pos,ref,alt,transcriptAnnotationList,genotypeString,path,freq);
                     } else {
                         FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
                         PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);
                         freq=frequencyData.getMaxFreq();
-                        path=pathogenicityData.getMostPathogenicScore().getScore();
                         float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
-                        ClinVarData clinVarData = pathogenicityData.getClinVarData();
-                        if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
-                            isClinVarPath=true;
-                            clinvarSig=clinVarData.getPrimaryInterpretation();
-                        }
+                        ClinVarData cVarData = pathogenicityData.getClinVarData();
+                        genotype.addVariant(chrom,pos,ref,alt,transcriptAnnotationList,genotypeString,pathogenicity,freq, cVarData.getPrimaryInterpretation());
                     }
 
-                    // ClinVar have three 'pathogenic' significance values - pathogenic, pathogenic_or_likely_pathogenic and likely_pathogenic
-                    // they also have a review status which will tell you how much confidence you might want to assign a given interpretation.
-                    // see https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/
-
-
-                    //System.err.println("VEVAL=:"+veval+": "+genIdString + ": path="+pathogenicity + ", freq="+frequencyData.toString()+", "+vc.toString());
                 }
-
-
-
-
-
-
-
             }
+
         }
+        // now sort the variants by pathogenicity
+        for (Gene2Genotype genot : this.gene2genotypeMap.values()) {
+            genot.sortVariants();
+        }
+        debugPrintGenotypes();
         if (progressReporter != null)
             progressReporter.done();
         return gene2genotypeMap;
+    }
+
+
+    private void debugPrintGenotypes() {
+        int i=0;
+        for (TermId geneId : this.gene2genotypeMap.keySet()) {
+            i++;
+            Gene2Genotype gtype = gene2genotypeMap.get(geneId);
+            System.err.println(i +") " + gtype);
+        }
+        System.err.println("Number of genotypes " + gene2genotypeMap.size());
+
     }
 
 

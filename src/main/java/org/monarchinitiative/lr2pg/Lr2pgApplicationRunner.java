@@ -4,7 +4,7 @@ package org.monarchinitiative.lr2pg;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.lr2pg.analysis.Genotype;
+import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.analysis.GridSearch;
 import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
@@ -179,7 +179,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
                     MVStore mvstore = factory.mvStore();
                     JannovarData jannovarData = factory.jannovarData();
                     Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcf,jannovarData,mvstore,GenomeAssembly.HG19);
-                    Map<TermId,Genotype> genotypeMap=vcf2geno.vcf2genotypeMap();
+                    Map<TermId,Gene2Genotype> genotypeMap=vcf2geno.vcf2genotypeMap();
                 } catch (Lr2pgException e) {
                     e.printStackTrace();
                 }
