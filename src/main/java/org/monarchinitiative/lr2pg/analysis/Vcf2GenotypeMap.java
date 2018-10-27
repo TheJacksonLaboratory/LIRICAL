@@ -184,7 +184,11 @@ public class Vcf2GenotypeMap {
         for (TermId geneId : this.gene2genotypeMap.keySet()) {
             i++;
             Gene2Genotype gtype = gene2genotypeMap.get(geneId);
-            System.err.println(i +") " + gtype);
+            if (gtype.hasPathogenicClinvarVar()) { System.err.print("CLINVAR"); }
+            if (gtype.hasPredictedPathogenicVar()) {
+                System.err.println(i + ") " + gtype);
+
+            }
         }
         System.err.println("Number of genotypes " + gene2genotypeMap.size());
 

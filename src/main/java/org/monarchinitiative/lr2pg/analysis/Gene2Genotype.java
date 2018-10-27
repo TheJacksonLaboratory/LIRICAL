@@ -2,6 +2,7 @@ package org.monarchinitiative.lr2pg.analysis;
 
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.lr2pg.vcf.SimpleGenotype;
 import org.monarchinitiative.lr2pg.vcf.SimpleVariant;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -20,7 +21,7 @@ public class Gene2Genotype {
     private final String symbol;
     /** List of all of the variants found in this gene. */
     private List<SimpleVariant> varList;
-
+    private double sumOfPathBinScores;
 
     public Gene2Genotype(TermId id, String sym) {
         this.geneId=id;
@@ -33,7 +34,7 @@ public class Gene2Genotype {
                            List<TranscriptAnnotation> annotList, String genotypeString, float path, float freq){
         SimpleVariant simplevar = new SimpleVariant(chrom, pos, ref, alt,  annotList, path,  freq, genotypeString);
         this.varList.add(simplevar);
-        System.err.println("##### " + genotypeString +" ########");
+       // System.err.println("##### " + genotypeString +" ########");
 
     }
 
@@ -41,13 +42,33 @@ public class Gene2Genotype {
                            List<TranscriptAnnotation> annotList, String genotypeString, float path, float freq,ClinVarData.ClinSig clinv){
         SimpleVariant simplevar = new SimpleVariant(chrom, pos, ref, alt,  annotList, path,  freq, genotypeString,clinv);
         this.varList.add(simplevar);
-        System.err.println("##### " + genotypeString +" ########");
+        //System.err.println("##### " + genotypeString +" ########");
     }
 
 
     public void sortVariants() {
         Collections.sort(varList);
+        this.sumOfPathBinScores=0d;
+        for (SimpleVariant svar:varList) {
+            if (svar.isInPathogenicBin()) {
+                SimpleGenotype sgenotype=svar.getGtype();
+                if (sgenotype.equals(SimpleGenotype.HOMOZYGOUS_ALT)) {
+                    this.sumOfPathBinScores += 2*svar.getPathogenicity();
+                } else  { // assume het
+                    this.sumOfPathBinScores+=svar.getPathogenicity();
+                }
+            }
+        }
     }
+
+    public boolean hasPredictedPathogenicVar() {
+        return this.varList.stream().anyMatch(SimpleVariant::isInPathogenicBin);
+    }
+
+    /** @return true iff there is a variant with a pathogenic ClinVar interpretation. */
+   public boolean hasPathogenicClinvarVar() {
+        return this.varList.stream().anyMatch(SimpleVariant::isClinVarPathogenic);
+   }
 
     @Override
     public String toString() {

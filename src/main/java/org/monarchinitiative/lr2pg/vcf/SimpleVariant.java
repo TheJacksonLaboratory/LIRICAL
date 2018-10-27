@@ -22,7 +22,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
                     ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC,
                     ClinVarData.ClinSig.LIKELY_PATHOGENIC);
 
-    private static final float PATHOGENICITY_THRESHOLD=0.8f;
+    private static final float PATHOGENICITY_THRESHOLD=80f;
 
 
     private final int chromAsInt;
@@ -90,4 +90,23 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
         return String.format("chr-%d:%d%s>%s %s %.1f %s",chromAsInt,position,ref,alt,annotationList.get(0),pathogenicity,gtype);
     }
 
+    public float getPathogenicity() {
+        return pathogenicity;
+    }
+
+    public float getFrequency() {
+        return frequency;
+    }
+
+    public boolean isClinVarPathogenic() {
+        return PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(this.clinvar);
+    }
+
+    public ClinVarData.ClinSig getClinvar() {
+        return clinvar;
+    }
+
+    public SimpleGenotype getGtype() {
+        return gtype;
+    }
 }
