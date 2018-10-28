@@ -221,9 +221,10 @@ public class PhenotypeOnlyHpoCaseSimulator {
                 .diseaseMap(diseaseMap)
                 .phenotypeLr(this.phenotypeLrEvaluator);
         // the following evaluates the case for each disease with equal pretest probabilities.
-        /** Object to evaluate the results of differential diagnosis by LR analysis. */
+        // Object to evaluate the results of differential diagnosis by LR analysis.
         CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
         HpoCase hpocase = evaluator.evaluate();
+        this.currentCase=hpocase;
         System.err.println(hpocase.toString());
         return hpocase.getRank(disease.getDiseaseDatabaseId());
     }
@@ -232,8 +233,8 @@ public class PhenotypeOnlyHpoCaseSimulator {
 
 
     public void debugPrint() {
-        String.format("Got %d terms and %d diseases",ontology.getAllTermIds().size(),
-                diseaseMap.size());
+        System.out.println(String.format("Got %d terms and %d diseases",ontology.getAllTermIds().size(),
+                diseaseMap.size()));
     }
 
 

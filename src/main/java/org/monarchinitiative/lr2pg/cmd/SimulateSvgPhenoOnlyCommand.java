@@ -26,6 +26,9 @@ public class SimulateSvgPhenoOnlyCommand extends SimulatePhenotypesCommand {
     public void run() throws Lr2pgException {
         PhenotypeOnlyHpoCaseSimulator phenotypeOnlyHpoCaseSimulator = getPhenotypeOnlySimulator();
         HpoDisease disease = phenotypeOnlyHpoCaseSimulator.name2disease(diseaseCurie);
+        if (disease==null) {
+            throw new Lr2pgException("Could not find disease for " + diseaseCurie.getIdWithPrefix());
+        }
         phenotypeOnlyHpoCaseSimulator.simulateCase(disease);
         HpoCase hpocase = phenotypeOnlyHpoCaseSimulator.getCurrentCase();
         HpoOntology ontology = phenotypeOnlyHpoCaseSimulator.getOntology();

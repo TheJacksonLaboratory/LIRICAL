@@ -25,6 +25,10 @@ public class CommandLine {
 
     private boolean overwriteDownload=false;
 
+    private String disease=null;
+
+    private final String DEFAULT_DISEASE="OMIM:617132";
+
 
 
     public CommandLine(String args[]){
@@ -57,6 +61,11 @@ public class CommandLine {
                 dataPath=commandLine.getOptionValue("d");
             } else {
                 dataPath=DEFAULT_DATA_DIRECGTORY;
+            }
+            if (commandLine.hasOption("i")) {
+                disease=commandLine.getOptionValue("i");
+            } else {
+                disease=DEFAULT_DISEASE;
             }
             if (commandLine.hasOption("o")) {
                 overwriteDownload=true;
@@ -91,6 +100,9 @@ public class CommandLine {
                     break;
                 case "grid":
                     this.command=new GridSearchCommand(dataPath);
+                    break;
+                case "svg":
+                    this.command=new SimulateSvgPhenoOnlyCommand(dataPath,disease);
                     break;
                 default:
                     printUsage("Could not find command option");

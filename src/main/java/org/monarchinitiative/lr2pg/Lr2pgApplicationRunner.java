@@ -85,31 +85,12 @@ public class Lr2pgApplicationRunner {
 
         switch (mycommand) {
 
-            case "svg":
-                // do SVG with pheno only
-                int cases_to_simulate = 1;
-                if (this.diseaseId == null || this.diseaseId.isEmpty()) {
-                    System.err.println("Error diseaseId not defined");
-                    return;
-                }
-                TermId diseaseCurie = TermId.constructWithPrefix(diseaseId);
-                // simulator = new PhenotypeOnlyHpoCaseSimulator( dataDirectory, cases_to_simulate, n_terms_per_case, n_noise_terms);
-                try {
-                    HpoDisease disease = phenotypeOnlyHpoCaseSimulator.name2disease(diseaseCurie);
-                    phenotypeOnlyHpoCaseSimulator.simulateCase(disease);
-                    HpoCase hpocase = phenotypeOnlyHpoCaseSimulator.getCurrentCase();
-                    Lr2Svg l2svg = new Lr2Svg(hpocase, diseaseCurie, disease.getName(), ontology, null);
-                    l2svg.writeSvg("test.svg");
-                } catch (Lr2pgException e) {
-                    e.printStackTrace();
-                    System.err.println("Could not simulate case");
-                }
-                break;
+
             case "phenogeno":
 
                 HpoCase hpocase = this.hpoPhenoGenoCaseSimulatorsimulator.evaluateCase();
                 System.err.println(hpocase.toString());
-                 diseaseCurie = TermId.constructWithPrefix("OMIM:154700");
+                TermId diseaseCurie = TermId.constructWithPrefix("OMIM:154700");
                 HpoDisease disease = diseaseMap.get(diseaseCurie);
                 String diseaseName = disease.getName();
                 //Map<TermId, String> geneId2SymbolMap=(Map<TermId, String>)context.getAutowireCapableBeanFactory().getBean("geneId2SymbolMap");
