@@ -8,6 +8,7 @@ import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
+import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
@@ -83,6 +84,9 @@ public class VcfCommand extends Lr2PgCommand {
                 .genotypeLr(genoLr);
 
         CaseEvaluator evaluator = caseBuilder.build();
+        HpoCase hcase = evaluator.evaluate();
+        hcase.outputTopResults(3);
+        //System.out.println(hcase);
     }
 
 

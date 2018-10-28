@@ -25,7 +25,7 @@ public class HpoPhenoGenoCaseSimulator {
     private static final Logger logger = LogManager.getLogger();
     /** Object to evaluate the results of differential diagnosis by LR analysis. */
     private final CaseEvaluator evaluator;
-    private TermPrefix NCBI_GENE_PREFIX=new TermPrefix("NCBIGene");
+    private final TermPrefix NCBI_GENE_PREFIX=new TermPrefix("NCBIGene");
     /** This simulation assumes there is a pathogenic mutation in one gene (this one). The EntrezId is initialized in the
      * constructor.
      */
@@ -62,7 +62,7 @@ public class HpoPhenoGenoCaseSimulator {
                 .ontology(ontology)
                 .diseaseMap(diseaseMap)
                 .disease2geneMultimap(disease2geneMultimap)
-                .genotypeMap(genotypes.getGenotypeMap())
+                .genotypeMap(null)  /// TODO REFACTOR!!!
                 .phenotypeLr(phenoLr)
                 .genotypeLr(genoLr);
 

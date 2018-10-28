@@ -96,6 +96,25 @@ public final class HpoCase {
         System.err.println();
     }
 
+    /**
+     * Ootputs the top n results to the shell
+     * @param n number of top results to output.
+     */
+    public void outputTopResults(int n) {
+        List<TestResult> resultlist = new ArrayList<>(this.disease2resultMap.values());
+        resultlist.sort(Collections.reverseOrder());
+        int i=0;
+        while (i<n && i<resultlist.size()) {
+            TestResult tres = resultlist.get(i);
+            System.out.println(tres);
+            i++;
+        }
+    }
+
+
+
+
+
     private String niceFormat(double d) {
         DecimalFormat df = new DecimalFormat("0.000E0");
         if (d > 1.0) {

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -25,7 +26,7 @@ public class CaseEvaluator {
     private final List<TermId> phenotypicAbnormalities;
     /** Map of the observed genotypes in the VCF file. Key is an EntrezGene is, and the value is the average pathogenicity score times the
      * count of all variants in the pathogenic bin.*/
-    private final Map<TermId,Double> genotypeMap;
+    private final Map<TermId,Gene2Genotype> genotypeMap;
     /** key: a disease CURIE, e.g., OMIM:600100; value-corresponding disease object.*/
     private final Map<TermId,HpoDisease> diseaseMap;
     /* key: a gene CURIE such as NCBIGene:123; value: a collection of disease CURIEs such as OMIM:600123; */
@@ -78,7 +79,7 @@ public class CaseEvaluator {
                           Multimap<TermId,TermId> disease2geneMultimap,
                           PhenotypeLikelihoodRatio phenotypeLrEvaluator,
                           GenotypeLikelihoodRatio genotypeLrEvalutator,
-                          Map<TermId,Double> genotypeMap) {
+                          Map<TermId,Gene2Genotype> genotypeMap) {
         phenotypicAbnormalities=hpoTerms;
 
 
@@ -123,7 +124,11 @@ public class CaseEvaluator {
             Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
             if (associatedGenes != null && associatedGenes.size() > 0) {
                 for (TermId entrezGeneId : associatedGenes) {
-                    double observedWeightedPathogenicVariantCount = this.genotypeMap.getOrDefault(entrezGeneId, 0.0);
+                    Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
+                    double observedWeightedPathogenicVariantCount=0;
+                    if (g2g!=null) {
+                        observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
+                    }
                     List<TermId> inheritancemodes = disease.getModesOfInheritance();
                     Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(observedWeightedPathogenicVariantCount,
                             inheritancemodes,
@@ -205,8 +210,8 @@ public class CaseEvaluator {
         private PhenotypeLikelihoodRatio phenotypeLR;
 
         private GenotypeLikelihoodRatio genotypeLR;
-
-        private Map<TermId,Double> genotypeMap;
+        /** Key: geneId (e.g., NCBI Entrez Gene); value: observed variants/genotypes as {@link org.monarchinitiative.lr2pg.analysis.Gene2Genotype} object.*/
+        private Map<TermId,Gene2Genotype> genotypeMap;
 
         public Builder(List<TermId> hpoTerms){ this.hpoTerms=hpoTerms; }
 
@@ -216,7 +221,7 @@ public class CaseEvaluator {
 
         public Builder disease2geneMultimap(Multimap<TermId,TermId> d2gmmap) { this.disease2geneMultimap=d2gmmap; return this;}
 
-        public Builder genotypeMap(Map<TermId,Double> gtmap) { this.genotypeMap=gtmap; return this;}
+        public Builder genotypeMap(Map<TermId,Gene2Genotype> gtmap) { this.genotypeMap=gtmap; return this;}
 
         public Builder phenotypeLr(PhenotypeLikelihoodRatio phenoLr) { this.phenotypeLR=phenoLr; return this; }
 
