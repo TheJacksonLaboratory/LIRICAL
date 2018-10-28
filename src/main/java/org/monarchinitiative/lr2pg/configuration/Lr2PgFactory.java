@@ -1,5 +1,6 @@
 package org.monarchinitiative.lr2pg.configuration;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
@@ -17,6 +18,8 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,6 +38,7 @@ public class Lr2PgFactory {
     private final String backgroundFrequencyPath;
     private final String vcfPath;
     private final String jannovarTranscriptFile;
+    private final List<TermId> hpoIdList;
 
     private HpoOntology ontology = null;
     private MVStore mvstore = null;
@@ -52,7 +56,24 @@ public class Lr2PgFactory {
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
         this.vcfPath=builder.vcfPath;
         this.jannovarTranscriptFile=builder.jannovarTranscriptFile;
+        ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
+        for (String id : builder.observedHpoTerms) {
+            TermId hpoId = TermId.constructWithPrefix(id);
+            listbuilder.add(hpoId);
+        }
+        this.hpoIdList=listbuilder.build();
     }
+
+    public List<TermId> observedHpoTerms() throws Lr2pgException{
+        if (ontology==null) hpoOntology();
+        for (TermId hpoId : hpoIdList) {
+            if (! this.ontology.getTermMap().containsKey(hpoId)) {
+                throw new Lr2pgException("Could not find HPO term " + hpoId.getIdWithPrefix() + " in ontologvy");
+            }
+        }
+        return hpoIdList;
+    }
+
 
 
     public HpoOntology hpoOntology() {
@@ -203,6 +224,7 @@ public class Lr2PgFactory {
         private String backgroundFrequencyPath=null;
         private String vcfPath=null;
         private String jannovarTranscriptFile=null;
+        private String[] observedHpoTerms=null;
 
         public Builder(){
 
@@ -247,6 +269,12 @@ public class Lr2PgFactory {
             this.jannovarTranscriptFile=jf;
             return this;
         }
+
+        public Builder observedHpoTerms(String [] terms) {
+            this.observedHpoTerms=terms;
+            return this;
+        }
+
 
         public Lr2PgFactory build() {
             return new Lr2PgFactory(this);

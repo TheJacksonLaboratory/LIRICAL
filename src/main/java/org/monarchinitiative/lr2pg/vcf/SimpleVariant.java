@@ -22,7 +22,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
                     ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC,
                     ClinVarData.ClinSig.LIKELY_PATHOGENIC);
 
-    private static final float PATHOGENICITY_THRESHOLD=80f;
+    private static final float PATHOGENICITY_THRESHOLD=0.80f;
 
 
     private final int chromAsInt;

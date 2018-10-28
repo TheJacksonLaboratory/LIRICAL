@@ -23,12 +23,28 @@ public class Gene2Genotype {
     private List<SimpleVariant> varList;
     private double sumOfPathBinScores;
 
+
     public Gene2Genotype(TermId id, String sym) {
         this.geneId=id;
         this.symbol=sym;
         this.varList=new ArrayList<>();
     }
 
+    public TermId getGeneId() {
+        return geneId;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public List<SimpleVariant> getVarList() {
+        return varList;
+    }
+
+    public double getSumOfPathBinScores() {
+        return sumOfPathBinScores;
+    }
 
     public void addVariant(int chrom, int pos, String ref, String alt,
                            List<TranscriptAnnotation> annotList, String genotypeString, float path, float freq){

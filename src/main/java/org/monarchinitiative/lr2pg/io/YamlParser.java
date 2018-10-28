@@ -81,4 +81,11 @@ public class YamlParser {
         }
     }
 
+    /**
+     * @return array of Strings representing HPOs, e.g., HP:0001234,HPO:0002345
+     */
+    public String[] getHpoTermList() {
+        return yconfig.getHpoIds();
+    }
+
 }
