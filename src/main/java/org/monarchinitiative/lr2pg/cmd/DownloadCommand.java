@@ -4,6 +4,10 @@ import org.monarchinitiative.lr2pg.io.HpoDownloader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Download a number of files needed for the analysis
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ */
 public class DownloadCommand extends Lr2PgCommand {
     private static final Logger logger = LoggerFactory.getLogger(DownloadCommand.class);
 

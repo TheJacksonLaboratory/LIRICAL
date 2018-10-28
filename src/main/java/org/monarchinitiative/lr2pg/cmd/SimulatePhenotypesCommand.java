@@ -24,9 +24,6 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
     /** path to phenotype.hpoa file. */
     private final String phenotypeAnnotationPath;
 
-    private final String geneInfoPath;
-
-    private final String mim2genemedgenPath;
 
     private final int DEFAULT_CASES_TO_SIMULATE=25;
     private final int DEFAULT_TERMS_PER_CASE=5;
@@ -45,8 +42,6 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
         String absDirPath=dirpath.getAbsolutePath();
         this.hpoOboPath=String.format("%s%s%s",absDirPath,File.separator,"hp.obo");
         this.phenotypeAnnotationPath=String.format("%s%s%s",absDirPath,File.separator,"phenotype.hpoa");
-        this.geneInfoPath=String.format("%s%s%s",absDirPath,File.separator,"Homo_sapiens_gene_info.gz");
-        this.mim2genemedgenPath=String.format("%s%s%s",absDirPath,File.separator,"mim2gene_medgen");
     }
 
     /** Initialize the HpoOnotlogy object from the hp.obo file. */
@@ -75,16 +70,20 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
     }
 
 
-
-    public void run() throws Lr2pgException {
+    protected PhenotypeOnlyHpoCaseSimulator getPhenotypeOnlySimulator()throws Lr2pgException {
         HpoOntology ontology = initializeOntology();
         Map<TermId, HpoDisease> diseaseMap = parseHpoAnnotations(ontology);
-        PhenotypeOnlyHpoCaseSimulator phenotypeOnlyHpoCaseSimulator = new PhenotypeOnlyHpoCaseSimulator(ontology,
+        return new PhenotypeOnlyHpoCaseSimulator(ontology,
                 diseaseMap,
                 n_cases_to_simulate,
                 n_terms_per_case,
                 n_noise_terms,
                 imprecise_phenotype);
+    }
+
+
+    public void run() throws Lr2pgException {
+        PhenotypeOnlyHpoCaseSimulator phenotypeOnlyHpoCaseSimulator = getPhenotypeOnlySimulator();
 
         phenotypeOnlyHpoCaseSimulator.simulateCases();
 
