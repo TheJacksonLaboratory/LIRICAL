@@ -8,12 +8,10 @@ import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.analysis.GridSearch;
 import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
-import org.monarchinitiative.lr2pg.configuration.Lr2pgConfiguration;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.hpo.HpoPhenoGenoCaseSimulator;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
-import org.monarchinitiative.lr2pg.io.HpoDownloader;
 import org.monarchinitiative.lr2pg.io.YamlParser;
 import org.monarchinitiative.lr2pg.svg.Lr2Svg;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
@@ -21,19 +19,12 @@ import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.List;
+
 import java.util.Map;
 
-@Component
-public class Lr2pgApplicationRunner implements ApplicationRunner {
+
+public class Lr2pgApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(Lr2pgApplicationRunner.class);
 
 
@@ -58,7 +49,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
 
     private GridSearch gridSearch;
 
-    @Autowired
+
     private String hpOboPath;
 
 
@@ -67,34 +58,11 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
 //    @Autowired @Lazy
 //    private PredPathCalculator ppcalcalculator;
 
-    @Override
-    public void run(ApplicationArguments args) {
 
-        logger.error("Application started with command-line arguments: {}", Arrays.toString(args.getSourceArgs()));
-        logger.error("NonOptionArgs: {}", args.getNonOptionArgs());
-        logger.error("OptionNames: {}", args.getOptionNames());
+    public void run( ) {
 
-
-        for (String name : args.getOptionNames()) {
-            logger.error("arg: " + name + "=" + args.getOptionValues(name));
-        }
-
-        if (args.containsOption("help") || args.containsOption("h")) {
-            printUsage("See the README file for usage!");
-        }
-
-        List<String> nonoptionargs = args.getNonOptionArgs();
-        if (nonoptionargs.size() != 1) {
-            for (String s : nonoptionargs) {
-                System.err.println("noa=" + s);
-            }
-            printUsage("[ERROR] No program analysis given-size=" + nonoptionargs.size());
-
-            return;
-        }
-        ApplicationContext context = new AnnotationConfigApplicationContext(Lr2pgConfiguration.class);
         // if we get here, we have one analysis
-        String mycommand = nonoptionargs.get(0);
+        String mycommand = "ha";
         logger.error("Command="+mycommand);
 
         String yml="src/main/resources/yaml/demo2.yml";
@@ -116,21 +84,7 @@ public class Lr2pgApplicationRunner implements ApplicationRunner {
 
 
         switch (mycommand) {
-            case "download":
-                boolean overwrite = false;
-                logger.warn(String.format("Download analysis to %s", dataDownloadDirectory));
-                HpoDownloader downloader = new HpoDownloader(dataDownloadDirectory, overwrite);
-                downloader.download();
-                break;
-            case "simulate":
-                System.err.println("SIMULATE");
-                phenotypeOnlyHpoCaseSimulator.debugPrint();
-                try {
-                    phenotypeOnlyHpoCaseSimulator.simulateCases();
-                } catch (Lr2pgException e) {
-                    e.printStackTrace();
-                }
-                break;
+
             case "svg":
                 // do SVG with pheno only
                 int cases_to_simulate = 1;
