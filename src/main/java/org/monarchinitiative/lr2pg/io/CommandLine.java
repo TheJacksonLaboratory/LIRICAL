@@ -4,10 +4,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.monarchinitiative.lr2pg.cmd.DownloadCommand;
-import org.monarchinitiative.lr2pg.cmd.Lr2PgCommand;
-import org.monarchinitiative.lr2pg.cmd.SimulatePhenotypesCommand;
-import org.monarchinitiative.lr2pg.cmd.VcfCommand;
+import org.monarchinitiative.lr2pg.cmd.*;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 
@@ -91,6 +88,9 @@ public class CommandLine {
                     break;
                 case "simulate":
                     this.command=new SimulatePhenotypesCommand(dataPath);
+                    break;
+                case "grid":
+                    this.command=new GridSearchCommand(dataPath);
                     break;
                 default:
                     printUsage("Could not find command option");

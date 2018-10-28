@@ -47,7 +47,7 @@ public class Lr2pgApplicationRunner {
     private  Map<TermId, String> geneId2SymbolMap;
 
 
-    private GridSearch gridSearch;
+
 
 
     private String hpOboPath;
@@ -117,13 +117,7 @@ public class Lr2pgApplicationRunner {
                 System.err.println(this.hpoPhenoGenoCaseSimulatorsimulator.toString());
 
                 break;
-            case "grid":
-                try {
-                    gridSearch.gridsearch();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
+
             case "vcf":
                 try {
                     String vcf = factory.vcfPath();

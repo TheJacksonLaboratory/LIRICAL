@@ -20,40 +20,31 @@ import java.util.stream.Collectors;
 /**
  * This is a demonstration of the likelihood ratio algorithm that uses simulated cases to assess the performance of the
  * algorithm.
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class GridSearch  {
     private static final Logger logger = LogManager.getLogger();
-    /** Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}. */
+    /** key: a disease id such as OMIM:654321; value: coirresponding {@link HpoDisease} object. */
     private final Map<TermId, HpoDisease> diseaseMap;
-    private final int n_cases_to_simulate;
-    private final int n_terms_per_case;
-    private final int n_noise_terms;
+    /** Reference to HPO ontology object. */
     private final HpoOntology ontology;
 
 
     /**
      *
      */
-    public GridSearch(HpoOntology ontology, Map<TermId, HpoDisease> diseaseMap,int cases_to_simulate, int terms_per_case, int noise_terms ) {
-
-        this.n_cases_to_simulate=cases_to_simulate;
-        this.n_terms_per_case=terms_per_case;
-        this.n_noise_terms=noise_terms;
+    public GridSearch(HpoOntology ontology, Map<TermId, HpoDisease> diseaseMap ) {
         this.ontology=ontology;
         this.diseaseMap=diseaseMap;
     }
 
 
-
-
-
     /**
      * Perform a grid search over varying numbers of terms and random terms
      * both with and without moving the terms to parent terms (imprecision).
-     * @throws Lr2pgException
-     * @throws IOException
+     * @throws Lr2pgException upon I/O problems with the annotations
      */
-    public void gridsearch() throws Lr2pgException, IOException {
+    public void gridsearch() throws Lr2pgException {
 
         int[] termnumber = {1,2,3,4,5,6,7,8,9,10};
         int[] randomtermnumber = {0,1,2,3,4,0,1,2,3,4};
@@ -115,7 +106,7 @@ public class GridSearch  {
             String barplot = "barplot(Z, col=colors()[30:32], border=\"white\", font.axis=2, beside=T, " +
                     "legend=rownames(Z), xlab=\"Number of terms\", font.lab=2, cex.lab=2,cex.axis=1.5)\n";
             writer.write(barplotLegend + barplot);
-        }
+
         for (int i=0;i<termnumber.length;i++) {
             for (int j=0;j<randomtermnumber.length;j++) {
                 System.err.println(String.format("terms: %d; noise terms: %d; percentage at rank 1: %.2f",
@@ -123,6 +114,9 @@ public class GridSearch  {
                         randomtermnumber[j],
                         100.0* Z[i][j]));
             }
+        }
+        } catch (IOException e) {
+            throw new Lr2pgException("I/O error: " + e.getMessage());
         }
 
     }

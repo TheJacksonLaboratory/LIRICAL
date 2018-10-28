@@ -50,7 +50,7 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
     }
 
     /** Initialize the HpoOnotlogy object from the hp.obo file. */
-    private HpoOntology initializeOntology() throws Lr2pgException{
+    protected HpoOntology initializeOntology() throws Lr2pgException{
         try {
             HpOboParser parser = new HpOboParser(new File(this.hpoOboPath));
             HpoOntology ontology = parser.parse();
@@ -62,7 +62,7 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
 
 
 
-     private Map<TermId, HpoDisease> parseHpoAnnotations(HpoOntology ontology) throws Lr2pgException {
+     protected Map<TermId, HpoDisease> parseHpoAnnotations(HpoOntology ontology) throws Lr2pgException {
         if (ontology==null) {
             throw new Lr2pgException("HpoOntology object not intitialized");
         }
