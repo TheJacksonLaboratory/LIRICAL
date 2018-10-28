@@ -5,14 +5,19 @@ import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.io.assoc.HpoAssociationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpOboParser;
+import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Map;
 
+/**
+ * This class coordinates simulation of cases with only phenotype.
+ * TODO allow client code to set parameters
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ */
 public class SimulatePhenotypesCommand extends Lr2PgCommand {
 
     private final String hpoOboPath;
@@ -61,31 +66,12 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
         if (ontology==null) {
             throw new Lr2pgException("HpoOntology object not intitialized");
         }
-        if (this.geneInfoPath==null) {
-            throw new Lr2pgException("Path to Homo_sapiens_gene_info.gz file not found");
-        }
-        if (this.mim2genemedgenPath==null) {
-            throw new Lr2pgException("Path to mim2genemedgen file not found");
-        }
-
-        File geneInfoFile = new File(geneInfoPath);
-        if (!geneInfoFile.exists()) {
-            throw new Lr2pgException("Could not find gene info file at " + geneInfoPath + ". Run download!");
-        }
-        File mim2genemedgenFile = new File(this.mim2genemedgenPath);
-        if (!mim2genemedgenFile.exists()) {
-            System.err.println("Could not find medgen file at " + this.mim2genemedgenPath + ". Run download!");
-            System.exit(1);
-        }
-        File orphafilePlaceholder = null;//we do not need this for now
-        HpoAssociationParser assocParser = new HpoAssociationParser(geneInfoFile,
-                mim2genemedgenFile,
-                orphafilePlaceholder,
-                ontology);
-        assocParser.parse();
-        assocParser.getDiseaseToGeneIdMap();
-
-        return assocParser.getTermToDisease();
+        HpoDiseaseAnnotationParser parser = new HpoDiseaseAnnotationParser(phenotypeAnnotationPath,ontology);
+         try {
+             return parser.parse();
+         } catch (PhenolException pe ) {
+             throw new Lr2pgException("Could not parse disease associations: " + pe.getMessage());
+         }
     }
 
 
