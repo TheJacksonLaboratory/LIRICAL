@@ -180,6 +180,7 @@ public class Lr2PgFactory {
         return gene2backgroundFrequency;
     }
 
+    /** @return the object created by deserilizing a Jannovar file. */
     public JannovarData jannovarData() throws Lr2pgException {
         if (jannovarData != null) return jannovarData;
         if (this.jannovarTranscriptFile == null) {
@@ -195,7 +196,7 @@ public class Lr2PgFactory {
         return jannovarData;
     }
 
-
+    /** @return a map with key: a disease id (e.g., OMIM:654321) and key the corresponding {@link HpoDisease} object.*/
     public Map<TermId, HpoDisease> diseaseMap(HpoOntology ontology) throws Lr2pgException {
         if (this.phenotypeAnnotationPath==null) {
             throw new Lr2pgException("Path to phenotype.hpoa file not found");

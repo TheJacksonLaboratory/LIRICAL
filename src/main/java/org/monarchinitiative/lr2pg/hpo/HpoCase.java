@@ -77,8 +77,13 @@ public final class HpoCase {
      * This is ugly and just for development. TODO refactor and put this somewhere else or delete it*/
     public void outputLrToShell(TermId diseaseId, HpoOntology ontology,Map<TermId,String> id2symbol) {
         int rank = getRank(diseaseId);
-        System.err.println(diseaseId.getIdWithPrefix() +"; rank " + rank);
+
         TestResult r = getResult(diseaseId);
+        String diseaseName=r.getDiseaseName();
+        int idx = diseaseName.indexOf(';');
+        if (idx>0)
+            diseaseName=diseaseName.substring(0,idx);
+        System.err.println(String.format("%s[%s]: rank=%d",diseaseName,diseaseId.getIdWithPrefix(), rank));
         DecimalFormat df = new DecimalFormat("0.000E0");
         System.err.println(String.format("Pretest probability: %s; Composite LR: %.2f; Posttest probability: %s ",
                 niceFormat(r.getPretestProbability()),

@@ -147,9 +147,9 @@ public class CaseEvaluator {
             }
             TestResult result;
             if (LR != null) {
-                result = new TestResult(builder.build(), diseaseId, LR, geneId, pretest);
+                result = new TestResult(builder.build(), disease, LR, geneId, pretest);
             } else {
-                result = new TestResult(builder.build(), diseaseId, pretest);
+                result = new TestResult(builder.build(), disease, pretest);
             }
             mapbuilder.put(diseaseId, result);
 
