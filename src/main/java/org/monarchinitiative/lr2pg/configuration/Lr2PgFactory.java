@@ -24,20 +24,27 @@ import java.util.Map;
 
 /**
  * Not a full implementation of the factory pattern but rather a convenience class to create objects of various
- * classes that we need as singletons.
+ * classes that we need as singletons with the various commands.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class Lr2PgFactory {
-
+    /** Path to the {@code hp.obo} file. */
     private final String hpoOboFilePath;
+    /** Path to the {@code phenotype.hpoa} file. */
     private final String phenotypeAnnotationPath;
+    /** Path to the Exomiser data file. */
     private final String mvStoreAbsolutePath;
     /** Path to the {@code Homo_sapiens_gene_info.gz} file. */
-    private final String geneInfoPath; //= String.format("%s%s%s", datapath, File.separator, ");
+    private final String geneInfoPath;
+    /** Path to the mimgene/medgen file with MIM to gene associations. */
     private final String mim2genemedgenPath;
+    /** Path to the file that we create with background frequencies for predicted pathogenic variants in genes. */
     private final String backgroundFrequencyPath;
+    /** Path to the VCF file that is be evaluated. */
     private final String vcfPath;
+    /** Path to the Jannovar file with transcript definitions to be used for the VCF analysis. */
     private final String jannovarTranscriptFile;
+    /** List of HPO terms (phenotypic abnormalities) observed in the person being evaluated. */
     private final List<TermId> hpoIdList;
 
     private HpoOntology ontology = null;
@@ -64,6 +71,10 @@ public class Lr2PgFactory {
         this.hpoIdList=listbuilder.build();
     }
 
+    /**
+     * @return a list of observed HPO terms (from the YAML file)
+     * @throws Lr2pgException if one of the terms is not in the HPO Ontology
+     */
     public List<TermId> observedHpoTerms() throws Lr2pgException{
         if (ontology==null) hpoOntology();
         for (TermId hpoId : hpoIdList) {
@@ -75,16 +86,15 @@ public class Lr2PgFactory {
     }
 
 
-
-    public HpoOntology hpoOntology() {
+    /** @return HpoOntology object. */
+    public HpoOntology hpoOntology() throws Lr2pgException {
         if (ontology != null) return ontology;
         try {
             HpOboParser parser = new HpOboParser(new File(this.hpoOboFilePath));
             ontology = parser.parse();
             return ontology;
         } catch (PhenolException | FileNotFoundException ioe) {
-            System.err.println("Could not parse hp.obo file: " + ioe.getMessage());
-            throw new RuntimeException("Could not parse hp.obo file: " + ioe.getMessage());
+            throw new Lr2pgException("Could not parse hp.obo file: " + ioe.getMessage());
         }
     }
 
@@ -147,13 +157,13 @@ public class Lr2PgFactory {
 
     /** @return multimap with key:disease CURIEs such as OMIM:600123; value: a collection of gene CURIEs such as NCBIGene:123.  */
     public Multimap<TermId,TermId> disease2geneMultimap() throws Lr2pgException {
-        if (this.gene2diseaseMultiMap==null) {
+        if (this.disease2geneIdMultiMap==null) {
             parseHpoAnnotations();
         }
-        return this.gene2diseaseMultiMap;
+        return this.disease2geneIdMultiMap;
     }
     /** @return a map with key:a gene id, e.g., NCBIGene:2020; value: the corresponding gene symbol. */
-    public Map<TermId,String> geneId2symbolMap(HpoAssociationParser parser) throws Lr2pgException{
+    public Map<TermId,String> geneId2symbolMap() throws Lr2pgException{
         if (this.geneId2SymbolMap==null) {
             parseHpoAnnotations();
         }

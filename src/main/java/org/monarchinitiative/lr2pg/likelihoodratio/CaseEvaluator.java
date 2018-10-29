@@ -142,6 +142,7 @@ public class CaseEvaluator {
                             geneId = entrezGeneId;
                         }
                     }
+
                 }
             }
             TestResult result;

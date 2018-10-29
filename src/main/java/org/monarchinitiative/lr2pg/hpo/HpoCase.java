@@ -75,9 +75,9 @@ public final class HpoCase {
 
     /** Output the results for a specific HPO disease.
      * This is ugly and just for development. TODO refactor and put this somewhere else or delete it*/
-    public void outputLrToShell(TermId diseaseId, HpoOntology ontology) {
+    public void outputLrToShell(TermId diseaseId, HpoOntology ontology,Map<TermId,String> id2symbol) {
         int rank = getRank(diseaseId);
-        System.err.println("Rank " + rank);
+        System.err.println(diseaseId.getIdWithPrefix() +"; rank " + rank);
         TestResult r = getResult(diseaseId);
         DecimalFormat df = new DecimalFormat("0.000E0");
         System.err.println(String.format("Pretest probability: %s; Composite LR: %.2f; Posttest probability: %s ",
@@ -91,7 +91,10 @@ public final class HpoCase {
             System.err.println(String.format("%s: ratio=%s", term, niceFormat(ratio)));
         }
         if (r.hasGenotype()) {
-            System.err.println(String.format("Genotype LR for %s: %f", r.getEntrezGeneId(), r.getGenotypeLR()));
+            String symbol = id2symbol.get(r.getEntrezGeneId());
+            System.err.println(String.format("Genotype LR for %s[%s]: %f",symbol, r.getEntrezGeneId().getIdWithPrefix(), r.getGenotypeLR()));
+        } else {
+            System.err.println("No genotype used to calculated");
         }
         System.err.println();
     }
@@ -100,13 +103,14 @@ public final class HpoCase {
      * Ootputs the top n results to the shell
      * @param n number of top results to output.
      */
-    public void outputTopResults(int n) {
+    public void outputTopResults(int n, HpoOntology ontology, Map<TermId,String> id2symbol) {
         List<TestResult> resultlist = new ArrayList<>(this.disease2resultMap.values());
         resultlist.sort(Collections.reverseOrder());
         int i=0;
         while (i<n && i<resultlist.size()) {
             TestResult tres = resultlist.get(i);
-            System.out.println(tres);
+            TermId diseaseId = tres.getDiseaseCurie();
+            outputLrToShell(diseaseId,ontology,id2symbol);
             i++;
         }
     }

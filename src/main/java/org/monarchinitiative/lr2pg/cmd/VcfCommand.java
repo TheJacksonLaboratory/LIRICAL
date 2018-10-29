@@ -23,14 +23,23 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class coordinates the main analysis of a VCF file plus list of observed HPO terms.
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ */
 public class VcfCommand extends Lr2PgCommand {
     private static final Logger logger = LoggerFactory.getLogger(VcfCommand.class);
+    /** An object that contains parameters from the YAML file for configuration. */
     private final Lr2PgFactory factory;
     /** Directory where various files are downloaded/created. */
     private final String datadir;
-
+    /** Default name of the background frequency file. */
     private final String BACKGROUND_FREQUENCY_FILE="background-freq.txt";
 
+    /**
+     * @param fact An object that contains parameters from the YAML file for configuration
+     * @param data Path to the data download directory that has hp.obo and other files.
+     */
     public VcfCommand(Lr2PgFactory fact, String data) {
         this.factory = fact;
         this.datadir=data;
@@ -59,7 +68,6 @@ public class VcfCommand extends Lr2PgCommand {
         GenotypeDataIngestor ingestor = new GenotypeDataIngestor(backgroundFile);
         Map<TermId,Double> gene2back = ingestor.parse();
         return new GenotypeLikelihoodRatio(gene2back);
-
     }
 
 
@@ -74,7 +82,7 @@ public class VcfCommand extends Lr2PgCommand {
 
         PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
         Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
-
+        Map<TermId,String> geneId2symbol = factory.geneId2symbolMap();
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(observedHpoTerms)
                 .ontology(ontology)
                 .diseaseMap(diseaseMap)
@@ -85,8 +93,7 @@ public class VcfCommand extends Lr2PgCommand {
 
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
-        hcase.outputTopResults(3);
-        //System.out.println(hcase);
+        hcase.outputTopResults(5,ontology,geneId2symbol);
     }
 
 
