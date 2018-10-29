@@ -5,6 +5,8 @@ import com.google.common.collect.Multimap;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
@@ -28,6 +30,7 @@ import java.util.Map;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class Lr2PgFactory {
+    private static final Logger logger = LogManager.getLogger();
     /** Path to the {@code hp.obo} file. */
     private final String hpoOboFilePath;
     /** Path to the {@code phenotype.hpoa} file. */
@@ -206,16 +209,8 @@ public class Lr2PgFactory {
             Map<TermId, HpoDisease> diseaseMap = annotationParser.parse();
             if (!annotationParser.validParse()) {
                 int n = annotationParser.getErrors().size();
-                System.err.println(String.format("[NON-FATAL ERROR] Parse problems encountered with the annotation file at %s. Got %d errors",
-                        this.phenotypeAnnotationPath,n));
-               /*
-                int i = 0;
-                for (String error : annotationParser.getErrors()) {
-                    i++;
-                    logger.error(i + "/" + n + ") " + error);
-                }
-                logger.error("Done showing errors");
-                */
+                logger.warn("Parse problems encountered with the annotation file at {}. Got {} errors",
+                        this.phenotypeAnnotationPath,n);
             }
             return diseaseMap;
         } catch (PhenolException pe) {
