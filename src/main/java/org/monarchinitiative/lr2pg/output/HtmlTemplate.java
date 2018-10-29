@@ -28,7 +28,7 @@ public class HtmlTemplate {
         cfg.setDefaultEncoding("UTF-8");
 
         ClassLoader classLoader = HtmlTemplate.class.getClassLoader();
-        URL url = classLoader.getResource("html.ftl");
+        URL url = classLoader.getResource("/html.ftl");
         if (url==null) {
             throw new IOException("Could not find template file");
         } else {

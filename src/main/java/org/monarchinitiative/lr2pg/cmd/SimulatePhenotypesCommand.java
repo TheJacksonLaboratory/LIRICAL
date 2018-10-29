@@ -1,5 +1,7 @@
 package org.monarchinitiative.lr2pg.cmd;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.phenol.base.PhenolException;
@@ -19,6 +21,7 @@ import java.util.Map;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class SimulatePhenotypesCommand extends Lr2PgCommand {
+    private static final Logger logger = LogManager.getLogger();
 
     private final String hpoOboPath;
     /** path to phenotype.hpoa file. */
@@ -84,7 +87,8 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
 
     public void run() throws Lr2pgException {
         PhenotypeOnlyHpoCaseSimulator phenotypeOnlyHpoCaseSimulator = getPhenotypeOnlySimulator();
-
+        logger.info("Simulating {} cases with {} terms each, {} noise terms. imprecision={}",
+            n_cases_to_simulate,n_terms_per_case,n_noise_terms,imprecise_phenotype);
         phenotypeOnlyHpoCaseSimulator.simulateCases();
 
     }

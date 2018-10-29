@@ -174,7 +174,8 @@ public class Vcf2GenotypeMap {
                         boolean isClinVarPath = false;
                         ClinVarData.ClinSig clinvarSig = null;
                         if (alleleProp == null) {
-                            System.out.println("Allele prop is NULL for " + veval);
+                            // this means the variant is not represented in the Exomiser data
+                            // this is not an error, the variant could be very rare or otherwise not seen before
                             freq = DEFAULT_FREQUENCY;
                             path = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
                             genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, path, freq);
@@ -186,22 +187,28 @@ public class Vcf2GenotypeMap {
                             ClinVarData cVarData = pathogenicityData.getClinVarData();
                             genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, pathogenicity, freq, cVarData.getPrimaryInterpretation());
                         }
-
                     }
                 }
             }
+            final long endTime = System.nanoTime();
+
+            logger.info("Finished Annotating VCF (time= " + (endTime-startTime)/100_000_000 + " sec)");
         }
         // now sort the variants by pathogenicity
         for (Gene2Genotype genot : this.gene2genotypeMap.values()) {
             genot.sortVariants();
         }
-        debugPrintGenotypes();
+
+
+        //debugPrintGenotypes();
         if (progressReporter != null)
             progressReporter.done();
         return gene2genotypeMap;
     }
 
-
+    /**
+     * For testing. Show all of the genotypes we obtain from the VCF file.
+     */
     private void debugPrintGenotypes() {
         int i = 0;
         for (TermId geneId : this.gene2genotypeMap.keySet()) {
@@ -216,7 +223,6 @@ public class Vcf2GenotypeMap {
             }
         }
         System.err.println("Number of genotypes " + gene2genotypeMap.size());
-
     }
 
 
