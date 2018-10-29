@@ -17,13 +17,20 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class Gene2Genotype {
+    /** The NCBI Entrez Gene ID of this gene. */
     private final TermId geneId;
+    /** THe symbol, of this gene. */
     private final String symbol;
     /** List of all of the variants found in this gene. */
     private final List<SimpleVariant> varList;
+    /** Sum of variants in the pathogenic bin, weighted by their predicted pathogenicity. */
     private double sumOfPathBinScores;
 
-
+    /**
+     *
+     * @param id gene ID of this gene
+     * @param sym symbol of this gene
+     */
     public Gene2Genotype(TermId id, String sym) {
         this.geneId=id;
         this.symbol=sym;

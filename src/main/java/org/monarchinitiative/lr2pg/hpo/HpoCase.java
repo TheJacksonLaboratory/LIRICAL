@@ -99,8 +99,8 @@ public final class HpoCase {
         if (r.hasGenotype()) {
             Gene2Genotype g2g= g2gmap.get(r.getEntrezGeneId());
             if (g2g==null) {
-                // not an error -- this means that we did not find any variant in this gene in
-                // the VCF file, even though a gene is associated with this disease
+                // TODO check this--why do we have a genotype result if there is no genotype?
+                // is this for diseases with a gene but we found no variant?
                 System.err.println(String.format("Genotype LR for %s: %f",r.getEntrezGeneId().getIdWithPrefix(), r.getGenotypeLR()));
                 System.err.println("No variants found in VCF");
                 return;
