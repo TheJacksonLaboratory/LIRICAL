@@ -2,7 +2,6 @@ package org.monarchinitiative.lr2pg.vcf;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
-import de.charite.compbio.jannovar.mendel.Genotype;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 
@@ -21,7 +20,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
             Sets.immutableEnumSet(ClinVarData.ClinSig.PATHOGENIC,
                     ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC,
                     ClinVarData.ClinSig.LIKELY_PATHOGENIC);
-
+    /** The threshold predicted pathogenicity score for being in the pathogenic bin. */
     private static final float PATHOGENICITY_THRESHOLD=0.80f;
 
 
@@ -78,16 +77,19 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
 
 
     @Override
-    public int compareTo(SimpleVariant other){
-        if (pathogenicity>other.pathogenicity) return 1;
-        else if (pathogenicity<other.pathogenicity) return -1;
-        else return 0;
+    public int compareTo(@SuppressWarnings("NullableProblems") SimpleVariant other){
+        return Float.compare(pathogenicity,other.pathogenicity);
+    }
+
+    /** @return a string such as NM_000141.4:c.1694A>C:p.(Glu565Ala).*/
+    private String annotation2string(TranscriptAnnotation ta) {
+        return String.format("%s:%s:%s",ta.getAccession(),ta.getHgvsCdna(),ta.getHgvsProtein());
     }
 
 
     @Override
     public String toString() {
-        return String.format("chr-%d:%d%s>%s %s %.1f %s",chromAsInt,position,ref,alt,annotationList.get(0),pathogenicity,gtype);
+        return String.format("chr%d:%d%s>%s %s pathogenicity:%.1f [%s]",chromAsInt,position,ref,alt,annotation2string(annotationList.get(0)),pathogenicity,gtype);
     }
 
     public float getPathogenicity() {

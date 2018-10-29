@@ -20,7 +20,7 @@ public class Gene2Genotype {
     private final TermId geneId;
     private final String symbol;
     /** List of all of the variants found in this gene. */
-    private List<SimpleVariant> varList;
+    private final List<SimpleVariant> varList;
     private double sumOfPathBinScores;
 
 
@@ -88,7 +88,7 @@ public class Gene2Genotype {
 
     @Override
     public String toString() {
-        String varString = varList.stream().map(SimpleVariant::toString).collect(Collectors.joining("; "));
+        String varString = varList.stream().filter(SimpleVariant::isInPathogenicBin).map(SimpleVariant::toString).collect(Collectors.joining("; "));
         return String.format("%s[%s]: %s",this.symbol,this.geneId.getIdWithPrefix(),varString);
     }
 

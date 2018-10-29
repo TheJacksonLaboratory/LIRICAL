@@ -93,7 +93,7 @@ public class VcfCommand extends Lr2PgCommand {
 
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
-        hcase.outputTopResults(5,ontology,geneId2symbol);
+        hcase.outputTopResults(5,ontology,genotypeMap);
     }
 
 

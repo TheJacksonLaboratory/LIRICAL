@@ -81,7 +81,7 @@ public class HpoPhenoGenoCaseSimulator {
 
 
     public void outputSvg(TermId diseaseCurie,String diseaseName,HpoOntology ontology, Map<TermId,String> geneId2SymbolMap) {
-        hpocase.outputLrToShell(diseaseCurie,ontology,geneId2SymbolMap);
+        //hpocase.outputLrToShell(diseaseCurie,ontology,geneId2SymbolMap);
         TermId geneId = this.hpocase.getResult(diseaseCurie).getEntrezGeneId();
         String symbol;
         if (geneId==null) {

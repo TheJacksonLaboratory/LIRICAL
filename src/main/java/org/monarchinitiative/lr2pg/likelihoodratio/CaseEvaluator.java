@@ -15,9 +15,8 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import java.util.*;
 
 /**
- * Likelihood ratio evaluator. This class coordinates the performance of the likelihood ratio test on
- * an {@link HpoCase}.
- * TODO interface currently offers too many things. Probably restrict to one output once integrated into Exomiser
+ * Likelihood ratio evaluator. This class coordinates the performance of the likelihood ratio test
+ *  and returns one {@link HpoCase} object with the results by the method {@link #evaluate()}.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class CaseEvaluator {
@@ -177,21 +176,6 @@ public class CaseEvaluator {
         }
         return resultMap;
     }
-
-
-
-
-
-
-
-    public HpoDisease id2disease(TermId diseaseCurie) {
-         return this.diseaseMap.get(diseaseCurie);
-    }
-
-    public String i2diseaseName(TermId diseaseCurie) {
-        return this.diseaseMap.get(diseaseCurie).getName();
-    }
-
 
 
 

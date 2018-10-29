@@ -147,7 +147,7 @@ public class TestResult implements Comparable<TestResult> {
     }
     /** @return the name of the disease, e.g., Marfan syndrome. */
     public String getDiseaseName() { return hpoDisease.getName();}
-
+    /**@return true if a genotype likelihood ratio was assigned to this test result. */
     public boolean hasGenotype(){ return genotypeLR!=null;}
 
     public Double getGenotypeLR() {

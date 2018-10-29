@@ -42,7 +42,7 @@ public class HtmlTemplate {
 
 
 
-               Template template = cfg.getTemplate(url.getFile());
+        Template template = cfg.getTemplate(url.getFile());
 
         Map<String, Object> templateData = new HashMap<>();
         templateData.put("msg", "Today is a beautiful day");
