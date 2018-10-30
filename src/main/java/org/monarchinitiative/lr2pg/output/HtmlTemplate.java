@@ -6,6 +6,8 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.Version;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -34,12 +36,8 @@ public class HtmlTemplate {
         Map<String, Object> templateData = new HashMap<>();
         templateData.put("msg", "Today is a beautiful day");
 
-        try (StringWriter out = new StringWriter()) {
-
+        try (BufferedWriter out = new BufferedWriter(new FileWriter("myout.html"))) {
             template.process(templateData, out);
-            System.out.println(out.getBuffer().toString());
-
-            out.flush();
         } catch (TemplateException te) {
             te.printStackTrace();
         }

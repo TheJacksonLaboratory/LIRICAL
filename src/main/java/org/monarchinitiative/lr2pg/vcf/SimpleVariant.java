@@ -75,10 +75,30 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
     }
 
 
+    public int getChromAsInt() {
+        return chromAsInt;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public String getRef() {
+        return ref;
+    }
+
+    public String getAlt() {
+        return alt;
+    }
+
+    public List<TranscriptAnnotation> getAnnotationList() {
+        return annotationList;
+    }
 
     @Override
     public int compareTo(@SuppressWarnings("NullableProblems") SimpleVariant other){
         return Float.compare(pathogenicity,other.pathogenicity);
+
     }
 
     /** @return a string such as NM_000141.4:c.1694A>C:p.(Glu565Ala).*/

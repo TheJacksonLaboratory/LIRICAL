@@ -8,10 +8,7 @@ import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -22,15 +19,16 @@ public class Lr2Svg {
     private static final Logger logger = LogManager.getLogger();
     /** An object representing the Human Phenotype Ontology */
     private final HpoOntology ontology;
-
+    /** This is the object that represents the case being analyzed with all results. */
     private final HpoCase hpocase;
-
+    /** We show the results as an SVG diagram for this disease. */
     private final TermId diseaseCURIE;
-
+    /** This is the name (label) of the disease. */
     private final String diseaseName;
-
+    /** If applicable, the gene symbol associated with {@link #diseaseCURIE}.*/
+    private final String geneSymbol;
+    /** This is the {@link TestResult} object that corresponds to {@link #diseaseCURIE} being displayed as SVG. */
     private final TestResult result;
-
     /** Height of entire image in px */
     private final static int HEIGHT=480;
     /** width of the bars part of the image in px */
@@ -46,10 +44,10 @@ public class Lr2Svg {
 
     private final static String RGB_GREEN="#00FF00";
     private final static String RGB_RED="#FF0000";
-
-    private final String geneSymbol;
-
-
+    /** The midle line is the central line around which the likelihood ratio 'bars' will be drawn. This
+     * variable is calculated as the height that this bar will need to have in order to show all of the
+     * likelihood ratio bars.
+     */
     private final int heightOfMiddleLine;
 
     public Lr2Svg(HpoCase hcase,TermId diseaseId,String diseaseName, HpoOntology ont, String symbol) {
@@ -65,20 +63,32 @@ public class Lr2Svg {
         this.result = hpocase.getResult(diseaseId);
         this.geneSymbol = symbol;
         this.ontology=ont;
-
         this.heightOfMiddleLine=calculateHeightOfMiddleLine();
     }
 
 
+    public void writeSvg2(Writer writer)  throws IOException {
+        writeHeader(writer);
+        writeVerticalLine(writer);
+        writeLrBoxes(writer);
+        writeFooter(writer);
+    }
 
+    public String getSvgString() {
+        try {
+            StringWriter swriter = new StringWriter();
+            writeSvg2(swriter);
+            return swriter.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ""; // return empty string upon failure
+    }
 
     public void writeSvg(String path) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(path));
-            writeHeader(writer);
-            writeVerticalLine(writer);
-            writeLrBoxes(writer);
-            writeFooter(writer);
+            writeSvg2(writer);
             writer.close();
         } catch (IOException e) {
             System.err.println("[ERROR] Unable to write SVG file: "+path);
@@ -286,7 +296,7 @@ public class Lr2Svg {
         writer.write("<svg width=\""+total_width+"\" height=\""+HEIGHT+"\" " +
                 "xmlns=\"http://www.w3.org/2000/svg\" " +
                 "xmlns:svg=\"http://www.w3.org/2000/svg\">\n");
-        writer.write("<!-- Created by Exomiser - https://monarchinitiative.org -->\n");
+        writer.write("<!-- Created by LR2PG - https://monarchinitiative.org -->\n");
         writer.write("<g>\n");
     }
 
@@ -299,12 +309,10 @@ public class Lr2Svg {
         List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
         // sort list according to value, i.e., the magnitude of the likelihood ratio.
         list.sort( (e1,e2) -> (e2.getValue()).compareTo(e1.getValue()) );
-
         Map<K, V> result = new LinkedHashMap<>();
         for (Map.Entry<K, V> entry : list) {
             result.put(entry.getKey(), entry.getValue());
         }
-
         return result;
     }
 

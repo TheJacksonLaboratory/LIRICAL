@@ -8,6 +8,8 @@ import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -30,7 +32,7 @@ public class TestResultTest {
         TermId glaucomaId = TermId.constructWithPrefix("MONDO:123");
         List<TermId> emptyList = ImmutableList.of();
         List<HpoAnnotation> emptyAnnot = ImmutableList.of();
-         glaucoma = new HpoDisease("Glaucoma",glaucomaId,emptyAnnot,emptyList,emptyList);
+        glaucoma = new HpoDisease("Glaucoma",glaucomaId,emptyAnnot,emptyList,emptyList);
     }
 
     @Test
@@ -119,6 +121,48 @@ public class TestResultTest {
         double ptodds=expected;
         expected = 0.9846396;
         Assert.assertEquals(expected, (ptodds/(ptodds+1)), EPSILON);
+    }
+
+
+    @Test
+    public void testTestResultSorting() {
+        double EPSILON=0.0001;
+        TermId testId1 = TermId.constructWithPrefix("MONDO:1");
+        TermId testId2 = TermId.constructWithPrefix("MONDO:2");
+        TermId testId3 = TermId.constructWithPrefix("MONDO:3");
+        List<TermId> emptyList = ImmutableList.of();
+        List<HpoAnnotation> emptyAnnot = ImmutableList.of();
+        HpoDisease d1 = new HpoDisease("d1",testId1,emptyAnnot,emptyList,emptyList);
+        HpoDisease d2 = new HpoDisease("d2",testId1,emptyAnnot,emptyList,emptyList);
+        HpoDisease d3 = new HpoDisease("d3",testId1,emptyAnnot,emptyList,emptyList);
+        List<Double> list1 = ImmutableList.of(2.0,3.0,4.0);
+        List<Double> list2 = ImmutableList.of(20.0,3.0,4.0);
+        List<Double> list3 = ImmutableList.of(20.0,30.0,4.0);
+        double prevalence = 0.025;
+        TestResult result1 = new TestResult(list1,d1,prevalence);
+        TestResult result2 = new TestResult(list2,d2,prevalence);
+        TestResult result3 = new TestResult(list3,d3,prevalence);
+        assertEquals(24.0,result1.getCompositeLR(),EPSILON);
+        assertEquals(240.0,result2.getCompositeLR(),EPSILON);
+        assertEquals(2400.0,result3.getCompositeLR(),EPSILON);
+        List<TestResult> lst = new ArrayList<>();
+        lst.add(result1);
+        lst.add(result2);
+        lst.add(result3);
+        assertEquals(lst.get(0),result1);
+        lst.sort(Comparator.reverseOrder());
+        assertEquals(lst.get(0),result3);
+        assertEquals(lst.get(1),result2);
+        assertEquals(lst.get(2),result1);
+        // now add another test result, same as result3 but with additional genotype evidence
+        // result4 should now be the top hit
+        double genotypeLR=2.0;
+        TermId geneId=TermId.constructWithPrefix("NCBI:Faks");
+        TestResult result4=new TestResult(list3,d3,genotypeLR,geneId,prevalence);
+        lst.add(result4);
+        assertEquals(lst.get(3),result4);
+        lst.sort(Comparator.reverseOrder());
+        assertEquals(lst.get(0),result4);
     }
 
 

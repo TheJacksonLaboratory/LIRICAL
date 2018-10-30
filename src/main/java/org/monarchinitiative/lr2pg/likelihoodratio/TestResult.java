@@ -7,6 +7,7 @@ import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -27,7 +28,7 @@ public class TestResult implements Comparable<TestResult> {
      * as indicated in the case object. In the intended use case, there will be one test result for each disease
      * that is tested for the {@link HpoCase} object.
      */
-    private final ImmutableList<Double> results;
+    private final List<Double> results;
     /** Result of the likelhood ratio test for the genotype. */
     private Double genotypeLR=null;
     /** The id of the gene associated with ths disease being tested here. */
@@ -48,7 +49,7 @@ public class TestResult implements Comparable<TestResult> {
      * @param disease    name of the disease being tested
      * @param pretest pretest probability of the disease
      */
-    public TestResult(ImmutableList<Double> reslist, HpoDisease disease, double pretest) {
+    public TestResult(List<Double> reslist, HpoDisease disease, double pretest) {
         results = reslist;
         hpoDisease = disease;
         this.pretestProbability = pretest;
@@ -64,7 +65,7 @@ public class TestResult implements Comparable<TestResult> {
      * @param geneId gene id of the gene being tested
      * @param pretest pretest probability of the disease
      */
-    public TestResult(ImmutableList<Double> reslist, HpoDisease diseaseId, Double genotypeLr,TermId geneId,double pretest) {
+    public TestResult(List<Double> reslist, HpoDisease diseaseId, Double genotypeLr,TermId geneId,double pretest) {
         results = reslist;
         hpoDisease = diseaseId;
         this.pretestProbability = pretest;

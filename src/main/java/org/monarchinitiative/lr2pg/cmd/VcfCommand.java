@@ -13,6 +13,7 @@ import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
+import org.monarchinitiative.lr2pg.output.CaseOutput;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -36,6 +37,8 @@ public class VcfCommand extends Lr2PgCommand {
     /** Default name of the background frequency file. */
     private final String BACKGROUND_FREQUENCY_FILE="background-freq.txt";
 
+    private Map<String,String> metadata;
+
     /**
      * @param fact An object that contains parameters from the YAML file for configuration
      * @param data Path to the data download directory that has hp.obo and other files.
@@ -56,6 +59,7 @@ public class VcfCommand extends Lr2PgCommand {
         JannovarData jannovarData = factory.jannovarData();
         Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcf, jannovarData, mvstore, GenomeAssembly.HG19);
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
+        this.metadata = vcf2geno.getVcfMetaData();
         return genotypeMap;
     }
 
@@ -94,7 +98,18 @@ public class VcfCommand extends Lr2PgCommand {
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
         hcase.outputTopResults(5,ontology,genotypeMap);
+        outputHTML(hcase,ontology,genotypeMap);
     }
+
+
+    private void outputHTML(HpoCase hcase,HpoOntology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
+        CaseOutput caseoutput = new CaseOutput(hcase,ontology,genotypeMap,this.metadata);
+
+
+    }
+
+
+
 
 
 

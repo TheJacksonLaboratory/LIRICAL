@@ -37,6 +37,7 @@ import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class is responsible for parsing the VCF file and extracting variants and genotypes. Its
@@ -83,6 +84,10 @@ public class Vcf2GenotypeMap {
      * Should be hg37 or hg38
      */
     private final GenomeAssembly genomeAssembly;
+
+    private final Map<String,String> vcfMetaData=new HashMap<>();
+
+
     /**
      * Key: an EntrezGene gene id; value a {@link Gene2Genotype} obhject with variants/genotypes in this gene.
      */
@@ -111,6 +116,10 @@ public class Vcf2GenotypeMap {
     }
 
 
+    public Map<String, String> getVcfMetaData() {
+        return vcfMetaData;
+    }
+
     public Map<TermId, Gene2Genotype> vcf2genotypeMap() {
         // whether or not to just look at a specific genomic interval
         final boolean useInterval = false;
@@ -128,7 +137,18 @@ public class Vcf2GenotypeMap {
             }
 
 
-            //   VCFHeader vcfHeader = vcfReader.getFileHeader();
+            VCFHeader vcfHeader = vcfReader.getFileHeader();
+            List<String> sampleNames = vcfHeader.getSampleNamesInOrder();
+            this.vcfMetaData.put("N_samples",String.valueOf(sampleNames.size()));
+            if (sampleNames.size()==1) {
+                this.vcfMetaData.put("sample_name",sampleNames.get(0));
+            } else {
+                String names=sampleNames.stream().collect(Collectors.joining("; "));
+                this.vcfMetaData.put("sample_name",sampleNames.get(0));
+                this.vcfMetaData.put("sample_names",names);
+            }
+            this.vcfMetaData.put("genome",this.genomeAssembly.toString());
+
 
             logger.trace("Annotating VCF at " + vcfPath);
             final long startTime = System.nanoTime();
