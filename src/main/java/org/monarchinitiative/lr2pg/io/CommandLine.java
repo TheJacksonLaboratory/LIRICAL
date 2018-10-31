@@ -130,6 +130,9 @@ public class CommandLine {
                 case "svg":
                     this.command=new SimulateSvgPhenoOnlyCommand(dataPath,disease);
                     break;
+                case "gt2git":
+                    this.command=new Gt2GitCommand(dataPath);
+                    break;
                 default:
                     printUsage("Could not find command option");
 

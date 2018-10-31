@@ -4,9 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
-import de.charite.compbio.jannovar.annotation.VariantAnnotator;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderOptions;
 import de.charite.compbio.jannovar.data.Chromosome;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
@@ -71,7 +69,7 @@ public class Vcf2GenotypeMap {
      * Reference dictionary that is part of {@link #jannovarData}.
      */
     private final ReferenceDictionary referenceDictionary;
-    private final VariantAnnotator variantAnnotator;
+   // private final VariantAnnotator variantAnnotator;
     /**
      * Map of Chromosomes, used in the annotation.
      */
@@ -112,7 +110,7 @@ public class Vcf2GenotypeMap {
         this.referenceDictionary = jannovarData.getRefDict();
         this.chromosomeMap = jannovarData.getChromosomes();
         this.genomeAssembly = ga;
-        this.variantAnnotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
+        //this.variantAnnotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
     }
 
 

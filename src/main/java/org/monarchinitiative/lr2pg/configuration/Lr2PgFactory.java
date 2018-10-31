@@ -21,6 +21,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -230,11 +231,12 @@ public class Lr2PgFactory {
         private String backgroundFrequencyPath=null;
         private String vcfPath=null;
         private String jannovarTranscriptFile=null;
-        private String[] observedHpoTerms=null;
+        private List<String> observedHpoTerms=ImmutableList.of();
 
         public Builder(){
-
         }
+
+
 
         public Builder hp_obo(String hpPath) {
             hpOboPath=hpPath;
@@ -277,7 +279,8 @@ public class Lr2PgFactory {
         }
 
         public Builder observedHpoTerms(String [] terms) {
-            this.observedHpoTerms=terms;
+            this.observedHpoTerms=new ArrayList<>();
+            Collections.addAll(observedHpoTerms, terms);
             return this;
         }
 
