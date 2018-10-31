@@ -5,7 +5,7 @@ package org.monarchinitiative.lr2pg.gt2git;
  * values are divided up into two bins: 0-80% (benign) and 80-100% (predicted pathogenic).
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class Gene2Bin {
+class Gene2Bin {
     /** The HGNC gene symbol for the current gene. */
     private final String genesymbol;
     /** The Entrez Gene id for the current gene. */
@@ -14,6 +14,7 @@ public class Gene2Bin {
     private final Bin predictedBenignBin;
     /** The {@link Bin} for pathogenicity scores from 80-100% .*/
     private final Bin predictedPathogenicBin;
+    /** Lower limit of pathogenic bin--80 percent pathogenicity score */
     private final static double PATHOGENICITY_THRESHOLD=0.80;
 
     /**
@@ -21,19 +22,23 @@ public class Gene2Bin {
      * @param symbol a gene symbol
      * @param id the corresponding (Entrez Gene) Id.
      */
-    public Gene2Bin(String symbol, String id) {
+    Gene2Bin(String symbol, String id) {
         this.genesymbol=symbol;
         this.geneid=id;
-        predictedBenignBin = new Bin(0.0, PATHOGENICITY_THRESHOLD);
-        predictedPathogenicBin = new Bin(PATHOGENICITY_THRESHOLD, 1.0);
+        predictedBenignBin = new Bin();
+        predictedPathogenicBin = new Bin();
     }
 
-
-    public void addVar(double frequency, double pathogenicity) {
+    /**
+     * Add the population freqeuncy (as percentage) and predicted pathogenicity for one variant
+     * @param percentage population frequency expressed as percentage
+     * @param pathogenicity predicted pathogenicity of some variant.
+     */
+    void addVar(double percentage, double pathogenicity) {
         if (pathogenicity >= 0.0 && pathogenicity < PATHOGENICITY_THRESHOLD) {
-            predictedBenignBin.addvar(frequency);
+            predictedBenignBin.addvar(percentage);
         } else if (pathogenicity >= PATHOGENICITY_THRESHOLD && pathogenicity <= 1.0) {
-            predictedPathogenicBin.addvar(frequency);
+            predictedPathogenicBin.addvar(percentage);
         } else {
             // Should never happen, but if it does, we want to know right away!
             System.err.println("Error! Pathogenicity score is not between 0 and 1!");
@@ -41,16 +46,17 @@ public class Gene2Bin {
         }
     }
 
-    public String getGeneid() {
+    /** @return the gene ID (e.g., EntrezGene number) of the gene. */
+    String getGeneid() {
         return geneid;
     }
 
     /** @return the header that will be used to write the results for all Gene2Bin objects to file. */
-    public static String header() {
+    static String header() {
         return "#symbol\tgeneID\tfreqsum-benign\tcount-benign\tfreqsum-path\tcount-path";
     }
-
-    public double getPathogenicBinFrequency() {
+    /** @return the sum of the frequencies of all variants in the pathogenic bin for the current gene. */
+    double getPathogenicBinFrequency() {
         return this.predictedPathogenicBin.getBinFrequency();
     }
 

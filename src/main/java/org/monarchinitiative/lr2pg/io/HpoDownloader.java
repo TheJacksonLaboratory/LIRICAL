@@ -45,7 +45,7 @@ public class HpoDownloader {
     public HpoDownloader(String path, boolean overwrite){
         this.downloadDirectory=path;
         this.overwrite=overwrite;
-        logger.error("overwrte="+overwrite);
+        logger.error("overwrite="+overwrite);
     }
 
     /**

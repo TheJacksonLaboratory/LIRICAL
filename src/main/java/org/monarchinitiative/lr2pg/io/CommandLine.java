@@ -22,7 +22,8 @@ import java.util.stream.Collectors;
 public class CommandLine {
 
     private Lr2PgCommand command=null;
-
+    /** Records the original command--can be useful for error messages. */
+    private String clstring;
     /** Path to YAML configuration file */
     private String yamlPath=null;
     /** Default path to downloaded data */
@@ -35,6 +36,7 @@ public class CommandLine {
     private String disease=null;
 
     private final String DEFAULT_DISEASE="OMIM:617132";
+
 
     private String cases_to_simulate;
 
@@ -64,7 +66,7 @@ public class CommandLine {
         org.apache.commons.cli.CommandLine commandLine;
 
         String mycommand = null;
-        String clstring = "";
+        this.clstring = "";
         if (args != null && args.length > 0) {
             clstring = Arrays.stream(args).collect(Collectors.joining(" "));
         }
@@ -93,11 +95,7 @@ public class CommandLine {
             } else {
                 disease=DEFAULT_DISEASE;
             }
-            if (commandLine.hasOption("o")) {
-                overwriteDownload=true;
-            } else {
-                overwriteDownload=false;
-            }
+            overwriteDownload = commandLine.hasOption("o");
             if (commandLine.hasOption("y")) {
                 yamlPath = commandLine.getOptionValue("y");
             }

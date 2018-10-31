@@ -3,7 +3,8 @@ package org.monarchinitiative.lr2pg.gt2git;
 /**
  * This class represents one of two bins associated with each gene. Bin A is for the "pathogenic" variants, i.e.,
  * with a pathogenicity score of 0.8-1, and bin B is for the "non-pathogenic" variants, i.e.,
- * with a pathogenicity score of 0-0.8.
+ * with a pathogenicity score of 0-0.8. Note that we do not record the frequency ranges for the bin within
+ * the bin itself -- this bookkeeping is done in the class {@link Gene2Bin}.
  * It is important to note that the Exomiser reports frequencies as percentages and not as proportions, and so
  * this class takes care of that.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
@@ -11,10 +12,6 @@ package org.monarchinitiative.lr2pg.gt2git;
 class Bin {
     /** A small constant added to avoid division by zero. */
     private final static double EPSILON=1/100_000;
-    /** Lower bound of pathogenicity score of this bin. */
-    private final double low;
-    /** Upper bound of pathogenicity score of this bin. */
-    private final double high;
     /** The sumOfPerc of the percentages (100*frequency) of all of the variants associated with this bin of this gene. */
     private double sumOfPerc;
     /** The total number (count) of variants associated with this bin of this gene. */
@@ -22,12 +19,8 @@ class Bin {
 
     /**
      *  Initialize this bin. Add a count of epsilon*100 as a pseudocount to avoid division by zero.
-     * @param low lower-bound pathogenicity score for this bin
-     * @param high upper-bound pathogenicity score for this bin
      */
-    public Bin(double low, double high) {
-        this.low=low;
-        this.high=high;
+      public Bin() {
         // Multiply epsilon by 100 because the data is percentage rather than frequency based.
         sumOfPerc=100*EPSILON;
         count=0;
@@ -44,7 +37,7 @@ class Bin {
     }
 
     /**
-     * We return the frequency rather than the percentage
+     * We return the frequency rather than the percentage. Note that this is the TOTAL frequency (sum of individual frequencies).
      * @return The sum of the frequency of all of the variants associated with this bin of this gene. */
     double getBinFrequency(){
         return sumOfPerc/100.0;

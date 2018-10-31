@@ -13,7 +13,7 @@ import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.lr2pg.output.CaseOutput;
+import org.monarchinitiative.lr2pg.output.HtmlTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -103,7 +103,7 @@ public class VcfCommand extends Lr2PgCommand {
 
 
     private void outputHTML(HpoCase hcase,HpoOntology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
-        CaseOutput caseoutput = new CaseOutput(hcase,ontology,genotypeMap,this.metadata);
+        HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypeMap,this.metadata);
 
 
     }
