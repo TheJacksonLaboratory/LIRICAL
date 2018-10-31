@@ -52,7 +52,7 @@ public class GenicIntoleranceCalculator {
     private FrequencySource[] orderedSources = {GNOMAD_E_AFR,GNOMAD_E_AMR,GNOMAD_E_ASJ,GNOMAD_E_EAS,GNOMAD_E_FIN,GNOMAD_E_NFE,GNOMAD_E_SAS};
     /** The header of the output file that shows the populations included in the calculation. */
     private String[] headerFields = {"AFR","AMR","ASJ","EAS","FIN","NFE","SAS"};
-    /** File name for the file that wiull contain the frequencies of predicted pathogenic variants in the
+    /** File name for the file that will contain the frequencies of predicted pathogenic variants in the
      * population background, i.e., from gnomAD  from the Exomiser database.*/
     private String outputFileName="background-freq.txt";
     /** An Exomiser class that annotates an arbitrary variant with frequency and pathogenicity information. */

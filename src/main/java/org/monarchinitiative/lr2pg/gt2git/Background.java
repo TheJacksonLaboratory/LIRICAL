@@ -12,8 +12,9 @@ import java.util.Optional;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 class Background {
-
+    /** An object that represents the source of frequency data (a population background, e.g., GNOMAD_E_FIN). */
     private final FrequencySource frequencySource;
+    /** key: A gene symbol; value: corresponding {@link org.monarchinitiative.lr2pg.gt2git.Gene2Bin} object. */
     private final Map<String, Gene2Bin> background2binMap = new HashMap<>();
 
     Background(FrequencySource fSource){
@@ -28,7 +29,7 @@ class Background {
     Map<String, Gene2Bin> getBackground2binMap() {
         return background2binMap;
     }
-
+    /** @return an optional containing the {@link org.monarchinitiative.lr2pg.gt2git.Gene2Bin} object for the gene symbol.*/
     Optional<Gene2Bin> getGene2Bin(String symbol) {
         if (! background2binMap.containsKey(symbol)) return Optional.empty();
         else return Optional.of(background2binMap.get(symbol));
