@@ -34,6 +34,10 @@ public class CommandLine {
     private boolean overwriteDownload=false;
 
     private String disease=null;
+    /** Path to the Exomiser MVStore data file (e.g., 1802_hg19/1802_hg19_variants.mv.db) */
+    private String mvStorePath=null;
+    /** Path to the Jannovar transcript file (e.g., 1802_hg19_transcripts_refseq.ser).*/
+    private String jannovarTranscriptFile=null;
 
     private final String DEFAULT_DISEASE="OMIM:617132";
 
@@ -94,6 +98,12 @@ public class CommandLine {
                 disease=commandLine.getOptionValue("i");
             } else {
                 disease=DEFAULT_DISEASE;
+            }
+            if (commandLine.hasOption("j")) {
+                jannovarTranscriptFile=commandLine.getOptionValue("j");
+            }
+            if (commandLine.hasOption("m")) {
+                mvStorePath=commandLine.getOptionValue("m");
             }
             overwriteDownload = commandLine.hasOption("o");
             if (commandLine.hasOption("y")) {
@@ -179,6 +189,8 @@ public class CommandLine {
         private static Options constructGnuOptions() {
             final Options options = new Options();
             options.addOption("d", "data", true, "directory to download data (default \"data\")")
+                    .addOption("j","jannovar",false,"path to Jannovar transcript file")
+                    .addOption("m","mvstore",false,"path to Exomiser MVStore file")
                     .addOption("o","overwrite",false,"overwrite downloaded files")
                     .addOption("y","yaml",true,"path to yaml file");
             return options;

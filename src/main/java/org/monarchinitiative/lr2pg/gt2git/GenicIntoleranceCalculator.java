@@ -54,14 +54,22 @@ public class GenicIntoleranceCalculator {
     private String[] headerFields = {"AFR","AMR","ASJ","EAS","FIN","NFE","SAS"};
     /** File name for the file that will contain the frequencies of predicted pathogenic variants in the
      * population background, i.e., from gnomAD  from the Exomiser database.*/
-    private String outputFileName="background-freq.txt";
+    private final String outputFileName;
     /** An Exomiser class that annotates an arbitrary variant with frequency and pathogenicity information. */
     private final VariantAnnotator variantAnnotator;
+    /** Exomiser data store. */
     private final MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap;
 
-    public GenicIntoleranceCalculator(VariantAnnotator variantAnnotator, MVStore alleleStore) {
+    /**
+     *
+     * @param variantAnnotator Object to annotate an arbitrary variant
+     * @param alleleStore Exomiser data resource
+     * @param fname name of output file (background-hg38.txt or background-hg19.txt).
+     */
+    public GenicIntoleranceCalculator(VariantAnnotator variantAnnotator, MVStore alleleStore, String fname) {
         this.variantAnnotator = variantAnnotator;
         this.alleleMap = MvStoreUtil.openAlleleMVMap(alleleStore);
+        this.outputFileName=fname;
     }
     /** Key: a {@link FrequencySource}, representing a population; value: corresponding {@link Background} with background frequency for genes. */
     private final Map<FrequencySource,Background> backgroundMap = new HashMap<>();
@@ -71,30 +79,7 @@ public class GenicIntoleranceCalculator {
     private final HashMap<String,String> symbol2idMap = new HashMap<>();
 
 
-    /**
-     * Add a single variant's frequency/pathogenicity values to the appropriate bin
-     * @param genesymbol The symbol of the gene that harbors the variant
-     * @param geneId The Entrez Gene id of the gene that harbors the variant
-     * @param frequency The frequency of the variant in the cohort represented by g2bmap
-     * @param pathogenicity The pathogenicity of the variant as predicted by Exomiser
-     */
-    private void addToBin(String genesymbol, String geneId, double frequency, double pathogenicity, FrequencySource fsource) {
-        Map<String, Gene2Bin> background2binMap = backgroundMap.get(fsource).getBackground2binMap();
-        geneSymbolSet.add(genesymbol);
-        symbol2idMap.put(genesymbol,geneId);
-        if (!background2binMap.containsKey(genesymbol)) {
-            Gene2Bin g2b = new Gene2Bin(genesymbol, geneId);
-            background2binMap.put(genesymbol, g2b);
-            if (background2binMap.size() % 100 == 0) {
-                System.out.print(String.format("Analyzing gene %d.\r", background2binMap.size()));
-            }
-        }
-        if (genesymbol.equals("FBN1")) {
-            System.out.println(String.format("FBN1\t%f\t%f",frequency/100.0, pathogenicity ));
-        }
-        Gene2Bin g2b = background2binMap.get(genesymbol);
-        g2b.addVar(frequency, pathogenicity);
-    }
+
 
     /**
      * This function inputs the data from the MV store, bins each variant into one of four categories,
@@ -131,6 +116,31 @@ public class GenicIntoleranceCalculator {
         backgroundMap.put(GNOMAD_E_NFE,nfe);
         Background sas = new Background(GNOMAD_E_SAS);
         backgroundMap.put(GNOMAD_E_SAS,sas);
+    }
+
+    /**
+     * Add a single variant's frequency/pathogenicity values to the appropriate bin
+     * @param genesymbol The symbol of the gene that harbors the variant
+     * @param geneId The Entrez Gene id of the gene that harbors the variant
+     * @param frequency The frequency of the variant in the cohort represented by g2bmap
+     * @param pathogenicity The pathogenicity of the variant as predicted by Exomiser
+     */
+    private void addToBin(String genesymbol, String geneId, double frequency, double pathogenicity, FrequencySource fsource) {
+        Map<String, Gene2Bin> background2binMap = backgroundMap.get(fsource).getBackground2binMap();
+        geneSymbolSet.add(genesymbol);
+        symbol2idMap.put(genesymbol,geneId);
+        if (!background2binMap.containsKey(genesymbol)) {
+            Gene2Bin g2b = new Gene2Bin(genesymbol, geneId);
+            background2binMap.put(genesymbol, g2b);
+            if (background2binMap.size() % 100 == 0) {
+                logger.info(String.format("Analyzing gene %d.\r", background2binMap.size()));
+            }
+        }
+        if (genesymbol.equals("FBN1")) {
+            System.out.println(String.format("FBN1\t%f\t%f",frequency/100.0, pathogenicity ));
+        }
+        Gene2Bin g2b = background2binMap.get(genesymbol);
+        g2b.addVar(frequency, pathogenicity);
     }
 
 
@@ -175,6 +185,7 @@ public class GenicIntoleranceCalculator {
      */
     private void binPathogenicityData() {
         logger.trace("Binning pathogenicity data...");
+        logger.info("Binning pathogenicity data...2");
         for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : alleleMap.entrySet()) {
             AlleleProto.AlleleKey alleleKey = entry.getKey();
             AlleleProto.AlleleProperties alleleProperties = entry.getValue();
@@ -320,7 +331,7 @@ public class GenicIntoleranceCalculator {
         Collections.sort(symbolList);
         String header = Arrays.stream(headerFields).collect(Collectors.joining("\t"));
         header = String.format("Gene\tEntrezId\t%s\tMean\n",header );
-
+        logger.trace("Outputting background freqeuncy file to " + this.outputFileName);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(this.outputFileName))) {
             writer.write(header);
             for (String gsymbol : symbolList) {

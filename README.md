@@ -1,20 +1,44 @@
 # LR2PG
 Likelihood ratio analysis of phenotypes and genotypes
 
-To run LR2PG we need to install a local copy of phenol (version 1.1.0).
+## Installing and setting up LR2PG
+LR2PG makes use of the phenotype analysis library phenol, which needs to be installed locally.
+Currently, LR2PG uses version 1.3.0-SNAPSHOT.
+
 ```
 $ git clone https://github.com/monarch-initiative/phenol.git
 $ cd phenol
 $ mvn install
 ```
-To run a demo, execute the following commands in the LR2PG directory.
-
+To compile LR2PG, run the following command
 
 ```
 $ mvn clean package
-$ java -jar target/LR2PG-0.4.6.jar download
-$ java -jar target/LR2PG-0.4.6.jar simulate
 ```
+ LR2PG also uses a number of other files, which it
+can automatically download using the download command (use the --overwrite flag to download fresh copies,
+otherwise, it only downloads files if not present). By default, LR2PG downloads to a new directory
+called data, which will be created as a subdirectory in the directory from which LR2PG is run.
+```
+$ java -jar target/LR2PG-0.4.6.jar download
+```
+If you want to download to a different location, use the -d <path> argument while downloading and in all of
+the subsequent steps.
+
+LR2PG makes use of the Exomiser data resources, which need to be downloaded from the Exomiser FTP site
+(https://data.monarchinitiative.org/exomiser/latest/).  For instance, to do the analysis with the hg38
+genome assembly, download the data file 1805_hg38.zip  and unzip it. The Exomiser will first calculate
+the expected background frequency of predicted pathogenic variants and write this to a file that will
+be used in subsequent steps (this will take about an hour on a typical laptop).
+
+```
+$ java -jar target/LR2PG-0.4.6.jar gt2git TODO
+```
+
+To run a demo, execute the following commands in the LR2PG directory.
+
+
+
 
 
 To run the phenogeno simulation, use the following syntax
