@@ -15,8 +15,7 @@ article, aside, footer, header, main, nav, section {
   display: block;
 }
 
-html, body, h1, h2, h3, ul, li, a, p,
-article, aside, footer, header, main, nav, section {
+html, body, h1, h2, h3, ul, li, a, p, article, aside, footer, header, main, nav, section {
   padding: 0;
   margin: 0;
 }
@@ -74,14 +73,14 @@ article {
 }
 
 main {
-  width: 840px;
+  width: 960px;
   float: left;
   margin-bottom: 10px;
 }
 
 aside {
   background-color: #bbbbbb;
-  width: 100px;
+  width: 1px;
   float: right;
   padding: 20px;
   margin-top: 10px;
@@ -101,87 +100,97 @@ footer {
     <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
   <![endif]-->
 <header class="banner">
-      <h1>Phenotype/Genotype Likelihood Ratio Analysis</h1>
-      <!-- <p>Sample name: ${sample_name}</p> -->
-    </header>
+    <h1>LR2PG: Likelihood Ratio Analysis of Phenotype and Genotype Data</h1>
+</header>
 
-    <nav><div id="navi">
-      <ul>
-        <li><a href="#sample">Sample</a></li>
-        <li><a href="archive.html">Archives</a></li>
-        <li><a href="about.html">About</a></li>
-      </ul>
-    </div></nav>
+<nav>
+    <div id="navi">
+        <ul>
+            <li><a href="#sample">Sample</a></li>
+            <li><a href="#diff">Differential diagnosis</a></li>
+            <li><a href="#othergenes">Remaining genes</a></li>
+        </ul>
+    </div>
+</nav>
+<main>
+  <section>
+    <a name="sample"/>
+    <h2>Sample name: ${sample_name}</h2>
+    <article>
+      <header>
+        <h3>Observed phenotypic features:</h3>
+      </header>
+      <p>
+        <ul>
+          <#list  observedHPOs as hpo>
+          <li>${hpo}</li>
+          </#list>
+        </ul>
+      </p>
+    </article>
+  </section>
 
-    <main>
-      <section>
-      <a name="sample"/>
-        <h2>Sample name: ${sample_name}</h2>
+  <section>
+    <a name="diff"/>
+    <h2>Differential diagnosis: posterior probability above ${postprobthreshold}</h2>
+    <#list diff as dd>
         <article>
           <header>
-            <h3>Observed phenotypic features:</h3>
+            <h3>${dd.diseaseName}</h3>
           </header>
-          <p>
-          <ul>
-             <#list  observedHPOs as hpo>
-             <li>${hpo}</li>
-             </#list>
-          </ul>
+          <p>${dd.diseaseCurie}
+            <ul>
+              <li>Rank: ${dd.rank}</li>
+              <li>Pretest probability: ${dd.pretestprob}</li>
+              <li>Posttest probability: ${dd.posttestprob}</li>
+            </ul>
           </p>
+          <#if dd.hasVariants=="yes">
+            <ul>
+              <#list  dd.varlist as svar>
+                <li>chr${svar.chromAsInt}:${svar.position}${svar.ref}&gt;${svar.alt}<br/>
+                  Pathogenicity score: ${svar.pathogenicity}<br/>
+                  Maximum population frequency: ${svar.frequency}<br/>
+                  Genotype: ${svar.gtype}<br/>
+                  ClinVar: ${svar.clinvar}<br/>
+                  <#list svar.annotationList as annot>
+                    ${annot.hgvsCdna} ${annot.hgvsProtein} ${annot.variantEffect}
+                  </#list>
+                </li>
+               </#list>
+            </ul>
+          </#if>
+          ${dd.svg}
         </article>
-      </section>
+      </#list>
+  </section>
 
 
+  <section>
+    <a name="othergenes"/>
+     <h3>Genes/Diseases with low posttest probability:</h3>
+    <article>
+      <!--<header>
+        <h3>Genes/Diseases with low posttest probability:</h3>
+      </header> -->
+      <table>
+        <tr><td>Disease</td><td>Gene</td><td>Post test probability</td><td>variant count</td></tr>
+        <#list improbdiff as ipd>
+          <tr><td>${ipd.diseaseName}</td><td>${ipd.geneName}</td><td>${ipd.posttestProbability}</td><td>${ipd.varcount}</td></tr>
+        </#list>
+       </table>
+    </article>
+  </section>
+</main>
 
-      <section>
-        <h2>Differential diagnosis: posterior probability above ${postprobthreshold}</h2>
-        <#list diff as dd>
-            <article>
-                <header>
-                 <h3>${dd.diseaseName}</h3>
-                  </header>
-                   <p>${dd.diseaseCurie}
-                   <ul>
-                   <li>Rank: ${dd.rank}</li>
-                   <li>Pretest probability: ${dd.pretestprob}</li>
-                   <li>Posttest probability: ${dd.posttestprob}</li>
-                   </ul>
-                   </p>
-                <#if dd.hasVariants=="yes">
-                 <ul>
-             <#list  dd.varlist as svar>
-             <li>chr${svar.chromAsInt}:${svar.position}${svar.ref}&gt;${svar.alt}<br/>
-                Pathogenicity score: ${svar.pathogenicity}<br/>
-                Maximum population frequency: ${svar.frequency}<br/>
-                Genotype: ${svar.gtype}<br/>
-                ClinVar: ${svar.clinvar}<br/>
-                <#list svar.annotationList as annot>
-                     ${annot.hgvsCdna} ${annot.hgvsProtein} ${annot.variantEffect}
-                </#list>
-             </li>
-             </#list>
-          </ul>
-            </#if>
-
-
-
-
-            ${dd.svg}
-          </article>
-         </#list>
-
-
-
-      </section>
-    </main>
-
-    <aside>
+<!--    <aside>
+DO NOT USE ASIDE ELEMENT
       <h2>LR2PG</h2>
       <p>Likelihood ratio 2 Phenotype/Genotyupe analysis</p>
-    </aside>
+    </aside> -->
 
-    <footer>
-      <p>Footer Information</p>
-    </footer>
+<footer>
+  <p>LR2PG 2018</p>
+</footer>
 </body>
 </html>

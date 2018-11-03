@@ -11,6 +11,7 @@ import java.util.List;
  * This class stores all the information we need for a detailed differential diagnosis -- the major
  * candidates. It is intended to be used as a Java Bean for the output template to store the
  * information needed in a convenient way.
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class DifferentialDiagnosis {
 
@@ -29,7 +30,7 @@ public class DifferentialDiagnosis {
 
     private String geneSymbol=null;
 
-    public DifferentialDiagnosis(TestResult result) {
+    DifferentialDiagnosis(TestResult result) {
         this.diseaseName=result.getDiseaseName();
         this.diseaseCurie=result.getDiseaseCurie().getIdWithPrefix();
         this.rank=result.getRank();
@@ -45,7 +46,7 @@ public class DifferentialDiagnosis {
         System.out.println("dn="+this.diseaseName);
     }
 
-    public void addG2G(Gene2Genotype g2g) {
+    void addG2G(Gene2Genotype g2g) {
         this.geneSymbol=g2g.getSymbol();
         this.hasVariants="yes";
         this.varlist =g2g.getVarList();

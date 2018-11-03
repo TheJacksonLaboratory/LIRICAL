@@ -29,10 +29,10 @@ import java.util.Map;
 public class HtmlTemplate {
     private static final Logger logger = LogManager.getLogger();
     /** Map of data that will be used for the FreeMark template. */
-    private Map<String, Object> templateData;
+    private final Map<String, Object> templateData;
     /** Threshold to show a differential diagnosis in detail. */
     private static final double THRESHOLD = 0.01;
-
+    /** FreeMarker configuration object. */
     private final Configuration cfg;
 
     public HtmlTemplate(HpoCase hcase, HpoOntology ontology, Map<TermId, Gene2Genotype> genotypeMap, Map<String,String> metadat){
@@ -74,26 +74,47 @@ public class HtmlTemplate {
         List<ImprobableDifferential> improbdiff = new ArrayList<>();
         String symbol="";
         for (TestResult result : hcase.getResults()) {
-            if (result.getPosttestProbability() > THRESHOLD ) {
+            if (result.getPosttestProbability() > THRESHOLD) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.error("Diff diag for " + result.getDiseaseName());
                 if (result.hasGenotype()) {
                     TermId geneId = result.getEntrezGeneId();
                     Gene2Genotype g2g = genotypeMap.get(geneId);
                     if (g2g != null) {
-
-                        symbol=g2g.getSymbol();
+                        symbol = g2g.getSymbol();
                         ddx.addG2G(g2g);
                     }
                 }
                 // now get SVG
-                Lr2Svg lr2svg = new Lr2Svg (hcase,result.getDiseaseCurie(),result.getDiseaseName(),ontology,symbol);
+                Lr2Svg lr2svg = new Lr2Svg(hcase, result.getDiseaseCurie(), result.getDiseaseName(), ontology, symbol);
                 String svg = lr2svg.getSvgString();
                 ddx.setSvg(svg);
                 diff.add(ddx);
+            } else {
+                if (result.hasGenotype()) {
+                    TermId geneId = result.getEntrezGeneId();
+                    if (genotypeMap.containsKey(geneId)) {
+                        symbol=genotypeMap.get(geneId).getSymbol();
+                        int c = genotypeMap.get(geneId).getVarList().size();
+                        String name = shortName(result.getDiseaseName());
+                        String id = result.getDiseaseCurie().getIdWithPrefix();
+                        ImprobableDifferential ipd = new ImprobableDifferential(name,id,symbol,result.getPosttestProbability(),c);
+                        improbdiff.add(ipd);
+                    }
+                }
             }
         }
         this.templateData.put("diff",diff);
+        this.templateData.put("improbdiff",improbdiff);
+    }
+
+    /** Some of our name strings contain multiple synonyms. This function removes all but the first.*/
+    private String shortName(String name) {
+        int i = name.indexOf(';');
+        if (i>0)
+            return name.substring(0,i);
+        else
+            return name;
     }
 
 }

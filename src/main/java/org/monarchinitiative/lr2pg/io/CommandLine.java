@@ -10,45 +10,56 @@ import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * Class for working with command-line arguments are starting one of the commands of LR2PG
+ *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class CommandLine {
 
-    private Lr2PgCommand command=null;
-    /** Records the original command--can be useful for error messages. */
+    private Lr2PgCommand command = null;
+    /**
+     * Records the original command--can be useful for error messages.
+     */
     private String clstring;
-    /** Path to YAML configuration file */
-    private String yamlPath=null;
-    /** Default path to downloaded data */
-    private final String DEFAULT_DATA_DIRECGTORY="data";
+    /**
+     * Path to YAML configuration file
+     */
+    private String yamlPath = null;
+    /**
+     * Default path to downloaded data
+     */
+    private final String DEFAULT_DATA_DIRECGTORY = "data";
 
-    private String dataPath=null;
+    private String dataPath = null;
 
-    private boolean overwriteDownload=false;
+    private boolean overwriteDownload = false;
 
-    private String disease=null;
-    /** Path to the Exomiser MVStore data file (e.g., 1802_hg19/1802_hg19_variants.mv.db) */
-    private String mvStorePath=null;
-    /** Path to the Jannovar transcript file (e.g., 1802_hg19_transcripts_refseq.ser).*/
-    private String jannovarTranscriptFile=null;
+    private String disease = null;
+    /**
+     * Path to the Exomiser MVStore data file (e.g., 1802_hg19/1802_hg19_variants.mv.db)
+     */
+    private String mvStorePath = null;
+    /**
+     * Path to the Jannovar transcript file (e.g., 1802_hg19_transcripts_refseq.ser).
+     */
+    private String jannovarTranscriptFile = null;
+    /** String representing the genome build (default: hg38).*/
+    private String genomeAssembly="hg38";
 
-    private final String DEFAULT_DISEASE="OMIM:617132";
-
-
-    private String cases_to_simulate;
-
-    private String terms_per_case;
-
-    private String noise_terms;
-
-    private String imprecise;
+    private final String DEFAULT_DISEASE = "OMIM:617132";
+    /** For running in simulate mode, the number of cases to be simulated (phenotype only). */
+    private Integer cases_to_simulate=null;
+    /** For running in simulate mode, the number of HPO terms per case. */
+    private Integer terms_per_case=null;
+    /** For running in simulate mode, the number of "noise" HPO terms per case. */
+    private Integer noise_terms=null;
+    /** For running in simulate mode, if true, use imprecision (move terms up the inheritance tree) */
+    private boolean imprecise;
 
     private String varcount;
 
@@ -57,19 +68,17 @@ public class CommandLine {
     private String entrezgeneid;
 
     private String diseaseId;
-
+    /** Comma-separated list of HPO terms, used for one case. */
     private String termlist;
 
 
-
-
-    public CommandLine(String args[]){
+    public CommandLine(String args[]) {
         final CommandLineParser cmdLineGnuParser = new DefaultParser();
 
         final Options gnuOptions = constructGnuOptions();
         org.apache.commons.cli.CommandLine commandLine;
 
-        String mycommand = null;
+        String mycommand = "";
         this.clstring = "";
         if (args != null && args.length > 0) {
             clstring = Arrays.stream(args).collect(Collectors.joining(" "));
@@ -77,6 +86,9 @@ public class CommandLine {
         try {
             commandLine = cmdLineGnuParser.parse(gnuOptions, args);
             String category[] = commandLine.getArgs();
+            if (commandLine.hasOption("h")) {
+                printUsage("");
+            }
             if (category.length < 1) {
                 printUsage("command missing");
             } else {
@@ -90,20 +102,24 @@ public class CommandLine {
 
 
             if (commandLine.hasOption("d")) {
-                dataPath=commandLine.getOptionValue("d");
+                dataPath = commandLine.getOptionValue("d");
             } else {
-                dataPath=DEFAULT_DATA_DIRECGTORY;
+                dataPath = DEFAULT_DATA_DIRECGTORY;
+            }
+
+            if (commandLine.hasOption("g")) {
+                genomeAssembly = commandLine.getOptionValue("g");
             }
             if (commandLine.hasOption("i")) {
-                disease=commandLine.getOptionValue("i");
+                disease = commandLine.getOptionValue("i");
             } else {
-                disease=DEFAULT_DISEASE;
+                disease = DEFAULT_DISEASE;
             }
             if (commandLine.hasOption("j")) {
-                jannovarTranscriptFile=commandLine.getOptionValue("j");
+                jannovarTranscriptFile = commandLine.getOptionValue("j");
             }
             if (commandLine.hasOption("m")) {
-                mvStorePath=commandLine.getOptionValue("m");
+                mvStorePath = commandLine.getOptionValue("m");
             }
             overwriteDownload = commandLine.hasOption("o");
             if (commandLine.hasOption("y")) {
@@ -114,32 +130,32 @@ public class CommandLine {
             switch (mycommand) {
                 case "vcf":
                 case "VCF":
-                    if (this.yamlPath==null) {
+                    if (this.yamlPath == null) {
                         printUsage("YAML file not found but required for VCF command");
                         return;
                     }
                     Lr2PgFactory factory = deYamylate(this.yamlPath);
-                    this.command =  new VcfCommand(factory, dataPath);
+                    this.command = new VcfCommand(factory, dataPath);
                     break;
 
                 case "download":
                     if (overwriteDownload) {
-                        this.command=new DownloadCommand(dataPath,overwriteDownload);
+                        this.command = new DownloadCommand(dataPath, overwriteDownload);
                     } else {
                         this.command = new DownloadCommand(dataPath);
                     }
                     break;
                 case "simulate":
-                    this.command=new SimulatePhenotypesCommand(dataPath);
+                    this.command = new SimulatePhenotypesCommand(dataPath);
                     break;
                 case "grid":
-                    this.command=new GridSearchCommand(dataPath);
+                    this.command = new GridSearchCommand(dataPath);
                     break;
                 case "svg":
-                    this.command=new SimulateSvgPhenoOnlyCommand(dataPath,disease);
+                    this.command = new SimulateSvgPhenoOnlyCommand(dataPath, disease);
                     break;
                 case "gt2git":
-                    this.command=new Gt2GitCommand(dataPath);
+                    this.command = new Gt2GitCommand(dataPath, mvStorePath,jannovarTranscriptFile,genomeAssembly);
                     break;
                 default:
                     printUsage("Could not find command option");
@@ -152,9 +168,12 @@ public class CommandLine {
     }
 
 
-
-
-
+    /**
+     * Parse the YAML file and put the results into an {@link Lr2PgFactory} object.
+     *
+     * @param yamlPath Path to the YAML file for the VCF analysis
+     * @return An {@link Lr2PgFactory} object with various settings.
+     */
     private Lr2PgFactory deYamylate(String yamlPath) {
         YamlParser yparser = new YamlParser(yamlPath);
         Lr2PgFactory factory = null;
@@ -176,25 +195,26 @@ public class CommandLine {
     }
 
 
+    public Lr2PgCommand getCommand() {
+        return command;
+    }
 
-        public Lr2PgCommand getCommand() {
-            return command;
-        }
-
-        /**
-         * Construct and provide GNU-compatible Options.
-         *
-         * @return Options expected from command-line of GNU form.
-         */
-        private static Options constructGnuOptions() {
-            final Options options = new Options();
-            options.addOption("d", "data", true, "directory to download data (default \"data\")")
-                    .addOption("j","jannovar",false,"path to Jannovar transcript file")
-                    .addOption("m","mvstore",false,"path to Exomiser MVStore file")
-                    .addOption("o","overwrite",false,"overwrite downloaded files")
-                    .addOption("y","yaml",true,"path to yaml file");
-            return options;
-        }
+    /**
+     * Construct and provide GNU-compatible Options.
+     *
+     * @return Options expected from command-line of GNU form.
+     */
+    private static Options constructGnuOptions() {
+        final Options options = new Options();
+        options.addOption("d", "data", true, "directory to download data (default \"data\")")
+                .addOption("g", "genome", false, "string representing the genome assembly (hg19,hg38)")
+                .addOption("h", "help", false, "show help")
+                .addOption("j", "jannovar", false, "path to Jannovar transcript file")
+                .addOption("m", "mvstore", false, "path to Exomiser MVStore file")
+                .addOption("o", "overwrite", false, "overwrite downloaded files")
+                .addOption("y", "yaml", true, "path to yaml file");
+        return options;
+    }
 
     /**
      * We expect to get an argument such as
@@ -211,50 +231,17 @@ public class CommandLine {
         return builder.build();
     }
 
-        private static String getVersion() {
-            String version = "0.0.0";// default, should be overwritten by the following.
-            try {
-                Package p = CommandLine.class.getPackage();
-                version = p.getImplementationVersion();
-            } catch (Exception e) {
-                // do nothing
-            }
-            return version;
+    private static String getVersion() {
+        String version = "0.0.0";// default, should be overwritten by the following.
+        try {
+            Package p = CommandLine.class.getPackage();
+            version = p.getImplementationVersion();
+        } catch (Exception e) {
+            // do nothing
         }
+        return version;
+    }
 
-        /**
-         * Print usage information to provided OutputStream.
-         */
-        private static void printUsage2(String message) {
-
-            String version = getVersion();
-            final PrintWriter writer = new PrintWriter(System.out);
-            // final HelpFormatter usageFormatter = new HelpFormatter();
-            // final String applicationName="java -jar diachromatic.jar command";
-            // final Options options=constructGnuOptions();
-            writer.println(message);
-            writer.println();
-            //usageFormatter.printUsage(writer, 120, applicationName, options);
-            writer.println("Program: LR2PG (Human Phenotype Ontology LR app)");
-            writer.println("Version: " + version);
-            writer.println();
-            writer.println("Usage: java -jar Lr2pg.jar <command> [options]");
-            writer.println();
-            writer.println("Available commands:");
-            writer.println();
-            writer.println("download:");
-            writer.println("\tjava -jar HPOWorkbench.jar download  [-d <directory>]");
-            writer.println("\t<directory>: name of directory to which HPO data will be downloaded (default:\"data\")");
-            writer.println();
-            writer.println("vcf:");
-            writer.println("\tjava -jar Lr2Pg.jar vcf -y <config.yml>  \\");
-            writer.println("\t<config.yml>: path to YAML configuration file (required)");
-            writer.println("\t<pheno_annot.tab>: path to annotation file (default \"data/phenotype_annotation.tab\")");
-            writer.println("\t<term>: HPO term id (e.g., HP:0000123)");
-            writer.println();
-            writer.close();
-            System.exit(0);
-        }
 
     private static void printUsageIntro() {
         String version = getVersion();
@@ -311,9 +298,19 @@ public class CommandLine {
 
     private static void vcfUsage() {
         System.out.println("vcf:");
-        System.out.println("\tjava -jar Lr2pg.jar vcf [--V <VCF FILE>] ");
-        System.out.println("\t-d <directory>: name of directory to which HPO data will be downloaded (default:\"data\")");
-        System.out.println("\t--overwrite: do not skip even if file already downloaded");
+        System.out.println("\tjava -jar Lr2pg.jar vcf -y <yaml>");
+        System.out.println("\t-y <yaml>: path to YAML configuration file (required)");
+        System.out.println();
+    }
+
+    private static void gt2gitUsage() {
+        System.out.println("gt2git:");
+        System.out.println("\tjava -jar Lr2pg.jar gt2git -m <mvstore> -j <jannovar> -d <data> -g <genome>");
+        System.out.println("\t-d <data>: path to LR2PG data directory");
+        System.out.println("\t-g <genome>: genome build (hg19 or hg38)");
+        System.out.println("\t-h: show this help");
+        System.out.println("\t-j <jannovar>: path to Jannovar transcript file");
+        System.out.println("\t-m <mvstore>: path to Exomiser MVStore data file");
         System.out.println();
     }
 
@@ -322,14 +319,19 @@ public class CommandLine {
      * Print usage information
      */
     private static void printUsage(String message) {
+        System.out.println();
+        System.out.println(message);
+        System.out.println();
         printUsageIntro();
         System.out.println();
         System.out.println(message);
         downloadUsage();
+        gt2gitUsage();
+        vcfUsage();
         simulateUsage();
         phenoGenoUsage();
         svgUsage();
-        vcfUsage();
+
         System.exit(0);
     }
 }
