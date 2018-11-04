@@ -5,6 +5,8 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.cmd.*;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
@@ -20,15 +22,14 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class CommandLine {
-
+    private static final Logger logger = LogManager.getLogger();
+    /** Command object that will run the analysis. */
     private Lr2PgCommand command = null;
-    /**
-     * Records the original command--can be useful for error messages.
-     */
+    /** String coding the command to be used. */
+    private String mycommand=null;
+    /** Records the original command--can be useful for error messages.*/
     private String clstring;
-    /**
-     * Path to YAML configuration file
-     */
+    /** Path to YAML configuration file*/
     private String yamlPath = null;
     /**
      * Default path to downloaded data
@@ -73,18 +74,17 @@ public class CommandLine {
 
 
     public CommandLine(String args[]) {
-        final CommandLineParser cmdLineGnuParser = new DefaultParser();
+        final CommandLineParser commandLineParser = new DefaultParser();
 
-        final Options gnuOptions = constructGnuOptions();
+        final Options options = constructOptions();
         org.apache.commons.cli.CommandLine commandLine;
 
-        String mycommand = "";
         this.clstring = "";
         if (args != null && args.length > 0) {
             clstring = Arrays.stream(args).collect(Collectors.joining(" "));
         }
         try {
-            commandLine = cmdLineGnuParser.parse(gnuOptions, args);
+            commandLine = commandLineParser.parse(options, args);
             String category[] = commandLine.getArgs();
             if (commandLine.hasOption("h")) {
                 printUsage("");
@@ -93,7 +93,6 @@ public class CommandLine {
                 printUsage("command missing");
             } else {
                 mycommand = category[0];
-
             }
             if (commandLine.getArgs().length < 1) {
                 printUsage("no arguments passed");
@@ -119,7 +118,7 @@ public class CommandLine {
                 jannovarTranscriptFile = commandLine.getOptionValue("j");
             }
             if (commandLine.hasOption("m")) {
-                mvStorePath = commandLine.getOptionValue("m");
+                this.mvStorePath = commandLine.getOptionValue("m");
             }
             overwriteDownload = commandLine.hasOption("o");
             if (commandLine.hasOption("y")) {
@@ -155,6 +154,9 @@ public class CommandLine {
                     this.command = new SimulateSvgPhenoOnlyCommand(dataPath, disease);
                     break;
                 case "gt2git":
+                    if (mvStorePath==null) {
+                        printUsage("Need to specify the MVStore file: -m <mvstore> to run gt2git command!");
+                    }
                     this.command = new Gt2GitCommand(dataPath, mvStorePath,jannovarTranscriptFile,genomeAssembly);
                     break;
                 default:
@@ -204,7 +206,7 @@ public class CommandLine {
      *
      * @return Options expected from command-line of GNU form.
      */
-    private static Options constructGnuOptions() {
+    private Options constructOptions() {
         final Options options = new Options();
         options.addOption("d", "data", true, "directory to download data (default \"data\")")
                 .addOption("g", "genome", false, "string representing the genome assembly (hg19,hg38)")
@@ -231,7 +233,7 @@ public class CommandLine {
         return builder.build();
     }
 
-    private static String getVersion() {
+    private String getVersion() {
         String version = "0.0.0";// default, should be overwritten by the following.
         try {
             Package p = CommandLine.class.getPackage();
@@ -243,7 +245,7 @@ public class CommandLine {
     }
 
 
-    private static void printUsageIntro() {
+    private void printUsageIntro() {
         String version = getVersion();
         System.out.println();
         System.out.println("Program: LR2PG (v. " + version + ")");
@@ -254,7 +256,7 @@ public class CommandLine {
         System.out.println();
     }
 
-    private static void phenoGenoUsage() {
+    private void phenoGenoUsage() {
         System.out.println("phenogeno:");
         System.out.println("\tjava -jar Lr2pg.jar phenogeno --disease <id> --geneid <string> \\\n" +
                 "\t\t--term-list <string> [-d <directory>] [--varcount <int>]\\\n" +
@@ -268,7 +270,7 @@ public class CommandLine {
         System.out.println("\t--varpath <double>: mean pathogenicity score of variants in pathogenic bin (default: 1.0)");
     }
 
-    private static void simulateUsage() {
+    private void simulateUsage() {
         System.out.println("simulate:");
         System.out.println("\tjava -jar Lr2pg.jar simulate [-d <directory>] [-s <int>] [-t <int>] [-n <int>] [--grid]");
         System.out.println("\t-d <directory>: name of directory with HPO data (default:\"data\")");
@@ -279,7 +281,7 @@ public class CommandLine {
         System.out.println();
     }
 
-    private static void svgUsage() {
+    private void svgUsage() {
         System.out.println("svg:");
         System.out.println("\tjava -jar Lr2pg.jar svg --disease <name> [-- svg <file>] [-d <directory>] [-t <int>] [-n <int>]");
         System.out.println("\t--disease <string>: name of disease to simulate (e.g., OMIM:600321)");
@@ -288,7 +290,7 @@ public class CommandLine {
 //        System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
     }
 
-    private static void downloadUsage() {
+    private void downloadUsage() {
         System.out.println("download:");
         System.out.println("\tjava -jar Lr2pg.jar download [-d <directory>] [--overwrite]");
         System.out.println("\t-d <directory>: name of directory to which HPO data will be downloaded (default:\"data\")");
@@ -296,14 +298,14 @@ public class CommandLine {
         System.out.println();
     }
 
-    private static void vcfUsage() {
+    private void vcfUsage() {
         System.out.println("vcf:");
         System.out.println("\tjava -jar Lr2pg.jar vcf -y <yaml>");
         System.out.println("\t-y <yaml>: path to YAML configuration file (required)");
         System.out.println();
     }
 
-    private static void gt2gitUsage() {
+    private void gt2gitUsage() {
         System.out.println("gt2git:");
         System.out.println("\tjava -jar Lr2pg.jar gt2git -m <mvstore> -j <jannovar> -d <data> -g <genome>");
         System.out.println("\t-d <data>: path to LR2PG data directory");
@@ -318,19 +320,33 @@ public class CommandLine {
     /**
      * Print usage information
      */
-    private static void printUsage(String message) {
+    private void printUsage(String message) {
         System.out.println();
-        System.out.println(message);
-        System.out.println();
+        System.out.println("arguments: " +clstring);
         printUsageIntro();
         System.out.println();
         System.out.println(message);
-        downloadUsage();
-        gt2gitUsage();
-        vcfUsage();
-        simulateUsage();
-        phenoGenoUsage();
-        svgUsage();
+        if (mycommand==null) {
+            System.err.println("No command passed");
+            System.exit(1);
+        }
+        switch (mycommand) {
+            case "download":
+                downloadUsage();
+                break;
+            case "gt2git":
+                gt2gitUsage();
+                break;
+            case "vcf":
+                vcfUsage();
+                break;
+            case "simulate":
+                simulateUsage();
+                break;
+            default:
+                phenoGenoUsage();
+                svgUsage();
+        }
 
         System.exit(0);
     }

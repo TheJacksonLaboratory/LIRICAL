@@ -61,6 +61,14 @@ public class Gt2GitCommand extends Lr2PgCommand {
 
 
     public void run() throws Lr2pgException  {
+        if (this.mvstore==null) {
+            throw new Lr2pgException("Need to specify the MVStore file: -m <mvstore> to run gt2git command!");
+        }
+        if (this.jannovarFile==null) {
+            throw new Lr2pgException("Need to specify the jannovar transcript file: -j <jannovar> to run gt2git command!");
+        }
+
+
         Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder()
                 .jannovarFile(jannovarFile)
                 .mvStore(mvstore);
