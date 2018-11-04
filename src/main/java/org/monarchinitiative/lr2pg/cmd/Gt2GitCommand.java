@@ -50,12 +50,12 @@ public class Gt2GitCommand extends Lr2PgCommand {
             outputFileName="bacground-hg19.txt";
         } else if (genome.toLowerCase().contains("hg38")) {
             this.genomeAssembly=GenomeAssembly.HG38;
-            outputFileName="bacground-hg38.txt";
+            outputFileName="bacground-hg19.txt";
         } else {
             logger.warn("Could not determine genome assembly from argument: \""+
             genome +"\". We will use the default of hg38");
             this.genomeAssembly=GenomeAssembly.HG38;
-            outputFileName="bacground-hg38.txt";
+            outputFileName="bacground-hg19.txt";
         }
     }
 

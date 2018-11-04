@@ -1,10 +1,7 @@
 package org.monarchinitiative.lr2pg.io;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.cmd.*;
@@ -49,8 +46,8 @@ public class CommandLine {
      * Path to the Jannovar transcript file (e.g., 1802_hg19_transcripts_refseq.ser).
      */
     private String jannovarTranscriptFile = null;
-    /** String representing the genome build (default: hg38).*/
-    private String genomeAssembly="hg38";
+    /** String representing the genome build.*/
+    private String genomeAssembly=null;
 
     private final String DEFAULT_DISEASE = "OMIM:617132";
     /** For running in simulate mode, the number of cases to be simulated (phenotype only). */
@@ -72,11 +69,12 @@ public class CommandLine {
     /** Comma-separated list of HPO terms, used for one case. */
     private String termlist;
 
+    final Options options;
+
 
     public CommandLine(String args[]) {
         final CommandLineParser commandLineParser = new DefaultParser();
-
-        final Options options = constructOptions();
+        this.options = constructOptions();
         org.apache.commons.cli.CommandLine commandLine;
 
         this.clstring = "";
@@ -87,7 +85,7 @@ public class CommandLine {
             commandLine = commandLineParser.parse(options, args);
             String category[] = commandLine.getArgs();
             if (commandLine.hasOption("h")) {
-                printUsage("");
+                printUsageIntro();
             }
             if (category.length < 1) {
                 printUsage("command missing");
@@ -95,7 +93,7 @@ public class CommandLine {
                 mycommand = category[0];
             }
             if (commandLine.getArgs().length < 1) {
-                printUsage("no arguments passed");
+                printUsageIntro();
                 return;
             }
 
@@ -157,6 +155,12 @@ public class CommandLine {
                     if (mvStorePath==null) {
                         printUsage("Need to specify the MVStore file: -m <mvstore> to run gt2git command!");
                     }
+                    if (jannovarTranscriptFile==null) {
+                        printUsage("Need to specify the Jannovar transcript file: -j <jannovar> to run gt2git command!");
+                    }
+                    if (genomeAssembly==null) {
+                        printUsage("Need to specify the genome build: -g <genome> to run gt2git command!");
+                    }
                     this.command = new Gt2GitCommand(dataPath, mvStorePath,jannovarTranscriptFile,genomeAssembly);
                     break;
                 default:
@@ -211,8 +215,8 @@ public class CommandLine {
         options.addOption("d", "data", true, "directory to download data (default \"data\")")
                 .addOption("g", "genome", false, "string representing the genome assembly (hg19,hg38)")
                 .addOption("h", "help", false, "show help")
-                .addOption("j", "jannovar", false, "path to Jannovar transcript file")
-                .addOption("m", "mvstore", false, "path to Exomiser MVStore file")
+                .addOption("j", "jannovar", true, "path to Jannovar transcript file")
+                .addOption("m", "mvstore", true, "path to Exomiser MVStore file")
                 .addOption("o", "overwrite", false, "overwrite downloaded files")
                 .addOption("y", "yaml", true, "path to yaml file");
         return options;
@@ -250,10 +254,11 @@ public class CommandLine {
         System.out.println();
         System.out.println("Program: LR2PG (v. " + version + ")");
         System.out.println();
-        System.out.println("Usage: java -jar Lr2pg.jar <analysis> [options]");
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("java -jar Lr2pg.jar command [options]", options);
         System.out.println();
-        System.out.println("Available commands:");
-        System.out.println();
+        System.out.println("command is one of download, gt2git, vcf, simulate");
+        System.exit(0);
     }
 
     private void phenoGenoUsage() {
@@ -322,14 +327,12 @@ public class CommandLine {
      */
     private void printUsage(String message) {
         System.out.println();
-        System.out.println("arguments: " +clstring);
-        printUsageIntro();
-        System.out.println();
+
         System.out.println(message);
         if (mycommand==null) {
-            System.err.println("No command passed");
-            System.exit(1);
+            printUsageIntro();
         }
+        System.out.println("arguments: " +clstring);
         switch (mycommand) {
             case "download":
                 downloadUsage();
