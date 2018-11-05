@@ -181,9 +181,10 @@ public class CommandLine {
      * @return An {@link Lr2PgFactory} object with various settings.
      */
     private Lr2PgFactory deYamylate(String yamlPath) {
-        YamlParser yparser = new YamlParser(yamlPath);
+
         Lr2PgFactory factory = null;
         try {
+            YamlParser yparser = new YamlParser(yamlPath);
             Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().
                     hp_obo(yparser.getHpOboPath()).
                     mvStore(yparser.getMvStorePath())

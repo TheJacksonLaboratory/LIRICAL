@@ -8,6 +8,7 @@ import org.monarchinitiative.lr2pg.configuration.YamlConfig;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 
 import java.io.File;
+import java.io.IOException;
 
 
 public class YamlParser {
@@ -15,14 +16,14 @@ public class YamlParser {
     private YamlConfig yconfig;
 
 
-    public YamlParser(String path) {
+    public YamlParser(String path) throws Lr2pgException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         try {
             yconfig = mapper.readValue(new File(path), YamlConfig.class);
             System.out.println(ReflectionToStringBuilder.toString(yconfig, ToStringStyle.MULTI_LINE_STYLE));
-        } catch (Exception e) {
+        } catch (IOException e) {
             yconfig=null;
-            e.printStackTrace();
+            throw new Lr2pgException("Could not find YAML file: "+ e.getMessage());
         }
     }
 

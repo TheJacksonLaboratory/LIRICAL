@@ -32,6 +32,7 @@ public class HtmlTemplate {
     private final Map<String, Object> templateData;
     /** Threshold to show a differential diagnosis in detail. */
     private static final double THRESHOLD = 0.01;
+    private static final String EMPTY_STRING="";
     /** FreeMarker configuration object. */
     private final Configuration cfg;
 
@@ -98,6 +99,10 @@ public class HtmlTemplate {
                         int c = genotypeMap.get(geneId).getVarList().size();
                         String name = shortName(result.getDiseaseName());
                         String id = result.getDiseaseCurie().getIdWithPrefix();
+                        if (name==null) {
+                            logger.error("Got null string for disease name from result="+result.toString());
+                            name=EMPTY_STRING;// avoid errors
+                        }
                         ImprobableDifferential ipd = new ImprobableDifferential(name,id,symbol,result.getPosttestProbability(),c);
                         improbdiff.add(ipd);
                     }
