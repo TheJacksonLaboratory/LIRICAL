@@ -173,11 +173,11 @@ footer {
       <!--<header>
         <h3>Genes/Diseases with low posttest probability:</h3>
       </header> -->
+
       <table>
         <tr><td>Disease</td><td>Gene</td><td>Post test probability</td><td>variant count</td></tr>
         <#list improbdiff as ipd>
-        <#if ipd.diseaseName??>IPD DN not null!<#else>IPD DNnull!</#if>
-          <tr><td>${ipd.diseaseName!"-"}</td><td>${ipd.geneName!"-"}</td><td>${ipd.posttestProbability!"-"}</td><td>${ipd.varcount!"-"}</td></tr>
+          <tr><td>${ipd.diseaseName}</td><td>${ipd.geneName}</td><td>${ipd.posttestProbability}</td><td>${ipd.varcount}</td></tr>
         </#list>
        </table>
     </article>

@@ -5,7 +5,7 @@ package org.monarchinitiative.lr2pg.output;
  * will show all of them as a table.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-class ImprobableDifferential {
+public class ImprobableDifferential {
 
     private final String diseaseName;
     private final String diseaseId;
@@ -15,16 +15,23 @@ class ImprobableDifferential {
 
 
 
-    ImprobableDifferential(String name, String id,String gene, double ptprob, int count) {
+    public ImprobableDifferential(String name, String id,String gene, double ptprob, int count) {
         this.diseaseName=name;
+        ////return String.format("<a href=\"omim.org/%s\">%s</a>",diseaseId,diseaseName);
+        //    }
         this.diseaseId=id;
         this.geneName=gene;
         this.posttestProbability=ptprob;
         this.varcount=count;
     }
 
+
     public String getDiseaseName() {
-        return String.format("<a href=\"omim.org/%s\">%s</a>",diseaseId,diseaseName);
+        return diseaseName;
+    }
+
+    public String getDiseaseId() {
+        return diseaseId;
     }
 
     public String getGeneName() {

@@ -109,8 +109,9 @@ public class HtmlTemplate {
                 }
             }
         }
-        this.templateData.put("diff",diff);
         this.templateData.put("improbdiff",improbdiff);
+        this.templateData.put("diff",diff);
+
     }
 
     /** Some of our name strings contain multiple synonyms. This function removes all but the first.*/
