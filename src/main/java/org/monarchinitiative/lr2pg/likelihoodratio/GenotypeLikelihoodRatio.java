@@ -55,9 +55,6 @@ public class GenotypeLikelihoodRatio {
             }
         }
         double lambda_background = this.gene2backgroundFrequency.getOrDefault(geneId, DEFAULT_LAMBDA_BACKGROUND);
-        if (! this.gene2backgroundFrequency.containsKey(geneId)) {
-            return Optional.empty();
-        }
         Double D;
         if (observedPathogenicVarCount<EPSILON) {
             D=0.05; // heuristic--chance of zero variants given this is disease is 5%

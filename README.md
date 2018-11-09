@@ -1,20 +1,60 @@
 # LR2PG
 Likelihood ratio analysis of phenotypes and genotypes
 
-To run LR2PG we need to install a local copy of phenol (version 1.1.0).
+## Installing and setting up LR2PG
+LR2PG makes use of the phenotype analysis library phenol, which needs to be installed locally.
+Currently, LR2PG uses version 1.3.0-SNAPSHOT.
+
 ```
 $ git clone https://github.com/monarch-initiative/phenol.git
 $ cd phenol
 $ mvn install
 ```
-To run a demo, execute the following commands in the LR2PG directory.
-
+To compile LR2PG, run the following command
 
 ```
 $ mvn clean package
-$ java -jar target/LR2PG-0.0.1-SNAPSHOT.jar download
-$ java -jar target/LR2PG-0.0.1-SNAPSHOT.jar simulate
 ```
+ LR2PG also uses a number of other files, which it
+can automatically download using the download command (use the --overwrite flag to download fresh copies,
+otherwise, it only downloads files if not present). By default, LR2PG downloads to a new directory
+called data, which will be created as a subdirectory in the directory from which LR2PG is run.
+```
+$ java -jar target/LR2PG-0.4.6.jar download
+```
+If you want to download to a different location, use the -d <path> argument while downloading and in all of
+the subsequent steps.
+
+LR2PG makes use of the Exomiser data resources, which need to be downloaded from the Exomiser FTP site
+(https://data.monarchinitiative.org/exomiser/latest/).  For instance, to do the analysis with the hg38
+genome assembly, download the data file 1805_hg38.zip  and unzip it. The Exomiser will first calculate
+the expected background frequency of predicted pathogenic variants and write this to a file that will
+be used in subsequent steps (this will take about an hour on a typical laptop).
+
+```
+$ java -jar target/LR2PG-0.4.6.jar gt2git -m <mvstore> -j <jannovar> -g <genome>
+```
+In this command, ``mvstore`` refers to the path of the Exomiser data store, e.g., ``1802_hg19_variants.mv.db``;
+``jannovar`` refers to the path of the Jannovar transcript data file, e.g., ``1802_hg19_transcripts_refseq.ser``;
+and ``genome`` refers to the genome build. Use the corresponding genome build, ``hg19`` or ``hg38``.
+
+This command will output the background frequency file to the data direcotry (by default, a subdirectory call ``data`` in the
+current working direcgtory; the data directory can also be specified with the ``-d`` flag). THe location of this file must be
+specified in the YAML configuration file to run the prioritization function.
+
+## Running LR2PG
+To run the VCF prioritization tool of LR2PG, create a YAML configuration file. There are several examples in the ``resources/yaml``
+directory. Then, run the program with the following command.
+```
+$ java -jar target/LR2PG-0.4.6.jar vcf -y <yaml>
+```
+
+## Other subprograms
+Currently LR2PG supports several other functions that may be useful for testing and debugging. We will probably
+remove them when we finalize the code for submission.
+
+
+
 
 
 To run the phenogeno simulation, use the following syntax

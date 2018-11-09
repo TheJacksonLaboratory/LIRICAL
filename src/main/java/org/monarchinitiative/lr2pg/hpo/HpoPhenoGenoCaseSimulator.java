@@ -13,7 +13,9 @@ import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * This class is intended to try out some architectures for the genotype-phenotype
@@ -23,12 +25,12 @@ public class HpoPhenoGenoCaseSimulator {
     private static final Logger logger = LogManager.getLogger();
     /** Object to evaluate the results of differential diagnosis by LR analysis. */
     private final CaseEvaluator evaluator;
-    private TermPrefix NCBI_GENE_PREFIX=new TermPrefix("NCBIGene");
+    private final TermPrefix NCBI_GENE_PREFIX=new TermPrefix("NCBIGene");
     /** This simulation assumes there is a pathogenic mutation in one gene (this one). The EntrezId is initialized in the
      * constructor.
      */
     private final TermId entrezGeneId;
-
+    /** Object containing the observed phenotypes and results of testing. */
     private HpoCase hpocase;
 
     /**
@@ -50,6 +52,7 @@ public class HpoPhenoGenoCaseSimulator {
                                      List<TermId> hpoTerms,
                                      Map<TermId,Double> gene2backgroundFrequency)  {
         this.entrezGeneId = new TermId(NCBI_GENE_PREFIX,entrezGeneNumber);
+        Objects.requireNonNull(disease2geneMultimap);
         VcfSimulator genotypes = new VcfSimulator(disease2geneMultimap.keySet(), entrezGeneId,varcount,varpath);
 
         PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
@@ -59,7 +62,7 @@ public class HpoPhenoGenoCaseSimulator {
                 .ontology(ontology)
                 .diseaseMap(diseaseMap)
                 .disease2geneMultimap(disease2geneMultimap)
-                .genotypeMap(genotypes.getGenotypeMap())
+                .genotypeMap(null)  /// TODO REFACTOR!!!
                 .phenotypeLr(phenoLr)
                 .genotypeLr(genoLr);
 
@@ -78,7 +81,7 @@ public class HpoPhenoGenoCaseSimulator {
 
 
     public void outputSvg(TermId diseaseCurie,String diseaseName,HpoOntology ontology, Map<TermId,String> geneId2SymbolMap) {
-        hpocase.outputLrToShell(diseaseCurie,ontology);
+        //hpocase.outputLrToShell(diseaseCurie,ontology,geneId2SymbolMap);
         TermId geneId = this.hpocase.getResult(diseaseCurie).getEntrezGeneId();
         String symbol;
         if (geneId==null) {

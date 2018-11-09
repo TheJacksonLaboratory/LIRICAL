@@ -2,8 +2,15 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
+import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -18,11 +25,20 @@ public class TestResultTest {
     private static double ratio(double sensitivity, double specificity) {
         return sensitivity/(1.0 - specificity);
     }
+    private HpoDisease glaucoma;
+
+    @Before
+    public void init() {
+        TermId glaucomaId = TermId.constructWithPrefix("MONDO:123");
+        List<TermId> emptyList = ImmutableList.of();
+        List<HpoAnnotation> emptyAnnot = ImmutableList.of();
+        glaucoma = new HpoDisease("Glaucoma",glaucomaId,emptyAnnot,emptyList,emptyList);
+    }
 
     @Test
     public void testGlaucomaLR1() {
         TestResult tresult;
-        TermId glaucomaId = TermId.constructWithPrefix("MONDO:123");
+
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
@@ -30,7 +46,7 @@ public class TestResultTest {
         // we obtain a test result with 60% sensitivity and 97% specifity
         double LR1 = ratio(0.60, 0.97);
         builder.add(LR1);
-        tresult = new TestResult(builder.build(), glaucomaId,prevalence);
+        tresult = new TestResult(builder.build(), glaucoma,prevalence);
         // There should be a LR of 20 after just one test
         assertEquals(1, tresult.getNumberOfTests());
         // There should be a LR of 20
@@ -63,7 +79,7 @@ public class TestResultTest {
         // IOP: (50% sensitivity and 92% specificity[9])
         double LR2 = ratio(0.50, 0.92);
         builder.add(LR2);
-        tresult = new TestResult(builder.build(), glaucomaId,prevalence);
+        tresult = new TestResult(builder.build(), glaucoma,prevalence);
         // the pretest odds are the same as with the first test because they are based only on
         // the population prevalence.
         double expectedPretestOdds = 0.02564103;
@@ -92,7 +108,7 @@ public class TestResultTest {
         double LR3 = ratio(0.60, 0.97);
         builder.add(LR3);
 
-        tresult = new TestResult(builder.build(),glaucomaId,prevalence);
+        tresult = new TestResult(builder.build(),glaucoma,prevalence);
          //PretestOdds = pretest prob / (1-pretest prob) = 0.95 / 0.05 = 19.0
         double expectedPretestOdds = 0.0256410;
         Assert.assertEquals(expectedPretestOdds, tresult.pretestodds(), EPSILON);
@@ -105,6 +121,48 @@ public class TestResultTest {
         double ptodds=expected;
         expected = 0.9846396;
         Assert.assertEquals(expected, (ptodds/(ptodds+1)), EPSILON);
+    }
+
+
+    @Test
+    public void testTestResultSorting() {
+        double EPSILON=0.0001;
+        TermId testId1 = TermId.constructWithPrefix("MONDO:1");
+        TermId testId2 = TermId.constructWithPrefix("MONDO:2");
+        TermId testId3 = TermId.constructWithPrefix("MONDO:3");
+        List<TermId> emptyList = ImmutableList.of();
+        List<HpoAnnotation> emptyAnnot = ImmutableList.of();
+        HpoDisease d1 = new HpoDisease("d1",testId1,emptyAnnot,emptyList,emptyList);
+        HpoDisease d2 = new HpoDisease("d2",testId2,emptyAnnot,emptyList,emptyList);
+        HpoDisease d3 = new HpoDisease("d3",testId3,emptyAnnot,emptyList,emptyList);
+        List<Double> list1 = ImmutableList.of(2.0,3.0,4.0);
+        List<Double> list2 = ImmutableList.of(20.0,3.0,4.0);
+        List<Double> list3 = ImmutableList.of(20.0,30.0,4.0);
+        double prevalence = 0.025;
+        TestResult result1 = new TestResult(list1,d1,prevalence);
+        TestResult result2 = new TestResult(list2,d2,prevalence);
+        TestResult result3 = new TestResult(list3,d3,prevalence);
+        assertEquals(24.0,result1.getCompositeLR(),EPSILON);
+        assertEquals(240.0,result2.getCompositeLR(),EPSILON);
+        assertEquals(2400.0,result3.getCompositeLR(),EPSILON);
+        List<TestResult> lst = new ArrayList<>();
+        lst.add(result1);
+        lst.add(result2);
+        lst.add(result3);
+        assertEquals(lst.get(0),result1);
+        lst.sort(Comparator.reverseOrder());
+        assertEquals(lst.get(0),result3);
+        assertEquals(lst.get(1),result2);
+        assertEquals(lst.get(2),result1);
+        // now add another test result, same as result3 but with additional genotype evidence
+        // result4 should now be the top hit
+        double genotypeLR=2.0;
+        TermId geneId=TermId.constructWithPrefix("NCBI:Faks");
+        TestResult result4=new TestResult(list3,d3,genotypeLR,geneId,prevalence);
+        lst.add(result4);
+        assertEquals(lst.get(3),result4);
+        lst.sort(Comparator.reverseOrder());
+        assertEquals(lst.get(0),result4);
     }
 
 

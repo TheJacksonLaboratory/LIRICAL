@@ -4,12 +4,14 @@ package org.monarchinitiative.lr2pg.hpo;
 import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -73,11 +75,16 @@ public final class HpoCase {
     }
 
     /** Output the results for a specific HPO disease.
-     * This is ugly and just for development. TODO refactor and put this somewhere else or delete it*/
-    public void outputLrToShell(TermId diseaseId, HpoOntology ontology) {
+     * This is ugly and just for development. */
+    public void outputLrToShell(TermId diseaseId, HpoOntology ontology,Map<TermId, Gene2Genotype> g2gmap) {
         int rank = getRank(diseaseId);
-        System.err.println("Rank " + rank);
+
         TestResult r = getResult(diseaseId);
+        String diseaseName=r.getDiseaseName();
+        int idx = diseaseName.indexOf(';');
+        if (idx>0)
+            diseaseName=diseaseName.substring(0,idx);
+        System.err.println(String.format("%s[%s]: rank=%d",diseaseName,diseaseId.getIdWithPrefix(), rank));
         DecimalFormat df = new DecimalFormat("0.000E0");
         System.err.println(String.format("Pretest probability: %s; Composite LR: %.2f; Posttest probability: %s ",
                 niceFormat(r.getPretestProbability()),
@@ -90,10 +97,41 @@ public final class HpoCase {
             System.err.println(String.format("%s: ratio=%s", term, niceFormat(ratio)));
         }
         if (r.hasGenotype()) {
-            System.err.println(String.format("Genotype LR for %s: %f", r.getEntrezGeneId(), r.getGenotypeLR()));
+            Gene2Genotype g2g= g2gmap.get(r.getEntrezGeneId());
+            if (g2g==null) {
+                // TODO check this--why do we have a genotype result if there is no genotype?
+                // is this for diseases with a gene but we found no variant?
+                System.err.println(String.format("Genotype LR for %s: %f",r.getEntrezGeneId().getIdWithPrefix(), r.getGenotypeLR()));
+                System.err.println("No variants found in VCF");
+                return;
+            }
+            System.err.println(String.format("Genotype LR for %s[%s]: %f",g2g.getSymbol(), r.getEntrezGeneId().getIdWithPrefix(), r.getGenotypeLR()));
+            System.err.println(g2g);
+        } else {
+            System.err.println("No genotype used to calculated");
         }
         System.err.println();
     }
+
+    /**
+     * Ootputs the top n results to the shell
+     * @param n number of top results to output.
+     */
+    public void outputTopResults(int n, HpoOntology ontology, Map<TermId, Gene2Genotype> g2gmap) {
+        List<TestResult> resultlist = new ArrayList<>(this.disease2resultMap.values());
+        resultlist.sort(Collections.reverseOrder());
+        int i=0;
+        while (i<n && i<resultlist.size()) {
+            TestResult tres = resultlist.get(i);
+            TermId diseaseId = tres.getDiseaseCurie();
+            outputLrToShell(diseaseId,ontology,g2gmap);
+            i++;
+        }
+    }
+
+
+
+
 
     private String niceFormat(double d) {
         DecimalFormat df = new DecimalFormat("0.000E0");
@@ -104,6 +142,20 @@ public final class HpoCase {
         } else {
             return df.format(d);
         }
+    }
+
+    @Override
+    public String toString() {
+        String observed=this.observedAbnormalities.
+                stream().
+                map(TermId::getIdWithPrefix).
+                collect(Collectors.joining("; "));
+        String excluded=this.excludedAbnormalities.stream().
+                map(TermId::getIdWithPrefix).
+                collect(Collectors.joining("; "));
+        int n_results=this.getResults().size();
+        return "HPO Case\n" + "observed: " + observed +"\nexcluded: " + excluded +"\nTests: n="+n_results;
+
     }
 
 

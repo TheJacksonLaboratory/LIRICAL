@@ -2,6 +2,20 @@
 Changelog
 =========
 
+
+------
+v0.5.2
+------
+- adding functionality from previous G2GIT project
+- removing SpringBoot code
+- adding FreeMarker output for analysis of VCF+phenotype data
+
+
+------
+v0.4.4
+------
+- refactored as SpringBoot application
+
 ------
 v0.4.0
 ------

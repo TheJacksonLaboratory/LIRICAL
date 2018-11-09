@@ -1,29 +1,31 @@
 package org.monarchinitiative.lr2pg;
 
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.monarchinitiative.lr2pg.command.Command;
 
-import org.monarchinitiative.lr2pg.io.CommandParser;
+import org.monarchinitiative.lr2pg.cmd.Lr2PgCommand;
+import org.monarchinitiative.lr2pg.exception.Lr2pgException;
+import org.monarchinitiative.lr2pg.io.CommandLine;
+
 
 /**
  * This is the central class that coordinates the phenotype/Genotype2LR likelihood ratio test.
- * @author Vida Ravanmehr
  * @author Peter Robinson
- * @version 0.3.1 (2018-03-11)
+ * @version 0.5.1 (2018-11-05)
  */
+
+
 public class LR2PG {
-    private static final Logger logger = LogManager.getLogger();
     static public void main(String [] args) {
         long startTime = System.currentTimeMillis();
-        CommandParser cmdline= new CommandParser(args);
-        Command command = cmdline.getCommand();
-        command.execute();
+        CommandLine clp = new CommandLine(args);
+        Lr2PgCommand command = clp.getCommand();
+        try {
+            command.run();
+        } catch (Lr2pgException e) {
+            e.printStackTrace();
+        }
         long stopTime = System.currentTimeMillis();
-        System.out.println("Elapsed time was " + (stopTime - startTime)*(1.0)/1000 + " seconds.");
-
+        System.out.println("LRPG: Elapsed time was " + (stopTime - startTime)*(1.0)/1000 + " seconds.");
     }
-
 
 }

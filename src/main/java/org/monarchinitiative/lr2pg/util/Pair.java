@@ -1,10 +1,11 @@
-package util;
+package org.monarchinitiative.lr2pg.util;
 
 
 /**
  * Yet another class for storing Pairs
  * @param <X>
  * @param <Y>
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class Pair<X,Y> {
 
