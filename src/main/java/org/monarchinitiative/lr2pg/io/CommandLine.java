@@ -214,7 +214,7 @@ public class CommandLine {
     private Options constructOptions() {
         final Options options = new Options();
         options.addOption("d", "data", true, "directory to download data (default \"data\")")
-                .addOption("g", "genome", false, "string representing the genome assembly (hg19,hg38)")
+                .addOption("g", "genome", true, "string representing the genome assembly (hg19,hg38)")
                 .addOption("h", "help", false, "show help")
                 .addOption("j", "jannovar", true, "path to Jannovar transcript file")
                 .addOption("m", "mvstore", true, "path to Exomiser MVStore file")
