@@ -60,16 +60,19 @@ public class GenicIntoleranceCalculator {
     /** Exomiser data store. */
     private final MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap;
 
+    private final boolean doClinvar;
+
     /**
      *
      * @param variantAnnotator Object to annotate an arbitrary variant
      * @param alleleStore Exomiser data resource
      * @param fname name of output file (background-hg38.txt or background-hg19.txt).
      */
-    public GenicIntoleranceCalculator(VariantAnnotator variantAnnotator, MVStore alleleStore, String fname) {
+    public GenicIntoleranceCalculator(VariantAnnotator variantAnnotator, MVStore alleleStore, String fname, boolean doClinvar) {
         this.variantAnnotator = variantAnnotator;
         this.alleleMap = MvStoreUtil.openAlleleMVMap(alleleStore);
         this.outputFileName=fname;
+        this.doClinvar=doClinvar;
     }
     /** Key: a {@link FrequencySource}, representing a population; value: corresponding {@link Background} with background frequency for genes. */
     private final Map<FrequencySource,Background> backgroundMap = new HashMap<>();
@@ -86,12 +89,10 @@ public class GenicIntoleranceCalculator {
      * normalizes the frequencies, and writes the results to a file that can be used elsewhere.
      */
     public void run() {
-        boolean doClinvar=false;
-        boolean doGnomad=true;
         logger.info("Running...");
         if (doClinvar) {
             getClinvarPathScores();
-        } else if (doGnomad) {
+        } else  { // do everything in GNOMAD
             initBins();
             binPathogenicityData();
             outputBinData();

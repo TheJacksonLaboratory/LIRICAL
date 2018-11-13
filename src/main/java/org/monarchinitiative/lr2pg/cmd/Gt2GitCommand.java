@@ -34,6 +34,8 @@ public class Gt2GitCommand extends Lr2PgCommand {
     /** Name of output file.*/
     private final String outputFileName;
 
+    private final boolean doClinvar;
+
     /**
      *
      * @param data Path to directory where the background file will be written.
@@ -41,10 +43,11 @@ public class Gt2GitCommand extends Lr2PgCommand {
      * @param jann Path to the Jannovar transcript file
      * @param genome String representing genome build (hg19 or hg38)
      */
-    public Gt2GitCommand(String data, String mv, String jann, String genome){
+    public Gt2GitCommand(String data, String mv, String jann, String genome, boolean doClinvar){
         this.datadir=data;
         this.mvstore=mv;
         this.jannovarFile=jann;
+        this.doClinvar=doClinvar;
         if (genome.toLowerCase().contains("hg19")) {
             this.genomeAssembly=GenomeAssembly.HG19;
             outputFileName="bacground-hg19.txt";
@@ -82,7 +85,7 @@ public class Gt2GitCommand extends Lr2PgCommand {
         JannovarVariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(genomeAssembly, jannovarData, emptyRegionIndex);
         createOutputDirectoryIfNecessary();
         String outputpath=String.format("%s%s%s",this.datadir,File.separator,this.outputFileName);
-       GenicIntoleranceCalculator calculator = new GenicIntoleranceCalculator(jannovarVariantAnnotator,alleleStore,outputpath);
+       GenicIntoleranceCalculator calculator = new GenicIntoleranceCalculator(jannovarVariantAnnotator,alleleStore,outputpath,this.doClinvar);
        calculator.run();
     }
 

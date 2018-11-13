@@ -28,6 +28,8 @@ public class CommandLine {
     private String clstring;
     /** Path to YAML configuration file*/
     private String yamlPath = null;
+
+    private boolean doClinvar=false;
     /**
      * Default path to downloaded data
      */
@@ -69,7 +71,7 @@ public class CommandLine {
     /** Comma-separated list of HPO terms, used for one case. */
     private String termlist;
 
-    final Options options;
+    private final Options options;
 
 
     public CommandLine(String args[]) {
@@ -97,7 +99,9 @@ public class CommandLine {
                 return;
             }
 
-
+            if (commandLine.hasOption("clinvar")) {
+                doClinvar = true;
+            }
             if (commandLine.hasOption("d")) {
                 dataPath = commandLine.getOptionValue("d");
             } else {
@@ -161,7 +165,7 @@ public class CommandLine {
                     if (genomeAssembly==null) {
                         printUsage("Need to specify the genome build: -g <genome> to run gt2git command!");
                     }
-                    this.command = new Gt2GitCommand(dataPath, mvStorePath,jannovarTranscriptFile,genomeAssembly);
+                    this.command = new Gt2GitCommand(dataPath, mvStorePath,jannovarTranscriptFile,genomeAssembly,doClinvar);
                     break;
                 default:
                     printUsage("Could not find command option");
@@ -214,7 +218,8 @@ public class CommandLine {
     private Options constructOptions() {
         final Options options = new Options();
         options.addOption("d", "data", true, "directory to download data (default \"data\")")
-                .addOption("g", "genome", false, "string representing the genome assembly (hg19,hg38)")
+                .addOption(null, "clinvar", false, "determine distribution of ClinVar pathogenicity scores")
+                .addOption("g", "genome", true, "string representing the genome assembly (hg19,hg38)")
                 .addOption("h", "help", false, "show help")
                 .addOption("j", "jannovar", true, "path to Jannovar transcript file")
                 .addOption("m", "mvstore", true, "path to Exomiser MVStore file")

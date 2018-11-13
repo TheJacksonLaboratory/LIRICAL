@@ -49,6 +49,27 @@ directory. Then, run the program with the following command.
 $ java -jar target/LR2PG-0.4.6.jar vcf -y <yaml>
 ```
 
+## Clinvar pathogenicity scores
+To get the exomiser pathogenicity scores for all ClinVar variants, we can run LR2PG as follows
+```
+$ java -jar target/LR2PG-0.4.6.jar gt2git
+  -j
+  /home/peter/data/exomiser/1802_hg19/1802_hg19_transcripts_refseq.ser
+  --mvstore
+  /home/peter/data/exomiser/1802_hg19/1802_hg19_variants.mv.db
+  -g
+  hg19
+  --clinvar
+
+```
+TODO--extend the output in getClinvarPathScores(); to do both Clinvar pathogenic and benign
+TODO -- change in GenicIntoleranceCalculator
+ if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
+                        cvwriter.write(pathogenicity + "\n");
+                    }
+                    to output the interpreation and also look at benign variants.
+
+
 ## Other subprograms
 Currently LR2PG supports several other functions that may be useful for testing and debugging. We will probably
 remove them when we finalize the code for submission.
