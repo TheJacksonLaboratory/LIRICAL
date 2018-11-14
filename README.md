@@ -62,12 +62,49 @@ $ java -jar target/LR2PG-0.4.6.jar gt2git
   --clinvar
 
 ```
-TODO--extend the output in getClinvarPathScores(); to do both Clinvar pathogenic and benign
-TODO -- change in GenicIntoleranceCalculator
- if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
-                        cvwriter.write(pathogenicity + "\n");
-                    }
-                    to output the interpreation and also look at benign variants.
+The program will output a file with two columns (it runs in about one hour on a good desktop).
+```
+1.0     PATHOGENIC
+0.0     BENIGN
+0.963   LIKELY_BENIGN
+0.742   BENIGN_OR_LIKELY_BENIGN
+0.0     BENIGN
+1.0     PATHOGENIC
+0.0     BENIGN_OR_LIKELY_BENIGN
+```
+The first column is the Exomiser pathogenicity score and the second column is the ClinVar interpretation.
+There is thus one line for each variant in ClinVar that has a PATHOGENIC or a BENIGN classification.
+We can plot this data with the following R script. Note that we combine the three
+subcategories PATHOGENIC, LIKELY_PATHOGENIC, PATHOGENIC_OR_LIKELY_PATHOGENIC into a
+single category ("pathogenic") and likewise for BENIGN.
+
+The following R script can be used to plot the data (change the current working directory to the
+directory with the outputfile, ``clinvarpath.txt``, which by default is the same directory
+in which the program is executed).
+
+
+```
+library(ggplot2)
+library(ggsci)
+
+dat <- read.table("clinvarpath.txt",header=FALSE)
+colnames(dat) <- c("path","category")
+dat$cat<- ifelse((dat$category=='BENIGN' | dat$category=='LIKELY_BENIGN' | dat$category=='BENIGN_OR_LIKELY_BENIGN'),"benign","pathogenic")
+
+p2 = ggplot(dat, aes(x=path, fill=cat)) +
+  geom_histogram(colour = "black",  position = "dodge",binwidth=0.01) +
+  #geom_histogram(aes(y = ..count..), binwidth = 0.2,   position="identity", alpha=0.9) +
+  #scale_x_continuous(name = "Pathogenicity",
+                   #  breaks = seq(-3, 3, 1),
+                    # limits=c(-3.5, 3.5)) +
+  theme_bw() + theme(text = element_text(size=20),
+                     axis.text = element_text(size=20, hjust=0.5),
+                     axis.title = element_text(size=20),
+                     legend.title = element_blank(),
+                     legend.position="top")
+p2_npg = p2 + scale_fill_npg()
+p2_npg
+```
 
 
 ## Other subprograms

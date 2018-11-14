@@ -183,9 +183,11 @@ public class GenicIntoleranceCalculator {
                     }
                 }
             }
+            System.out.println("\nAdded a total of " + i + " clinvar variants");
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     /**
