@@ -48,6 +48,10 @@ public class GenicIntoleranceCalculator {
             Sets.immutableEnumSet(ClinVarData.ClinSig.PATHOGENIC,
                     ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC,
                     ClinVarData.ClinSig.LIKELY_PATHOGENIC);
+    private static final Set<ClinVarData.ClinSig> BENIGN_CLINVAR_PRIMARY_INTERPRETATIONS =
+            Sets.immutableEnumSet(ClinVarData.ClinSig.BENIGN,
+                    ClinVarData.ClinSig.LIKELY_BENIGN,
+                    ClinVarData.ClinSig.BENIGN_OR_LIKELY_BENIGN);
     /** Ordered list of the populations included in the calculations. */
     private FrequencySource[] orderedSources = {GNOMAD_E_AFR,GNOMAD_E_AMR,GNOMAD_E_ASJ,GNOMAD_E_EAS,GNOMAD_E_FIN,GNOMAD_E_NFE,GNOMAD_E_SAS};
     /** The header of the output file that shows the populations included in the calculation. */
@@ -137,9 +141,6 @@ public class GenicIntoleranceCalculator {
                 logger.info(String.format("Analyzing gene %d.\r", background2binMap.size()));
             }
         }
-        if (genesymbol.equals("FBN1")) {
-            System.out.println(String.format("FBN1\t%f\t%f",frequency/100.0, pathogenicity ));
-        }
         Gene2Bin g2b = background2binMap.get(genesymbol);
         g2b.addVar(frequency, pathogenicity);
     }
@@ -152,6 +153,8 @@ public class GenicIntoleranceCalculator {
     private void getClinvarPathScores() {
         try {
             BufferedWriter cvwriter = new BufferedWriter(new FileWriter("clinvarpath.txt"));
+            int i=0;
+            System.out.println("Analyzing pathogenic and benign ClinVar variants...");
             for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : alleleMap.entrySet()) {
                 AlleleProto.AlleleKey alleleKey = entry.getKey();
                 AlleleProto.AlleleProperties alleleProperties = entry.getValue();
@@ -167,14 +170,24 @@ public class GenicIntoleranceCalculator {
                     // ClinVar have three 'pathogenic' significance values - pathogenic, pathogenic_or_likely_pathogenic and likely_pathogenic
                     // they also have a review status which will tell you how much confidence you might want to assign a given interpretation.
                     // see https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/
-                    if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
-                        cvwriter.write(pathogenicity + "\n");
+                    // there are also three categories that we will regard as "benign".
+                    // We output the pathogenicity scores and the interpretation with the goal of visualizing
+                    // the distributions of benign and pathogenic variant pathogenicity scores.
+                    if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation()) ||
+                            BENIGN_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
+                        cvwriter.write(pathogenicity + "\t"+clinVarData.getPrimaryInterpretation()+"\n");
+                        i++;
+                        if (i%10==0) {
+                            System.out.print("\rAdding clinvar variant "+i);
+                        }
                     }
                 }
             }
+            System.out.println("\nAdded a total of " + i + " clinvar variants");
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     /**
