@@ -1,6 +1,5 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
@@ -30,7 +29,7 @@ public class TestResult implements Comparable<TestResult> {
      */
     private final List<Double> results;
     /** Result of the likelhood ratio test for the genotype. */
-    private Double genotypeLR=null;
+    private final Double genotypeLR;
     /** The id of the gene associated with ths disease being tested here. */
     private TermId entrezGeneId=null;
     /** This is the product of the individual test results. */
@@ -39,6 +38,8 @@ public class TestResult implements Comparable<TestResult> {
     private final HpoDisease hpoDisease;
     /** The probability of some result before the first test is done.*/
     private final double pretestProbability;
+    /** The probability of some result before the first test is done.*/
+    private final double posttestProbability;
     /** The overall rank of the the result withint the differential diagnosis. */
     private int rank;
 
@@ -55,6 +56,8 @@ public class TestResult implements Comparable<TestResult> {
         this.pretestProbability = pretest;
         // the composite LR is the product of the individual LR's
         compositeLR=reslist.stream().reduce(1.0, (a, b) -> a * b);
+        this.genotypeLR=null;// result without genotype.
+        posttestProbability=getPosttestProbability();
     }
 
     /**
@@ -74,6 +77,7 @@ public class TestResult implements Comparable<TestResult> {
         // the composite ratio is equal to the product of the phenotype LR's
         // multiplied by the genotype LR.
         compositeLR=reslist.stream().reduce(1.0, (a, b) -> a * b) * genotypeLr;
+        posttestProbability=getPosttestProbability();
     }
 
 
@@ -124,14 +128,15 @@ public class TestResult implements Comparable<TestResult> {
      */
     @Override
     public int compareTo(@SuppressWarnings("NullableProblems") TestResult other) {
-        return Double.compare(compositeLR, other.compositeLR);
+        return Double.compare(posttestProbability, other.posttestProbability);
     }
 
 
     @Override
     public String toString() {
         String resultlist = results.stream().map(String::valueOf).collect(Collectors.joining(";"));
-        return String.format("%s: %.2f [%s]", hpoDisease, getCompositeLR(), resultlist);
+        String genoResult = hasGenotype() ? String.format("genotype LR: %.4f",this.genotypeLR) : "no genotype LR";
+        return String.format("%s: %.2f [%s] %s", hpoDisease, getCompositeLR(), resultlist, genoResult);
     }
 
     /**

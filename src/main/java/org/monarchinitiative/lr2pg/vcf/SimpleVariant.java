@@ -8,9 +8,12 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import java.util.List;
 import java.util.Set;
 
+import static org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData.ClinSig.NOT_PROVIDED;
+
 /**
  * This class encapsulates only as much data about a variant as we need to run the algoroithm and
  * display the result
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class SimpleVariant implements Comparable<SimpleVariant> {
 
@@ -24,7 +27,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
     private static final float PATHOGENICITY_THRESHOLD=0.80f;
 
 
-    private final int chromAsInt;
+    private final String chromosome;
     private final int position;
     private final String ref;
     private final String alt;
@@ -34,14 +37,14 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
     private final ClinVarData.ClinSig clinvar;
     private final SimpleGenotype gtype;
 
+
     public SimpleVariant(int chrom, int pos, String ref, String alt, List<TranscriptAnnotation> annotlist,
                          float path, float freq, String genotypeString){
-        this(chrom,pos,ref,alt,annotlist,path,freq,genotypeString,ClinVarData.ClinSig.NOT_PROVIDED);
+        this(chrom,pos,ref,alt,annotlist,path,freq,genotypeString,NOT_PROVIDED);
     }
 
     public SimpleVariant(int chrom, int pos, String ref, String alt, List<TranscriptAnnotation> annotlist,
                          float path, float freq, String genotypeString,ClinVarData.ClinSig clinv){
-        this.chromAsInt=chrom;
         this.position=pos;
         this.ref=ref;
         this.alt=alt;
@@ -65,7 +68,18 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
             default:
                 this.gtype=SimpleGenotype.NOT_OBSERVED;
         }
+
+
+        switch (chrom) {
+            case 25: this.chromosome ="chrM";break;
+            case 24: this.chromosome ="chrY";break;
+            case 23: this.chromosome ="chrX";break;
+            default: this.chromosome =String.format("chr%d",chrom);
+        }
+
     }
+
+
 
     /**
      * @return true if the predicted pathogenicity of this variant is above {@link #PATHOGENICITY_THRESHOLD}.
@@ -74,9 +88,9 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
         return this.pathogenicity >= PATHOGENICITY_THRESHOLD;
     }
 
-
-    public int getChromAsInt() {
-        return chromAsInt;
+    /**@return chromosome on which this variant is located. Returns a String such as chr1 or chrY */
+    public String getChromosome() {
+        return chromosome;
     }
 
     public int getPosition() {
@@ -95,9 +109,10 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
         return annotationList;
     }
 
+    /** This function sorts variants in descending order of pathogenicity. */
     @Override
     public int compareTo(@SuppressWarnings("NullableProblems") SimpleVariant other){
-        return Float.compare(pathogenicity,other.pathogenicity);
+        return Float.compare(other.pathogenicity,pathogenicity);
 
     }
 
@@ -109,7 +124,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
 
     @Override
     public String toString() {
-        return String.format("chr%d:%d%s>%s %s pathogenicity:%.1f [%s]",chromAsInt,position,ref,alt,annotation2string(annotationList.get(0)),pathogenicity,gtype);
+        return String.format("%s:%d%s>%s %s pathogenicity:%.1f [%s]", chromosome,position,ref,alt,annotation2string(annotationList.get(0)),pathogenicity,gtype);
     }
 
     public float getPathogenicity() {
@@ -124,8 +139,10 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
         return PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(this.clinvar);
     }
 
-    public ClinVarData.ClinSig getClinvar() {
-        return clinvar;
+    public String getClinvar() {
+        if (NOT_PROVIDED.equals(clinvar))
+            return "n/a";
+        else return clinvar.toString();
     }
 
     public SimpleGenotype getGtype() {

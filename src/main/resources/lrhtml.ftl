@@ -6,7 +6,7 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <title>Phenotype/Genotype Likelihood Ratio Analysis</title>
   <meta name="description" content="">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="viewport" content="w idth=device-width, initial-scale=1, shrink-to-fit=no">
 
   <style>
 @charset "UTF-8";
@@ -27,7 +27,7 @@ html, body, h1, h2, h3, ul, li, a, p, article, aside, footer, header, main, nav,
 }
 
 body {
-  width: 960px;
+  width: 1120px;
   margin-left: auto;
   margin-right: auto;
   background-color: #f0f0f0;
@@ -69,11 +69,12 @@ section {
 article {
   background-color: white;
   margin-top: 5px;
+  margin-bottom 5px;
   padding: 10px 15px;
 }
 
 main {
-  width: 960px;
+  width: 1120px;
   float: left;
   margin-bottom: 10px;
 }
@@ -91,6 +92,94 @@ footer {
   background-color: #20416c;
   color: white;
   padding: 5px 20px;
+}
+
+table.redTable {
+  border: 2px solid #A40808;
+  background-color: #EEE7DB;
+  width: 100%;
+  text-align: center;
+  border-collapse: collapse;
+}
+table.redTable td, table.redTable th {
+  border: 1px solid #AAAAAA;
+  padding: 3px 2px;
+}
+table.redTable tbody td {
+  font-size: 13px;
+}
+table.redTable tr:nth-child(even) {
+  background: #F5C8BF;
+}
+table.redTable thead {
+  background: #A40808;
+}
+table.redTable thead th {
+  font-size: 19px;
+  font-weight: bold;
+  color: #FFFFFF;
+  text-align: center;
+  border-left: 2px solid #A40808;
+}
+table.redTable thead th:first-child {
+  border-left: none;
+}
+
+table.redTable tfoot {
+  font-size: 13px;
+  font-weight: bold;
+  color: #FFFFFF;
+  background: #A40808;
+}
+table.redTable tfoot td {
+  font-size: 13px;
+}
+table.redTable tfoot .links {
+  text-align: right;
+}
+table.redTable tfoot .links a{
+  display: inline-block;
+  background: #FFFFFF;
+  color: #A40808;
+  padding: 2px 8px;
+  border-radius: 5px;
+  }
+
+  table.minimalistBlack {
+    border: 3px solid #000000;
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+  }
+  table.minimalistBlack td, table.minimalistBlack th {
+    border: 1px solid #000000;
+    padding: 5px 4px;
+  }
+  table.minimalistBlack tbody td {
+    font-size: 13px;
+  }
+  table.minimalistBlack thead {
+    background: #CFCFCF;
+    background: -moz-linear-gradient(top, #dbdbdb 0%, #d3d3d3 66%, #CFCFCF 100%);
+    background: -webkit-linear-gradient(top, #dbdbdb 0%, #d3d3d3 66%, #CFCFCF 100%);
+    background: linear-gradient(to bottom, #dbdbdb 0%, #d3d3d3 66%, #CFCFCF 100%);
+    border-bottom: 3px solid #000000;
+  }
+  table.minimalistBlack thead th {
+    font-size: 15px;
+    font-weight: bold;
+    color: #000000;
+    text-align: left;
+  }
+  table.minimalistBlack tfoot {
+    font-size: 14px;
+    font-weight: bold;
+    color: #000000;
+    border-top: 3px solid #000000;
+  }
+  table.minimalistBlack tfoot td {
+    font-size: 14px;
+  }
 }
   </style>
 </head>
@@ -131,39 +220,67 @@ footer {
   </section>
 
   <section>
+   <article>
     <a name="diff"/>
     <h2>Differential diagnosis: posterior probability above ${postprobthreshold}</h2>
+
+    <p>todo</p>
+    </article>
+    </section>
+
+
     <#list diff as dd>
+    <section>
         <article>
           <header>
-            <h3>${dd.diseaseName}</h3>
+            <h3>(${dd.rank}) ${dd.diseaseName} [<a href="${dd.url}" target="_blank">${dd.diseaseCurie}</a>]</h3>
           </header>
-          <p>${dd.diseaseCurie}
-            <ul>
-              <li>Rank: ${dd.rank}</li>
-              <li>Pretest probability: ${dd.pretestprob}</li>
-              <li>Posttest probability: ${dd.posttestprob}</li>
-            </ul>
+          <p>
+           <table class="redTable">
+             <tr><th>Pretest probability</th><th>Posttest probability</th></tr>
+             <tr><td>${dd.pretestprob}</td><td>${dd.posttestprob}</td></tr>
+           </table>
           </p>
+          <br/>
           <#if dd.hasVariants=="yes">
-            <ul>
+
+          <table class="minimalistBlack">
+          <thead>
+          <tr>
+          <th>Positiion</th>
+          <th>Pathogenicity score</th>
+          <th>Max. pop. frequency</th>
+          <th>Genotype</th>
+          <th>ClinVar</th>
+          <th>Annotation</th>
+          </tr>
+          </thead>
               <#list  dd.varlist as svar>
-                <li>chr${svar.chromAsInt}:${svar.position}${svar.ref}&gt;${svar.alt}<br/>
-                  Pathogenicity score: ${svar.pathogenicity}<br/>
-                  Maximum population frequency: ${svar.frequency}<br/>
-                  Genotype: ${svar.gtype}<br/>
-                  ClinVar: ${svar.clinvar}<br/>
+              <tr>
+                <td>${svar.chromosome}:${svar.position}${svar.ref}&gt;${svar.alt}</td>
+                <td>${svar.pathogenicity}</td>
+                <td>${svar.frequency}</td>
+                <td>${svar.gtype}</td>
+                <td>${svar.clinvar}</td>
+                <td>
                   <#list svar.annotationList as annot>
                     ${annot.hgvsCdna} ${annot.hgvsProtein} ${annot.variantEffect}
                   </#list>
-                </li>
+                </td>
+                 </tr>
                </#list>
-            </ul>
+               </table>
+          <#else>
+          <p>No variants found in todo gene</p>
           </#if>
+          <p></p>
+          <div style="border:1px solid black; text-align:center;">
           ${dd.svg}
+          </div>
         </article>
+         </section>
       </#list>
-  </section>
+
 
 
   <section>
@@ -174,10 +291,14 @@ footer {
         <h3>Genes/Diseases with low posttest probability:</h3>
       </header> -->
 
-      <table>
-        <tr><td>Disease</td><td>Gene</td><td>Post test probability</td><td>variant count</td></tr>
+      <p>Variants were identified in the following genes. The posttest probability of diseases
+      assosiated with these genes was below ${postprobthreshold}. The table shows the total count of
+      variants found in the genes.</p>
+
+      <table class="redTable">
+        <tr><th style="width:60%">Disease</th><th>Gene</th><th>Post test probability</th><th>variant count</th></tr>
         <#list improbdiff as ipd>
-          <tr><td>${ipd.diseaseName}</td><td>${ipd.geneName}</td><td>${ipd.posttestProbability}</td><td>${ipd.varcount}</td></tr>
+          <tr><td><a href="https://omim.org/${ipd.diseaseId}" target="_blank">${ipd.diseaseName}</a></td><td>${ipd.geneName}</td><td>${ipd.posttestProbability}</td><td>${ipd.varcount}</td></tr>
         </#list>
        </table>
     </article>

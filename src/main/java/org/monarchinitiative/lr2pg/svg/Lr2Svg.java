@@ -30,9 +30,9 @@ public class Lr2Svg {
     /** This is the {@link TestResult} object that corresponds to {@link #diseaseCURIE} being displayed as SVG. */
     private final TestResult result;
     /** Height of entire image in px */
-    private final static int HEIGHT=480;
+    private int HEIGHT=480;
     /** width of the bars part of the image in px */
-    private final static int WIDTH=500;
+    private final int WIDTH=500;
     /** additional width of the text part of the image in px */
     private final static int TEXTPART_WIDTH=400;
     /** minimum distance to top of image of graphic elements */
@@ -48,7 +48,7 @@ public class Lr2Svg {
      * variable is calculated as the height that this bar will need to have in order to show all of the
      * likelihood ratio bars.
      */
-    private final int heightOfMiddleLine;
+    private int heightOfMiddleLine;
 
     public Lr2Svg(HpoCase hcase,TermId diseaseId,String diseaseName, HpoOntology ont, String symbol) {
         this.hpocase=hcase;
@@ -63,7 +63,16 @@ public class Lr2Svg {
         this.result = hpocase.getResult(diseaseId);
         this.geneSymbol = symbol;
         this.ontology=ont;
+        determineTotalHeightOfSvg();
+    }
+
+    /**
+     * This function determines the vertical dimension of the SVG that we will output.
+     */
+    private void determineTotalHeightOfSvg() {
         this.heightOfMiddleLine=calculateHeightOfMiddleLine();
+        // The following adds sufficient height to include the remaining elements of the SVG
+        HEIGHT = this.heightOfMiddleLine + 4*MIN_VERTICAL_OFFSET + 7*BOX_OFFSET;
     }
 
 
@@ -99,9 +108,9 @@ public class Lr2Svg {
     /**
      * Writes a horizontal scale ("X axis") with tick points.
      * @param writer File handle
-     * @param maxAmp
+     * @param maxAmp maximum amplitude of the likelihood ratio on a long10 scale
      * @param scaling proportion of width that should be taken up by the scale
-     * @throws IOException
+     * @throws IOException if there is an issue writing the SVG code
      */
     private void writeScale(Writer writer, double maxAmp, double scaling) throws IOException {
         int Y = heightOfMiddleLine +  MIN_VERTICAL_OFFSET + BOX_OFFSET*4;
@@ -166,8 +175,8 @@ public class Lr2Svg {
     /**
      * Writes the set of boxes representing the log10 amplitudes of the likelihood ratios for individual
      * features.
-     * @param writer
-     * @throws IOException
+     * @param writer File handle
+     * @throws IOException if there is an issue writing the SVG code
      */
     private void writeLrBoxes(Writer writer) throws IOException {
         int currentY= MIN_VERTICAL_OFFSET + BOX_OFFSET*2;
@@ -182,8 +191,15 @@ public class Lr2Svg {
             double lgratio = Math.log10(ratio);
             unsortedmap.put(tid,lgratio);
         }
+        // also check if the genotype LR is better than any of the phenotype LR's, so that max will be
+        // correctly calculated!
+        if (result.hasGenotype()) {
+            double ratio = result.getGenotypeLR();
+            if (max < Math.abs(ratio)) { max = Math.abs(ratio); }
+        }
         // maximum amplitude of the bars
-        double maxAmp = Math.log10(max);
+        // we want it to be at least 10_000
+        double maxAmp = Math.max(4.0,Math.log10(max));
         // we want the maximum amplitude to take up 80% of the space
         // the available space starting from the center line is WIDTH/2
         // and so we calculate a factor
@@ -200,8 +216,7 @@ public class Lr2Svg {
             }
             if ((int)boxwidth==0) {
                 int X=(int)xstart;
-                int Y=currentY;
-                writeDiamond(writer,X,Y);
+                writeDiamond(writer,X,currentY);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart<midline ? RGB_RED : RGB_GREEN;
@@ -222,6 +237,13 @@ public class Lr2Svg {
                         label));
             currentY += BOX_HEIGHT+BOX_OFFSET;
         }
+        TermId test=TermId.constructWithPrefix("OMIM:101600");
+        if (this.diseaseCURIE.equals(test)) {
+            logger.error("Found bad entry...");
+            logger.error("result..." + result.toString());
+            logger.error("Gene symbol="+geneSymbol);
+            //System.exit(1);
+        }
         if (result.hasGenotype()) {
             currentY += 0.5*(BOX_HEIGHT+BOX_OFFSET);
 
@@ -236,8 +258,7 @@ public class Lr2Svg {
             }
             if ((int)boxwidth==0) {
                 int X=(int)xstart;
-                int Y=currentY;
-                writeDiamond(writer,X,Y);
+                writeDiamond(writer,X,currentY);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 color = xstart<midline ? RGB_RED : RGB_GREEN;
@@ -255,6 +276,7 @@ public class Lr2Svg {
                     currentY + BOX_HEIGHT,
                     geneSymbol));
         }
+        maxAmp=Math.max(4.0,maxAmp); // show at least 10,000!
         writeScale(writer,maxAmp,scaling);
     }
 

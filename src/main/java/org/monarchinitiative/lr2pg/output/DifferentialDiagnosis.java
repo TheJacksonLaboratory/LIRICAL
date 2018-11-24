@@ -3,7 +3,7 @@ package org.monarchinitiative.lr2pg.output;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.lr2pg.vcf.SimpleVariant;
-import org.monarchinitiative.phenol.ontology.data.TermId;
+
 
 import java.util.List;
 
@@ -19,10 +19,11 @@ public class DifferentialDiagnosis {
     private final String diseaseName;
     private final String diseaseCurie;
     private final int rank;
-    private final double pretestprob;
-    private final double posttestprob;
+    private final String pretestprob;
+    private final String posttestprob;
     private final double compositeLR;
     private final String entrezGeneId;
+    private final String url;
     private String svg;
     private List<SimpleVariant> varlist;
     /** Set this to yes as a flag for the template to indicate we can show some variants. */
@@ -34,15 +35,29 @@ public class DifferentialDiagnosis {
         this.diseaseName=result.getDiseaseName();
         this.diseaseCurie=result.getDiseaseCurie().getIdWithPrefix();
         this.rank=result.getRank();
-        this.posttestprob=result.getPosttestProbability();
-        this.pretestprob=result.getPretestProbability();
+        if (result.getPosttestProbability()>0.9999) {
+            this.posttestprob=String.format("%.5f%%",100*result.getPosttestProbability());
+        } else if (result.getPosttestProbability()>0.999) {
+            this.posttestprob=String.format("%.4f%%",100*result.getPosttestProbability());
+        } else if (result.getPosttestProbability()>0.99) {
+            this.posttestprob=String.format("%.3f%%",100*result.getPosttestProbability());
+        } else {
+            this.posttestprob=String.format("%.2f%%",100*result.getPosttestProbability());
+        }
+
+        double ptp=result.getPretestProbability();
+        if (ptp < 0.001) {
+            this.pretestprob = String.format("1/%d",Math.round(1.0/ptp));
+        } else {
+            this.pretestprob = String.format("%.6f",ptp);
+        }
         this.compositeLR=result.getCompositeLR();
         if (result.hasGenotype()) {
             this.entrezGeneId = result.getEntrezGeneId().getIdWithPrefix();
         } else {
             this.entrezGeneId=null;
         }
-
+        url=String.format("https://omim.org/%s",result.getDiseaseCurie().getId());
         System.out.println("dn="+this.diseaseName);
     }
 
@@ -64,15 +79,17 @@ public class DifferentialDiagnosis {
         return diseaseCurie;
     }
 
+    public String getUrl(){ return url;}
+
     public int getRank() {
         return rank;
     }
 
-    public double getPretestprob() {
+    public String getPretestprob() {
         return pretestprob;
     }
 
-    public double getPosttestprob() {
+    public String getPosttestprob() {
         return posttestprob;
     }
 
