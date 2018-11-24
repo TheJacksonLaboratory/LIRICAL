@@ -2,6 +2,10 @@
 Changelog
 =========
 
+------
+v0.5.4
+------
+- improved HTML template, adding some CSS and structure
 
 ------
 v0.5.2

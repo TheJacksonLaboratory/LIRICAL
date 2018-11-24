@@ -3,7 +3,7 @@ Likelihood ratio analysis of phenotypes and genotypes
 
 ## Installing and setting up LR2PG
 LR2PG makes use of the phenotype analysis library phenol, which needs to be installed locally.
-Currently, LR2PG uses version 1.3.0-SNAPSHOT.
+Currently, LR2PG uses version ``1.3.0-SNAPSHOT``.
 
 ```
 $ git clone https://github.com/monarch-initiative/phenol.git
@@ -20,10 +20,13 @@ can automatically download using the download command (use the --overwrite flag 
 otherwise, it only downloads files if not present). By default, LR2PG downloads to a new directory
 called data, which will be created as a subdirectory in the directory from which LR2PG is run.
 ```
-$ java -jar target/LR2PG-0.4.6.jar download
+$ java -jar target/LR2PG-0.5.4.jar download
 ```
 If you want to download to a different location, use the -d <path> argument while downloading and in all of
 the subsequent steps.
+
+## Initializing the background frequency file
+
 
 LR2PG makes use of the Exomiser data resources, which need to be downloaded from the Exomiser FTP site
 (https://data.monarchinitiative.org/exomiser/latest/).  For instance, to do the analysis with the hg38
@@ -32,7 +35,7 @@ the expected background frequency of predicted pathogenic variants and write thi
 be used in subsequent steps (this will take about an hour on a typical laptop).
 
 ```
-$ java -jar target/LR2PG-0.4.6.jar gt2git -m <mvstore> -j <jannovar> -g <genome>
+$ java -jar target/LR2PG-0.5.4.jar gt2git -m <mvstore> -j <jannovar> -g <genome>
 ```
 In this command, ``mvstore`` refers to the path of the Exomiser data store, e.g., ``1802_hg19_variants.mv.db``;
 ``jannovar`` refers to the path of the Jannovar transcript data file, e.g., ``1802_hg19_transcripts_refseq.ser``;
@@ -42,12 +45,17 @@ This command will output the background frequency file to the data direcotry (by
 current working direcgtory; the data directory can also be specified with the ``-d`` flag). THe location of this file must be
 specified in the YAML configuration file to run the prioritization function.
 
+For the final release, we will add the background files for hg19 and hg38 to the distribution, but let's finish testing
+prior to doing that.
+
 ## Running LR2PG
 To run the VCF prioritization tool of LR2PG, create a YAML configuration file. There are several examples in the ``resources/yaml``
 directory. Then, run the program with the following command.
 ```
-$ java -jar target/LR2PG-0.4.6.jar vcf -y <yaml>
+$ java -jar target/LR2PG-0.5.4.jar vcf -y <yaml>
 ```
+
+Please consult the ``src/main/resources/yaml`` directory for several example YAML files.
 
 ## Clinvar pathogenicity scores
 To get the exomiser pathogenicity scores for all ClinVar variants, we can run LR2PG as follows
@@ -105,6 +113,8 @@ p2 = ggplot(dat, aes(x=path, fill=cat)) +
 p2_npg = p2 + scale_fill_npg()
 p2_npg
 ```
+
+This is only needed for testing and we may remove it from the main distribution.
 
 
 ## Other subprograms
