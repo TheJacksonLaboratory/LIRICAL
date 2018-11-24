@@ -233,7 +233,7 @@ table.redTable tfoot .links a{
     <section>
         <article>
           <header>
-            <h3>(${dd.rank}) ${dd.diseaseName} [<a href="{$dd.url}" target="_blank">${dd.diseaseCurie}</a>]</h3>
+            <h3>(${dd.rank}) ${dd.diseaseName} [<a href="${dd.url}" target="_blank">${dd.diseaseCurie}</a>]</h3>
           </header>
           <p>
            <table class="redTable">
@@ -257,7 +257,7 @@ table.redTable tfoot .links a{
           </thead>
               <#list  dd.varlist as svar>
               <tr>
-                <td>chr${svar.chromAsInt}:${svar.position}${svar.ref}&gt;${svar.alt}</td>
+                <td>${svar.chromosome}:${svar.position}${svar.ref}&gt;${svar.alt}</td>
                 <td>${svar.pathogenicity}</td>
                 <td>${svar.frequency}</td>
                 <td>${svar.gtype}</td>

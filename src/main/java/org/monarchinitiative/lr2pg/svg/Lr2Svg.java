@@ -108,9 +108,9 @@ public class Lr2Svg {
     /**
      * Writes a horizontal scale ("X axis") with tick points.
      * @param writer File handle
-     * @param maxAmp
+     * @param maxAmp maximum amplitude of the likelihood ratio on a long10 scale
      * @param scaling proportion of width that should be taken up by the scale
-     * @throws IOException
+     * @throws IOException if there is an issue writing the SVG code
      */
     private void writeScale(Writer writer, double maxAmp, double scaling) throws IOException {
         int Y = heightOfMiddleLine +  MIN_VERTICAL_OFFSET + BOX_OFFSET*4;
@@ -175,8 +175,8 @@ public class Lr2Svg {
     /**
      * Writes the set of boxes representing the log10 amplitudes of the likelihood ratios for individual
      * features.
-     * @param writer
-     * @throws IOException
+     * @param writer File handle
+     * @throws IOException if there is an issue writing the SVG code
      */
     private void writeLrBoxes(Writer writer) throws IOException {
         int currentY= MIN_VERTICAL_OFFSET + BOX_OFFSET*2;
@@ -191,8 +191,15 @@ public class Lr2Svg {
             double lgratio = Math.log10(ratio);
             unsortedmap.put(tid,lgratio);
         }
+        // also check if the genotype LR is better than any of the phenotype LR's, so that max will be
+        // correctly calculated!
+        if (result.hasGenotype()) {
+            double ratio = result.getGenotypeLR();
+            if (max < Math.abs(ratio)) { max = Math.abs(ratio); }
+        }
         // maximum amplitude of the bars
-        double maxAmp = Math.log10(max);
+        // we want it to be at least 10_000
+        double maxAmp = Math.max(4.0,Math.log10(max));
         // we want the maximum amplitude to take up 80% of the space
         // the available space starting from the center line is WIDTH/2
         // and so we calculate a factor
@@ -230,6 +237,13 @@ public class Lr2Svg {
                         label));
             currentY += BOX_HEIGHT+BOX_OFFSET;
         }
+        TermId test=TermId.constructWithPrefix("OMIM:101600");
+        if (this.diseaseCURIE.equals(test)) {
+            logger.error("Found bad entry...");
+            logger.error("result..." + result.toString());
+            logger.error("Gene symbol="+geneSymbol);
+            //System.exit(1);
+        }
         if (result.hasGenotype()) {
             currentY += 0.5*(BOX_HEIGHT+BOX_OFFSET);
 
@@ -262,6 +276,7 @@ public class Lr2Svg {
                     currentY + BOX_HEIGHT,
                     geneSymbol));
         }
+        maxAmp=Math.max(4.0,maxAmp); // show at least 10,000!
         writeScale(writer,maxAmp,scaling);
     }
 

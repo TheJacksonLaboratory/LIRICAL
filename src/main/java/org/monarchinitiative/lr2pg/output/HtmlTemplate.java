@@ -73,8 +73,18 @@ public class HtmlTemplate {
         this.templateData.put("observedHPOs",observedHPOs);
         List<DifferentialDiagnosis> diff = new ArrayList<>();
         List<ImprobableDifferential> improbdiff = new ArrayList<>();
-        String symbol="";
+
         for (TestResult result : hcase.getResults()) {
+            String symbol="";
+            TermId test=TermId.constructWithPrefix("OMIM:101600");
+            if (result.getDiseaseCurie().equals(test)) {
+                logger.error("HTML Template Found bad entry...");
+                logger.error("result..." + result.toString());
+                logger.error("Gene id="+result.getEntrezGeneId().getIdWithPrefix());
+                logger.error("Contains gene id = " +genotypeMap.containsKey(result.getEntrezGeneId()));
+                logger.error("Gene symbol="+symbol);
+                //System.exit(1);
+            }
             if (result.getPosttestProbability() > THRESHOLD) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.trace("Diff diag for " + result.getDiseaseName());
@@ -84,6 +94,8 @@ public class HtmlTemplate {
                     if (g2g != null) {
                         symbol = g2g.getSymbol();
                         ddx.addG2G(g2g);
+                    } else {
+                        symbol="no variants found";
                     }
                 }
                 // now get SVG

@@ -13,6 +13,7 @@ import java.util.Random;
  * This class will store such a collection of values.
  * NOTE THIS IS JUST FOR DEVLEOPMENT/TESTING/DEBUGGING, in the real application we get this dataq from a VCF file
  */
+@Deprecated
 public class VcfSimulator {
     /** Key: the termId of a gene; double -- count of variants in pathogenic bin
      * multiplied by average pathogenicity score. */

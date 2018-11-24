@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/** Delete this one, we want to simulate with external data. */
+@Deprecated
 public class SimulatePhenoGenoCommand extends Lr2PgCommand {
 
     private final String datadir;

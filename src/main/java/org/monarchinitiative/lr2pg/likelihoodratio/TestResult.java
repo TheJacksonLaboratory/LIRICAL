@@ -1,6 +1,5 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
@@ -136,7 +135,8 @@ public class TestResult implements Comparable<TestResult> {
     @Override
     public String toString() {
         String resultlist = results.stream().map(String::valueOf).collect(Collectors.joining(";"));
-        return String.format("%s: %.2f [%s]", hpoDisease, getCompositeLR(), resultlist);
+        String genoResult = hasGenotype() ? String.format("genotype LR: %.4f",this.genotypeLR) : "no genotype LR";
+        return String.format("%s: %.2f [%s] %s", hpoDisease, getCompositeLR(), resultlist, genoResult);
     }
 
     /**

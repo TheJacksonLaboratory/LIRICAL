@@ -21,6 +21,7 @@ import java.util.Objects;
  * This class is intended to try out some architectures for the genotype-phenotype
  * LR test. Much of the code is copied from {@link PhenotypeOnlyHpoCaseSimulator}
  */
+@Deprecated
 public class HpoPhenoGenoCaseSimulator {
     private static final Logger logger = LogManager.getLogger();
     /** Object to evaluate the results of differential diagnosis by LR analysis. */
