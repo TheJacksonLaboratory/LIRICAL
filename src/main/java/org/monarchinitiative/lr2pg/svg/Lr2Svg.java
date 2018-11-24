@@ -30,9 +30,9 @@ public class Lr2Svg {
     /** This is the {@link TestResult} object that corresponds to {@link #diseaseCURIE} being displayed as SVG. */
     private final TestResult result;
     /** Height of entire image in px */
-    private final static int HEIGHT=480;
+    private int HEIGHT=480;
     /** width of the bars part of the image in px */
-    private final static int WIDTH=500;
+    private final int WIDTH=500;
     /** additional width of the text part of the image in px */
     private final static int TEXTPART_WIDTH=400;
     /** minimum distance to top of image of graphic elements */
@@ -48,7 +48,7 @@ public class Lr2Svg {
      * variable is calculated as the height that this bar will need to have in order to show all of the
      * likelihood ratio bars.
      */
-    private final int heightOfMiddleLine;
+    private int heightOfMiddleLine;
 
     public Lr2Svg(HpoCase hcase,TermId diseaseId,String diseaseName, HpoOntology ont, String symbol) {
         this.hpocase=hcase;
@@ -63,7 +63,16 @@ public class Lr2Svg {
         this.result = hpocase.getResult(diseaseId);
         this.geneSymbol = symbol;
         this.ontology=ont;
+        determineTotalHeightOfSvg();
+    }
+
+    /**
+     * This function determines the vertical dimension of the SVG that we will output.
+     */
+    private void determineTotalHeightOfSvg() {
         this.heightOfMiddleLine=calculateHeightOfMiddleLine();
+        // The following adds sufficient height to include the remaining elements of the SVG
+        HEIGHT = this.heightOfMiddleLine + 4*MIN_VERTICAL_OFFSET + 7*BOX_OFFSET;
     }
 
 
@@ -200,8 +209,7 @@ public class Lr2Svg {
             }
             if ((int)boxwidth==0) {
                 int X=(int)xstart;
-                int Y=currentY;
-                writeDiamond(writer,X,Y);
+                writeDiamond(writer,X,currentY);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart<midline ? RGB_RED : RGB_GREEN;
@@ -236,8 +244,7 @@ public class Lr2Svg {
             }
             if ((int)boxwidth==0) {
                 int X=(int)xstart;
-                int Y=currentY;
-                writeDiamond(writer,X,Y);
+                writeDiamond(writer,X,currentY);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 color = xstart<midline ? RGB_RED : RGB_GREEN;

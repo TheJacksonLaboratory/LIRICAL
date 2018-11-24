@@ -77,7 +77,7 @@ public class HtmlTemplate {
         for (TestResult result : hcase.getResults()) {
             if (result.getPosttestProbability() > THRESHOLD) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
-                logger.error("Diff diag for " + result.getDiseaseName());
+                logger.trace("Diff diag for " + result.getDiseaseName());
                 if (result.hasGenotype()) {
                     TermId geneId = result.getEntrezGeneId();
                     Gene2Genotype g2g = genotypeMap.get(geneId);
@@ -98,7 +98,7 @@ public class HtmlTemplate {
                         symbol=genotypeMap.get(geneId).getSymbol();
                         int c = genotypeMap.get(geneId).getVarList().size();
                         String name = shortName(result.getDiseaseName());
-                        String id = result.getDiseaseCurie().getIdWithPrefix();
+                        String id = result.getDiseaseCurie().getId();// This is intended to work with OMIM
                         if (name==null) {
                             logger.error("Got null string for disease name from result="+result.toString());
                             name=EMPTY_STRING;// avoid errors

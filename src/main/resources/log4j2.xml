@@ -23,7 +23,7 @@
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="org.apache.catalina.startup.DigesterFactory" level="error" />
+        <Logger name="de.charite.compbio.jannovar.data.JannovarDataSerializer" level="error" />
         <Logger name="org.apache.catalina.util.LifecycleBase" level="error" />
         <Logger name="org.apache.coyote.http11.Http11NioProtocol" level="warn" />
         <logger name="org.apache.sshd.common.util.SecurityUtils" level="warn"/>

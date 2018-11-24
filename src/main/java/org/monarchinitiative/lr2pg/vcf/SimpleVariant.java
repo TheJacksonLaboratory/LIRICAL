@@ -8,6 +8,8 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import java.util.List;
 import java.util.Set;
 
+import static org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData.ClinSig.NOT_PROVIDED;
+
 /**
  * This class encapsulates only as much data about a variant as we need to run the algoroithm and
  * display the result
@@ -36,7 +38,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
 
     public SimpleVariant(int chrom, int pos, String ref, String alt, List<TranscriptAnnotation> annotlist,
                          float path, float freq, String genotypeString){
-        this(chrom,pos,ref,alt,annotlist,path,freq,genotypeString,ClinVarData.ClinSig.NOT_PROVIDED);
+        this(chrom,pos,ref,alt,annotlist,path,freq,genotypeString,NOT_PROVIDED);
     }
 
     public SimpleVariant(int chrom, int pos, String ref, String alt, List<TranscriptAnnotation> annotlist,
@@ -124,8 +126,10 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
         return PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(this.clinvar);
     }
 
-    public ClinVarData.ClinSig getClinvar() {
-        return clinvar;
+    public String getClinvar() {
+        if (NOT_PROVIDED.equals(clinvar))
+            return "n/a";
+        else return clinvar.toString();
     }
 
     public SimpleGenotype getGtype() {
