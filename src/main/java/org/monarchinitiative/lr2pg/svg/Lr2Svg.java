@@ -42,8 +42,9 @@ public class Lr2Svg {
 
     private final static int BOX_HEIGHT=15;
 
-    private final static String RGB_GREEN="#00FF00";
-    private final static String RGB_RED="#FF0000";
+    private final static String BLUE ="#4dbbd5";
+    private final static String RED ="#e64b35";
+    private final static String BROWN="#7e6148";
     /** The midle line is the central line around which the likelihood ratio 'bars' will be drawn. This
      * variable is calculated as the height that this bar will need to have in order to show all of the
      * likelihood ratio bars.
@@ -160,7 +161,7 @@ public class Lr2Svg {
     {
         int diamondsize=6;
         writer.write(String.format("<polygon " +
-                        "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:lime;stroke:purple;stroke-width:1\" />\n",
+                        "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:lime;stroke:%s;stroke-width:1\" />\n",
                 X,
                 Y,
                 X+diamondsize,
@@ -168,7 +169,8 @@ public class Lr2Svg {
                 X,
                 Y+2*diamondsize,
                 X-diamondsize,
-                Y+diamondsize));
+                Y+diamondsize,
+                BROWN));
     }
 
 
@@ -219,7 +221,7 @@ public class Lr2Svg {
                 writeDiamond(writer,X,currentY);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
-                String color = xstart<midline ? RGB_RED : RGB_GREEN;
+                String color = xstart<midline ? RED : BLUE;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
                                 "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
                         BOX_HEIGHT,
@@ -249,7 +251,7 @@ public class Lr2Svg {
 
             double ratio = result.getGenotypeLR();
             double lgratio = Math.log10(ratio);
-            String color = lgratio<0?RGB_RED:RGB_GREEN;
+            String color = lgratio<0? RED : BLUE;
             double boxwidth=lgratio*scaling;
             double xstart = midline;
             if (lgratio<0) {
@@ -261,7 +263,7 @@ public class Lr2Svg {
                 writeDiamond(writer,X,currentY);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
-                color = xstart<midline ? RGB_RED : RGB_GREEN;
+                color = xstart<midline ? RED : BLUE;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
                                 "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
                         BOX_HEIGHT,
