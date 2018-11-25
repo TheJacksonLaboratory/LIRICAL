@@ -15,12 +15,12 @@ article, aside, footer, header, main, nav, section {
   display: block;
 }
 
-html, body, h1, h2, ul, li, a, p, article, aside, footer, header, main, nav, section {
+html, body, h1, ul, li, a, p, article, aside, footer, header, main, nav, section {
   padding: 0;
   margin: 0;
 }
 
-h3 { padding 5px; }
+h2,h3 { padding 5px; }
 
 .banner {
   background-color: #11233b;
@@ -237,7 +237,13 @@ table.redTable tfoot .links a{
     <a name="diff"/>
     <h2>Differential diagnosis: posterior probability above ${postprobthreshold}</h2>
 
-    <p>todo</p>
+    <p>Top differential diagnoses:
+    <ol>
+    <#list diff as dd>
+        <li><a href="#${dd.anchor}">${dd.diseaseName}</a></li>
+     </#list>
+    </ol>
+    </p>
     </article>
     </section>
 
@@ -245,9 +251,11 @@ table.redTable tfoot .links a{
     <#list diff as dd>
     <section>
         <article>
+         <a name="${dd.anchor}"/>
           <header>
             <h3>(${dd.rank}) ${dd.diseaseName} [<a href="${dd.url}" target="_blank">${dd.diseaseCurie}</a>]</h3>
           </header>
+           <a name="${dd.anchor}"/>
           <p>
            <table class="redTable">
              <tr><th>Pretest probability</th><th>Posttest probability</th></tr>
@@ -288,6 +296,9 @@ table.redTable tfoot .links a{
                 </td>
                  </tr>
                </#list>
+               <#if dd.hasExplanation() >
+               <tr><td>Genotype score LR:</td><td colspan="5">${dd.explanation}</td></tr>
+               </#if>
                </table>
           <#else>
           <p><table class="minimalistBlack">

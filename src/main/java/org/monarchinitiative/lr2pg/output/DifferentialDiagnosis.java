@@ -18,6 +18,8 @@ public class DifferentialDiagnosis {
     private final static String EMPTY_STRING="";
     private final String diseaseName;
     private final String diseaseCurie;
+    /** This is the annchor that will be used on the HTML page. */
+    private  String anchor=EMPTY_STRING;
     private final int rank;
     private final String pretestprob;
     private final String posttestprob;
@@ -32,6 +34,10 @@ public class DifferentialDiagnosis {
     private String geneSymbol=EMPTY_STRING;
 
     private String noVariantsFound=EMPTY_STRING;
+
+    private String genotypeScoreExplanation=null;
+
+
 
     DifferentialDiagnosis(TestResult result) {
         this.diseaseName=result.getDiseaseName();
@@ -127,4 +133,17 @@ public class DifferentialDiagnosis {
     public String getNoVariantsFound() {
         return noVariantsFound;
     }
+
+    public void setAnchor(String a) { this.anchor=a;}
+    public String getAnchor(){ return anchor;}
+
+    public String getExplanation() {
+        return genotypeScoreExplanation;
+    }
+
+    public void setGenotypeScoreExplanation(String genotypeScoreExplanation) {
+        this.genotypeScoreExplanation = genotypeScoreExplanation;
+    }
+
+    public boolean hasExplanation() { return this.genotypeScoreExplanation != null;}
 }

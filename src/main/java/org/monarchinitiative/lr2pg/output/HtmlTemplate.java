@@ -33,12 +33,22 @@ public class HtmlTemplate {
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
     private final Map<TermId,String> geneId2symbol;
     /** Threshold to show a differential diagnosis in detail. */
-    private static final double THRESHOLD = 0.01;
+    private  double THRESHOLD;
+    /** This map contains the names of the top differential diagnoses that we will show as a list at the
+     * top of the page together with anchors to navigate to the detailed analysis.*/
+    private Map<String,String> topDiagnosisMap;
+    private List<String> topDiagnosisAnchors;
     private static final String EMPTY_STRING="";
     /** FreeMarker configuration object. */
     private final Configuration cfg;
 
-    public HtmlTemplate(HpoCase hcase, HpoOntology ontology, Map<TermId, Gene2Genotype> genotypeMap, Map<TermId,String> geneid2sym,Map<String,String> metadat){
+    public HtmlTemplate(HpoCase hcase,
+                        HpoOntology ontology,
+                        Map<TermId, Gene2Genotype> genotypeMap,
+                        Map<TermId,String> geneid2sym,
+                        Map<String,String> metadat,
+                        double thres){
+        this.THRESHOLD=thres;
         this.templateData= new HashMap<>();
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
@@ -46,7 +56,6 @@ public class HtmlTemplate {
         cfg.setClassLoaderForTemplateLoading(classLoader,"");
         this.geneId2symbol=geneid2sym;
         initTemplateData(hcase,ontology,genotypeMap,metadat);
-
 
 
         try (BufferedWriter out = new BufferedWriter(new FileWriter("myout.html"))) {
@@ -64,7 +73,7 @@ public class HtmlTemplate {
         for(Map.Entry<String,String> entry : metadat.entrySet()) {
             templateData.put(entry.getKey(),entry.getValue());
         }
-        templateData.put("postprobthreshold",String.valueOf(THRESHOLD));
+        templateData.put("postprobthreshold",String.format("%.1f%%",100*THRESHOLD));
         List<TermId> observedIds = hcase.getObservedAbnormalities();
         List<String> observedHPOs = new ArrayList<>();
         for (TermId id:observedIds) {
@@ -75,6 +84,9 @@ public class HtmlTemplate {
         this.templateData.put("observedHPOs",observedHPOs);
         List<DifferentialDiagnosis> diff = new ArrayList<>();
         List<ImprobableDifferential> improbdiff = new ArrayList<>();
+        this.topDiagnosisMap=new HashMap<>();
+        this.topDiagnosisAnchors=new ArrayList<>();
+        int counter=0;
 
         for (TestResult result : hcase.getResults()) {
             String symbol="";
@@ -100,6 +112,8 @@ public class HtmlTemplate {
                         ddx.setNoVariantsFoundString("no variants found in " + this.geneId2symbol.get(geneId));
                         symbol="no variants found in " + this.geneId2symbol.get(geneId);// will be used by SVG
                     }
+                    String expl=result.getExplanation();
+                    ddx.setGenotypeScoreExplanation(expl);
                 } else {
                     ddx.setNoVariantsFoundString("No known disease gene");
                 }
@@ -108,6 +122,11 @@ public class HtmlTemplate {
                 String svg = lr2svg.getSvgString();
                 ddx.setSvg(svg);
                 diff.add(ddx);
+                counter++;
+                String counterString=String.format("diagnosis%d",counter);
+                this.topDiagnosisAnchors.add(counterString);
+                ddx.setAnchor(counterString);
+                this.topDiagnosisMap.put(counterString,ddx.getDiseaseName());
             } else {
                 if (result.hasGenotype()) {
                     TermId geneId = result.getEntrezGeneId();

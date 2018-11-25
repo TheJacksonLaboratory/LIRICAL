@@ -239,13 +239,6 @@ public class Lr2Svg {
                         label));
             currentY += BOX_HEIGHT+BOX_OFFSET;
         }
-        TermId test=TermId.constructWithPrefix("OMIM:101600");
-        if (this.diseaseCURIE.equals(test)) {
-            logger.error("Found bad entry...");
-            logger.error("result..." + result.toString());
-            logger.error("Gene symbol="+geneSymbol);
-            //System.exit(1);
-        }
         if (result.hasGenotype()) {
             currentY += 0.5*(BOX_HEIGHT+BOX_OFFSET);
 

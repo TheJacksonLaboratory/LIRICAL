@@ -3,6 +3,12 @@ Changelog
 =========
 
 ------
+v0.9.0
+------
+- First pre-release version
+- Adding explanation for genotype LR score
+
+------
 v0.5.4
 ------
 - improved HTML template, adding some CSS and structure

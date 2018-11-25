@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
  */
 public class TestResult implements Comparable<TestResult> {
     private static final Logger logger = LogManager.getLogger();
+    private static final String EMPTY_STRING="";
     /**
      * A list of results for the tests performed in a {@link HpoCase} case.
      * To save space, we only record the result of the test, and we assume that the order of the test is the same
@@ -42,6 +43,8 @@ public class TestResult implements Comparable<TestResult> {
     private final double posttestProbability;
     /** The overall rank of the the result withint the differential diagnosis. */
     private int rank;
+    /** An optional explanation of the result, intended for display */
+    private String explanation=EMPTY_STRING;
 
     /**
      * The constructor initializes the variables and calculates {@link #compositeLR}
@@ -163,4 +166,8 @@ public class TestResult implements Comparable<TestResult> {
     public TermId getEntrezGeneId() {
         return entrezGeneId;
     }
+
+    public void appendToExplanation(String text) { this.explanation = this.explanation + text; }
+    public String getExplanation() { return this.explanation; }
+    public boolean hasExplanation() { return this.explanation != null;}
 }
