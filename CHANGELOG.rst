@@ -6,6 +6,7 @@ Changelog
 v0.5.4
 ------
 - improved HTML template, adding some CSS and structure
+- improved display of information for differential diagnosis with no variants or no known disease gene
 
 ------
 v0.5.2

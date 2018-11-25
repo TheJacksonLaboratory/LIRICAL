@@ -36,7 +36,9 @@ public class VcfCommand extends Lr2PgCommand {
     private final String datadir;
     /** Default name of the background frequency file. */
     private final String BACKGROUND_FREQUENCY_FILE="background-freq.txt";
-
+    /** Key: an EntrezGene id; value: corresponding gene symbol. */
+    private Map<TermId,String> geneId2symbol;
+    /** Various metadata that will be used for the HTML output. */
     private Map<String,String> metadata;
 
     /**
@@ -86,7 +88,7 @@ public class VcfCommand extends Lr2PgCommand {
 
         PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
         Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
-        Map<TermId,String> geneId2symbol = factory.geneId2symbolMap();
+        this.geneId2symbol = factory.geneId2symbolMap();
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(observedHpoTerms)
                 .ontology(ontology)
                 .diseaseMap(diseaseMap)
@@ -103,7 +105,7 @@ public class VcfCommand extends Lr2PgCommand {
 
 
     private void outputHTML(HpoCase hcase,HpoOntology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
-        HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypeMap,this.metadata);
+        HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata);
 
 
     }
