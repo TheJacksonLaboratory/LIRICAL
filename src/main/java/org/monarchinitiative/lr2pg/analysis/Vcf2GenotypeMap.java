@@ -58,10 +58,6 @@ public class Vcf2GenotypeMap {
      */
     private final float DEFAULT_FREQUENCY = 0.00001F;
     /**
-     * We will assume a frequency of 1:100,000 if no frequency data is available.
-     */
-    private final float DEFAULT_PATHOGENICITY = 0.0F;
-    /**
      * Reference to the Jannovar transcript file data for annotating the VCF file.
      */
     private final JannovarData jannovarData;
@@ -69,7 +65,6 @@ public class Vcf2GenotypeMap {
      * Reference dictionary that is part of {@link #jannovarData}.
      */
     private final ReferenceDictionary referenceDictionary;
-   // private final VariantAnnotator variantAnnotator;
     /**
      * Map of Chromosomes, used in the annotation.
      */
@@ -84,8 +79,6 @@ public class Vcf2GenotypeMap {
     private final GenomeAssembly genomeAssembly;
 
     private final Map<String,String> vcfMetaData=new HashMap<>();
-
-
     /**
      * Key: an EntrezGene gene id; value a {@link Gene2Genotype} obhject with variants/genotypes in this gene.
      */
@@ -112,7 +105,7 @@ public class Vcf2GenotypeMap {
         this.genomeAssembly = ga;
     }
 
-
+    /** map with some information about the VCF file that will be shown on the hTML output. */
     public Map<String, String> getVcfMetaData() {
         return vcfMetaData;
     }
@@ -186,8 +179,6 @@ public class Vcf2GenotypeMap {
                         String genotypeString = veval.getGenotypeString();
                         float freq;
                         float path;
-                        boolean isClinVarPath = false;
-                        ClinVarData.ClinSig clinvarSig = null;
                         if (alleleProp == null) {
                             // this means the variant is not represented in the Exomiser data
                             // this is not an error, the variant could be very rare or otherwise not seen before

@@ -13,6 +13,7 @@ import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
+import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.lr2pg.output.HtmlTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -40,6 +41,8 @@ public class VcfCommand extends Lr2PgCommand {
     private Map<TermId,String> geneId2symbol;
     /** Various metadata that will be used for the HTML output. */
     private Map<String,String> metadata;
+    /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
+    private double LR_THRESHOLD=0.01;
 
     /**
      * @param fact An object that contains parameters from the YAML file for configuration
@@ -48,6 +51,16 @@ public class VcfCommand extends Lr2PgCommand {
     public VcfCommand(Lr2PgFactory fact, String data) {
         this.factory = fact;
         this.datadir=data;
+    }
+    /**
+     * @param fact An object that contains parameters from the YAML file for configuration
+     * @param data Path to the data download directory that has hp.obo and other files.
+     * @param threshold Threshold posterior probability for displaying a differential in the main section.
+     */
+    public VcfCommand(Lr2PgFactory fact, String data, double threshold) {
+        this.factory = fact;
+        this.datadir=data;
+        this.LR_THRESHOLD=threshold;
     }
 
     /**
@@ -99,16 +112,17 @@ public class VcfCommand extends Lr2PgCommand {
 
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
-        hcase.outputTopResults(5,ontology,genotypeMap);
+        hcase.outputTopResults(5,ontology,genotypeMap);// TODO remove this outputs to the shell
         outputHTML(hcase,ontology,genotypeMap);
     }
 
 
     private void outputHTML(HpoCase hcase,HpoOntology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
-        HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata);
-
-
+        HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata,this.LR_THRESHOLD);
     }
+
+
+
 
 
 

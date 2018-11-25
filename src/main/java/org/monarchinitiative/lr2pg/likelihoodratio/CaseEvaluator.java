@@ -39,6 +39,10 @@ public class CaseEvaluator {
     /** Reference to the Human Phenotype Ontology object. */
     private final HpoOntology ontology;
 
+    private static final double DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD=0.01;
+
+    private double threshold;
+
     private final boolean phenotypeOnly;
 
     /**
@@ -67,6 +71,7 @@ public class CaseEvaluator {
             pretestProbabilityMap.put(tid,prob);
         }
         this.phenotypeOnly=true;
+        this.threshold=DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD;
     }
 
 
@@ -78,7 +83,8 @@ public class CaseEvaluator {
                           Multimap<TermId,TermId> disease2geneMultimap,
                           PhenotypeLikelihoodRatio phenotypeLrEvaluator,
                           GenotypeLikelihoodRatio genotypeLrEvalutator,
-                          Map<TermId,Gene2Genotype> genotypeMap) {
+                          Map<TermId,Gene2Genotype> genotypeMap,
+                          double thres) {
         phenotypicAbnormalities=hpoTerms;
 
 
@@ -87,6 +93,7 @@ public class CaseEvaluator {
         this.phenotypeLRevaluator =phenotypeLrEvaluator;
         this.genotypeLrEvalutator=genotypeLrEvalutator;
         this.ontology=ontology;
+        this.threshold=thres;
 
         // For now, assume equal pretest probabilities
         this.pretestProbabilityMap =new HashMap<>();
@@ -121,6 +128,7 @@ public class CaseEvaluator {
             Double LR = null;
             TermId geneId = null;
             Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
+            List<TermId> inheritancemodes = disease.getModesOfInheritance();
             if (associatedGenes != null && associatedGenes.size() > 0) {
                 for (TermId entrezGeneId : associatedGenes) {
                     Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
@@ -128,7 +136,7 @@ public class CaseEvaluator {
                     if (g2g!=null) {
                         observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
                     }
-                    List<TermId> inheritancemodes = disease.getModesOfInheritance();
+
                     Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(observedWeightedPathogenicVariantCount,
                             inheritancemodes,
                             entrezGeneId);
@@ -149,6 +157,15 @@ public class CaseEvaluator {
                 result = new TestResult(builder.build(), disease, LR, geneId, pretest);
             } else {
                 result = new TestResult(builder.build(), disease, pretest);
+            }
+            if (result.getPosttestProbability() > this.threshold) {
+                Gene2Genotype g2g = this.genotypeMap.get(geneId);
+                double observedWeightedPathogenicVariantCount=0.0;
+                if (g2g!=null) {
+                    observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
+                }
+                String exp=this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount,inheritancemodes,geneId);
+                result.appendToExplanation(exp);
             }
             mapbuilder.put(diseaseId, result);
 
@@ -198,6 +215,8 @@ public class CaseEvaluator {
         /** Key: geneId (e.g., NCBI Entrez Gene); value: observed variants/genotypes as {@link org.monarchinitiative.lr2pg.analysis.Gene2Genotype} object.*/
         private Map<TermId,Gene2Genotype> genotypeMap;
 
+        private double threshold=DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD;
+
         public Builder(List<TermId> hpoTerms){ this.hpoTerms=hpoTerms; }
 
         public Builder ontology(HpoOntology hont) { this.ontology=hont; return this;}
@@ -212,13 +231,15 @@ public class CaseEvaluator {
 
         public Builder genotypeLr(GenotypeLikelihoodRatio glr) { this.genotypeLR=glr; return this; }
 
+        public Builder threshold(double t) { this.threshold=t; return this;}
+
 
         public CaseEvaluator build() {
             Objects.requireNonNull(hpoTerms);
             Objects.requireNonNull(ontology);
             Objects.requireNonNull(diseaseMap);
             Objects.requireNonNull(disease2geneMultimap);
-            return new CaseEvaluator(hpoTerms,ontology,diseaseMap,disease2geneMultimap,phenotypeLR,genotypeLR,genotypeMap);
+            return new CaseEvaluator(hpoTerms,ontology,diseaseMap,disease2geneMultimap,phenotypeLR,genotypeLR,genotypeMap,threshold);
         }
 
 

@@ -15,10 +15,12 @@ article, aside, footer, header, main, nav, section {
   display: block;
 }
 
-html, body, h1, h2, h3, ul, li, a, p, article, aside, footer, header, main, nav, section {
+html, body, h1, ul, li, a, p, article, aside, footer, header, main, nav, section {
   padding: 0;
   margin: 0;
 }
+
+h2,h3 { padding 5px; }
 
 .banner {
   background-color: #11233b;
@@ -155,6 +157,12 @@ table.redTable tfoot .links a{
     border: 1px solid #000000;
     padding: 5px 4px;
   }
+
+  table.minimalistBlack.red td {
+  background: red;
+  }
+
+
   table.minimalistBlack tbody td {
     font-size: 13px;
   }
@@ -180,6 +188,10 @@ table.redTable tfoot .links a{
   table.minimalistBlack tfoot td {
     font-size: 14px;
   }
+/* We use this to color cells with 'pathogenic' variants */
+   td.red {
+    background: rgba(137,145,180,0.3);
+    }
 }
   </style>
 </head>
@@ -198,6 +210,7 @@ table.redTable tfoot .links a{
             <li><a href="#sample">Sample</a></li>
             <li><a href="#diff">Differential diagnosis</a></li>
             <li><a href="#othergenes">Remaining genes</a></li>
+            <li><a href="#about">About</a></li>
         </ul>
     </div>
 </nav>
@@ -224,7 +237,13 @@ table.redTable tfoot .links a{
     <a name="diff"/>
     <h2>Differential diagnosis: posterior probability above ${postprobthreshold}</h2>
 
-    <p>todo</p>
+    <p>Top differential diagnoses:
+    <ol>
+    <#list diff as dd>
+        <li><a href="#${dd.anchor}">${dd.diseaseName}</a></li>
+     </#list>
+    </ol>
+    </p>
     </article>
     </section>
 
@@ -232,9 +251,11 @@ table.redTable tfoot .links a{
     <#list diff as dd>
     <section>
         <article>
+         <a name="${dd.anchor}"/>
           <header>
             <h3>(${dd.rank}) ${dd.diseaseName} [<a href="${dd.url}" target="_blank">${dd.diseaseCurie}</a>]</h3>
           </header>
+           <a name="${dd.anchor}"/>
           <p>
            <table class="redTable">
              <tr><th>Pretest probability</th><th>Posttest probability</th></tr>
@@ -258,17 +279,26 @@ table.redTable tfoot .links a{
               <#list  dd.varlist as svar>
               <tr>
                 <td>${svar.chromosome}:${svar.position}${svar.ref}&gt;${svar.alt}</td>
-                <td>${svar.pathogenicity}</td>
+                <#if svar.isInPathogenicBin() >
+                <td class="red">${svar.pathogenicity}</td>
+                <#else>
+                 <td>${svar.pathogenicity}</td>
+                </#if>
                 <td>${svar.frequency}</td>
                 <td>${svar.gtype}</td>
                 <td>${svar.clinvar}</td>
                 <td>
+                <ul>
                   <#list svar.annotationList as annot>
-                    ${annot.hgvsCdna} ${annot.hgvsProtein} ${annot.variantEffect}
+                   <li> ${annot.hgvsCdna} ${annot.hgvsProtein} ${annot.variantEffect}</li>
                   </#list>
+                  </ul>
                 </td>
                  </tr>
                </#list>
+               <#if dd.hasExplanation() >
+               <tr><td>Genotype score LR:</td><td colspan="5">${dd.explanation}</td></tr>
+               </#if>
                </table>
           <#else>
           <p><table class="minimalistBlack">
@@ -277,7 +307,7 @@ table.redTable tfoot .links a{
                        <th>${dd.noVariantsFound}</th>
                        </tr></table></p>
           </#if>
-          <p></p>
+          <br/>
           <div style="border:1px solid black; text-align:center;">
           ${dd.svg}
           </div>
@@ -309,12 +339,20 @@ table.redTable tfoot .links a{
   </section>
 </main>
 
-<!--    <aside>
-DO NOT USE ASIDE ELEMENT
-      <h2>LR2PG</h2>
-      <p>Likelihood ratio 2 Phenotype/Genotyupe analysis</p>
-    </aside> -->
+  <section>
+   <article>
+    <a name="about"/>
+    <h2>Explanation</h2>
 
+    <p>LR2PG is a tool for exploring exome or genome sequencing data obtained for an individual with suspected rare genetic disease.
+    LR2PG uses phenotypic features that describe the clinical manifestations observed in the individual and expressed
+    as <a href="http://www.human-phenotype-ontology.org">Human Phenotype Ontology</a> (HPO) terms as well as the
+    sequence variants found in the exome or genome file to derive a list of candidate diagnoses with estimated posterior
+    probabilities. LR2PG is intended as a resource to aide diagnosticians and does not make a diagnosis itself. The
+    results of LR2PG should not be construed as medical advice and should always be reviewed by medical professionals.</p>
+    <p>Full documentation that explains how to use LR2PG can be found TODO.</p>
+    </article>
+    </section>
 <footer>
   <p>LR2PG 2018</p>
 </footer>

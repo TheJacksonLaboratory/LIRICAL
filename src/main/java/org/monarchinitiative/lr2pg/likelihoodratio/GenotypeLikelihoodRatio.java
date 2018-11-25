@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.*;
+
 /**
  * This class is responsible for calculate the genotype-based likelihood ratio.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
@@ -16,15 +18,6 @@ import java.util.Optional;
 public class GenotypeLikelihoodRatio {
     private static final Logger logger = LogManager.getLogger();
 
-
-
-    /** {@link TermId} for "X-linked recessive inheritance. */
-    private static final TermId X_LINKED_RECESSIVE = TermId.constructWithPrefix("HP:0001419");
-    /** {@link TermId} for "autosomal recessive inheritance. */
-    private static final TermId AUTOSOMAL_RECESSIVE = TermId.constructWithPrefix("HP:0000007");
-    /** {@link TermId} for "autosomal dominant inheritance. */
-    private static final TermId AUTOSOMAL_DOMINANT = TermId.constructWithPrefix("HP:0000006");
-    /** Default value for background for genes for which we have no information. */
     private static final double DEFAULT_LAMBDA_BACKGROUND=0.1;
 
     private static final double EPSILON=1e-5;
@@ -69,6 +62,47 @@ public class GenotypeLikelihoodRatio {
         } else {
             return Optional.empty();
         }
+    }
+
+    /** This method is intended to explain the score that is produced by {@link #evaluateGenotype}, and
+     * produces a shoprt summary that can be displayed in the output file. It is intended to be used for the
+     * best candidates, i.e., those that will be displayed on the output page.
+     * @param observedPathogenicVarCount number of variants called to ne pathogenic
+     * @param inheritancemodes List of all inheritance modes associated with this disease (usually has one element,rarely multiple)
+     * @param geneId EntrezGene id of the current gene.
+     * @return short summary of the genotype likelihood ratio score.
+     */
+    String explainGenotypeScore(double observedPathogenicVarCount, List<TermId> inheritancemodes, TermId geneId) {
+        StringBuilder sb = new StringBuilder();
+        double lambda_disease=1.0;
+        if (inheritancemodes!=null && inheritancemodes.size()>0) {
+            TermId tid = inheritancemodes.get(0);
+            if (tid.equals(AUTOSOMAL_RECESSIVE) || tid.equals(X_LINKED_RECESSIVE)) {
+                lambda_disease=2.0;
+            }
+            if (tid.equals(AUTOSOMAL_DOMINANT)) {sb.append(" Mode of inheritance: autosomal dominant. "); }
+            else if (tid.equals(AUTOSOMAL_RECESSIVE)) {sb.append(" Mode of inheritance: autosomal recessive. "); }
+            else if (tid.equals(X_LINKED_RECESSIVE)) {sb.append(" Mode of inheritance: X-chromosomal recessive. "); }
+            else if (tid.equals(X_LINKED_DOMINANT)) {sb.append(" Mode of inheritance: X-chromosomal recessive. "); }
+        }
+        double lambda_background = this.gene2backgroundFrequency.getOrDefault(geneId, DEFAULT_LAMBDA_BACKGROUND);
+        sb.append(String.format("Observed weighted pathogenic variant count: %.2f. &lambda;<sub>disease</sub>=%d. &lambda;<sub>background</sub>=%.4f. ",
+                observedPathogenicVarCount,(int)lambda_disease,lambda_background));
+        Double D;
+        if (observedPathogenicVarCount<EPSILON) {
+            D=0.05; // heuristic--chance of zero variants given this is disease is 5%
+        } else {
+            PoissonDistribution pdDisease = new PoissonDistribution(lambda_disease);
+            D = pdDisease.probability(observedPathogenicVarCount);
+        }
+        PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
+        double B = pdBackground.probability(observedPathogenicVarCount);
+        sb.append(String.format("P(G|D)=%.4f. P(G|&#172;D)=%.4f",D,B));
+        if (B>0 && D>0) {
+            double r=Math.log10(D/B);
+            sb.append(String.format(". log<sub>10</sub>(LR): %.2f.",r));
+        }
+        return sb.toString();
     }
 
 
