@@ -30,19 +30,21 @@ public class HtmlTemplate {
     private static final Logger logger = LogManager.getLogger();
     /** Map of data that will be used for the FreeMark template. */
     private final Map<String, Object> templateData;
+    /** Key: an EntrezGene id; value: corresponding gene symbol. */
+    private final Map<TermId,String> geneId2symbol;
     /** Threshold to show a differential diagnosis in detail. */
     private static final double THRESHOLD = 0.01;
     private static final String EMPTY_STRING="";
     /** FreeMarker configuration object. */
     private final Configuration cfg;
 
-    public HtmlTemplate(HpoCase hcase, HpoOntology ontology, Map<TermId, Gene2Genotype> genotypeMap, Map<String,String> metadat){
+    public HtmlTemplate(HpoCase hcase, HpoOntology ontology, Map<TermId, Gene2Genotype> genotypeMap, Map<TermId,String> geneid2sym,Map<String,String> metadat){
         this.templateData= new HashMap<>();
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
         ClassLoader classLoader = HtmlTemplate.class.getClassLoader();
         cfg.setClassLoaderForTemplateLoading(classLoader,"");
-
+        this.geneId2symbol=geneid2sym;
         initTemplateData(hcase,ontology,genotypeMap,metadat);
 
 
@@ -95,8 +97,11 @@ public class HtmlTemplate {
                         symbol = g2g.getSymbol();
                         ddx.addG2G(g2g);
                     } else {
-                        symbol="no variants found";
+                        ddx.setNoVariantsFoundString("no variants found in " + this.geneId2symbol.get(geneId));
+                        symbol="no variants found in " + this.geneId2symbol.get(geneId);// will be used by SVG
                     }
+                } else {
+                    ddx.setNoVariantsFoundString("No known disease gene");
                 }
                 // now get SVG
                 Lr2Svg lr2svg = new Lr2Svg(hcase, result.getDiseaseCurie(), result.getDiseaseName(), ontology, symbol);

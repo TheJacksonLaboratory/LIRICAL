@@ -271,7 +271,11 @@ table.redTable tfoot .links a{
                </#list>
                </table>
           <#else>
-          <p>No variants found in todo gene</p>
+          <p><table class="minimalistBlack">
+                       <thead>
+                       <tr>
+                       <th>${dd.noVariantsFound}</th>
+                       </tr></table></p>
           </#if>
           <p></p>
           <div style="border:1px solid black; text-align:center;">

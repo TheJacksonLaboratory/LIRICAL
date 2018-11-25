@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class DifferentialDiagnosis {
 
-
+    private final static String EMPTY_STRING="";
     private final String diseaseName;
     private final String diseaseCurie;
     private final int rank;
@@ -29,7 +29,9 @@ public class DifferentialDiagnosis {
     /** Set this to yes as a flag for the template to indicate we can show some variants. */
     private String hasVariants="No";
 
-    private String geneSymbol=null;
+    private String geneSymbol=EMPTY_STRING;
+
+    private String noVariantsFound=EMPTY_STRING;
 
     DifferentialDiagnosis(TestResult result) {
         this.diseaseName=result.getDiseaseName();
@@ -105,11 +107,24 @@ public class DifferentialDiagnosis {
         return varlist;
     }
 
+    /** The answer to this string is used by the FreeMarker template to determine whether or not to show
+     * a table with variants.
+     * @return "yes" if this differential diagnosis has variants.
+     */
     public String getHasVariants() {
         return hasVariants;
     }
 
     public String getGeneSymbol() {
         return geneSymbol;
+    }
+
+    public void setNoVariantsFoundString(String s) {
+        noVariantsFound=s;
+        System.err.println(noVariantsFound);
+    }
+
+    public String getNoVariantsFound() {
+        return noVariantsFound;
     }
 }

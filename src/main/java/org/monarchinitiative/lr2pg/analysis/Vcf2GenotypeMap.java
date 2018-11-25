@@ -110,7 +110,6 @@ public class Vcf2GenotypeMap {
         this.referenceDictionary = jannovarData.getRefDict();
         this.chromosomeMap = jannovarData.getChromosomes();
         this.genomeAssembly = ga;
-        //this.variantAnnotator = new VariantAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new AnnotationBuilderOptions());
     }
 
 
@@ -147,7 +146,6 @@ public class Vcf2GenotypeMap {
             }
             this.vcfMetaData.put("genome",this.genomeAssembly.toString());
 
-
             logger.trace("Annotating VCF at " + vcfPath);
             final long startTime = System.nanoTime();
             CloseableIterator<VariantContext> iter = vcfReader.iterator();
@@ -163,7 +161,6 @@ public class Vcf2GenotypeMap {
             while (iter.hasNext()) {
                 VariantContext vc = iter.next();
                 vc = variantEffectAnnotator.annotateVariantContext(vc);
-                // todo -- what about multiple alleles on one position?
                 List<Allele> altAlleles = vc.getAlternateAlleles();
                 String contig = vc.getContig();
                 int start = vc.getStart();
