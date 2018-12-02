@@ -24,11 +24,11 @@
     </Appenders>
     <Loggers>
         <Logger name="de.charite.compbio.jannovar.data.JannovarDataSerializer" level="error" />
-        <Logger name="org.apache.catalina.util.LifecycleBase" level="error" />
-        <Logger name="org.apache.coyote.http11.Http11NioProtocol" level="warn" />
-        <logger name="org.apache.sshd.common.util.SecurityUtils" level="warn"/>
-        <Logger name="org.apache.tomcat.util.net.NioSelectorPool" level="warn" />
-        <Logger name="org.hibernate.validator.internal.util.Version" level="warn" />
+        <Logger name="org.obolibrary.oboformat.parser.OBOFormatParser" level="error" />
+        <Logger name="org.openrdf.rio.RDFParserRegistry" level="error" />
+        <logger name="uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryInternalsImpl" level="error"/>
+        <logger name="org.obolibrary.oboformat.parser.OBOFormatParser" level="error"/>
+        <logger name="org.monarchinitiative.phenol.io.obo.hpo.HpOboParser" level="error"/>
         <Root level="trace">
             <AppenderRef ref="Console" />
             <AppenderRef ref="File" />
