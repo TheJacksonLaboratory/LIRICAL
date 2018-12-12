@@ -12,7 +12,7 @@ import java.util.Optional;
 import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.*;
 
 /**
- * This class is responsible for calculate the genotype-based likelihood ratio.
+ * This class is responsible for calculating the genotype-based likelihood ratio.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class GenotypeLikelihoodRatio {
@@ -32,7 +32,7 @@ public class GenotypeLikelihoodRatio {
 
 
     /**
-     * Calculate the genotypoe likelihood ratio using lambda_disease=1 for autosomal dominant and lambda_disease=2
+     * Calculate the genotype likelihood ratio using lambda_disease=1 for autosomal dominant and lambda_disease=2
      * for autosomal recessive. TODO figure out other MOIs
      * @param observedPathogenicVarCount weighted number of observed pathogenic variants in this gene
      * @param inheritancemodes list of modes of inheritance associated with disease being investigated (usually with just one entry).

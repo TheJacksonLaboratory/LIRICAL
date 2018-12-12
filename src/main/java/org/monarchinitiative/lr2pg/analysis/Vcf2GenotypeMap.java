@@ -201,6 +201,7 @@ public class Vcf2GenotypeMap {
             logger.info("Finished Annotating VCF (time= " + (endTime-startTime)/100_000_000 + " sec)");
         }
         // now sort the variants by pathogenicity
+        // this also assigns the total pathogenicity score.
         for (Gene2Genotype genot : this.gene2genotypeMap.values()) {
             genot.sortVariants();
         }
