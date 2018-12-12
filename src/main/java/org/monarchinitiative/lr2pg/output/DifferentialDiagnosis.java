@@ -41,7 +41,7 @@ public class DifferentialDiagnosis {
 
     DifferentialDiagnosis(TestResult result) {
         this.diseaseName=result.getDiseaseName();
-        this.diseaseCurie=result.getDiseaseCurie().getIdWithPrefix();
+        this.diseaseCurie=result.getDiseaseCurie().getValue();
         this.rank=result.getRank();
         if (result.getPosttestProbability()>0.9999) {
             this.posttestprob=String.format("%.5f%%",100*result.getPosttestProbability());
@@ -61,7 +61,7 @@ public class DifferentialDiagnosis {
         }
         this.compositeLR=result.getCompositeLR();
         if (result.hasGenotype()) {
-            this.entrezGeneId = result.getEntrezGeneId().getIdWithPrefix();
+            this.entrezGeneId = result.getEntrezGeneId().getValue();
         } else {
             this.entrezGeneId=null;
         }

@@ -52,12 +52,12 @@ public class HpoCaseTest {
         backforeFreq=new PhenotypeLikelihoodRatio(ontology,diseaseMap);
 
         /* these are the phenotypic abnormalties of our "case" */
-        TermPrefix HP_PREFIX=new TermPrefix("HP");
-        TermId t1 = new TermId(HP_PREFIX,"0006855");
-        TermId t2 = new TermId(HP_PREFIX,"0000651");
-        TermId t3 = new TermId(HP_PREFIX,"0010545");
-        TermId t4 = new TermId(HP_PREFIX,"0001260");
-        TermId t5 = new TermId(HP_PREFIX,"0001332");
+        String HP_PREFIX="HP";
+        TermId t1 = TermId.of(HP_PREFIX,"0006855");
+        TermId t2 = TermId.of(HP_PREFIX,"0000651");
+        TermId t3 = TermId.of(HP_PREFIX,"0010545");
+        TermId t4 = TermId.of(HP_PREFIX,"0001260");
+        TermId t5 = TermId.of(HP_PREFIX,"0001332");
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
         // We need to provide a list of TestResult objects for the API, but they are not required for this unit test

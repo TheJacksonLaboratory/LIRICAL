@@ -68,14 +68,14 @@ public class PhenotypeLikelihoodRatioTest {
      */
     @Test
     public void testFrequency1() {
-        TermId tid = TermId.constructWithPrefix("HP:0000028");
+        TermId tid = TermId.of("HP:0000028");
         double expected = (double)1/3;
         assertEquals(expected, phenotypeLrCalculator.getBackgroundFrequency(tid),EPSILON);
     }
 
     @Test
     public void testFrequency2() {
-        TermId tid = TermId.constructWithPrefix("HP:0000047");
+        TermId tid = TermId.of("HP:0000047");
         double expected = (double)1/3;
         assertEquals(expected, phenotypeLrCalculator.getBackgroundFrequency(tid),EPSILON);
     }
@@ -86,7 +86,7 @@ public class PhenotypeLikelihoodRatioTest {
      */
     @Test
     public void testFrequency3() {
-        TermId tid = TermId.constructWithPrefix("HP:0000035");
+        TermId tid = TermId.of("HP:0000035");
         double expected = (double)1/3;
         assertEquals(expected, phenotypeLrCalculator.getBackgroundFrequency(tid),EPSILON);
     }
@@ -97,8 +97,8 @@ public class PhenotypeLikelihoodRatioTest {
      */
     @Test
     public void testGetFrequencyOfTermInDieases1_1() {
-        TermId tid = TermId.constructWithPrefix("HP:0000185");
-        TermId diseaseName = TermId.constructWithPrefix("OMIM:216300");
+        TermId tid = TermId.of("HP:0000185");
+        TermId diseaseName = TermId.of("OMIM:216300");
         HpoDisease disease = diseaseMap.get(diseaseName);
         assertNotNull(disease);
         double expected =1.0;

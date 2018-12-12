@@ -148,7 +148,7 @@ public class Lr2Svg {
 
         int rank=hpocase.getResult(diseaseCURIE).getRank();
         double ptp = hpocase.getResult(diseaseCURIE).getPosttestProbability();
-        String diseaseLabel=String.format("%s [%s]: Rank: #%d Posttest probability: %f",diseaseName,diseaseCURIE.getIdWithPrefix(),rank,ptp);
+        String diseaseLabel=String.format("%s [%s]: Rank: #%d Posttest probability: %f",diseaseName,diseaseCURIE.getValue(),rank,ptp);
         writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
                 (midline - (maxTick-1)*block),
                 Y + 35,
@@ -232,7 +232,7 @@ public class Lr2Svg {
             }
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);
-            String label = String.format("%s [%s]",term.getName(),tid.getIdWithPrefix());
+            String label = String.format("%s [%s]",term.getName(),tid.getValue());
             writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
                         WIDTH,
                         currentY + BOX_HEIGHT,

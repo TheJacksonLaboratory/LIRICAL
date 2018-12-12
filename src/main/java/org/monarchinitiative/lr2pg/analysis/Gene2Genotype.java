@@ -96,7 +96,7 @@ public class Gene2Genotype {
     @Override
     public String toString() {
         String varString = varList.stream().filter(SimpleVariant::isInPathogenicBin).map(SimpleVariant::toString).collect(Collectors.joining("; "));
-        return String.format("%s[%s]: %s",this.symbol,this.geneId.getIdWithPrefix(),varString);
+        return String.format("%s[%s]: %s",this.symbol,this.geneId.getValue(),varString);
     }
 
 }

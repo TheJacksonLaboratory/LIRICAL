@@ -9,6 +9,7 @@ import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
+
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -76,7 +77,7 @@ public final class HpoCase {
 
     /** Output the results for a specific HPO disease.
      * This is ugly and just for development. */
-    public void outputLrToShell(TermId diseaseId, HpoOntology ontology,Map<TermId, Gene2Genotype> g2gmap) {
+    public void outputLrToShell(TermId diseaseId, HpoOntology ontology, Map<TermId, Gene2Genotype> g2gmap) {
         int rank = getRank(diseaseId);
 
         TestResult r = getResult(diseaseId);
@@ -84,7 +85,7 @@ public final class HpoCase {
         int idx = diseaseName.indexOf(';');
         if (idx>0)
             diseaseName=diseaseName.substring(0,idx);
-        System.err.println(String.format("%s[%s]: rank=%d",diseaseName,diseaseId.getIdWithPrefix(), rank));
+        System.err.println(String.format("%s[%s]: rank=%d",diseaseName,diseaseId.getValue(), rank));
         DecimalFormat df = new DecimalFormat("0.000E0");
         System.err.println(String.format("Pretest probability: %s; Composite LR: %.2f; Posttest probability: %s ",
                 niceFormat(r.getPretestProbability()),
@@ -93,7 +94,7 @@ public final class HpoCase {
         for (int i = 0; i < r.getNumberOfTests(); i++) {
             double ratio = r.getRatio(i);
             TermId tid = getObservedAbnormalities().get(i);
-            String term = String.format("%s [%s]", ontology.getTermMap().get(tid).getName(), tid.getIdWithPrefix());
+            String term = String.format("%s [%s]", ontology.getTermMap().get(tid).getName(), tid.getValue());
             System.err.println(String.format("%s: ratio=%s", term, niceFormat(ratio)));
         }
         if (r.hasGenotype()) {
@@ -101,11 +102,11 @@ public final class HpoCase {
             if (g2g==null) {
                 // TODO check this--why do we have a genotype result if there is no genotype?
                 // is this for diseases with a gene but we found no variant?
-                System.err.println(String.format("Genotype LR for %s: %f",r.getEntrezGeneId().getIdWithPrefix(), r.getGenotypeLR()));
+                System.err.println(String.format("Genotype LR for %s: %f",r.getEntrezGeneId().getValue(), r.getGenotypeLR()));
                 System.err.println("No variants found in VCF");
                 return;
             }
-            System.err.println(String.format("Genotype LR for %s[%s]: %f",g2g.getSymbol(), r.getEntrezGeneId().getIdWithPrefix(), r.getGenotypeLR()));
+            System.err.println(String.format("Genotype LR for %s[%s]: %f",g2g.getSymbol(), r.getEntrezGeneId().getValue(), r.getGenotypeLR()));
             System.err.println(g2g);
         } else {
             System.err.println("No genotype used to calculated");
@@ -148,10 +149,10 @@ public final class HpoCase {
     public String toString() {
         String observed=this.observedAbnormalities.
                 stream().
-                map(TermId::getIdWithPrefix).
+                map(TermId::getValue).
                 collect(Collectors.joining("; "));
         String excluded=this.excludedAbnormalities.stream().
-                map(TermId::getIdWithPrefix).
+                map(TermId::getValue).
                 collect(Collectors.joining("; "));
         int n_results=this.getResults().size();
         return "HPO Case\n" + "observed: " + observed +"\nexcluded: " + excluded +"\nTests: n="+n_results;

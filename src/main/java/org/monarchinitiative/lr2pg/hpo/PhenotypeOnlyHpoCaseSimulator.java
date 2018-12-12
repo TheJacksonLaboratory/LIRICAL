@@ -51,7 +51,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
 
 
     /** Root term id in the phenotypic abnormality subontology. */
-    private final static TermId PHENOTYPIC_ABNORMALITY = TermId.constructWithPrefix("HP:0000118");
+    private final static TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
    /**
      * The constructor initializes {@link #ontology} and {@link #diseaseMap} and {@link #phenotypeterms}.

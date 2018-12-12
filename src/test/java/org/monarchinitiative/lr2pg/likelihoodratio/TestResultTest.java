@@ -29,7 +29,7 @@ public class TestResultTest {
 
     @Before
     public void init() {
-        TermId glaucomaId = TermId.constructWithPrefix("MONDO:123");
+        TermId glaucomaId = TermId.of("MONDO:123");
         List<TermId> emptyList = ImmutableList.of();
         List<HpoAnnotation> emptyAnnot = ImmutableList.of();
         glaucoma = new HpoDisease("Glaucoma",glaucomaId,emptyAnnot,emptyList,emptyList);
@@ -68,7 +68,7 @@ public class TestResultTest {
     @Test
     public void testGlaucomaLR2() {
         TestResult tresult;
-        TermId glaucomaId = TermId.constructWithPrefix("MONDO:123");
+        TermId glaucomaId = TermId.of("MONDO:123");
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
@@ -94,7 +94,7 @@ public class TestResultTest {
     @Test
     public void testCompositepositiveLR() {
         TestResult tresult;
-        TermId glaucomaId = TermId.constructWithPrefix("MONDO:123");
+        TermId glaucomaId = TermId.of("MONDO:123");
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
@@ -127,9 +127,9 @@ public class TestResultTest {
     @Test
     public void testTestResultSorting() {
         double EPSILON=0.0001;
-        TermId testId1 = TermId.constructWithPrefix("MONDO:1");
-        TermId testId2 = TermId.constructWithPrefix("MONDO:2");
-        TermId testId3 = TermId.constructWithPrefix("MONDO:3");
+        TermId testId1 = TermId.of("MONDO:1");
+        TermId testId2 = TermId.of("MONDO:2");
+        TermId testId3 = TermId.of("MONDO:3");
         List<TermId> emptyList = ImmutableList.of();
         List<HpoAnnotation> emptyAnnot = ImmutableList.of();
         HpoDisease d1 = new HpoDisease("d1",testId1,emptyAnnot,emptyList,emptyList);
@@ -157,7 +157,7 @@ public class TestResultTest {
         // now add another test result, same as result3 but with additional genotype evidence
         // result4 should now be the top hit
         double genotypeLR=2.0;
-        TermId geneId=TermId.constructWithPrefix("NCBI:Faks");
+        TermId geneId=TermId.of("NCBI:Fake");
         TestResult result4=new TestResult(list3,d3,genotypeLR,geneId,prevalence);
         lst.add(result4);
         assertEquals(lst.get(3),result4);

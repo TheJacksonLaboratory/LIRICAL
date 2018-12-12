@@ -188,7 +188,7 @@ public class CaseEvaluator {
             if (rank<11) {
                 TermId diseaseCurie = res.getDiseaseCurie();
                 String name = diseaseMap.get(diseaseCurie).getName();
-                System.err.println(String.format("Rank #%d: %s [%s]",rank,name,diseaseCurie.getIdWithPrefix()));
+                System.err.println(String.format("Rank #%d: %s [%s]",rank,name,diseaseCurie.getValue()));
             }
         }
         return resultMap;

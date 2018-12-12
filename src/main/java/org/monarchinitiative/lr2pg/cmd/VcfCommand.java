@@ -138,7 +138,7 @@ public class VcfCommand extends Lr2PgCommand {
             Gene2Genotype g2g = genotypeMap.get(geneId);
             double path = g2g.getSumOfPathBinScores();
             String symbol = g2g.getSymbol();
-            String s = String.format("%s [%s] path: %.3f",symbol,geneId.getIdWithPrefix(),path);
+            String s = String.format("%s [%s] path: %.3f",symbol,geneId.getValue(),path);
             if (g2g.hasPredictedPathogenicVar()) {
                 System.out.println(++i +"/"+N+") "+s);
             }

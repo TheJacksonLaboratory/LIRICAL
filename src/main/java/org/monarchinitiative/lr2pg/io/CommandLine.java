@@ -237,7 +237,7 @@ public class CommandLine {
     List<TermId> termIdList() {
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         for (String id : this.termlist.split(",")) {
-            TermId tid = TermId.constructWithPrefix(id);
+            TermId tid = TermId.of(id);
             builder.add(tid);
         }
         return builder.build();

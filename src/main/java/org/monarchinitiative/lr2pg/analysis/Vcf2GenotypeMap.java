@@ -52,7 +52,7 @@ public class Vcf2GenotypeMap {
     /**
      * Prefix for the NCBI Entrez Gene data.
      */
-    private final TermPrefix NCBI_ENTREZ_GENE_PREFIX = new TermPrefix("NCBIGene");
+    private final String NCBI_ENTREZ_GENE_PREFIX = "NCBIGene";
     /**
      * We will assume a frequency of 1:100,000 if no frequency data is available.
      */
@@ -165,7 +165,7 @@ public class Vcf2GenotypeMap {
                     if (!variantEffect.isOffExome()) {
                         String genIdString = va.getGeneId(); // for now assume this is an Entrez Gene ID
                         String symbol = va.getGeneSymbol();
-                        TermId geneId = new TermId(NCBI_ENTREZ_GENE_PREFIX, genIdString);
+                        TermId geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
                         gene2genotypeMap.putIfAbsent(geneId, new Gene2Genotype(geneId, symbol));
                         Gene2Genotype genotype = gene2genotypeMap.get(geneId);
                         VariantEvaluation veval = buildVariantEvaluation(vc, va);

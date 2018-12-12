@@ -20,14 +20,14 @@ public class SimulateSvgPhenoOnlyCommand extends SimulatePhenotypesCommand {
 
     public SimulateSvgPhenoOnlyCommand(String dataDirPath, String diseaseId){
         super(dataDirPath);
-        this.diseaseCurie=TermId.constructWithPrefix(diseaseId);
+        this.diseaseCurie=TermId.of(diseaseId);
     }
 
     public void run() throws Lr2pgException {
         PhenotypeOnlyHpoCaseSimulator phenotypeOnlyHpoCaseSimulator = getPhenotypeOnlySimulator();
         HpoDisease disease = phenotypeOnlyHpoCaseSimulator.name2disease(diseaseCurie);
         if (disease==null) {
-            throw new Lr2pgException("Could not find disease for " + diseaseCurie.getIdWithPrefix());
+            throw new Lr2pgException("Could not find disease for " + diseaseCurie.getValue());
         }
         phenotypeOnlyHpoCaseSimulator.simulateCase(disease);
         HpoCase hpocase = phenotypeOnlyHpoCaseSimulator.getCurrentCase();
