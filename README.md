@@ -52,7 +52,7 @@ prior to doing that.
 To run the VCF prioritization tool of LR2PG, create a YAML configuration file. There are several examples in the ``resources/yaml``
 directory. Then, run the program with the following command.
 ```
-$ java -jar target/LR2PG-0.5.4.jar vcf -y <yaml>
+$ java -jar target/Lr2pg.jar vcf -y <yaml>
 ```
 
 Please consult the ``src/main/resources/yaml`` directory for several example YAML files.
@@ -60,7 +60,7 @@ Please consult the ``src/main/resources/yaml`` directory for several example YAM
 ## Clinvar pathogenicity scores
 To get the exomiser pathogenicity scores for all ClinVar variants, we can run LR2PG as follows
 ```
-$ java -jar target/LR2PG-0.4.6.jar gt2git
+$ java -jar target/Lr2pg.jar gt2git
   -j
   /home/peter/data/exomiser/1802_hg19/1802_hg19_transcripts_refseq.ser
   --mvstore

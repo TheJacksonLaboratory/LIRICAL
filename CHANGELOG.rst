@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------
+v0.9.1
+------
+- Implemented likelihood ratio for variants with known ClinVar pathogenic status and corresponding tests with mockito
+
+------
 v0.9.0
 ------
 - First pre-release version
