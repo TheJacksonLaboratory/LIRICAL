@@ -35,6 +35,7 @@ public class Gene2Genotype {
         this.geneId=id;
         this.symbol=sym;
         this.varList=new ArrayList<>();
+        this.sumOfPathBinScores=0d;
     }
 
     public TermId getGeneId() {
@@ -57,32 +58,32 @@ public class Gene2Genotype {
                            List<TranscriptAnnotation> annotList, String genotypeString, float path, float freq){
         SimpleVariant simplevar = new SimpleVariant(chrom, pos, ref, alt,  annotList, path,  freq, genotypeString);
         this.varList.add(simplevar);
-       // System.err.println("##### " + genotypeString +" ########");
-
+        if (simplevar.isInPathogenicBin()) {
+            SimpleGenotype sgenotype=simplevar.getGtype();
+            if (sgenotype.equals(SimpleGenotype.HOMOZYGOUS_ALT)) {
+                this.sumOfPathBinScores += 2*simplevar.getPathogenicity();
+            } else  { // assume het
+                this.sumOfPathBinScores+=simplevar.getPathogenicity();
+            }
+        }
+        Collections.sort(varList); // keep variant list sorted
     }
 
     public void addVariant(int chrom, int pos, String ref, String alt,
                            List<TranscriptAnnotation> annotList, String genotypeString, float path, float freq,ClinVarData.ClinSig clinv){
         SimpleVariant simplevar = new SimpleVariant(chrom, pos, ref, alt,  annotList, path,  freq, genotypeString,clinv);
         this.varList.add(simplevar);
-        //System.err.println("##### " + genotypeString +" ########");
-    }
-
-
-    public void sortVariants() {
-        Collections.sort(varList);
-        this.sumOfPathBinScores=0d;
-        for (SimpleVariant svar:varList) {
-            if (svar.isInPathogenicBin()) {
-                SimpleGenotype sgenotype=svar.getGtype();
-                if (sgenotype.equals(SimpleGenotype.HOMOZYGOUS_ALT)) {
-                    this.sumOfPathBinScores += 2*svar.getPathogenicity();
-                } else  { // assume het
-                    this.sumOfPathBinScores+=svar.getPathogenicity();
-                }
+        if (simplevar.isInPathogenicBin()) {
+            SimpleGenotype sgenotype=simplevar.getGtype();
+            if (sgenotype.equals(SimpleGenotype.HOMOZYGOUS_ALT)) {
+                this.sumOfPathBinScores += 2*simplevar.getPathogenicity();
+            } else  { // assume het
+                this.sumOfPathBinScores+=simplevar.getPathogenicity();
             }
         }
+        Collections.sort(varList); // keep variant list sorted
     }
+
 
     public boolean hasPredictedPathogenicVar() {
         return this.varList.stream().anyMatch(SimpleVariant::isInPathogenicBin);
