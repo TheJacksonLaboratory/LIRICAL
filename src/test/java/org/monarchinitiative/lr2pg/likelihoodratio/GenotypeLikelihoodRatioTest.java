@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
-import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
+
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
-public class GenotypeLikelihoodRatioTest {
+class GenotypeLikelihoodRatioTest {
 
     private static final double EPSILON=0.0001;
 

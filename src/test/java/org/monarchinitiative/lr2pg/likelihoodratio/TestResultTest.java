@@ -1,9 +1,9 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -12,14 +12,15 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  * Some of this test class is based on the data and cases presented in
  * https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2683447/
  * Note -- the authors of that paper rounded results and this class does not!
  */
-public class TestResultTest {
+class TestResultTest {
 
     private static final double EPSILON = 0.00001;
     private static double ratio(double sensitivity, double specificity) {
@@ -27,8 +28,8 @@ public class TestResultTest {
     }
     private HpoDisease glaucoma;
 
-    @Before
-    public void init() {
+    @BeforeEach
+    void init() {
         TermId glaucomaId = TermId.of("MONDO:123");
         List<TermId> emptyList = ImmutableList.of();
         List<HpoAnnotation> emptyAnnot = ImmutableList.of();
@@ -36,7 +37,7 @@ public class TestResultTest {
     }
 
     @Test
-    public void testGlaucomaLR1() {
+    void testGlaucomaLR1() {
         TestResult tresult;
 
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
@@ -66,7 +67,7 @@ public class TestResultTest {
     }
 
     @Test
-    public void testGlaucomaLR2() {
+    void testGlaucomaLR2() {
         TestResult tresult;
         TermId glaucomaId = TermId.of("MONDO:123");
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
@@ -92,7 +93,7 @@ public class TestResultTest {
 
 
     @Test
-    public void testCompositepositiveLR() {
+    void testCompositepositiveLR() {
         TestResult tresult;
         TermId glaucomaId = TermId.of("MONDO:123");
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
@@ -111,21 +112,21 @@ public class TestResultTest {
         tresult = new TestResult(builder.build(),glaucoma,prevalence);
          //PretestOdds = pretest prob / (1-pretest prob) = 0.95 / 0.05 = 19.0
         double expectedPretestOdds = 0.0256410;
-        Assert.assertEquals(expectedPretestOdds, tresult.pretestodds(), EPSILON);
+        assertEquals(expectedPretestOdds, tresult.pretestodds(), EPSILON);
 
         //PosttestOdds = PrestestOdds * Compositelikelihoodratio = 0.03 * 6.25 * 20 * 20
         double expected = 64.102564;
-        Assert.assertEquals(expected, tresult.posttestodds(), EPSILON);
+        assertEquals(expected, tresult.posttestodds(), EPSILON);
 
         //PosttestProb = PosttestOdds / (1+ PosttestOdds)
         double ptodds=expected;
         expected = 0.9846396;
-        Assert.assertEquals(expected, (ptodds/(ptodds+1)), EPSILON);
+        assertEquals(expected, (ptodds/(ptodds+1)), EPSILON);
     }
 
 
     @Test
-    public void testTestResultSorting() {
+    void testTestResultSorting() {
         double EPSILON=0.0001;
         TermId testId1 = TermId.of("MONDO:1");
         TermId testId2 = TermId.of("MONDO:2");

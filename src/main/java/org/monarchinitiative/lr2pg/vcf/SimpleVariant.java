@@ -16,8 +16,6 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarDat
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class SimpleVariant implements Comparable<SimpleVariant> {
-
-
     /** A set of interpretation classes from ClinVar that we will regard as pathogenic. */
     private static final Set<ClinVarData.ClinSig> PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS =
             Sets.immutableEnumSet(ClinVarData.ClinSig.PATHOGENIC,

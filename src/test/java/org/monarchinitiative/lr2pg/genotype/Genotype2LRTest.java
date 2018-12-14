@@ -1,6 +1,7 @@
 package org.monarchinitiative.lr2pg.genotype;
 
-import org.junit.BeforeClass;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -11,7 +12,7 @@ public class Genotype2LRTest {
     private static Map<TermId,Double> gene2backgroundFrequency;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         ClassLoader classLoader = Genotype2LRTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.obo").getFile();
