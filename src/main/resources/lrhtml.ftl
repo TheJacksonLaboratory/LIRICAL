@@ -145,23 +145,21 @@ table.redTable tfoot .links a{
   color: #A40808;
   padding: 2px 8px;
   border-radius: 5px;
-  }
-
-  table.minimalistBlack {
+}
+ table.minimalistBlack {
     border: 3px solid #000000;
     width: 100%;
     text-align: left;
     border-collapse: collapse;
-  }
-  table.minimalistBlack td, table.minimalistBlack th {
-    border: 1px solid #000000;
-    padding: 5px 4px;
-  }
+ }
+ table.minimalistBlack td, table.minimalistBlack th {
+   border: 1px solid #000000;
+   padding: 5px 4px;
+ }
 
-  table.minimalistBlack.red td {
+ table.minimalistBlack.red td {
   background: red;
   }
-
 
   table.minimalistBlack tbody td {
     font-size: 13px;
@@ -282,9 +280,9 @@ table.redTable tfoot .links a{
                 <#if svar.isInPathogenicBin() >
                 <td class="red">${svar.pathogenicity}</td>
                 <#else>
-                 <td>${svar.pathogenicity}</td>
+                 <td>${svar.pathogenicityScore}</td>
                 </#if>
-                <td>${svar.frequency}</td>
+                <td>${svar.frequency}%</td>
                 <td>${svar.gtype}</td>
                 <td>${svar.clinvar}</td>
                 <td>

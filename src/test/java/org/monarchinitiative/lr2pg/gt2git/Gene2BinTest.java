@@ -1,16 +1,18 @@
 package org.monarchinitiative.lr2pg.gt2git;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class Gene2BinTest {
+class Gene2BinTest {
     private final static double EPSILON=0.0001;
 
     @Test
-    public void testAddVariants() {
+    void testAddVariants() {
         String symbol="FAKE_SYMBOL";
         String id="123";
         Gene2Bin g2bin = new Gene2Bin(symbol,id);
@@ -23,7 +25,7 @@ public class Gene2BinTest {
     }
 
     @Test
-    public void testBorderOfBin() {
+    void testBorderOfBin() {
         // the lower pathogenic threshold is 0.8 -- inclusive
         String symbol="FAKE_SYMBOL";
         String id="123";
@@ -34,7 +36,7 @@ public class Gene2BinTest {
     }
 
     @Test
-    public void testBorderOfBin2() {
+    void testBorderOfBin2() {
         // the lower pathogenic threshold is 0.8 -- inclusive
         String symbol="FAKE_SYMBOL";
         String id="123";

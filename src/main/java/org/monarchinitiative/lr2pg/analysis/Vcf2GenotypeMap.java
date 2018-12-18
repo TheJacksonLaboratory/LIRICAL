@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 /**
  * This class is responsible for parsing the VCF file and extracting variants and genotypes. Its
- * main output is the map in {@link #gene2genotypeMap}.
+ * main org.monarchinitiative.lr2pg.output is the map in {@link #gene2genotypeMap}.
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
@@ -52,7 +52,7 @@ public class Vcf2GenotypeMap {
     /**
      * Prefix for the NCBI Entrez Gene data.
      */
-    private final TermPrefix NCBI_ENTREZ_GENE_PREFIX = new TermPrefix("NCBIGene");
+    private final String NCBI_ENTREZ_GENE_PREFIX = "NCBIGene";
     /**
      * We will assume a frequency of 1:100,000 if no frequency data is available.
      */
@@ -105,7 +105,7 @@ public class Vcf2GenotypeMap {
         this.genomeAssembly = ga;
     }
 
-    /** map with some information about the VCF file that will be shown on the hTML output. */
+    /** map with some information about the VCF file that will be shown on the hTML org.monarchinitiative.lr2pg.output. */
     public Map<String, String> getVcfMetaData() {
         return vcfMetaData;
     }
@@ -165,7 +165,7 @@ public class Vcf2GenotypeMap {
                     if (!variantEffect.isOffExome()) {
                         String genIdString = va.getGeneId(); // for now assume this is an Entrez Gene ID
                         String symbol = va.getGeneSymbol();
-                        TermId geneId = new TermId(NCBI_ENTREZ_GENE_PREFIX, genIdString);
+                        TermId geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
                         gene2genotypeMap.putIfAbsent(geneId, new Gene2Genotype(geneId, symbol));
                         Gene2Genotype genotype = gene2genotypeMap.get(geneId);
                         VariantEvaluation veval = buildVariantEvaluation(vc, va);
@@ -200,11 +200,6 @@ public class Vcf2GenotypeMap {
 
             logger.info("Finished Annotating VCF (time= " + (endTime-startTime)/100_000_000 + " sec)");
         }
-        // now sort the variants by pathogenicity
-        for (Gene2Genotype genot : this.gene2genotypeMap.values()) {
-            genot.sortVariants();
-        }
-
 
         //debugPrintGenotypes();
         if (progressReporter != null)

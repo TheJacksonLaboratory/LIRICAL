@@ -41,7 +41,7 @@ public class CaseEvaluator {
 
     private static final double DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD=0.01;
 
-    private double threshold;
+    private final double threshold;
 
     private final boolean phenotypeOnly;
 
@@ -132,12 +132,9 @@ public class CaseEvaluator {
             if (associatedGenes != null && associatedGenes.size() > 0) {
                 for (TermId entrezGeneId : associatedGenes) {
                     Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
-                    double observedWeightedPathogenicVariantCount=0;
-                    if (g2g!=null) {
-                        observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
-                    }
 
-                    Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(observedWeightedPathogenicVariantCount,
+
+                    Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(g2g,
                             inheritancemodes,
                             entrezGeneId);
                     if (opt.isPresent()) {
@@ -188,7 +185,7 @@ public class CaseEvaluator {
             if (rank<11) {
                 TermId diseaseCurie = res.getDiseaseCurie();
                 String name = diseaseMap.get(diseaseCurie).getName();
-                System.err.println(String.format("Rank #%d: %s [%s]",rank,name,diseaseCurie.getIdWithPrefix()));
+                System.err.println(String.format("Rank #%d: %s [%s]",rank,name,diseaseCurie.getValue()));
             }
         }
         return resultMap;

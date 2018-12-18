@@ -33,7 +33,7 @@ public class PhenotypeLikelihoodRatio {
     /** Overall, i.e., background frequency of each HPO term. */
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
 
-    private final static TermId PHENOTYPIC_ABNORMALITY = TermId.constructWithPrefix("HP:0000118");
+    private final static TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
     private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.000_005; // 1:20,000
 
@@ -150,7 +150,7 @@ public class PhenotypeLikelihoodRatio {
      */
     double getBackgroundFrequency(TermId termId) {
         if (! hpoTerm2OverallFrequency.containsKey(termId)) {
-            logger.error(String.format("Map did not contain data for term %s",termId.getIdWithPrefix() ));
+            logger.error(String.format("Map did not contain data for term %s",termId.getValue() ));
             // todo throw error
             System.exit(1);
         }

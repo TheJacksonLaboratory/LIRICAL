@@ -14,7 +14,7 @@ public class GenotypeDataIngestor {
 
     private final String backgroundFrequencyPath;
 
-    private final static TermPrefix ENTREZ_GENE_PREFIX=new TermPrefix("NCBIGene");
+    private final static String ENTREZ_GENE_PREFIX="NCBIGene";
 
     public GenotypeDataIngestor(String path) {
         this.backgroundFrequencyPath=path;
@@ -43,7 +43,7 @@ public class GenotypeDataIngestor {
                 if (entrezNumber==null || entrezNumber.length()==0) {
                     continue; // no EntrezId available -- this happens with many genes
                 }
-                TermId entrezId=new TermId(ENTREZ_GENE_PREFIX,entrezNumber);
+                TermId entrezId=TermId.of(ENTREZ_GENE_PREFIX,entrezNumber);
                 String fsumpath=a[9];
                 try {
                     Double pathSum = Double.parseDouble(fsumpath);

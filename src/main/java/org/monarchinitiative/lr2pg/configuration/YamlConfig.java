@@ -1,5 +1,7 @@
 package org.monarchinitiative.lr2pg.configuration;
 
+import org.openrdf.rio.LanguageHandlerRegistry;
+
 import java.util.Map;
 
 public class YamlConfig {
@@ -26,4 +28,6 @@ public class YamlConfig {
     public String[] getHpoIds() {
         return hpoIds;
     }
+
+    LanguageHandlerRegistry a;
 }

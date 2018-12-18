@@ -2,6 +2,7 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.poisson.PoissonDistribution;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -12,7 +13,7 @@ import java.util.Optional;
 import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.*;
 
 /**
- * This class is responsible for calculate the genotype-based likelihood ratio.
+ * This class is responsible for calculating the genotype-based likelihood ratio.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class GenotypeLikelihoodRatio {
@@ -32,14 +33,21 @@ public class GenotypeLikelihoodRatio {
 
 
     /**
-     * Calculate the genotypoe likelihood ratio using lambda_disease=1 for autosomal dominant and lambda_disease=2
-     * for autosomal recessive. TODO figure out other MOIs
-     * @param observedPathogenicVarCount weighted number of observed pathogenic variants in this gene
+     * Calculate the genotype likelihood ratio using lambda_disease=1 for autosomal dominant and lambda_disease=2
+     * for autosomal recessive. TODO figure out other MOIs TODO do not allow g2g to be null, refactor
+     * @param g2g  {@link Gene2Genotype} object with list of variants in current gene. Can be null if no variants were found in the gene
      * @param inheritancemodes list of modes of inheritance associated with disease being investigated (usually with just one entry).
      * @param geneId EntrezGene id of the gene we are investigating.
      * @return likelihood ratio of the genotype given the disease/geniId combination
      */
-    Optional<Double> evaluateGenotype(double observedPathogenicVarCount, List<TermId> inheritancemodes, TermId geneId) {
+    Optional<Double> evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
+        double observedWeightedPathogenicVariantCount=0;
+        if (g2g!=null) {
+            observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
+            if (g2g.hasPathogenicClinvarVar()) {
+                return Optional.of(Math.pow(1000d, g2g.pathogenicClinVarCount()));
+            }
+        }
         double lambda_disease=1.0;
         if (inheritancemodes!=null && inheritancemodes.size()>0) {
             TermId tid = inheritancemodes.get(0);
@@ -48,15 +56,15 @@ public class GenotypeLikelihoodRatio {
             }
         }
         double lambda_background = this.gene2backgroundFrequency.getOrDefault(geneId, DEFAULT_LAMBDA_BACKGROUND);
-        Double D;
-        if (observedPathogenicVarCount<EPSILON) {
+        double D;
+        if (observedWeightedPathogenicVariantCount<EPSILON) {
             D=0.05; // heuristic--chance of zero variants given this is disease is 5%
         } else {
             PoissonDistribution pdDisease = new PoissonDistribution(lambda_disease);
-            D = pdDisease.probability(observedPathogenicVarCount);
+            D = pdDisease.probability(observedWeightedPathogenicVariantCount);
         }
         PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
-        double B = pdBackground.probability(observedPathogenicVarCount);
+        double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
         if (B>0 && D>0) {
             return Optional.of(D/B);
         } else {
@@ -65,8 +73,8 @@ public class GenotypeLikelihoodRatio {
     }
 
     /** This method is intended to explain the score that is produced by {@link #evaluateGenotype}, and
-     * produces a shoprt summary that can be displayed in the output file. It is intended to be used for the
-     * best candidates, i.e., those that will be displayed on the output page.
+     * produces a shoprt summary that can be displayed in the org.monarchinitiative.lr2pg.output file. It is intended to be used for the
+     * best candidates, i.e., those that will be displayed on the org.monarchinitiative.lr2pg.output page.
      * @param observedPathogenicVarCount number of variants called to ne pathogenic
      * @param inheritancemodes List of all inheritance modes associated with this disease (usually has one element,rarely multiple)
      * @param geneId EntrezGene id of the current gene.
@@ -88,7 +96,7 @@ public class GenotypeLikelihoodRatio {
         double lambda_background = this.gene2backgroundFrequency.getOrDefault(geneId, DEFAULT_LAMBDA_BACKGROUND);
         sb.append(String.format("Observed weighted pathogenic variant count: %.2f. &lambda;<sub>disease</sub>=%d. &lambda;<sub>background</sub>=%.4f. ",
                 observedPathogenicVarCount,(int)lambda_disease,lambda_background));
-        Double D;
+        double D;
         if (observedPathogenicVarCount<EPSILON) {
             D=0.05; // heuristic--chance of zero variants given this is disease is 5%
         } else {

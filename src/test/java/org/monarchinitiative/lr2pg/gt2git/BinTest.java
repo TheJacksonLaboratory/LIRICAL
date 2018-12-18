@@ -1,12 +1,14 @@
 package org.monarchinitiative.lr2pg.gt2git;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class BinTest {
+class BinTest {
 
     private final static double EPSILON=0.0001;
 
@@ -14,7 +16,7 @@ public class BinTest {
      * but it returns the overall freuqencies (divided by 100).
      */
     @Test
-    public void testTotalFreqeuncyAndCount() {
+    void testTotalFreqeuncyAndCount() {
         Bin bin = new Bin();
         double x=0.01;
         double y=0.02;

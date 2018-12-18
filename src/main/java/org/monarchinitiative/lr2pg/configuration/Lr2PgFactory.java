@@ -69,7 +69,7 @@ public class Lr2PgFactory {
         this.jannovarTranscriptFile=builder.jannovarTranscriptFile;
         ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
         for (String id : builder.observedHpoTerms) {
-            TermId hpoId = TermId.constructWithPrefix(id);
+            TermId hpoId = TermId.of(id);
             listbuilder.add(hpoId);
         }
         this.hpoIdList=listbuilder.build();
@@ -83,7 +83,7 @@ public class Lr2PgFactory {
         if (ontology==null) hpoOntology();
         for (TermId hpoId : hpoIdList) {
             if (! this.ontology.getTermMap().containsKey(hpoId)) {
-                throw new Lr2pgException("Could not find HPO term " + hpoId.getIdWithPrefix() + " in ontologvy");
+                throw new Lr2pgException("Could not find HPO term " + hpoId.getValue() + " in ontology");
             }
         }
         return hpoIdList;
@@ -180,8 +180,7 @@ public class Lr2PgFactory {
             throw new Lr2pgException("Path to background-freq.txt file not found");
         }
         GenotypeDataIngestor gdingestor = new GenotypeDataIngestor(this.backgroundFrequencyPath);
-        Map<TermId, Double> gene2backgroundFrequency = gdingestor.parse();
-        return gene2backgroundFrequency;
+        return gdingestor.parse();
     }
 
     /** @return the object created by deserilizing a Jannovar file. */

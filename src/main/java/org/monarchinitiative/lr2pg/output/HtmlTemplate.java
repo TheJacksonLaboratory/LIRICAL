@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class coordinates getting the data from the analysis into the FreeMark output templates.
+ * This class coordinates getting the data from the analysis into the FreeMark org.monarchinitiative.lr2pg.output templates.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class HtmlTemplate {
@@ -78,7 +78,7 @@ public class HtmlTemplate {
         List<String> observedHPOs = new ArrayList<>();
         for (TermId id:observedIds) {
             Term term = ontology.getTermMap().get(id);
-            String tstr = String.format("%s (<a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>)",term.getName(),id.getIdWithPrefix(),id.getIdWithPrefix());
+            String tstr = String.format("%s (<a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>)",term.getName(),id.getValue(),id.getValue());
             observedHPOs.add(tstr);
         }
         this.templateData.put("observedHPOs",observedHPOs);
@@ -90,11 +90,11 @@ public class HtmlTemplate {
 
         for (TestResult result : hcase.getResults()) {
             String symbol="";
-            TermId test=TermId.constructWithPrefix("OMIM:101600");
+            TermId test=TermId.of("OMIM:101600");
             if (result.getDiseaseCurie().equals(test)) {
                 logger.error("HTML Template Found bad entry...");
                 logger.error("result..." + result.toString());
-                logger.error("Gene id="+result.getEntrezGeneId().getIdWithPrefix());
+                logger.error("Gene id="+result.getEntrezGeneId().getValue());
                 logger.error("Contains gene id = " +genotypeMap.containsKey(result.getEntrezGeneId()));
                 logger.error("Gene symbol="+symbol);
                 //System.exit(1);

@@ -52,7 +52,7 @@ public class Lr2pgVariantAnnotator implements VariantAnnotator {
     }
 
     private List<TranscriptAnnotation> buildTranscriptAnnotations(List<Annotation> annotations) {
-        List<TranscriptAnnotation> transcriptAnnotations = new ArrayList(annotations.size());
+        List<TranscriptAnnotation> transcriptAnnotations = new ArrayList<>(annotations.size());
         Iterator iter = annotations.iterator();
 
         while(iter.hasNext()) {
