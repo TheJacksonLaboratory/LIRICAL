@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class coordinates getting the data from the analysis into the FreeMark output templates.
+ * This class coordinates getting the data from the analysis into the FreeMark org.monarchinitiative.lr2pg.output templates.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class HtmlTemplate {

@@ -54,7 +54,7 @@ public class GenicIntoleranceCalculator {
                     ClinVarData.ClinSig.BENIGN_OR_LIKELY_BENIGN);
     /** Ordered list of the populations included in the calculations. */
     private FrequencySource[] orderedSources = {GNOMAD_E_AFR,GNOMAD_E_AMR,GNOMAD_E_ASJ,GNOMAD_E_EAS,GNOMAD_E_FIN,GNOMAD_E_NFE,GNOMAD_E_SAS};
-    /** The header of the output file that shows the populations included in the calculation. */
+    /** The header of the org.monarchinitiative.lr2pg.output file that shows the populations included in the calculation. */
     private String[] headerFields = {"AFR","AMR","ASJ","EAS","FIN","NFE","SAS"};
     /** File name for the file that will contain the frequencies of predicted pathogenic variants in the
      * population background, i.e., from gnomAD  from the Exomiser database.*/
@@ -70,7 +70,7 @@ public class GenicIntoleranceCalculator {
      *
      * @param variantAnnotator Object to annotate an arbitrary variant
      * @param alleleStore Exomiser data resource
-     * @param fname name of output file (background-hg38.txt or background-hg19.txt).
+     * @param fname name of org.monarchinitiative.lr2pg.output file (background-hg38.txt or background-hg19.txt).
      */
     public GenicIntoleranceCalculator(VariantAnnotator variantAnnotator, MVStore alleleStore, String fname, boolean doClinvar) {
         this.variantAnnotator = variantAnnotator;
@@ -171,7 +171,7 @@ public class GenicIntoleranceCalculator {
                     // they also have a review status which will tell you how much confidence you might want to assign a given interpretation.
                     // see https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/
                     // there are also three categories that we will regard as "benign".
-                    // We output the pathogenicity scores and the interpretation with the goal of visualizing
+                    // We org.monarchinitiative.lr2pg.output the pathogenicity scores and the interpretation with the goal of visualizing
                     // the distributions of benign and pathogenic variant pathogenicity scores.
                     if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation()) ||
                             BENIGN_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {

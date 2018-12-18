@@ -417,6 +417,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
      */
     public float getPathogenicityScore() {
         float predictedScore = pathogenicityData.getScore();
+        if (variantEffect.equals(VariantEffect.SPLICE_REGION_VARIANT)) return 0.75f;
         float variantEffectScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
         // In version 10.1.0 the MISSENSE variant constraint was removed from the defaultPathogenicityDao and variantDataServiceImpl
         // so that non-missense variants would get ClinVar annotations and other non-synonymous path scores from the variant store.
@@ -569,7 +570,7 @@ public class VariantEvaluation implements Comparable<VariantEvaluation>, Filtera
     public String toString() {
         //TODO: expose frequency and pathogenicity scores?
         if(contributesToGeneScore()) {
-            //Add a star to the output string between the variantEffect and the score
+            //Add a star to the org.monarchinitiative.lr2pg.output string between the variantEffect and the score
             return "VariantEvaluation{assembly=" + genomeAssembly + " chr=" + chr + " pos=" + pos + " ref=" + ref + " alt=" + alt + " qual=" + phredScore + " " + variantEffect + " * score=" + getVariantScore() + " " + getFilterStatus() + " failedFilters=" + failedFilterTypes + " passedFilters=" + passedFilterTypes
                     + " compatibleWith=" + compatibleInheritanceModes + "}";
         }

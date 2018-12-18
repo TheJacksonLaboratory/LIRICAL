@@ -32,6 +32,8 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
     private final List<TranscriptAnnotation> annotationList;
     private final float pathogenicity;
     private final float frequency;
+    /** This is the exomiser-style pathogenicity score: the predicted pathogenicity multiplied by a frequency factor.*/
+    private final float pathogenicityScore;
     private final ClinVarData.ClinSig clinvar;
     private final SimpleGenotype gtype;
 
@@ -49,6 +51,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
         this.annotationList=ImmutableList.copyOf(annotlist);
         this.pathogenicity=path;
         this.frequency=freq;
+        this.pathogenicityScore=(float)pathogenicityScore();
         this.clinvar=clinv;
         switch (genotypeString) {
             case "0/1":
@@ -83,7 +86,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
      * @return true if the predicted pathogenicity of this variant is above {@link #PATHOGENICITY_THRESHOLD}.
      */
     public boolean isInPathogenicBin() {
-        return this.pathogenicity >= PATHOGENICITY_THRESHOLD;
+        return this.pathogenicityScore >= PATHOGENICITY_THRESHOLD;
     }
 
     /**@return chromosome on which this variant is located. Returns a String such as chr1 or chrY */
@@ -132,6 +135,14 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
     public float getFrequency() {
         return frequency;
     }
+
+    /** @return Exomiser like pathogenicity score that multiplies the predicted pathogenicity by the frequency factor. */
+    private double pathogenicityScore() {
+        double freqScore = Math.max(0,1-0.13533*Math.exp(100*this.frequency));
+        return this.pathogenicity * freqScore;
+    }
+
+
 
     public boolean isClinVarPathogenic() {
         return PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(this.clinvar);

@@ -68,7 +68,7 @@ public class Lr2Svg {
     }
 
     /**
-     * This function determines the vertical dimension of the SVG that we will output.
+     * This function determines the vertical dimension of the SVG that we will org.monarchinitiative.lr2pg.output.
      */
     private void determineTotalHeightOfSvg() {
         this.heightOfMiddleLine=calculateHeightOfMiddleLine();

@@ -296,7 +296,7 @@ public class CommandLine {
         System.out.println("svg:");
         System.out.println("\tjava -jar Lr2pg.jar svg --disease <name> [-- svg <file>] [-d <directory>] [-t <int>] [-n <int>]");
         System.out.println("\t--disease <string>: name of disease to simulate (e.g., OMIM:600321)");
-//        System.out.println(String.format("\t--svg <file>: name of output SVG file (default: %s)", DEFAULT_SVG_OUTFILE_NAME));
+//        System.out.println(String.format("\t--svg <file>: name of org.monarchinitiative.lr2pg.output SVG file (default: %s)", DEFAULT_SVG_OUTFILE_NAME));
 //        System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
 //        System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
     }

@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------
+v0.9.2
+------
+- Implemented Exomiser-style pathogenicity score for the analysis.
+
+------
 v0.9.1
 ------
 - Implemented likelihood ratio for variants with known ClinVar pathogenic status and corresponding tests with mockito
@@ -24,7 +29,7 @@ v0.5.2
 ------
 - adding functionality from previous G2GIT project
 - removing SpringBoot code
-- adding FreeMarker output for analysis of VCF+phenotype data
+- adding FreeMarker org.monarchinitiative.lr2pg.output for analysis of VCF+phenotype data
 
 
 ------

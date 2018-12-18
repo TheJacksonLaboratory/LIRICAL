@@ -10,8 +10,8 @@ import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 /**
- * Simulate a single case and produce an SVG output file.
- * TODO -- make output file name flexible.
+ * Simulate a single case and produce an SVG org.monarchinitiative.lr2pg.output file.
+ * TODO -- make org.monarchinitiative.lr2pg.output file name flexible.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class SimulateSvgPhenoOnlyCommand extends SimulatePhenotypesCommand {
