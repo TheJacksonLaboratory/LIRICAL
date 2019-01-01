@@ -41,7 +41,7 @@ public class VcfCommand extends Lr2PgCommand {
     private final String BACKGROUND_FREQUENCY_FILE="background-freq.txt";
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
     private Map<TermId,String> geneId2symbol;
-    /** Various metadata that will be used for the HTML output. */
+    /** Various metadata that will be used for the HTML org.monarchinitiative.lr2pg.output. */
     private Map<String,String> metadata;
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
     private double LR_THRESHOLD=0.01;

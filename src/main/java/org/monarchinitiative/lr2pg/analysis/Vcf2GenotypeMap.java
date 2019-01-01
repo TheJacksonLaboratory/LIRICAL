@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 /**
  * This class is responsible for parsing the VCF file and extracting variants and genotypes. Its
- * main output is the map in {@link #gene2genotypeMap}.
+ * main org.monarchinitiative.lr2pg.output is the map in {@link #gene2genotypeMap}.
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
@@ -105,7 +105,7 @@ public class Vcf2GenotypeMap {
         this.genomeAssembly = ga;
     }
 
-    /** map with some information about the VCF file that will be shown on the hTML output. */
+    /** map with some information about the VCF file that will be shown on the hTML org.monarchinitiative.lr2pg.output. */
     public Map<String, String> getVcfMetaData() {
         return vcfMetaData;
     }
