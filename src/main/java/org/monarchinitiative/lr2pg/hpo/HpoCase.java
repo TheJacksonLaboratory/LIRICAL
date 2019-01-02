@@ -116,7 +116,7 @@ public final class HpoCase {
 
     /**
      * Ootputs the top n results to the shell
-     * @param n number of top results to output.
+     * @param n number of top results to org.monarchinitiative.lr2pg.output.
      */
     public void outputTopResults(int n, HpoOntology ontology, Map<TermId, Gene2Genotype> g2gmap) {
         List<TestResult> resultlist = new ArrayList<>(this.disease2resultMap.values());

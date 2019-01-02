@@ -9,8 +9,7 @@ import java.util.List;
 
 /**
  * This class stores all the information we need for a detailed differential diagnosis -- the major
- * candidates. It is intended to be used as a Java Bean for the output template to store the
- * information needed in a convenient way.
+ * candidates. It is intended to be used as a Java Bean for the FreeMarker HTML template.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class DifferentialDiagnosis {
@@ -18,7 +17,7 @@ public class DifferentialDiagnosis {
     private final static String EMPTY_STRING="";
     private final String diseaseName;
     private final String diseaseCurie;
-    /** This is the annchor that will be used on the HTML page. */
+    /** This is the anchor that will be used on the HTML page. */
     private  String anchor=EMPTY_STRING;
     private final int rank;
     private final String pretestprob;
@@ -40,7 +39,7 @@ public class DifferentialDiagnosis {
 
 
     DifferentialDiagnosis(TestResult result) {
-        this.diseaseName=result.getDiseaseName();
+        this.diseaseName=prettifyDiseaseName(result.getDiseaseName());
         this.diseaseCurie=result.getDiseaseCurie().getValue();
         this.rank=result.getRank();
         if (result.getPosttestProbability()>0.9999) {
@@ -66,7 +65,6 @@ public class DifferentialDiagnosis {
             this.entrezGeneId=null;
         }
         url=String.format("https://omim.org/%s",result.getDiseaseCurie().getId());
-        System.out.println("dn="+this.diseaseName);
     }
 
     void addG2G(Gene2Genotype g2g) {
@@ -125,25 +123,48 @@ public class DifferentialDiagnosis {
         return geneSymbol;
     }
 
+    /** This is used to provide an appropriate message for the HTML template in case we have found no variants in the
+     * gene that corresponds to the differential diagnosis. */
     public void setNoVariantsFoundString(String s) {
         noVariantsFound=s;
-        System.err.println(noVariantsFound);
     }
 
+    /**
+     * We are getting the disease names from OMIM (actually from our small files), and so some of them are long and
+     * unweildly strings such as the following:
+     * {@code }#101200 APERT SYNDROME;;ACROCEPHALOSYNDACTYLY, TYPE I; ACS1;;ACS IAPERT-CROUZON DISEASE,
+     * INCLUDED;;ACROCEPHALOSYNDACTYLY, TYPE II, INCLUDED;;ACS II, INCLUDED;;VOGT CEPHALODACTYLY, INCLUDED}. We want to
+     * remove any leading numbers and only show the first part of the name (before the first ";;").
+     * @param originalName original possibly verbose disease name with synonyms
+     * @return prettified disease name intended for display on HTML page
+     */
+    private String prettifyDiseaseName(String originalName) {
+        int i=originalName.indexOf(";;");
+        if (i>0) {
+            originalName=originalName.substring(0,i);
+        }
+        i=0;
+        while (originalName.charAt(i)=='#' || Character.isDigit(originalName.charAt(i)) || Character.isWhitespace(originalName.charAt(i))) {
+            i++;
+            if (i>=originalName.length()) break;
+        }
+        return originalName.substring(i);
+    }
+
+    /** @return a message for the HTML template in case no variant was found in the gene that corresponds to this differential diagnosis.*/
     public String getNoVariantsFound() {
         return noVariantsFound;
     }
-
+    /** @param a An HTML anchor that is used for the HTML template. */
     public void setAnchor(String a) { this.anchor=a;}
+    /** @return An HTML anchor that is used for the HTML template. */
     public String getAnchor(){ return anchor;}
-
-    public String getExplanation() {
-        return genotypeScoreExplanation;
-    }
-
+    /** @return An explanation of how the genotype score was calculated (for the HTML template). */
+    public String getExplanation() { return genotypeScoreExplanation; }
+    /** @param genotypeScoreExplanation An explanation of how the genotype score was calculated (for the HTML template). */
     public void setGenotypeScoreExplanation(String genotypeScoreExplanation) {
         this.genotypeScoreExplanation = genotypeScoreExplanation;
     }
-
+    /** @return true iff this differential diagnosis has an explanation about the genotype score. */
     public boolean hasExplanation() { return this.genotypeScoreExplanation != null;}
 }

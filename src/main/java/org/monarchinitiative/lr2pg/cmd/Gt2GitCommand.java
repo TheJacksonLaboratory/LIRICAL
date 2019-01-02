@@ -31,7 +31,7 @@ public class Gt2GitCommand extends Lr2PgCommand {
     private final String jannovarFile;
     /** One of HG38 (default) or HG19. */
     private final GenomeAssembly genomeAssembly;
-    /** Name of output file.*/
+    /** Name of org.monarchinitiative.lr2pg.output file.*/
     private final String outputFileName;
 
     private final boolean doClinvar;

@@ -63,6 +63,8 @@ public class Lr2pgCommandLine {
     /** For running in simulate mode, if true, use imprecision (move terms up the inheritance tree) */
     private boolean imprecise;
 
+    private boolean outputTSV=false;
+
     private String varcount;
 
     private String varpath;
@@ -124,6 +126,9 @@ public class Lr2pgCommandLine {
             if (commandLine.hasOption("m")) {
                 this.mvStorePath = commandLine.getOptionValue("m");
             }
+            if (commandLine.hasOption("tsv")) {
+                this.outputTSV=true;
+            }
             overwriteDownload = commandLine.hasOption("o");
             if (commandLine.hasOption("y")) {
                 yamlPath = commandLine.getOptionValue("y");
@@ -138,7 +143,7 @@ public class Lr2pgCommandLine {
                         return;
                     }
                     Lr2PgFactory factory = deYamylate(this.yamlPath);
-                    this.command = new VcfCommand(factory, dataPath);
+                    this.command = new VcfCommand(factory, dataPath,outputTSV);
                     break;
 
                case "download":
@@ -219,6 +224,7 @@ public class Lr2pgCommandLine {
                 .addOption("j", "jannovar", true, "path to Jannovar transcript file")
                 .addOption("m", "mvstore", true, "path to Exomiser MVStore file")
                 .addOption("o", "overwrite", false, "overwrite downloaded files")
+                .addOption(null, "tsv", false, "output TSV")
                 .addOption("y", "yaml", true, "path to yaml file");
         return options;
     }
@@ -280,10 +286,6 @@ public class Lr2pgCommandLine {
         System.out.println("simulate:");
         System.out.println("\tjava -jar Lr2pg.jar simulate [-d <directory>] [-s <int>] [-t <int>] [-n <int>] [--grid]");
         System.out.println("\t-d <directory>: name of directory with HPO data (default:\"data\")");
-//        System.out.println(String.format("\t-s <int>: number of cases to simulate (default: %d)", DEFAULT_N_CASES_TO_SIMULATE));
-//        System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
-//        System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
-//        System.out.println("\t--grid: Indicates a grid search over noise and imprecision should be performed");
         System.out.println();
     }
 
@@ -291,9 +293,6 @@ public class Lr2pgCommandLine {
         System.out.println("svg:");
         System.out.println("\tjava -jar Lr2pg.jar svg --disease <name> [-- svg <file>] [-d <directory>] [-t <int>] [-n <int>]");
         System.out.println("\t--disease <string>: name of disease to simulate (e.g., OMIM:600321)");
-//        System.out.println(String.format("\t--svg <file>: name of output SVG file (default: %s)", DEFAULT_SVG_OUTFILE_NAME));
-//        System.out.println(String.format("\t-t <int>: number of HPO terms per case (default: %d)", DEFAULT_N_TERMS_PER_CASE));
-//        System.out.println(String.format("\t-n <int>: number of noise terms per case (default: %d)", DEFAULT_N_NOISE_TERMS_PER_CASE));
     }
 
     private void downloadUsage() {
@@ -306,8 +305,9 @@ public class Lr2pgCommandLine {
 
     private void vcfUsage() {
         System.out.println("vcf:");
-        System.out.println("\tjava -jar Lr2pg.jar vcf -y <yaml>");
+        System.out.println("\tjava -jar Lr2pg.jar vcf -y <yaml> [--tsv]");
         System.out.println("\t-y <yaml>: path to YAML configuration file (required)");
+        System.out.println("\t--tsv: output TSV instead of default HTML file");
         System.out.println();
     }
 

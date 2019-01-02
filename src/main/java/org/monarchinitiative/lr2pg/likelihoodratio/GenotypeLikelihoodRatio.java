@@ -73,8 +73,8 @@ public class GenotypeLikelihoodRatio {
     }
 
     /** This method is intended to explain the score that is produced by {@link #evaluateGenotype}, and
-     * produces a shoprt summary that can be displayed in the output file. It is intended to be used for the
-     * best candidates, i.e., those that will be displayed on the output page.
+     * produces a shoprt summary that can be displayed in the org.monarchinitiative.lr2pg.output file. It is intended to be used for the
+     * best candidates, i.e., those that will be displayed on the org.monarchinitiative.lr2pg.output page.
      * @param observedPathogenicVarCount number of variants called to ne pathogenic
      * @param inheritancemodes List of all inheritance modes associated with this disease (usually has one element,rarely multiple)
      * @param geneId EntrezGene id of the current gene.
