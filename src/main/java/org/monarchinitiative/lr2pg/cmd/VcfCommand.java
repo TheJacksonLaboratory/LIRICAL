@@ -69,6 +69,7 @@ public class VcfCommand extends Lr2PgCommand {
         outputTSV=false; // we only use a threshold for HtML
     }
 
+
     /**
      * Identify the variants and genotypes from the VCF file.
      * @return a map with key: An NCBI Gene Id, and value: corresponding {@link Gene2Genotype} object.

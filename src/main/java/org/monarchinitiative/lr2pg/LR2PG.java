@@ -60,6 +60,12 @@ public class LR2PG implements Runnable {
     @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
     private boolean usageHelpRequested;
 
+    @CommandLine.Option(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
+    private double threshold=0.01;
+
+    @CommandLine.Option(names="--tsv",description = "Use TSV instead of HTML output")
+    private boolean useTsvOutput;
+
     /** Used to record the command line string used. */
     private static String clstring;
 
@@ -115,7 +121,13 @@ public class LR2PG implements Runnable {
                    return;
                }
                Lr2PgFactory factory = deYamylate(this.yamlPath);
-               lr2pgcommand = new VcfCommand(factory, datadir);
+               if (useTsvOutput) {
+                   // output TSV Instead of HTML (threshold not needed for this)
+                   lr2pgcommand = new VcfCommand(factory,datadir,useTsvOutput);
+               } else {
+                   // output HTML file at the indicated threshold to show differentials.
+                   lr2pgcommand = new VcfCommand(factory, datadir, threshold);
+               }
                break;
            case "download":
                lr2pgcommand= new DownloadCommand(datadir, overwriteDownload);
