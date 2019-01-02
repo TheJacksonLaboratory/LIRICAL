@@ -1,7 +1,6 @@
 package org.monarchinitiative.lr2pg.io;
 
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

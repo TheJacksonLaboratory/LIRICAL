@@ -48,13 +48,13 @@ public class FileDownloader {
     }
 
     /** Downloader with default options */
-    public FileDownloader() {
+    FileDownloader() {
         options=new Options();
     }
 
     /**
-     * This method downloads a file to the specified local file path. If the file already exists, it emits a warning
-     * message and does nothing.
+     * This method downloads a file to the specified local file path. If the file already exists, it will
+     * overwrite it and emit a warning.
      *
      * @param src
      *            {@link URL} with file to download
@@ -64,9 +64,10 @@ public class FileDownloader {
      * @throws FileDownloadException
      *             on problems with downloading
      */
-    public boolean copyURLToFile(URL src, File dest) throws FileDownloadException {
-        if (dest.exists())
-            return false;
+    boolean copyURLToFile(URL src, File dest) throws FileDownloadException {
+        if (dest.exists()) {
+            logger.warn("Overwriting file at "+dest);
+        }
         logger.trace("copyURLToFile dest="+dest);
         logger.trace("dest.getParentFile()="+dest.getParentFile());
         if (!dest.getParentFile().exists()) {

@@ -15,10 +15,12 @@ import java.util.stream.Collectors;
 
 /**
  * Class for working with command-line arguments are starting one of the commands of LR2PG
+ * Note -- replacing CLI with picocli. This class will be deleted after the dust has settled.
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class CommandLine {
+@Deprecated
+public class Lr2pgCommandLine {
     private static final Logger logger = LogManager.getLogger();
     /** Command object that will run the analysis. */
     private Lr2PgCommand command = null;
@@ -74,7 +76,7 @@ public class CommandLine {
     private final Options options;
 
 
-    public CommandLine(String args[]) {
+    public Lr2pgCommandLine(String args[]) {
         final CommandLineParser commandLineParser = new DefaultParser();
         this.options = constructOptions();
         org.apache.commons.cli.CommandLine commandLine;
@@ -139,21 +141,14 @@ public class CommandLine {
                     this.command = new VcfCommand(factory, dataPath);
                     break;
 
-                case "download":
-                    if (overwriteDownload) {
-                        this.command = new DownloadCommand(dataPath, overwriteDownload);
-                    } else {
-                        this.command = new DownloadCommand(dataPath);
-                    }
+               case "download":
+                    //this.command = new DownloadCommand(dataPath, overwriteDownload);
                     break;
                 case "simulate":
                     this.command = new SimulatePhenotypesCommand(dataPath);
                     break;
                 case "grid":
                     this.command = new GridSearchCommand(dataPath);
-                    break;
-                case "svg":
-                    this.command = new SimulateSvgPhenoOnlyCommand(dataPath, disease);
                     break;
                 case "gt2git":
                     if (mvStorePath==null) {
@@ -246,7 +241,7 @@ public class CommandLine {
     private String getVersion() {
         String version = "0.0.0";// default, should be overwritten by the following.
         try {
-            Package p = CommandLine.class.getPackage();
+            Package p = Lr2pgCommandLine.class.getPackage();
             version = p.getImplementationVersion();
         } catch (Exception e) {
             // do nothing
