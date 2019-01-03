@@ -9,7 +9,6 @@ import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.YamlParser;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -31,9 +30,11 @@ import java.util.stream.Collectors;
         description = "Phenotype-driven analysis of exomes/genomes.")
 public class LR2PG implements Runnable {
     private static final Logger logger = LogManager.getLogger();
+    /** These are the five ways to run Lr2pg. */
+    enum Lr2pgCommandType {vcf, download,simulate,grid,gt2git};
 
     @org.apache.logging.log4j.core.tools.picocli.CommandLine.Parameters(index = "0", description = "LR2PG command to be exectuted.")
-    private String command =null;
+    private Lr2pgCommandType command =null;
 
     /** Path to YAML configuration file*/
     @CommandLine.Option(names = {"-y","--yaml"}, description = "path to yaml configuration file")
@@ -48,10 +49,10 @@ public class LR2PG implements Runnable {
     @CommandLine.Option(names={"-j","--jannovar"}, description = "path to Jannovar transcript file")
     private String jannovarTranscriptFile;
 
-    @CommandLine.Option(names={"g", "genome"}, description = "string representing the genome assembly (hg19,hg38)")
+    @CommandLine.Option(names={"-g", "--genome"}, description = "string representing the genome assembly (hg19,hg38)")
     private String genomeAssembly;
 
-    @CommandLine.Option(names="clinvar", description = "determine distribution of ClinVar pathogenicity scores")
+    @CommandLine.Option(names="--clinvar", description = "determine distribution of ClinVar pathogenicity scores")
     private boolean doClinvar;
 
     @CommandLine.Option(names={"-o","--overwrite"}, description = "determine distribution of ClinVar pathogenicity scores")
@@ -65,6 +66,9 @@ public class LR2PG implements Runnable {
 
     @CommandLine.Option(names="--tsv",description = "Use TSV instead of HTML output")
     private boolean useTsvOutput;
+
+
+
 
     /** Used to record the command line string used. */
     private static String clstring;
@@ -94,14 +98,6 @@ public class LR2PG implements Runnable {
     }
 
 
-   /* @CommandLine.Command
-    void commit(@CommandLine.Option(names = {"-d", "--data"}) String datadir,
-                @CommandLine.Option(names = {"-o","--overwrite"}, paramLabel = "<commit>") boolean overwrite) {
-        int x=2;
-        System.out.println(x);
-    } */
-
-
    @Override
     public void run() {
        if (usageHelpRequested) {
@@ -109,13 +105,9 @@ public class LR2PG implements Runnable {
            System.exit(0);
        }
 
-       System.out.println("Running");
-       System.out.println("datadir="+datadir);
-       System.out.println("command="+command);
        Lr2PgCommand lr2pgcommand=null;
        switch (command) {
-           case "vcf":
-           case "VCF":
+           case vcf:
                if (this.yamlPath == null) {
                    printUsage("YAML file not found but required for VCF command");
                    return;
@@ -129,16 +121,16 @@ public class LR2PG implements Runnable {
                    lr2pgcommand = new VcfCommand(factory, datadir, threshold);
                }
                break;
-           case "download":
+           case download:
                lr2pgcommand= new DownloadCommand(datadir, overwriteDownload);
                break;
-           case "simulate":
+           case simulate:
                lr2pgcommand = new SimulatePhenotypesCommand(datadir);
                break;
-           case "grid":
+           case grid:
                lr2pgcommand = new GridSearchCommand(datadir);
                break;
-           case "gt2git":
+           case gt2git:
                if (mvStorePath==null) {
                    printUsage("Need to specify the MVStore file: -m <mvstore> to run gt2git command!");
                }
@@ -152,8 +144,6 @@ public class LR2PG implements Runnable {
                break;
            default:
                printUsage("Could not find command option");
-
-
        }
        try {
            lr2pgcommand.run();

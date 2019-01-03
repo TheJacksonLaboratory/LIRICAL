@@ -28,8 +28,6 @@ public class TsvDifferential {
 
     private String noVariantsFound=EMPTY_STRING;
 
-    private String genotypeScoreExplanation=null;
-
     public TsvDifferential(TestResult result) {
         this.diseaseName=prettifyDiseaseName(result.getDiseaseName());
         this.diseaseCurie=result.getDiseaseCurie().getValue();
