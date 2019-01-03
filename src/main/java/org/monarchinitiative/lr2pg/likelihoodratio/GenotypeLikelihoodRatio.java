@@ -6,6 +6,7 @@ import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.poisson.PoissonDistribution;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,29 +49,41 @@ public class GenotypeLikelihoodRatio {
                 return Optional.of(Math.pow(1000d, g2g.pathogenicClinVarCount()));
             }
         }
-        double lambda_disease=1.0;
-        if (inheritancemodes!=null && inheritancemodes.size()>0) {
-            TermId tid = inheritancemodes.get(0);
-            if (tid.equals(AUTOSOMAL_RECESSIVE) || tid.equals(X_LINKED_RECESSIVE)) {
-                lambda_disease=2.0;
-            }
-        }
+
         double lambda_background = this.gene2backgroundFrequency.getOrDefault(geneId, DEFAULT_LAMBDA_BACKGROUND);
-        double D;
-        if (observedWeightedPathogenicVariantCount<EPSILON) {
-            D=0.05; // heuristic--chance of zero variants given this is disease is 5%
-        } else {
-            PoissonDistribution pdDisease = new PoissonDistribution(lambda_disease);
-            D = pdDisease.probability(observedWeightedPathogenicVariantCount);
-        }
-        PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
-        double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
-        if (B>0 && D>0) {
-            return Optional.of(D/B);
-        } else {
+        if (inheritancemodes==null || inheritancemodes.isEmpty()) {
             return Optional.empty();
         }
+        Optional<Double> max = Optional.empty();
+        for (TermId inheritanceId : inheritancemodes) {
+            double lambda_disease=1.0;
+            if (inheritanceId.equals(AUTOSOMAL_RECESSIVE) || inheritanceId.equals(X_LINKED_RECESSIVE)) {
+                lambda_disease=2.0;
+            }
+            double D;
+            if (observedWeightedPathogenicVariantCount<EPSILON) {
+                D=0.05; // heuristic--chance of zero variants given this is disease is 5%
+            } else {
+                PoissonDistribution pdDisease = new PoissonDistribution(lambda_disease);
+                D = pdDisease.probability(observedWeightedPathogenicVariantCount);
+            }
+            PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
+            double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
+            if (B>0 && D>0) {
+                double ratio=D/B;
+                if (max.isPresent() && ratio > max.get()) {
+                    max=Optional.of(ratio);
+                } else if (!max.isPresent()) {
+                    max=Optional.of(ratio);
+                }
+            }
+        }
+       return max;
     }
+
+
+
+
 
     /** This method is intended to explain the score that is produced by {@link #evaluateGenotype}, and
      * produces a shoprt summary that can be displayed in the org.monarchinitiative.lr2pg.output file. It is intended to be used for the
