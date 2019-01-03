@@ -31,7 +31,7 @@ public class TsvDifferential {
     private String genotypeScoreExplanation=null;
 
     public TsvDifferential(TestResult result) {
-        this.diseaseName=result.getDiseaseName();
+        this.diseaseName=prettifyDiseaseName(result.getDiseaseName());
         this.diseaseCurie=result.getDiseaseCurie().getValue();
         this.rank=result.getRank();
         if (result.getPosttestProbability()>0.9999) {
@@ -113,5 +113,27 @@ public class TsvDifferential {
 
     public String getGeneSymbol() {
         return geneSymbol;
+    }
+
+    /**
+     * We are getting the disease names from OMIM (actually from our small files), and so some of them are long and
+     * unweildly strings such as the following:
+     * {@code }#101200 APERT SYNDROME;;ACROCEPHALOSYNDACTYLY, TYPE I; ACS1;;ACS IAPERT-CROUZON DISEASE,
+     * INCLUDED;;ACROCEPHALOSYNDACTYLY, TYPE II, INCLUDED;;ACS II, INCLUDED;;VOGT CEPHALODACTYLY, INCLUDED}. We want to
+     * remove any leading numbers and only show the first part of the name (before the first ";;").
+     * @param originalName original possibly verbose disease name with synonyms
+     * @return prettified disease name intended for display on HTML page
+     */
+    private String prettifyDiseaseName(String originalName) {
+        int i=originalName.indexOf(";;");
+        if (i>0) {
+            originalName=originalName.substring(0,i);
+        }
+        i=0;
+        while (originalName.charAt(i)=='#' || Character.isDigit(originalName.charAt(i)) || Character.isWhitespace(originalName.charAt(i))) {
+            i++;
+            if (i>=originalName.length()) break;
+        }
+        return originalName.substring(i);
     }
 }
