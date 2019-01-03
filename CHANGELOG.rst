@@ -1,6 +1,12 @@
 =========
 Changelog
 =========
+------
+v0.9.3
+------
+- Added phenopacket import class
+- fixed bug with genotype calculation for genes with multiple modes of inheritance
+- Updated CLI to use picocli
 
 ------
 v0.9.2

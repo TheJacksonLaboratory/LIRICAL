@@ -1,7 +1,6 @@
 package org.monarchinitiative.lr2pg.io;
 
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.monarchinitiative.phenol.ontology.data.TermPrefix;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -9,6 +8,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class coordinates the input of the background frequency file.
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ */
 public class GenotypeDataIngestor {
 
 
@@ -51,7 +54,6 @@ public class GenotypeDataIngestor {
                 } catch (NumberFormatException e) {
                     e.printStackTrace();// should really never happen--TODO throw Exception
                 }
-                //System.out.println(symbol + "\t" + entrezId.getIdWithPrefix() +"\t"+fsumpath);
             }
             br.close();
         } catch (IOException e) {
@@ -59,7 +61,6 @@ public class GenotypeDataIngestor {
         }
 
         return gene2freq;
-       // return builder.build();
     }
 
 

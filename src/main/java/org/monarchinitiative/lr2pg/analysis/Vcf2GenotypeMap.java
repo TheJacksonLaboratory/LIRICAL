@@ -31,7 +31,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.monarchinitiative.phenol.ontology.data.TermPrefix;
+
 
 import java.io.File;
 import java.util.*;

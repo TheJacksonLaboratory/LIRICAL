@@ -15,6 +15,8 @@ import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.lr2pg.output.HtmlTemplate;
+import org.monarchinitiative.lr2pg.output.Lr2pgTemplate;
+import org.monarchinitiative.lr2pg.output.TsvTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -44,13 +46,16 @@ public class VcfCommand extends Lr2PgCommand {
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
     private double LR_THRESHOLD=0.01;
 
+    private final boolean outputTSV;
+
     /**
      * @param fact An object that contains parameters from the YAML file for configuration
      * @param data Path to the data download directory that has hp.obo and other files.
      */
-    public VcfCommand(Lr2PgFactory fact, String data) {
+    public VcfCommand(Lr2PgFactory fact, String data, boolean tsv) {
         this.factory = fact;
         this.datadir=data;
+        this.outputTSV=tsv;
     }
     /**
      * @param fact An object that contains parameters from the YAML file for configuration
@@ -61,7 +66,9 @@ public class VcfCommand extends Lr2PgCommand {
         this.factory = fact;
         this.datadir=data;
         this.LR_THRESHOLD=threshold;
+        outputTSV=false; // we only use a threshold for HtML
     }
+
 
     /**
      * Identify the variants and genotypes from the VCF file.
@@ -113,12 +120,23 @@ public class VcfCommand extends Lr2PgCommand {
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
         hcase.outputTopResults(5,ontology,genotypeMap);// TODO remove this outputs to the shell
-        outputHTML(hcase,ontology,genotypeMap);
+        if (outputTSV) {
+            outputTSV(hcase,ontology,genotypeMap);
+        } else {
+            outputHTML(hcase, ontology, genotypeMap);
+        }
     }
 
 
     private void outputHTML(HpoCase hcase,HpoOntology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
         HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata,this.LR_THRESHOLD);
+        caseoutput.outputFile();
+    }
+
+    /** Output a tab-separated values file with one line per differential diagnosis. */
+    private void outputTSV(HpoCase hcase,HpoOntology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
+        Lr2pgTemplate template = new TsvTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata);
+        template.outputFile();
     }
 
 
