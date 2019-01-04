@@ -204,7 +204,10 @@ public class Lr2PgFactory {
         if (this.phenotypeAnnotationPath==null) {
             throw new Lr2pgException("Path to phenotype.hpoa file not found");
         }
-        HpoDiseaseAnnotationParser annotationParser = new HpoDiseaseAnnotationParser(this.phenotypeAnnotationPath, this.ontology);
+        // phenol 1.3.2
+        List<String> desiredDatabasePrefixes=ImmutableList.of("OMIM","DECIPHER");
+        HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(phenotypeAnnotationPath,ontology,desiredDatabasePrefixes);
+       // HpoDiseaseAnnotationParser annotationParser = new HpoDiseaseAnnotationParser(this.phenotypeAnnotationPath, this.ontology);
         try {
             Map<TermId, HpoDisease> diseaseMap = annotationParser.parse();
             if (!annotationParser.validParse()) {

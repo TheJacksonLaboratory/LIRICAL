@@ -2,25 +2,18 @@
 Likelihood ratio analysis of phenotypes and genotypes
 
 ## Installing and setting up LR2PG
-LR2PG makes use of the phenotype analysis library phenol, which needs to be installed locally.
-Currently, LR2PG uses version ``1.3.0-SNAPSHOT``.
-
-```
-$ git clone https://github.com/monarch-initiative/phenol.git
-$ cd phenol
-$ mvn install
-```
-To compile LR2PG, run the following command
+The easiest way to build the LR2PG executable is with maven. Download or clone the source code,
+and cd into the top directory, and enter
 
 ```
 $ mvn clean package
 ```
- LR2PG also uses a number of other files, which it
+LR2PG also uses a number of other files, which it
 can automatically download using the download command (use the --overwrite flag to download fresh copies,
 otherwise, it only downloads files if not present). By default, LR2PG downloads to a new directory
 called data, which will be created as a subdirectory in the directory from which LR2PG is run.
 ```
-$ java -jar target/LR2PG-0.5.4.jar download
+$ java -jar target/Lr2pg.jar download
 ```
 If you want to download to a different location, use the -d <path> argument while downloading and in all of
 the subsequent steps.
@@ -35,7 +28,7 @@ the expected background frequency of predicted pathogenic variants and write thi
 be used in subsequent steps (this will take about an hour on a typical laptop).
 
 ```
-$ java -jar target/LR2PG-0.5.4.jar gt2git -m <mvstore> -j <jannovar> -g <genome>
+$ java -jar target/Lr2pg.jar gt2git -m <mvstore> -j <jannovar> -g <genome>
 ```
 In this command, ``mvstore`` refers to the path of the Exomiser data store, e.g., ``1802_hg19_variants.mv.db``;
 ``jannovar`` refers to the path of the Jannovar transcript data file, e.g., ``1802_hg19_transcripts_refseq.ser``;

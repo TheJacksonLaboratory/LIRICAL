@@ -75,12 +75,6 @@ article {
   padding: 10px 15px;
 }
 
-main {
-  width: 1120px;
-  float: left;
-  margin-bottom: 10px;
-}
-
 aside {
   background-color: #bbbbbb;
   width: 1px;
@@ -352,7 +346,7 @@ table.redTable tfoot .links a{
     </article>
     </section>
 <footer>
-  <p>LR2PG 2018</p>
+  <p>LR2PG &#160; 2019</p>
 </footer>
 </body>
 </html>
