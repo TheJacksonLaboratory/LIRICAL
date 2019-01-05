@@ -1,5 +1,7 @@
 package org.monarchinitiative.lr2pg.cmd;
 
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
@@ -20,6 +22,7 @@ import java.util.Map;
  * TODO allow client code to set parameters
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
+@Parameters(commandDescription = "Simulate phenotype-only cases")
 public class SimulatePhenotypesCommand extends Lr2PgCommand {
     private static final Logger logger = LogManager.getLogger();
 
@@ -38,11 +41,12 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
     private int n_noise_terms = DEFAULT_NOISE_TERMS;
     private boolean imprecise_phenotype = DEFAULT_IMPRECISION;
 
+    @Parameter(names={"-d","--data"}, description ="directory to download data (default: data)" )
+    private String datadir="data";
 
-
-    public SimulatePhenotypesCommand(String dataDirPath){
-        File dirpath = new File(dataDirPath);
-        String absDirPath=dirpath.getAbsolutePath();
+    public SimulatePhenotypesCommand(){
+        File datadirFile = new File(datadir);
+        String absDirPath=datadirFile.getAbsolutePath();
         this.hpoOboPath=String.format("%s%s%s",absDirPath,File.separator,"hp.obo");
         this.phenotypeAnnotationPath=String.format("%s%s%s",absDirPath,File.separator,"phenotype.hpoa");
     }
@@ -60,7 +64,7 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
 
 
 
-     protected Map<TermId, HpoDisease> parseHpoAnnotations(HpoOntology ontology) throws Lr2pgException {
+    protected Map<TermId, HpoDisease> parseHpoAnnotations(HpoOntology ontology) throws Lr2pgException {
         if (ontology==null) {
             throw new Lr2pgException("HpoOntology object not intitialized");
         }
@@ -84,12 +88,11 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
                 imprecise_phenotype);
     }
 
-
+    @Override
     public void run() throws Lr2pgException {
         PhenotypeOnlyHpoCaseSimulator phenotypeOnlyHpoCaseSimulator = getPhenotypeOnlySimulator();
         logger.info("Simulating {} cases with {} terms each, {} noise terms. imprecision={}",
             n_cases_to_simulate,n_terms_per_case,n_noise_terms,imprecise_phenotype);
         phenotypeOnlyHpoCaseSimulator.simulateCases();
-
     }
 }
