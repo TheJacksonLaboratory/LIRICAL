@@ -14,6 +14,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getParentTerms;
@@ -40,26 +41,34 @@ public class PhenotypeOnlyHpoCaseSimulator {
     /** Number of cases to simulate. */
     private final int n_cases_to_simulate;
     /** If true, we exchange each of the non-noise terms with a direct parent except if that would mean going to
-     * the root of the phenotype ontology.
-     */
+     * the root of the phenotype ontology.*/
     private boolean addTermImprecision = false;
     /** The proportion of cases at rank 1 in the current simulation */
     private double proportionAtRank1=0.0;
-
+    /** Case currently being simulated/analyzed. */
     private HpoCase currentCase;
+    /** This array will hold the TermIds from the disease map in order -- this will allow us to
+     * get random indices for the simulations. */
+    private TermId[] termIndices;
 
 
     /** Root term id in the phenotypic abnormality subontology. */
     private final static TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
-   /**
-     * The constructor initializes {@link #ontology} and {@link #diseaseMap} and {@link #phenotypeterms}.
-     * param datadir Path to a directory containing {@code hp.obo} and {@code phenotype.hpoa}.
+    /**
+     * The constructor initializes {@link #ontology} and {@link #diseaseMap} and {@link #phenotypeterms}. This
+     * constructor sets "imprecision" to false.
+     * @param ontology reference to HPO Ontology object
+     * @param diseaseMap Map containing (usuallu) all diseases in the corpus
+     * @param cases_to_simulate Number of individual simulations to perform
+     * @param terms_per_case Number of HPO terms per case
+     * @param noise_terms Number of "noise" (random, unrelated) terms to add per case
      */
     public PhenotypeOnlyHpoCaseSimulator(HpoOntology ontology,
                                          Map<TermId,HpoDisease> diseaseMap,
-                                         int cases_to_simulate, int terms_per_case, int noise_terms ) {
-
+                                         int cases_to_simulate,
+                                         int terms_per_case,
+                                         int noise_terms ) {
         this.n_cases_to_simulate=cases_to_simulate;
         this.n_terms_per_case=terms_per_case;
         this.n_noise_terms=noise_terms;
@@ -72,31 +81,48 @@ public class PhenotypeOnlyHpoCaseSimulator {
             builder.add(t);
         }
         this.phenotypeterms=builder.build();
+        this.termIndices=diseaseMap.keySet().toArray(new TermId[0]);
     }
 
-
+    /**
+     * @param ontology reference to HPO Ontology object
+     * @param diseaseMap Map containing (usuallu) all diseases in the corpus
+     * @param cases_to_simulate Number of individual simulations to perform
+     * @param terms_per_case Number of HPO terms per case
+     * @param noise_terms Number of "noise" (random, unrelated) terms to add per case
+     * @param imprecise Whether or not to use imprecision
+     */
     public PhenotypeOnlyHpoCaseSimulator(HpoOntology ontology,
-                                         Map<TermId,HpoDisease> diseaseMap, int cases_to_simulate, int terms_per_case, int noise_terms, boolean imprecise ) {
+                                         Map<TermId,HpoDisease> diseaseMap,
+                                         int cases_to_simulate,
+                                         int terms_per_case,
+                                         int noise_terms,
+                                         boolean imprecise ) {
         this(ontology,diseaseMap,cases_to_simulate,terms_per_case,noise_terms);
         this.addTermImprecision=imprecise;
     }
 
-
+    /** @return the proportion of all simulated cases at rank 1.*/
     public double getProportionAtRank1() {
         return proportionAtRank1;
     }
 
     /** This will run simulations according to the parameters {@link #n_cases_to_simulate},
      * {@link #n_terms_per_case} and {@link #n_noise_terms}.
-     * @throws Lr2pgException
+     * @throws Lr2pgException if there is an issue running the simulation
      */
     public void simulateCases() throws Lr2pgException {
         int c=0;
         Map<Integer,Integer> ranks=new HashMap<>();
         logger.trace(String.format("Will simulate %d diseases.",diseaseMap.size() ));
         System.err.println(String.format("Simulating n=%d HPO cases with %d random terms and %d noise terms per case.",n_cases_to_simulate,n_terms_per_case,n_noise_terms));
-        for (TermId diseaseCurie : diseaseMap.keySet()) {
-            HpoDisease disease = diseaseMap.get(diseaseCurie);
+        int size = diseaseMap.size();
+
+        int[] randomIndices=IntStream.generate(() -> new Random().nextInt(size)).limit(n_cases_to_simulate).toArray();
+
+        for (int i=0;i<n_cases_to_simulate;++i) {
+            TermId diseaseToSimulate = termIndices[randomIndices[i]];
+            HpoDisease disease = diseaseMap.get(diseaseToSimulate);
             //logger.trace("Simulating disease "+diseasename);
             if (disease.getNumberOfPhenotypeAnnotations() == 0) {
                 logger.trace(String.format("Skipping disease %s [%s] because it has no phenotypic annotations",
@@ -196,17 +222,17 @@ public class PhenotypeOnlyHpoCaseSimulator {
 
 
     /**
-     * @param diseaseCurie a term id for a disease id such as OMIM:600100
+    // * @param diseaseCurie a term id for a disease id such as OMIM:600100
      * @return the corresponding {@link HpoDisease} object.
      */
-    public HpoDisease name2disease(TermId diseaseCurie) {
-        return diseaseMap.get(diseaseCurie);
-    }
+    //public HpoDisease name2disease(TermId diseaseCurie) {
+    //    return diseaseMap.get(diseaseCurie);
+   // }
 
 
-    public HpoCase getCurrentCase() {
-        return currentCase;
-    }
+    //public HpoCase getCurrentCase() {
+       // return currentCase;
+    //}
 
     public int simulateCase(HpoDisease disease) throws Lr2pgException {
         if (disease == null) {

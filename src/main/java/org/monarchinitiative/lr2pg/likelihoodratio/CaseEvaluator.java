@@ -42,8 +42,8 @@ public class CaseEvaluator {
     private static final double DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD=0.01;
 
     private final double threshold;
-
-    private final boolean phenotypeOnly;
+    /** If true, then genotype information is available for the analysis. Otherwise, skip it. */
+    private final boolean useGenotypeAnalysis;
 
     /**
      * This constructor is used for phenotype-only cases.
@@ -70,7 +70,7 @@ public class CaseEvaluator {
         for (TermId tid : diseaseMap.keySet()) {
             pretestProbabilityMap.put(tid,prob);
         }
-        this.phenotypeOnly=true;
+        this.useGenotypeAnalysis =false;
         this.threshold=DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD;
     }
 
@@ -103,7 +103,7 @@ public class CaseEvaluator {
             pretestProbabilityMap.put(tid,prob);
         }
         this.genotypeMap=genotypeMap;
-        this.phenotypeOnly=false;
+        this.useGenotypeAnalysis =true;
     }
 
 
@@ -124,34 +124,36 @@ public class CaseEvaluator {
                 double LR = phenotypeLRevaluator.getLikelihoodRatio(tid, diseaseId);
                 builder.add(LR);
             }
+            TestResult result;
             // 2. get genotype LR if available
-            Double LR = null;
+            Double genotypeLR=null;
             TermId geneId = null;
-            Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
-            List<TermId> inheritancemodes = disease.getModesOfInheritance();
-            if (associatedGenes != null && associatedGenes.size() > 0) {
-                for (TermId entrezGeneId : associatedGenes) {
-                    Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
-
-
-                    Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(g2g,
-                            inheritancemodes,
-                            entrezGeneId);
-                    if (opt.isPresent()) {
-                        if (LR == null) {
-                            LR = opt.get();
-                            geneId = entrezGeneId;
-                        } else if (LR > opt.get()) {
-                            LR = opt.get();
-                            geneId = entrezGeneId;
+            List<TermId> inheritancemodes=ImmutableList.of();
+            if (useGenotypeAnalysis) {
+                Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
+                inheritancemodes = disease.getModesOfInheritance();
+                if (associatedGenes != null && associatedGenes.size() > 0) {
+                    for (TermId entrezGeneId : associatedGenes) {
+                        Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
+                        Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(g2g,
+                                inheritancemodes,
+                                entrezGeneId);
+                        if (opt.isPresent()) {
+                            if (genotypeLR == null) {
+                                genotypeLR = opt.get();
+                                geneId = entrezGeneId;
+                            } else if (genotypeLR > opt.get()) {
+                                genotypeLR = opt.get();
+                                geneId = entrezGeneId;
+                            }
                         }
-                    }
 
+                    }
                 }
             }
-            TestResult result;
-            if (LR != null) {
-                result = new TestResult(builder.build(), disease, LR, geneId, pretest);
+
+            if (useGenotypeAnalysis && genotypeLR != null) {
+                result = new TestResult(builder.build(), disease, genotypeLR, geneId, pretest);
             } else {
                 result = new TestResult(builder.build(), disease, pretest);
             }
@@ -161,8 +163,10 @@ public class CaseEvaluator {
                 if (g2g!=null) {
                     observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
                 }
-                String exp=this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount,inheritancemodes,geneId);
-                result.appendToExplanation(exp);
+                if (useGenotypeAnalysis) {
+                    String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
+                    result.appendToExplanation(exp);
+                }
             }
             mapbuilder.put(diseaseId, result);
 

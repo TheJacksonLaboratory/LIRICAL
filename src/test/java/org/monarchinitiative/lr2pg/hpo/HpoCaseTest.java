@@ -23,6 +23,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -43,22 +44,22 @@ class HpoCaseTest {
     @BeforeAll
     static void setup() throws PhenolException, FileNotFoundException,NullPointerException {
         ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
-        String hpoPath = classLoader.getResource("hp.obo").getFile();
-        String annotationPath = classLoader.getResource("small.hpoa").getFile();
+        String hpoPath = Objects.requireNonNull(classLoader.getResource("hp.small.obo").getFile());
+        String annotationPath = Objects.requireNonNull(classLoader.getResource("small.hpoa").getFile());
         /* parse ontology */
         HpOboParser parser = new HpOboParser(new File(hpoPath));
-        ontology =parser.parse();
-        HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationPath,ontology);
-        Map<TermId,HpoDisease> diseaseMap=annotationParser.parse();
-        backforeFreq=new PhenotypeLikelihoodRatio(ontology,diseaseMap);
+        ontology = parser.parse();
+        HpoDiseaseAnnotationParser annotationParser = new HpoDiseaseAnnotationParser(annotationPath, ontology);
+        Map<TermId, HpoDisease> diseaseMap = annotationParser.parse();
+        backforeFreq = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
 
         /* these are the phenotypic abnormalties of our "case" */
-        String HP_PREFIX="HP";
-        TermId t1 = TermId.of(HP_PREFIX,"0006855");
-        TermId t2 = TermId.of(HP_PREFIX,"0000651");
-        TermId t3 = TermId.of(HP_PREFIX,"0010545");
-        TermId t4 = TermId.of(HP_PREFIX,"0001260");
-        TermId t5 = TermId.of(HP_PREFIX,"0001332");
+        String HP_PREFIX = "HP";
+        TermId t1 = TermId.of(HP_PREFIX, "0000028");
+        TermId t2 = TermId.of(HP_PREFIX, "0000047");
+        TermId t3 = TermId.of(HP_PREFIX, "0000185");
+        TermId t4 = TermId.of(HP_PREFIX, "0000632");
+        TermId t5 = TermId.of(HP_PREFIX, "0000528");
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         builder.add(t1,t2,t3,t4,t5);
         // We need to provide a list of TestResult objects for the API, but they are not required for this unit test

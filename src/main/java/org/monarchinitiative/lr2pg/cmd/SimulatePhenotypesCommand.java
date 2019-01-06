@@ -25,24 +25,23 @@ import java.util.Map;
 @Parameters(commandDescription = "Simulate phenotype-only cases")
 public class SimulatePhenotypesCommand extends Lr2PgCommand {
     private static final Logger logger = LogManager.getLogger();
-
+    /** path to hp.obo file. (Must be in same directory as phenotype.hpoa). Set via {@link #datadir}. */
     private final String hpoOboPath;
-    /** path to phenotype.hpoa file. */
+    /** path to phenotype.hpoa file. (Must be in same directory as hp.obo). Set via {@link #datadir}. */
     private final String phenotypeAnnotationPath;
-
-
-    private final int DEFAULT_CASES_TO_SIMULATE=25;
-    private final int DEFAULT_TERMS_PER_CASE=5;
-    private final int DEFAULT_NOISE_TERMS=1;
-    private final boolean DEFAULT_IMPRECISION=false;
-
-    private int n_cases_to_simulate = DEFAULT_CASES_TO_SIMULATE;
-    private int n_terms_per_case = DEFAULT_TERMS_PER_CASE;
-    private int n_noise_terms = DEFAULT_NOISE_TERMS;
-    private boolean imprecise_phenotype = DEFAULT_IMPRECISION;
-
+    /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
     @Parameter(names={"-d","--data"}, description ="directory to download data (default: data)" )
     private String datadir="data";
+    @Parameter(names={"-c","--n_cases"}, description="Number of cases to simulate")
+    private int n_cases_to_simulate = 25;
+    @Parameter(names={"-h","--n_hpos"}, description="Number of HPO terms per case")
+    private int n_terms_per_case = 5;
+    @Parameter(names={"-n","--n_noise"}, description="Number of noise terms per case")
+    private int n_noise_terms = 1;
+    @Parameter(names={"-i","--imprecion"}, description="Use imprecision?")
+    private boolean imprecise_phenotype = false;
+
+
 
     public SimulatePhenotypesCommand(){
         File datadirFile = new File(datadir);
@@ -55,8 +54,7 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
     protected HpoOntology initializeOntology() throws Lr2pgException{
         try {
             HpOboParser parser = new HpOboParser(new File(this.hpoOboPath));
-            HpoOntology ontology = parser.parse();
-            return ontology;
+            return parser.parse();
         } catch (PhenolException | FileNotFoundException ioe) {
             throw new Lr2pgException("Could not parse hp.obo file: " + ioe.getMessage());
         }
@@ -76,7 +74,11 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
          }
     }
 
-
+    /**
+     * This method creates the HpoCaseSimulator that actually does the work. It is also used by the GridSearch subclass.
+     * @return An initialized {@link PhenotypeOnlyHpoCaseSimulator} object.
+     * @throws Lr2pgException if an error occurs in the simulation code.
+     */
     protected PhenotypeOnlyHpoCaseSimulator getPhenotypeOnlySimulator()throws Lr2pgException {
         HpoOntology ontology = initializeOntology();
         Map<TermId, HpoDisease> diseaseMap = parseHpoAnnotations(ontology);

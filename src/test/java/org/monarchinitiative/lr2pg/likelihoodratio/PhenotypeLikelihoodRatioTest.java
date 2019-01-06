@@ -4,6 +4,7 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
@@ -37,7 +38,7 @@ public class PhenotypeLikelihoodRatioTest {
     @BeforeAll
     static void setup() throws PhenolException, FileNotFoundException,NullPointerException {
         ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
-        String hpoPath = classLoader.getResource("hp.obo").getFile();
+        String hpoPath = classLoader.getResource("hp.small.obo").getFile();
         String annotationPath = classLoader.getResource("small.hpoa").getFile();
         HpOboParser parser = new HpOboParser(new File(hpoPath));
         HpoOntology ontology = parser.parse();
@@ -84,8 +85,9 @@ public class PhenotypeLikelihoodRatioTest {
     }
 
 
-    /** HP:0000035 is an ancestor of "HP:0000028" (which has an explicit annotation in small_phenotyoe.hpoa), and therefore
-     * its background frequency should also be 1/3
+    /** HP:0000035 is an ancestor of "HP:0000028" (which has an explicit annotation in small_phenotyoe.hpoa),
+     *  and of "HP:0000047" (but both in the same disease), and therefore
+     * its background frequency should be 1/3
      */
     @Test
     void testFrequency3() {

@@ -95,9 +95,28 @@ public class VcfCommand extends Lr2PgCommand {
     }
 
 
+    private void showParams() {
+        System.out.println("LR2PG: vcf parameters");
+        System.out.println("\tvcf file:" + factory.vcfPath());
+        System.out.println("\tYAML config file: "+yamlPath);
+        System.out.println("\tMVStore file:" + factory.mvStore());
+        System.out.println("\tUse TSV?: "+outputTSV);
+        System.out.println("\tdata directory: "+datadir);
+        System.out.println("\tthreshold: "+LR_THRESHOLD);
+       // System.out.println("\tJannovar file:" + factory.jannovarData().);
+
+
+    }
+
+
+
 
     public void run() throws Lr2pgException {
         this.factory  = deYamylate(this.yamlPath);
+        showParams();
+
+
+
         Map<TermId, Gene2Genotype> genotypeMap = getVcf2GenotypeMap();
         //debugPrintGenotypeMap(genotypeMap);
         GenotypeLikelihoodRatio genoLr = getGenotypeLR();
