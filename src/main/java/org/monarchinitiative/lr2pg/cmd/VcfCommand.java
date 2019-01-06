@@ -39,8 +39,6 @@ public class VcfCommand extends Lr2PgCommand {
     private static final Logger logger = LoggerFactory.getLogger(VcfCommand.class);
     /** An object that contains parameters from the YAML file for configuration. */
     private Lr2PgFactory factory;
-
-
     /** Default name of the background frequency file. */
     private final String BACKGROUND_FREQUENCY_FILE="background-freq.txt";
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
@@ -62,9 +60,10 @@ public class VcfCommand extends Lr2PgCommand {
     private double LR_THRESHOLD=0.01;
 
 
-
+    /**
+     * Command pattern to coordinate analysis of a VCF file with LR2PG.
+     */
     public VcfCommand() {
-
     }
 
 
