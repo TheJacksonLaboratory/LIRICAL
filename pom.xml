@@ -34,6 +34,12 @@
             <groupId>org.monarchinitiative.exomiser</groupId>
             <artifactId>exomiser-core</artifactId>
             <version>${exomiser.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ontologizer</groupId>
+                    <artifactId>ontologizer</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
