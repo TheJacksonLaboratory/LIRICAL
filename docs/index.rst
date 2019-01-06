@@ -8,8 +8,10 @@ LR2PG: Likelihood ratio analysis of phenotype/genotype data
    :maxdepth: 2
    :caption: Contents:
 
+   setup
    yaml
    phenopacket
+   running
    other
 
 LR2PG
