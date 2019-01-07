@@ -39,7 +39,7 @@ genome assembly, download the data file 1805_hg38.zip  and unzip it. The
 `Exomiser <https://monarch-exomiser-web-dev.monarchinitiative.org/exomiser/>`_ is a previous algorithm
 from our group that can be used to perform a range of genomic diagnostic and discovery tasks
 (Todo cite the papers here). The Exomiser makes use of an internal database called here mvstore, e.g.,
- ``1802_hg19_variants.mv.db``, which is required for every run of the VCF analysis tool. Some of the
+``1802_hg19_variants.mv.db``, which is required for every run of the VCF analysis tool. Some of the
 other files are required for users who desire to reproduce or extend some of the results in the
 LR2PG manuscript and are described in the section TODO make link.
 

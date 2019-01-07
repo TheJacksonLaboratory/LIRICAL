@@ -12,7 +12,9 @@ LR2PG: Likelihood ratio analysis of phenotype/genotype data
    yaml
    phenopacket
    running
-   other
+   simulate
+   grid
+   gt2git
 
 LR2PG
 ~~~~~

@@ -38,7 +38,7 @@ public class LR2PG  {
                 .addObject(lr2pg)
                 .addCommand("download", download)
                 .addCommand("simulate", simulate)
-                .addCommand("grid-search", grid)
+                .addCommand("grid", grid)
                 .addCommand("gt2git",gt2git)
                 .addCommand("vcf",vcf)
                 .build();
@@ -46,14 +46,21 @@ public class LR2PG  {
         try {
             jc.parse(args);
         } catch (ParameterException e) {
+            System.err.println("[ERROR] "+e.getMessage());
             jc.usage();
             System.exit(1);
         }
 
-       if (jc.getParsedCommand()==null || lr2pg.usageHelpRequested) {
+        if (jc.getParsedCommand()==null ) {
+            System.err.println("[ERROR] no command passed");
             jc.usage();
            System.exit(1);
        }
+
+        if ( lr2pg.usageHelpRequested) {
+            jc.usage();
+            System.exit(1);
+        }
 
         String command = jc.getParsedCommand();
         Lr2PgCommand lr2pgcommand=null;
@@ -64,28 +71,19 @@ public class LR2PG  {
             case "simulate":
                 lr2pgcommand = simulate;
                break;
-           case "grid-search":
+           case "grid":
                lr2pgcommand = grid;
                break;
            case "gt2git":
                lr2pgcommand = gt2git;
                break;
            case "vcf":
-//               if (this.yamlPath == null) {
-//                   printUsage("YAML file not found but required for VCF command");
-//                   return;
-//               }
-//               Lr2PgFactory factory = deYamylate(this.yamlPath);
-//               if (useTsvOutput) {
-//                   // output TSV Instead of HTML (threshold not needed for this)
-//                   lr2pgcommand = new VcfCommand(factory,datadir,useTsvOutput);
-//               } else {
-//                   // output HTML file at the indicated threshold to show differentials.
-//                   lr2pgcommand = new VcfCommand(factory, datadir, threshold);
-//               }
-//               break;
                lr2pgcommand =vcf;
                break;
+           default:
+               System.err.println(String.format("[ERROR] command \"%s\" not recognized",command));
+               jc.usage();
+               System.exit(1);
 
         }
         try {
