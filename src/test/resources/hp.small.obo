@@ -1,0 +1,314 @@
+format-version: 1.2
+data-version: releases/2017-04-13
+saved-by: Peter Robinson, Sebastian Koehler, Sandra Doelken, Chris Mungall, Melissa Haendel, Nicole Vasilevsky, Monarch Initiative, et al.
+subsetdef: hposlim_core "Core clinical terminology"
+subsetdef: secondary_consequence "Consequence of a disorder in another organ system."
+synonymtypedef: HP:0045076 "UK spelling"
+synonymtypedef: HP:0045077 "abbreviation"
+synonymtypedef: HP:0045078 "plural form"
+synonymtypedef: layperson "layperson term"
+default-namespace: human_phenotype
+ontology: hp
+property_value: http://purl.org/dc/elements/1.1/contributor "Chris Mungall" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Courtney Hum" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Joie Davis" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Mark Engelstad" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Melissa Haendel" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Nicole Vasilevsky" xsd:string
+property_value: http://purl.org/dc/elements/1.1/contributor "Sandra Doelken" xsd:string
+property_value: http://purl.org/dc/elements/1.1/creator "Peter N Robinson" xsd:string
+property_value: http://purl.org/dc/elements/1.1/creator "Sebastian Koehler" xsd:string
+property_value: http://purl.org/dc/elements/1.1/creator "The Human Phenotype Ontology Consortium" xsd:string
+property_value: http://purl.org/dc/elements/1.1/creator "The Monarch Initiative" xsd:string
+property_value: http://purl.org/dc/elements/1.1/license "see http://www.human-phenotype-ontology.org" xsd:string
+property_value: http://purl.org/dc/elements/1.1/rights "Peter Robinson, Sebastian Koehler, The Human Phenotype Ontology Consortium, and The Monarch Initiative" xsd:string
+property_value: http://purl.org/dc/elements/1.1/subject "Phenotypic abnormalities encountered in human disease" xsd:string
+owl-axioms: Prefix(owl:=<http://www.w3.org/2002/07/owl#>)\nPrefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)\nPrefix(xml:=<http://www.w3.org/XML/1998/namespace>)\nPrefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)\nPrefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)\n\n\nOntology(\nAnnotationAssertion(<http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym> <http://purl.obolibrary.org/obo/HP_0000510> \"\")\nAnnotationAssertion(<http://www.geneontology.org/formats/oboInOwl#hasAlternativeId> <http://purl.obolibrary.org/obo/HP_0030761> \"\")\nAnnotationAssertion(<http://www.geneontology.org/formats/oboInOwl#hasOBONamespace> <http://purl.obolibrary.org/obo/HP_0030243> \"\")\nAnnotationAssertion(<http://www.geneontology.org/formats/oboInOwl#hasOBONamespace> <http://purl.obolibrary.org/obo/HP_0030370> \"\")\nAnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/HP_0040081> \"\")\nAnnotationAssertion(<http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym> <http://purl.obolibrary.org/obo/HP_0012377> \"\"^^xsd:string)\n)
+logical-definition-view-relation: has_part
+
+[Term]
+id: HP:0000001
+name: All
+comment: Root of all terms in the Human Phenotype Ontology.
+xref: UMLS:C0444868
+
+[Term]
+id: HP:0000005
+name: Mode of inheritance
+alt_id: HP:0001453
+alt_id: HP:0001461
+def: "The pattern in which a particular genetic trait or disorder is passed from one generation to the next." [HPO:probinson]
+synonym: "Inheritance" EXACT []
+xref: UMLS:C1708511
+is_a: HP:0000001 ! All
+
+[Term]
+id: HP:0000006
+name: Autosomal dominant inheritance
+alt_id: HP:0001415
+alt_id: HP:0001447
+alt_id: HP:0001448
+alt_id: HP:0001451
+alt_id: HP:0001455
+alt_id: HP:0001456
+alt_id: HP:0001463
+def: "A mode of inheritance that is observed for traits related to a gene encoded on one of the autosomes (i.e., the human chromosomes 1-22) in which a trait manifests in heterozygotes. In the context of medical genetics, an autosomal dominant disorder is caused when a single copy of the mutant allele is present. Males and females are affected equally, and can both transmit the disorder with a risk of 50% for each child of inheriting the mutant allele." [HPO:curators]
+synonym: "Autosomal dominant" EXACT []
+synonym: "Autosomal dominant form" RELATED [HPO:skoehler]
+synonym: "Autosomal dominant type" RELATED [HPO:skoehler]
+xref: SNOMEDCT_US:263681008
+xref: UMLS:C0443147
+is_a: HP:0000005 ! Mode of inheritance
+
+[Term]
+id: HP:0000007
+name: Autosomal recessive inheritance
+alt_id: HP:0001416
+alt_id: HP:0001526
+def: "A mode of inheritance that is observed for traits related to a gene encoded on one of the autosomes (i.e., the human chromosomes 1-22) in which a trait manifests in homozygotes. In the context of medical genetics, autosomal recessive disorders manifest in homozygotes (with two copies of the mutant allele) or compound heterozygotes (whereby each copy of a gene has a distinct mutant allele)." [HPO:curators]
+synonym: "Autosomal recessive" EXACT []
+synonym: "Autosomal recessive form" RELATED [HPO:skoehler]
+synonym: "Autosomal recessive predisposition" RELATED []
+xref: SNOMEDCT_US:258211005
+xref: UMLS:C0441748
+xref: UMLS:C4020899
+is_a: HP:0000005 ! Mode of inheritance
+
+[Term]
+id: HP:0000118
+name: Phenotypic abnormality
+def: "A phenotypic abnormality." [HPO:probinson]
+comment: This is the root of the phenotypic abnormality subontology of the HPO.
+synonym: "Organ abnormality" EXACT []
+xref: UMLS:C4021819
+is_a: HP:0000001 ! All
+
+[Term]
+id: HP:0000478
+name: Abnormality of the eye
+def: "Any abnormality of the eye, including location, spacing, and intraocular abnormalities." [HPO:probinson]
+subset: hposlim_core
+synonym: "Abnormal eye" EXACT layperson [HPO:skoehler]
+synonym: "Abnormality of the eye" EXACT layperson []
+synonym: "Eye disease" RELATED layperson []
+xref: MSH:D005124
+xref: MSH:D005128
+xref: SNOMEDCT_US:19416009
+xref: SNOMEDCT_US:371405004
+xref: SNOMEDCT_US:371409005
+xref: UMLS:C0015393
+xref: UMLS:C0015397
+is_a: HP:0000118 ! Phenotypic abnormality
+
+[Term]
+id: HP:0003674
+name: Onset
+alt_id: HP:0003588
+alt_id: HP:0003590
+alt_id: HP:0003597
+alt_id: HP:0003602
+alt_id: HP:0003603
+alt_id: HP:0003618
+alt_id: HP:0003626
+alt_id: HP:0003628
+alt_id: HP:0003630
+alt_id: HP:0003663
+alt_id: HP:0003664
+alt_id: HP:0003668
+alt_id: HP:0011007
+def: "The age group in which disease manifestations appear." [HPO:probinson]
+comment: Adolescent is defined by WHO as a person between 10-19 years of age.
+synonym: "Age of onset" EXACT []
+xref: MSH:D017668
+xref: UMLS:C0206132
+is_a: HP:0012823 ! Clinical modifier
+
+[Term]
+id: HP:0012372
+name: Abnormal eye morphology
+def: "A structural anomaly of the eye." [HPO:probinson]
+synonym: "Abnormal eye morphology" EXACT layperson []
+synonym: "Abnormally shaped eye" EXACT layperson [ORCID:0000-0001-5208-3432]
+xref: Fyler:4863
+xref: UMLS:C4022925
+is_a: HP:0000478 ! Abnormality of the eye
+created_by: peter
+creation_date: 2013-10-13T03:44:43Z
+
+[Term]
+id: HP:0012373
+name: Abnormal eye physiology
+def: "A functional anomaly of the eye." [HPO:probinson]
+synonym: "Abnormal eye physiology" EXACT layperson []
+xref: UMLS:C4022924
+is_a: HP:0000478 ! Abnormality of the eye
+created_by: peter
+creation_date: 2013-10-13T03:45:37Z
+
+[Term]
+id: HP:0012374
+name: Abnormal globe morphology
+def: "An anomaly of the eyeball." [HPO:probinson]
+comment: This term is used to separate anomalies of the eye proper from the ocular adnexa such as the eyelid and the tear glands.
+subset: hposlim_core
+synonym: "Abnormality of the globe" EXACT []
+xref: UMLS:C4022923
+is_a: HP:0012372 ! Abnormal eye morphology
+created_by: peter
+creation_date: 2013-10-13T03:50:35Z
+
+[Term]
+id: HP:0012823
+name: Clinical modifier
+alt_id: HP:0000004
+def: "This subontology is designed to provide terms to characterize and specify the phenotypic abnormalities defined in the Phenotypic abnormality subontology, with respect to severity, laterality, age of onset, and other aspects." [HPO:probinson]
+comment: Note that some of the terms, such as Intellectual disability, have children terms such as Severe intellectual disability that represent precomposed combinations of modifiers and phenotypic abnormality terms. This done where the medical community commonly uses these terms with a fixed meaning (for instance, the Intellectual disability terms are used with specific IQ ranges). For computational reasoning, the semantics are intended to be the same as if there was a combination of the phenotype term and the clinical modifier term.
+synonym: "Phenotypic modifier" EXACT []
+xref: UMLS:C4021064
+is_a: HP:0000001 ! All
+created_by: peter
+creation_date: 2014-06-06T06:34:24Z
+
+[Term]
+id: HP:0100886
+name: Abnormality of globe location
+def: "An abnormality in the placement of the ocular globe (eyeball)." [HPO:sdoelken]
+synonym: "Abnormality of eyeball location" EXACT layperson [ORCID:0000-0001-5889-4463]
+synonym: "Abnormality of eyeball position" EXACT layperson [ORCID:0000-0001-5889-4463]
+synonym: "Abnormality of globe position" EXACT [ORCID:0000-0001-5889-4463]
+xref: UMLS:C4021946
+is_a: HP:0012374 ! Abnormal globe morphology
+created_by: doelkens
+creation_date: 2011-12-13T04:25:29Z
+
+[Term]
+id: HP:0100887
+name: Abnormality of globe size
+alt_id: HP:0010725
+def: "An abnormality in the size of the ocular globe (eyeball)." [HPO:sdoelken]
+synonym: "Abnormality of eyeball size" EXACT layperson [ORCID:0000-0001-5889-4463]
+synonym: "Eye size difference" EXACT layperson []
+xref: UMLS:C4021945
+is_a: HP:0012374 ! Abnormal globe morphology
+created_by: doelkens
+creation_date: 2011-12-13T04:25:29Z
+
+[Term]
+id: HP:0000528
+name: Anophthalmia
+alt_id: HP:0001485
+alt_id: HP:0007664
+def: "Absence of the globe or eyeball." [DDD:ncarter]
+subset: hposlim_core
+synonym: "Absence of eyeballs" EXACT layperson [ORCID:0000-0001-5889-4463]
+synonym: "Absence of globes of eyes" EXACT [ORCID:0000-0001-5889-4463]
+synonym: "Anophthalmia, clinical" EXACT []
+synonym: "Clinical anophthalmia, unilateral/bilateral" EXACT []
+synonym: "Failure of development of eyeball" EXACT layperson [ORCID:0000-0001-5889-4463]
+synonym: "Missing eyeball" EXACT layperson [ORCID:0000-0001-5208-3432, ORCID:0000-0001-5889-4463]
+synonym: "Missing globe of eye" EXACT [ORCID:0000-0001-5208-3432, ORCID:0000-0001-5889-4463]
+synonym: "No eyeball" EXACT layperson [ORCID:0000-0001-5208-3432, ORCID:0000-0001-5889-4463]
+synonym: "No globe of eye" EXACT [ORCID:0000-0001-5208-3432, ORCID:0000-0001-5889-4463]
+synonym: "Ocular absence" EXACT [ORCID:0000-0001-5208-3432, ORCID:0000-0001-5889-4463]
+xref: Fyler:4864
+xref: MSH:D000853
+xref: SNOMEDCT_US:204099004
+xref: SNOMEDCT_US:7183006
+xref: UMLS:C0003119
+is_a: HP:0100887 ! Abnormality of globe size
+
+[Term]
+id: HP:0000568
+name: Microphthalmia
+alt_id: HP:0007996
+def: "A developmental anomaly characterized by abnormal smallness of one or both eyes." [HPO:probinson]
+subset: hposlim_core
+synonym: "Abnormally small eyeball" EXACT layperson [ORCID:0000-0001-5889-4463]
+synonym: "Abnormally small globe of eye" EXACT [ORCID:0000-0001-5889-4463]
+synonym: "Decreased size of eyeball" BROAD layperson [ORCID:0000-0001-5889-4463]
+synonym: "Decreased size of globe of eye" BROAD [ORCID:0000-0001-5889-4463]
+synonym: "Microphthalmos" EXACT []
+synonym: "Nanophthalmos" RELATED []
+xref: Fyler:4877
+xref: MSH:D008850
+xref: SNOMEDCT_US:204108000
+xref: SNOMEDCT_US:61142002
+xref: UMLS:C0026010
+xref: UMLS:C4280625
+xref: UMLS:C4280808
+is_a: HP:0100887 ! Abnormality of globe size
+
+[Term]
+id: HP:0000632
+name: Lacrimation abnormality
+alt_id: HP:0000521
+def: "Abnormality of tear production." [HPO:probinson]
+synonym: "Abnormality of tear production" EXACT layperson []
+xref: UMLS:C4021801
+is_a: HP:0012373 ! Abnormal eye physiology
+
+[Term]
+id: HP:0007686
+name: Abnormal pupillary function
+def: "A functional abnormality of the pupil." [HPO:probinson]
+comment: It is preferable to describe the functional defect precisely.
+xref: MSH:D011681
+xref: SNOMEDCT_US:72124005
+xref: UMLS:C0917967
+is_a: HP:0012373 ! Abnormal eye physiology
+
+
+[Term]
+id: HP:9999999
+name: Abnormal example
+def: "This term was made for unit testing online." [HPO:probinson]
+is_a: HP:0000118 ! Phenotypic abnormality
+
+
+
+[Term]
+id: HP:0000028
+name: Cryptorchidism
+alt_id: HP:0000797
+def: "Testis in inguinal canal. That is, absence of one or both testes from the scrotum owing to failure of the testis or testes to descend through the inguinal canal to the testis." [HPO:probinson, pmid:23650202]
+comment: The gonad is mobile and can be retracted superiorly by the cremaster muscle reflex stimulated, for instance, by cold or touch. A retracted testis is not cryptorchidism. An abdominal testis cannot be distinguished by physical examination from an (Apparently) absent testis and requires radiological (or, rarely, surgical) procedures for assessment.
+synonym: "Cryptorchism" EXACT [ORCID:0000-0001-5208-3432]
+synonym: "Undescended testes" EXACT layperson []
+synonym: "Undescended testis" EXACT layperson []
+xref: Fyler:4493
+xref: MSH:D003456
+xref: SNOMEDCT_US:204878001
+xref: UMLS:C0010417
+is_a: HP:0000035 ! Abnormality of the testis
+
+[Term]
+id: HP:0000047
+name: Hypospadias
+def: "Abnormal position of urethral meatus on the ventral penile shaft (underside) characterized by displacement of the urethral meatus from the tip of the glans penis to the ventral surface of the penis, scrotum, or perineum." [HPO:probinson, PMID:21968448]
+synonym: "Hypospadia" EXACT [ORCID:0000-0001-5208-3432]
+xref: Fyler:4504
+xref: SNOMEDCT_US:204888000
+xref: UMLS:C1691215
+is_a: HP:0000035 ! Abnormality of the testis
+
+[Term]
+id: HP:0000035
+name: Abnormality of the testis
+def: "An anomaly of the testicle (the male gonad)." [HPO:probinson]
+synonym: "Abnormality of the testis" EXACT layperson []
+synonym: "Anomaly of the testes" EXACT []
+xref: SNOMEDCT_US:55631001
+xref: UMLS:C0266423
+is_a: HP:9999999 ! Abnormal example
+
+[Term]
+id: HP:0000185
+name: Cleft soft palate
+def: "Cleft of the soft palate (also known as the velum, or muscular palate) as a result of a developmental defect occurring between the 7th and 12th week of pregnancy. Cleft soft palate can cause functional abnormalities of the Eustachian tube with resulting middle ear anomalies and hearing difficulties, as well as speech problems associated with hypernasal speech due to velopharyngeal insufficiency." [HPO:curators]
+synonym: "Cleft muscular palate" EXACT [ORCID:0000-0001-5889-4463]
+synonym: "Cleft of soft palate" EXACT [ORCID:0000-0001-5208-3432]
+synonym: "Cleft velum" EXACT [ORCID:0000-0001-5889-4463]
+xref: MSH:C562950
+xref: SNOMEDCT_US:253997002
+xref: UMLS:C0432098
+is_a: HP:9999999 ! Abnormal example

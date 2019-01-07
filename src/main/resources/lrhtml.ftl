@@ -23,7 +23,7 @@ html, body, h1, ul, li, a, p, article, aside, footer, header, main, nav, section
 h2,h3 { padding 5px; }
 
 .banner {
-  background-color: #11233b;
+  background-color: #3C5488;// equal to rgb(60,84,136)
   color: white;
   padding: 10px 20px;
 }
@@ -38,7 +38,7 @@ body {
 }
 
 nav {
-  background-color: #20416c;
+  background-color: rgb(60,84,136,0.9);
   padding: 5px;
   margin-top: 1px;
 }
@@ -63,7 +63,7 @@ li {
 }
 
 section {
-  background-color: #bbbbbb;
+  background-color: rgb(176,156,133);
   margin-top: 10px;
   padding: 5px;
 }
@@ -73,12 +73,6 @@ article {
   margin-top: 5px;
   margin-bottom 5px;
   padding: 10px 15px;
-}
-
-main {
-  width: 1120px;
-  float: left;
-  margin-bottom: 10px;
 }
 
 aside {
@@ -97,8 +91,8 @@ footer {
 }
 
 table.redTable {
-  border: 2px solid #A40808;
-  background-color: #EEE7DB;
+  border: 2px solid #3C5488;
+  background-color: rgb(145,209,194,0.8);
   width: 100%;
   text-align: center;
   border-collapse: collapse;
@@ -111,7 +105,7 @@ table.redTable tbody td {
   font-size: 13px;
 }
 table.redTable tr:nth-child(even) {
-  background: #F5C8BF;
+  background: rgb(243,155,127,0.8);
 }
 table.redTable thead {
   background: #A40808;
@@ -352,7 +346,7 @@ table.redTable tfoot .links a{
     </article>
     </section>
 <footer>
-  <p>LR2PG 2018</p>
+  <p>LR2PG &copy; 2019</p>
 </footer>
 </body>
 </html>

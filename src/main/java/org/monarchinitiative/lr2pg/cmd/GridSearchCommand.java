@@ -1,5 +1,6 @@
 package org.monarchinitiative.lr2pg.cmd;
 
+import com.beust.jcommander.Parameters;
 import org.monarchinitiative.lr2pg.analysis.GridSearch;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
@@ -11,10 +12,11 @@ import java.util.Map;
 /**
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
+@Parameters(commandDescription = "Grid search for simulation of phenotype-only cases")
 public class GridSearchCommand extends SimulatePhenotypesCommand {
 
-    public GridSearchCommand(String dataDirPath){
-        super(dataDirPath);
+    public GridSearchCommand(){
+        super();
     }
 
     public void run() throws Lr2pgException {

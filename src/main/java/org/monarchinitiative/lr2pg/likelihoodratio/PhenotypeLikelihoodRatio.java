@@ -10,9 +10,7 @@ import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.*;
 
@@ -165,33 +163,44 @@ public class PhenotypeLikelihoodRatio {
         for (TermId tid : getDescendents(ontology, PHENOTYPIC_ABNORMALITY)) {
             mp.put(tid, 0.0D);
         }
-        ImmutableMap.Builder<TermId, Double> imb = new ImmutableMap.Builder<>();
+        ImmutableMap.Builder<TermId, Double> mapbuilder = new ImmutableMap.Builder<>();
         for (HpoDisease dis : this.diseaseMap.values()) {
+            // We construct a map in order to get the maximum frequencies for any
+            // given ancestor term, also in order to avoid double counting.
+            Map<TermId, Double> updateMap=new HashMap<>();
+
             for (HpoAnnotation tidm : dis.getPhenotypicAbnormalities()) {
                 TermId tid = tidm.getTermId();
-                if (!mp.containsKey(tid)) {
-                    mp.put(tid, 0.0);
-                }
-                double delta = tidm.getFrequency();
+                double termFrequency = tidm.getFrequency();
                 // All of the ancestor terms are implicitly annotated to tid
                 // therefore, add this to their background frequencies.
                 // Note we also include the original term here (third arg: true)
                 tid=ontology.getPrimaryTermId(tid);
                 Set<TermId> ancs = getAncestorTerms(ontology,tid,true);
                 for (TermId at : ancs) {
-                    if (!mp.containsKey(at)) mp.put(at, 0.0);
-                    double cumulativeFreq = mp.get(at) + delta;
-                    mp.put(at, cumulativeFreq);
+                    updateMap.putIfAbsent(at,termFrequency);
+                    // put the maximum frequency for this term given it is
+                    // an ancestor of one or more of the HPO terms that annotate
+                    // the disease.
+                    if (termFrequency > updateMap.get(at)) {
+                        updateMap.put(at,termFrequency);
+                    }
                 }
+            }
+            for (TermId tid : updateMap.keySet()) {
+                double delta = updateMap.get(tid);
+                mp.putIfAbsent(tid,0.0);
+                double cumulative = delta + mp.get(tid);
+                mp.put(tid,cumulative);
             }
         }
         // Now we need to normalize by the number of diseases.
         double N = (double) getNumberOfDiseases();
         for (Map.Entry<TermId, Double> me : mp.entrySet()) {
             double f = me.getValue() / N;
-            imb.put(me.getKey(), f);
+            mapbuilder.put(me.getKey(), f);
         }
-        hpoTerm2OverallFrequency = imb.build();
+        hpoTerm2OverallFrequency = mapbuilder.build();
         logger.trace("Got data on background frequency for " + hpoTerm2OverallFrequency.size() + " terms");
     }
 

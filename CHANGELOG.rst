@@ -1,12 +1,20 @@
 =========
 Changelog
 =========
+
+------
+v0.9.4
+------
+- Updateing to phenol-1.3.2-SNAPSHOT
+- Allow ingest of OMIM/DECIPHER specifically to avoid redundant disease classes.
+- Improve HTML output template
+- Updated CLI to use JCommander
+
 ------
 v0.9.3
 ------
 - Added phenopacket import class
 - fixed bug with genotype calculation for genes with multiple modes of inheritance
-- Updated CLI to use picocli
 
 ------
 v0.9.2

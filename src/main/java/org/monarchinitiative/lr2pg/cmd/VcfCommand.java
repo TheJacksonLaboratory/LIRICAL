@@ -1,5 +1,7 @@
 package org.monarchinitiative.lr2pg.cmd;
 
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import com.google.common.collect.Multimap;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
@@ -10,6 +12,7 @@ import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
+import org.monarchinitiative.lr2pg.io.YamlParser;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
@@ -31,43 +34,38 @@ import java.util.Map;
  * This class coordinates the main analysis of a VCF file plus list of observed HPO terms.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
+@Parameters(commandDescription = "Phenotype-driven analysis of VCF (Exome/Genome) data")
 public class VcfCommand extends Lr2PgCommand {
     private static final Logger logger = LoggerFactory.getLogger(VcfCommand.class);
     /** An object that contains parameters from the YAML file for configuration. */
-    private final Lr2PgFactory factory;
-    /** Directory where various files are downloaded/created. */
-    private final String datadir;
+    private Lr2PgFactory factory;
     /** Default name of the background frequency file. */
     private final String BACKGROUND_FREQUENCY_FILE="background-freq.txt";
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
     private Map<TermId,String> geneId2symbol;
     /** Various metadata that will be used for the HTML org.monarchinitiative.lr2pg.output. */
     private Map<String,String> metadata;
+
+
+
+    @Parameter(names="--tsv",description = "Use TSV instead of HTML output")
+    private boolean outputTSV=false;
+    @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file")
+    private String yamlPath;
+    /** Directory where various files are downloaded/created. */
+    @Parameter(names={"-d","--data"}, description ="directory to download data (default: ${DEFAULT-VALUE})" )
+    private String datadir="data";
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
+    @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
     private double LR_THRESHOLD=0.01;
 
-    private final boolean outputTSV;
 
     /**
-     * @param fact An object that contains parameters from the YAML file for configuration
-     * @param data Path to the data download directory that has hp.obo and other files.
+     * Command pattern to coordinate analysis of a VCF file with LR2PG.
      */
-    public VcfCommand(Lr2PgFactory fact, String data, boolean tsv) {
-        this.factory = fact;
-        this.datadir=data;
-        this.outputTSV=tsv;
+    public VcfCommand() {
     }
-    /**
-     * @param fact An object that contains parameters from the YAML file for configuration
-     * @param data Path to the data download directory that has hp.obo and other files.
-     * @param threshold Threshold posterior probability for displaying a differential in the main section.
-     */
-    public VcfCommand(Lr2PgFactory fact, String data, double threshold) {
-        this.factory = fact;
-        this.datadir=data;
-        this.LR_THRESHOLD=threshold;
-        outputTSV=false; // we only use a threshold for HtML
-    }
+
 
 
     /**
@@ -97,8 +95,28 @@ public class VcfCommand extends Lr2PgCommand {
     }
 
 
+    private void showParams() {
+        System.out.println("LR2PG: vcf parameters");
+        System.out.println("\tvcf file:" + factory.vcfPath());
+        System.out.println("\tYAML config file: "+yamlPath);
+        System.out.println("\tMVStore file:" + factory.mvStore());
+        System.out.println("\tUse TSV?: "+outputTSV);
+        System.out.println("\tdata directory: "+datadir);
+        System.out.println("\tthreshold: "+LR_THRESHOLD);
+       // System.out.println("\tJannovar file:" + factory.jannovarData().);
+
+
+    }
+
+
+
 
     public void run() throws Lr2pgException {
+        this.factory  = deYamylate(this.yamlPath);
+        showParams();
+
+
+
         Map<TermId, Gene2Genotype> genotypeMap = getVcf2GenotypeMap();
         //debugPrintGenotypeMap(genotypeMap);
         GenotypeLikelihoodRatio genoLr = getGenotypeLR();
@@ -161,5 +179,32 @@ public class VcfCommand extends Lr2PgCommand {
                 System.out.println(++i +"/"+N+") "+s);
             }
         }
+    }
+
+    /**
+     * Parse the YAML file and put the results into an {@link Lr2PgFactory} object.
+     *
+     * @param yamlPath Path to the YAML file for the VCF analysis
+     * @return An {@link Lr2PgFactory} object with various settings.
+     */
+    private Lr2PgFactory deYamylate(String yamlPath) {
+
+        Lr2PgFactory factory = null;
+        try {
+            YamlParser yparser = new YamlParser(yamlPath);
+            Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().
+                    hp_obo(yparser.getHpOboPath()).
+                    mvStore(yparser.getMvStorePath())
+                    .mim2genemedgen(yparser.getMedgen())
+                    .geneInfo(yparser.getGeneInfo())
+                    .phenotypeAnnotation(yparser.phenotypeAnnotation())
+                    .observedHpoTerms(yparser.getHpoTermList())
+                    .vcf(yparser.vcfPath()).
+                            jannovarFile(yparser.jannovarFile());
+            factory = builder.build();
+        } catch (Lr2pgException e) {
+            e.printStackTrace();
+        }
+        return factory;
     }
 }

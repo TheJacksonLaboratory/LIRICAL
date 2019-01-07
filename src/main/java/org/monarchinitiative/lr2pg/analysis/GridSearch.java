@@ -58,8 +58,8 @@ public class GridSearch  {
                 for (int j = 0; j < randomtermnumber.length; j++) {
                     boolean imprec = (j > 4);
                     simulator = new PhenotypeOnlyHpoCaseSimulator( ontology,diseaseMap,n_cases, termnumber[i], randomtermnumber[j], imprec);
-//                    simulator.simulateCases();
-//                    Z[i][j] = simulator.getProportionAtRank1();
+                    simulator.simulateCases();
+                    Z[i][j] = simulator.getProportionAtRank1();
                     writer.write(String.format("terms: %d; noise terms: %d; percentage at rank 1: %.2f\n",
                             termnumber[i],
                             randomtermnumber[j],

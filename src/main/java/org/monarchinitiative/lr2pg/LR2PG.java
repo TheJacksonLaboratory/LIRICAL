@@ -1,16 +1,13 @@
 package org.monarchinitiative.lr2pg;
 
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.tools.picocli.CommandLine;
 import org.monarchinitiative.lr2pg.cmd.*;
-import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
-import org.monarchinitiative.lr2pg.io.YamlParser;
-
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 
 /**
@@ -19,175 +16,85 @@ import java.util.stream.Collectors;
  * @version 0.9.1 (2019-01-02)
  */
 
-@org.apache.logging.log4j.core.tools.picocli.CommandLine.Command(name = "java -jar Lr2pg.jar",
-        sortOptions = false,
-        headerHeading = "@|bold,underline Usage|@:%n%n",
-        synopsisHeading = "%n",
-        descriptionHeading = "%n@|bold,underline Description|@:%n%n",
-        parameterListHeading = "%n@|bold,underline Parameters|@:%n",
-        optionListHeading = "%n@|bold,underline Options|@:%n",
-        header = "likelihood-ratio analysis of phenotypes and genotypes.",
-        description = "Phenotype-driven analysis of exomes/genomes.")
-public class LR2PG implements Runnable {
+
+public class LR2PG  {
     private static final Logger logger = LogManager.getLogger();
-    /** These are the five ways to run Lr2pg. */
-    enum Lr2pgCommandType {vcf, download,simulate,grid,gt2git};
 
-    @org.apache.logging.log4j.core.tools.picocli.CommandLine.Parameters(index = "0", description = "LR2PG command to be exectuted.")
-    private Lr2pgCommandType command =null;
 
-    /** Path to YAML configuration file*/
-    @CommandLine.Option(names = {"-y","--yaml"}, description = "path to yaml configuration file")
-    private String yamlPath = null;
-
-    @CommandLine.Option(names={"-d","--data"}, description ="directory to download data (default: ${DEFAULT-VALUE})" )
-    private String datadir="data";
-
-    @CommandLine.Option(names={"-m","--mvstore"}, description = "path to Exomiser MVStore file")
-    private String mvStorePath;
-
-    @CommandLine.Option(names={"-j","--jannovar"}, description = "path to Jannovar transcript file")
-    private String jannovarTranscriptFile;
-
-    @CommandLine.Option(names={"-g", "--genome"}, description = "string representing the genome assembly (hg19,hg38)")
-    private String genomeAssembly;
-
-    @CommandLine.Option(names="--clinvar", description = "determine distribution of ClinVar pathogenicity scores")
-    private boolean doClinvar;
-
-    @CommandLine.Option(names={"-o","--overwrite"}, description = "determine distribution of ClinVar pathogenicity scores")
-    private boolean overwriteDownload;
-
-    @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
+    @Parameter(names = {"-h", "--help"}, help = true, description = "display this help message")
     private boolean usageHelpRequested;
 
-    @CommandLine.Option(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
-    private double threshold=0.01;
-
-    @CommandLine.Option(names="--tsv",description = "Use TSV instead of HTML output")
-    private boolean useTsvOutput;
-
-
-
-
-    /** Used to record the command line string used. */
-    private static String clstring;
 
     static public void main(String [] args) {
-
         long startTime = System.currentTimeMillis();
-        clstring = "";
-        if (args != null && args.length > 0) {
-            clstring = Arrays.stream(args).collect(Collectors.joining(" "));
+
+        LR2PG lr2pg = new LR2PG();
+        DownloadCommand download = new DownloadCommand();
+        SimulatePhenotypesCommand simulate = new SimulatePhenotypesCommand();
+        GridSearchCommand grid = new GridSearchCommand();
+        Gt2GitCommand gt2git = new Gt2GitCommand();
+        VcfCommand vcf = new VcfCommand();
+        JCommander jc = JCommander.newBuilder()
+                .addObject(lr2pg)
+                .addCommand("download", download)
+                .addCommand("simulate", simulate)
+                .addCommand("grid", grid)
+                .addCommand("gt2git",gt2git)
+                .addCommand("vcf",vcf)
+                .build();
+        jc.setProgramName("java -jar Lr2pg.jar");
+        try {
+            jc.parse(args);
+        } catch (ParameterException e) {
+            System.err.println("[ERROR] "+e.getMessage());
+            jc.usage();
+            System.exit(1);
         }
-        new CommandLine(new LR2PG()).parseWithHandler(new CommandLine.RunLast(), System.err, args);
 
+        if (jc.getParsedCommand()==null ) {
+            System.err.println("[ERROR] no command passed");
+            jc.usage();
+           System.exit(1);
+       }
 
+        if ( lr2pg.usageHelpRequested) {
+            jc.usage();
+            System.exit(1);
+        }
 
+        String command = jc.getParsedCommand();
+        Lr2PgCommand lr2pgcommand=null;
+        switch (command) {
+            case "download":
+                lr2pgcommand= download;
+                break;
+            case "simulate":
+                lr2pgcommand = simulate;
+               break;
+           case "grid":
+               lr2pgcommand = grid;
+               break;
+           case "gt2git":
+               lr2pgcommand = gt2git;
+               break;
+           case "vcf":
+               lr2pgcommand =vcf;
+               break;
+           default:
+               System.err.println(String.format("[ERROR] command \"%s\" not recognized",command));
+               jc.usage();
+               System.exit(1);
 
-
-//        Lr2pgCommandLine clp = new Lr2pgCommandLine(args);
-//        Lr2PgCommand command = clp.getCommand();
-//        try {
-//            command.run();
-//        } catch (Lr2pgException e) {
-//            e.printStackTrace();
-//        }
+        }
+        try {
+            lr2pgcommand.run();
+        } catch (Lr2pgException e) {
+            e.printStackTrace();
+        }
         long stopTime = System.currentTimeMillis();
         System.out.println("LRPG: Elapsed time was " + (stopTime - startTime)*(1.0)/1000 + " seconds.");
     }
 
 
-   @Override
-    public void run() {
-       if (usageHelpRequested) {
-           CommandLine.usage(new LR2PG(), System.out);
-           System.exit(0);
-       }
-
-       Lr2PgCommand lr2pgcommand=null;
-       switch (command) {
-           case vcf:
-               if (this.yamlPath == null) {
-                   printUsage("YAML file not found but required for VCF command");
-                   return;
-               }
-               Lr2PgFactory factory = deYamylate(this.yamlPath);
-               if (useTsvOutput) {
-                   // output TSV Instead of HTML (threshold not needed for this)
-                   lr2pgcommand = new VcfCommand(factory,datadir,useTsvOutput);
-               } else {
-                   // output HTML file at the indicated threshold to show differentials.
-                   lr2pgcommand = new VcfCommand(factory, datadir, threshold);
-               }
-               break;
-           case download:
-               lr2pgcommand= new DownloadCommand(datadir, overwriteDownload);
-               break;
-           case simulate:
-               lr2pgcommand = new SimulatePhenotypesCommand(datadir);
-               break;
-           case grid:
-               lr2pgcommand = new GridSearchCommand(datadir);
-               break;
-           case gt2git:
-               if (mvStorePath==null) {
-                   printUsage("Need to specify the MVStore file: -m <mvstore> to run gt2git command!");
-               }
-               if (jannovarTranscriptFile==null) {
-                   printUsage("Need to specify the Jannovar transcript file: -j <jannovar> to run gt2git command!");
-               }
-               if (genomeAssembly==null) {
-                   printUsage("Need to specify the genome build: -g <genome> to run gt2git command!");
-               }
-               lr2pgcommand = new Gt2GitCommand(datadir, mvStorePath,jannovarTranscriptFile,genomeAssembly,doClinvar);
-               break;
-           default:
-               printUsage("Could not find command option");
-       }
-       try {
-           lr2pgcommand.run();
-       } catch (Lr2pgException e) {
-           e.printStackTrace();
-       }
-
-   }
-    /**
-     * Print usage information
-     */
-    private void printUsage(String message) {
-        System.out.println();
-        System.out.println("arguments: " + clstring);
-        System.out.println(message);
-        CommandLine.usage(new LR2PG(), System.out);
-        System.exit(0);
-    }
-
-    /**
-     * Parse the YAML file and put the results into an {@link Lr2PgFactory} object.
-     *
-     * @param yamlPath Path to the YAML file for the VCF analysis
-     * @return An {@link Lr2PgFactory} object with various settings.
-     */
-    private Lr2PgFactory deYamylate(String yamlPath) {
-
-        Lr2PgFactory factory = null;
-        try {
-            YamlParser yparser = new YamlParser(yamlPath);
-            Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().
-                    hp_obo(yparser.getHpOboPath()).
-                    mvStore(yparser.getMvStorePath())
-                    .mim2genemedgen(yparser.getMedgen())
-                    .geneInfo(yparser.getGeneInfo())
-                    .phenotypeAnnotation(yparser.phenotypeAnnotation())
-                    .observedHpoTerms(yparser.getHpoTermList())
-                    .vcf(yparser.vcfPath()).
-                            jannovarFile(yparser.jannovarFile());
-            factory = builder.build();
-        } catch (Lr2pgException e) {
-            e.printStackTrace();
-        }
-        return factory;
-    }
 
 }
