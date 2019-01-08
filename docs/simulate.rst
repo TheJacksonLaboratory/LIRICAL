@@ -33,7 +33,19 @@ The command is run as ::
     $ java -jar Lr2pg.jar simulate [options]
 
 
-It will print a summary of the results to standard out.
+It will print a summary of the results to standard out, for instance, ::
+
+    Simulation of 25 cases with 5 HPO terms, 1 noise terms. Imprecision: false
+    Rank=1: count:19 (76.0%)
+    Rank=2: count:2 (8.0%)
+    Rank=3: count:1 (4.0%)
+    Rank=8: count:1 (4.0%)
+    Rank=11-20: count:0 (0.0%)
+    Rank=21-30: count:0 (0.0%)
+    Rank=31-100: count:1 (4.0%)
+    Rank=101-...: count:1 (4.0%)
+
+
 
 
 

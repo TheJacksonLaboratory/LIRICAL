@@ -15,6 +15,7 @@ LR2PG: Likelihood ratio analysis of phenotype/genotype data
    simulate
    grid
    gt2git
+   clinvar
 
 LR2PG
 ~~~~~

@@ -144,6 +144,10 @@ public class PhenotypeOnlyHpoCaseSimulator {
         int rank21_30=0;
         int rank31_100=0;
         int rank101_up=0;
+        System.out.println();
+        System.out.println();
+        System.out.println(String.format("Simulation of %d cases with %d HPO terms, %d noise terms. Imprecision: %s",
+                n_cases_to_simulate,n_terms_per_case,n_noise_terms,addTermImprecision));
         for (int r:ranks.keySet()) {
             if (r==1) {
                 proportionAtRank1=ranks.get(r) / (double)N;
