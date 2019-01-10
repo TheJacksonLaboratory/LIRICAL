@@ -16,12 +16,11 @@ import org.monarchinitiative.lr2pg.io.YamlParser;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.lr2pg.output.HtmlTemplate;
 import org.monarchinitiative.lr2pg.output.Lr2pgTemplate;
 import org.monarchinitiative.lr2pg.output.TsvTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +120,7 @@ public class VcfCommand extends Lr2PgCommand {
         //debugPrintGenotypeMap(genotypeMap);
         GenotypeLikelihoodRatio genoLr = getGenotypeLR();
         List<TermId> observedHpoTerms = factory.observedHpoTerms();
-        HpoOntology ontology = factory.hpoOntology();
+        Ontology ontology = factory.hpoOntology();
         Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
 
         PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
@@ -146,13 +145,13 @@ public class VcfCommand extends Lr2PgCommand {
     }
 
 
-    private void outputHTML(HpoCase hcase,HpoOntology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
+    private void outputHTML(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
         HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata,this.LR_THRESHOLD);
         caseoutput.outputFile();
     }
 
     /** Output a tab-separated values file with one line per differential diagnosis. */
-    private void outputTSV(HpoCase hcase,HpoOntology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
+    private void outputTSV(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
         Lr2pgTemplate template = new TsvTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata);
         template.outputFile();
     }

@@ -4,7 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -18,7 +18,7 @@ import java.util.*;
 public class Lr2Svg {
     private static final Logger logger = LogManager.getLogger();
     /** An object representing the Human Phenotype Ontology */
-    private final HpoOntology ontology;
+    private final Ontology ontology;
     /** This is the object that represents the case being analyzed with all results. */
     private final HpoCase hpocase;
     /** We show the results as an SVG diagram for this disease. */
@@ -51,7 +51,7 @@ public class Lr2Svg {
      */
     private int heightOfMiddleLine;
 
-    public Lr2Svg(HpoCase hcase,TermId diseaseId,String diseaseName, HpoOntology ont, String symbol) {
+    public Lr2Svg(HpoCase hcase, TermId diseaseId, String diseaseName, Ontology ont, String symbol) {
         this.hpocase=hcase;
         this.diseaseCURIE=diseaseId;
         // shorten the name to everything up to the first ;

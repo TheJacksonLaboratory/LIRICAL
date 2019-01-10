@@ -19,7 +19,7 @@ import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.lr2pg.io.PhenopacketImporter;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
@@ -65,6 +65,8 @@ public class PhenopacketCommand extends Lr2PgCommand{
     List<TermId> negatedHpoIdList;
     String genomeAssembly;
     String vcfPath;
+    /** Representation of the Exomiser database (http://www.h2database.com/html/mvstore.html). */
+    private MVStore mvstore;
 
 
     public PhenopacketCommand(){
@@ -94,17 +96,12 @@ public class PhenopacketCommand extends Lr2PgCommand{
             try {
                 Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap();
                 GenotypeLikelihoodRatio genoLr = getGenotypeLR();
-
-
-
-
-                Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder()
+                Lr2PgFactory factory = new Lr2PgFactory.Builder()
                         .hp_obo(hpoOboPath)
                         .phenotypeAnnotation(phenotypeHpoaPath)
-                        .mvStore(this.mvpath);
-               // List<TermId> observedHpoTerms = factory.observedHpoTerms();
-               // HpoOntology ontology = factory.hpoOntology();
-                //Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
+                        .mvStore(this.mvpath).build();
+                Ontology ontology = factory.hpoOntology();
+                Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
             } catch (Lr2pgException e) {
                 e.printStackTrace();
             }
@@ -124,16 +121,6 @@ public class PhenopacketCommand extends Lr2PgCommand{
         return new GenotypeLikelihoodRatio(gene2back);
     }
 
-
-
-    /** @return MVStore object with Exomiser data on variant pathogenicity and frequency. */
-    public MVStore mvStore(String mvStoreAbsolutePath) {
-        MVStore mvstore = new MVStore.Builder()
-                    .fileName(mvStoreAbsolutePath)
-                    .readOnly()
-                    .open();
-        return mvstore;
-    }
 
 
     /** @return the object created by deserilizing a Jannovar file. */
@@ -173,18 +160,12 @@ public class PhenopacketCommand extends Lr2PgCommand{
      * @throws Lr2pgException upon error parsing the VCF file or creating the Jannovar object
      */
     private Map<TermId, Gene2Genotype> getVcf2GenotypeMap() throws Lr2pgException {
-        MVStore mvstore = mvStore(mvpath);
         JannovarData jannovarData = jannovarData(jannovarPath);
         GenomeAssembly assembly = getGenomeAssembly(this.genomeAssembly);
-        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath, jannovarData, mvstore, assembly);
+        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath, jannovarData, this.mvstore, assembly);
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
         this.metadata = vcf2geno.getVcfMetaData();
         return genotypeMap;
     }
-
-
-
-
-
 
 }

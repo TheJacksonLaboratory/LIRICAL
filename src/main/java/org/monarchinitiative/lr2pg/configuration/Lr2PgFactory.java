@@ -12,10 +12,10 @@ import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.io.assoc.HpoAssociationParser;
-import org.monarchinitiative.phenol.io.obo.hpo.HpOboParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
@@ -51,7 +51,7 @@ public class Lr2PgFactory {
     /** List of HPO terms (phenotypic abnormalities) observed in the person being evaluated. */
     private final List<TermId> hpoIdList;
 
-    private HpoOntology ontology = null;
+    private Ontology ontology = null;
     private MVStore mvstore = null;
     private Multimap<TermId,TermId> gene2diseaseMultiMap=null;
     private Multimap<TermId,TermId> disease2geneIdMultiMap=null;
@@ -91,13 +91,13 @@ public class Lr2PgFactory {
 
 
     /** @return HpoOntology object. */
-    public HpoOntology hpoOntology() throws Lr2pgException {
+    public Ontology hpoOntology() throws Lr2pgException {
         if (ontology != null) return ontology;
         try {
-            HpOboParser parser = new HpOboParser(new File(this.hpoOboFilePath));
-            ontology = parser.parse();
-            return ontology;
-        } catch (PhenolException | FileNotFoundException ioe) {
+            // The HPO is in the default  curie map and only contains known relationships / HP terms
+            Ontology hpoOntology = OntologyLoader.loadOntology(new File(this.hpoOboFilePath));
+            return hpoOntology;
+        } catch (PhenolException ioe) {
             throw new Lr2pgException("Could not parse hp.obo file: " + ioe.getMessage());
         }
     }
@@ -200,7 +200,7 @@ public class Lr2PgFactory {
     }
 
     /** @return a map with key: a disease id (e.g., OMIM:654321) and key the corresponding {@link HpoDisease} object.*/
-    public Map<TermId, HpoDisease> diseaseMap(HpoOntology ontology) throws Lr2pgException {
+    public Map<TermId, HpoDisease> diseaseMap(Ontology ontology) throws Lr2pgException {
         if (this.phenotypeAnnotationPath==null) {
             throw new Lr2pgException("Path to phenotype.hpoa file not found");
         }

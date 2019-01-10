@@ -3,8 +3,8 @@ package org.monarchinitiative.lr2pg.io;
 import com.google.common.collect.Multimap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
 import org.monarchinitiative.phenol.io.assoc.HpoAssociationParser;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
@@ -24,12 +24,12 @@ public class Disease2GeneDataIngestor {
     /** key: a gene id, e.g., NCBIGene:2020; value: the corresponding symbol. */
     private Map<TermId,String> geneId2symbolMap;
 
-    public Disease2GeneDataIngestor(String datadir, HpoOntology ontology) {
+    public Disease2GeneDataIngestor(String datadir, Ontology ontology) {
         this.dataDirectoryPath=datadir;
         inputData(ontology);
     }
 
-    private void inputData(HpoOntology ontology) {
+    private void inputData(Ontology ontology) {
         String geneinfopath=String.format("%s%s%s",
                 this.dataDirectoryPath,
                 File.separator,

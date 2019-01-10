@@ -9,7 +9,7 @@ import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
@@ -27,7 +27,7 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getPa
 public class PhenotypeOnlyHpoCaseSimulator {
     private static final Logger logger = LogManager.getLogger();
     /** An object representing the Human Phenotype Ontology */
-    private HpoOntology ontology;
+    private Ontology ontology;
     /** An object that calculates the foreground frequency of an HPO term in a disease as well as the background frequency */
     private final PhenotypeLikelihoodRatio phenotypeLrEvaluator;
     /** A list of all HPO term ids in the Phenotypic abnormality subontology. */
@@ -64,7 +64,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
      * @param terms_per_case Number of HPO terms per case
      * @param noise_terms Number of "noise" (random, unrelated) terms to add per case
      */
-    public PhenotypeOnlyHpoCaseSimulator(HpoOntology ontology,
+    public PhenotypeOnlyHpoCaseSimulator(Ontology ontology,
                                          Map<TermId,HpoDisease> diseaseMap,
                                          int cases_to_simulate,
                                          int terms_per_case,
@@ -92,7 +92,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
      * @param noise_terms Number of "noise" (random, unrelated) terms to add per case
      * @param imprecise Whether or not to use imprecision
      */
-    public PhenotypeOnlyHpoCaseSimulator(HpoOntology ontology,
+    public PhenotypeOnlyHpoCaseSimulator(Ontology ontology,
                                          Map<TermId,HpoDisease> diseaseMap,
                                          int cases_to_simulate,
                                          int terms_per_case,
@@ -189,7 +189,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
 
 
 
-    public HpoOntology getOntology() {
+    public Ontology getOntology() {
         return ontology;
     }
 

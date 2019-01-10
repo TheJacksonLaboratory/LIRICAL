@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.BufferedWriter;
@@ -29,7 +29,7 @@ public class TsvTemplate extends Lr2pgTemplate {
 
 
     public TsvTemplate(HpoCase hcase,
-                       HpoOntology ontology,
+                       Ontology ontology,
                        Map<TermId, Gene2Genotype> genotypeMap,
                        Map<TermId, String> geneid2sym,
                        Map<String, String> metadat) {

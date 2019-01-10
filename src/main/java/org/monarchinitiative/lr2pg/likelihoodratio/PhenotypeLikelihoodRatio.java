@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.*;
@@ -25,7 +25,7 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.*;
 public class PhenotypeLikelihoodRatio {
     private static final Logger logger = LogManager.getLogger();
     /** The HPO ontology with all of its subontologies. */
-    private final HpoOntology ontology;
+    private final Ontology ontology;
     /** This map has one entry for each disease in our database. Key--the disease ID, e.g., OMIM:600200.*/
     private final Map<TermId, HpoDisease> diseaseMap;
     /** Overall, i.e., background frequency of each HPO term. */
@@ -40,7 +40,7 @@ public class PhenotypeLikelihoodRatio {
      * @param onto The HPO ontology object
      * @param diseases List of all diseases for this simulation
      */
-    public PhenotypeLikelihoodRatio(HpoOntology onto, Map<TermId, HpoDisease> diseases) {
+    public PhenotypeLikelihoodRatio(Ontology onto, Map<TermId, HpoDisease> diseases) {
         this.ontology=onto;
         this.diseaseMap = diseases;
         initializeFrequencyMap();

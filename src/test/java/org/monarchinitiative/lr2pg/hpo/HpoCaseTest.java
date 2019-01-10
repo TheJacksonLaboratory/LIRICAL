@@ -14,9 +14,9 @@ import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatioTest;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.io.obo.hpo.HpOboParser;
+import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
@@ -37,18 +37,18 @@ class HpoCaseTest {
     /** Name of the disease we are simulating in this test, i.e., OMIM:108500. */
     private static String diseasename="108500";
     private static HpoCase hpocase;
-    private static HpoOntology ontology;
+    private static Ontology ontology;
     private static PhenotypeLikelihoodRatio backforeFreq;
 
 
     @BeforeAll
-    static void setup() throws PhenolException, FileNotFoundException,NullPointerException {
+    static void setup() throws PhenolException,NullPointerException {
         ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
         String hpoPath = Objects.requireNonNull(classLoader.getResource("hp.small.obo").getFile());
         String annotationPath = Objects.requireNonNull(classLoader.getResource("small.hpoa").getFile());
         /* parse ontology */
-        HpOboParser parser = new HpOboParser(new File(hpoPath));
-        ontology = parser.parse();
+        // The HPO is in the default  curie map and only contains known relationships / HP terms
+        ontology = OntologyLoader.loadOntology(new File(hpoPath));
         HpoDiseaseAnnotationParser annotationParser = new HpoDiseaseAnnotationParser(annotationPath, ontology);
         Map<TermId, HpoDisease> diseaseMap = annotationParser.parse();
         backforeFreq = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
