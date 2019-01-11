@@ -10,7 +10,10 @@ import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import java.io.File;
 import java.io.IOException;
 
-
+/**
+ * This class ingests a YAML file with parameters that will be used for the analysis.
+ * @author Peter Robinson
+ */
 public class YamlParser {
 
     private YamlConfig yconfig;

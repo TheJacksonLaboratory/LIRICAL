@@ -57,9 +57,7 @@ public class LR2PG  {
             System.err.println("[ERROR] no command passed");
             jc.usage();
            System.exit(1);
-       } else {
-            System.out.println("Got parsed command = " + jc.getParsedCommand());
-        }
+       }
 
         if ( lr2pg.usageHelpRequested) {
             jc.usage();

@@ -36,7 +36,6 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This class is responsible for parsing the VCF file and extracting variants and genotypes. Its
@@ -119,9 +118,9 @@ public class Vcf2GenotypeMap {
             final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(vcfPath));
             if (seqDict != null) {
                 final GenomeRegionListFactoryFromSAMSequenceDictionary factory = new GenomeRegionListFactoryFromSAMSequenceDictionary();
-                this.progressReporter = new ProgressReporter(factory.construct(seqDict), 60);
-                this.progressReporter.printHeader();
-                this.progressReporter.start();
+//                this.progressReporter = new ProgressReporter(factory.construct(seqDict), 60);
+//                this.progressReporter.printHeader();
+//                this.progressReporter.start();
             } else {
                 logger.warn("Progress reporting does not work because VCF file is missing the contig "
                         + "lines in the header.");
@@ -200,17 +199,15 @@ public class Vcf2GenotypeMap {
                             ClinVarData cVarData = pathogenicityData.getClinVarData();
                             genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, pathogenicity, freq, cVarData.getPrimaryInterpretation());
                         }
+
                     }
                 }
             }
             final long endTime = System.nanoTime();
 
-            logger.info("Finished Annotating VCF (time= " + (endTime-startTime)/100_000_000 + " sec)");
+            logger.info(String.format("Finished Annotating VCF (time= %.2f sec).", (endTime-startTime)/1_000_000_000.0 ));
         }
 
-        //debugPrintGenotypes();
-        if (progressReporter != null)
-            progressReporter.done();
         return gene2genotypeMap;
     }
 
