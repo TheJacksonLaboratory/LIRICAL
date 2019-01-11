@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.*;
@@ -37,7 +37,7 @@ public class CaseEvaluator {
     /** Object used to calculate genotype-based likelihood ratio. */
     private final GenotypeLikelihoodRatio genotypeLrEvalutator;
     /** Reference to the Human Phenotype Ontology object. */
-    private final HpoOntology ontology;
+    private final Ontology ontology;
 
     private static final double DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD=0.01;
 
@@ -53,7 +53,7 @@ public class CaseEvaluator {
      * @param phenotypeLrEvaluator class to evaluate phenotype likelihood ratios.
      */
     private CaseEvaluator(List<TermId> hpoTerms,
-                          HpoOntology ontology,
+                          Ontology ontology,
                           Map<TermId,HpoDisease> diseaseMap,
                           PhenotypeLikelihoodRatio phenotypeLrEvaluator) {
         this.phenotypicAbnormalities=hpoTerms;
@@ -78,7 +78,7 @@ public class CaseEvaluator {
 
 
     private CaseEvaluator(List<TermId> hpoTerms,
-                          HpoOntology ontology,
+                          Ontology ontology,
                           Map<TermId,HpoDisease> diseaseMap,
                           Multimap<TermId,TermId> disease2geneMultimap,
                           PhenotypeLikelihoodRatio phenotypeLrEvaluator,
@@ -142,7 +142,7 @@ public class CaseEvaluator {
                             if (genotypeLR == null) {
                                 genotypeLR = opt.get();
                                 geneId = entrezGeneId;
-                            } else if (genotypeLR > opt.get()) {
+                            } else if (genotypeLR < opt.get()) { // if the new genotype LR is better, replace!
                                 genotypeLR = opt.get();
                                 geneId = entrezGeneId;
                             }
@@ -204,7 +204,7 @@ public class CaseEvaluator {
     public static class Builder {
         /** The abnormalities observed in the individual being investigated. */
         private final List<TermId> hpoTerms;
-        private HpoOntology ontology;
+        private Ontology ontology;
         /** Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
         private Map<TermId,HpoDisease> diseaseMap;
         /* key: a gene CURIE such as NCBIGene:123; value: a collection of disease CURIEs such as OMIM:600123; */
@@ -220,7 +220,7 @@ public class CaseEvaluator {
 
         public Builder(List<TermId> hpoTerms){ this.hpoTerms=hpoTerms; }
 
-        public Builder ontology(HpoOntology hont) { this.ontology=hont; return this;}
+        public Builder ontology(Ontology hont) { this.ontology=hont; return this;}
 
         public Builder diseaseMap(Map<TermId,HpoDisease> dmap) { this.diseaseMap=dmap; return this;}
 

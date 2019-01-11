@@ -10,7 +10,10 @@ import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import java.io.File;
 import java.io.IOException;
 
-
+/**
+ * This class ingests a YAML file with parameters that will be used for the analysis.
+ * @author Peter Robinson
+ */
 public class YamlParser {
 
     private YamlConfig yconfig;
@@ -50,6 +53,17 @@ public class YamlParser {
             throw new Lr2pgException("No mim2gene_medgen path found in YAML configuration file");
         }
     }
+
+    /**@return A String representing the genome assembly of the VCF file (should be hg19 or hg38). */
+    public String getGenomeAssembly() throws Lr2pgException {
+        if (yconfig.getAnalysis().containsKey("genomeAssembly")) {
+            return yconfig.getAnalysis().get("genomeAssembly");
+        }  else {
+            throw new Lr2pgException("genomeAssembly not found in YAML configuration file");
+        }
+    }
+
+
     public String getGeneInfo() throws Lr2pgException {
         if (yconfig.getAnalysis().containsKey("gene_info")) {
             return yconfig.getAnalysis().get("gene_info");

@@ -21,7 +21,7 @@ public class LR2PG  {
     private static final Logger logger = LogManager.getLogger();
 
 
-    @Parameter(names = {"-h", "--help"}, help = true, description = "display this help message")
+    @Parameter(names = {"-h", "--help"}, help = true, arity = 0,description = "display this help message")
     private boolean usageHelpRequested;
 
 
@@ -34,6 +34,7 @@ public class LR2PG  {
         GridSearchCommand grid = new GridSearchCommand();
         Gt2GitCommand gt2git = new Gt2GitCommand();
         VcfCommand vcf = new VcfCommand();
+        PhenopacketCommand phenopacket = new PhenopacketCommand();
         JCommander jc = JCommander.newBuilder()
                 .addObject(lr2pg)
                 .addCommand("download", download)
@@ -41,13 +42,31 @@ public class LR2PG  {
                 .addCommand("grid", grid)
                 .addCommand("gt2git",gt2git)
                 .addCommand("vcf",vcf)
+                .addCommand("phenopacket",phenopacket)
                 .build();
         jc.setProgramName("java -jar Lr2pg.jar");
         try {
             jc.parse(args);
         } catch (ParameterException e) {
             System.err.println("[ERROR] "+e.getMessage());
+            for (String a:args) {
+                if (a.contains("h")) {
+                    System.err.println("[ERROR] to get subcommand help, enter -h <subcommand> (not <subcommand> -h)");
+                    System.exit(1);
+                }
+            }
             jc.usage();
+            System.exit(1);
+        }
+        String parsedCommand = jc.getParsedCommand();
+
+        if ( lr2pg.usageHelpRequested) {
+            if (parsedCommand==null) {
+                jc.usage();
+            } else {
+                System.out.println("USAGE HELP");
+                jc.usage(parsedCommand);
+            }
             System.exit(1);
         }
 
@@ -58,6 +77,7 @@ public class LR2PG  {
        }
 
         if ( lr2pg.usageHelpRequested) {
+
             jc.usage();
             System.exit(1);
         }
@@ -80,6 +100,9 @@ public class LR2PG  {
            case "vcf":
                lr2pgcommand =vcf;
                break;
+           case "phenopacket":
+                lr2pgcommand =phenopacket;
+                break;
            default:
                System.err.println(String.format("[ERROR] command \"%s\" not recognized",command));
                jc.usage();

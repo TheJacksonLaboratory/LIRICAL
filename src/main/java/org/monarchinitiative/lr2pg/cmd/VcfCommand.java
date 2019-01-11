@@ -16,12 +16,12 @@ import org.monarchinitiative.lr2pg.io.YamlParser;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.lr2pg.output.HtmlTemplate;
 import org.monarchinitiative.lr2pg.output.Lr2pgTemplate;
 import org.monarchinitiative.lr2pg.output.TsvTemplate;
+import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +58,8 @@ public class VcfCommand extends Lr2PgCommand {
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
     @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
     private double LR_THRESHOLD=0.01;
-
+    @Parameter(names={"-o", "--outfile"},description = "prefix of outfile")
+    private String outfilePrefix="lr2pg";
 
     /**
      * Command pattern to coordinate analysis of a VCF file with LR2PG.
@@ -71,13 +72,9 @@ public class VcfCommand extends Lr2PgCommand {
     /**
      * Identify the variants and genotypes from the VCF file.
      * @return a map with key: An NCBI Gene Id, and value: corresponding {@link Gene2Genotype} object.
-     * @throws Lr2pgException upon error parsing the VCF file or creating the Jannovar object
      */
-    private Map<TermId, Gene2Genotype> getVcf2GenotypeMap() throws Lr2pgException {
-        String vcf = factory.vcfPath();
-        MVStore mvstore = factory.mvStore();
-        JannovarData jannovarData = factory.jannovarData();
-        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcf, jannovarData, mvstore, GenomeAssembly.HG19);
+    private Map<TermId, Gene2Genotype> getVcf2GenotypeMap(String vcf,MVStore mvstore,JannovarData jannovarData, GenomeAssembly assembly ) {
+        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcf, jannovarData, mvstore, assembly);
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
         this.metadata = vcf2geno.getVcfMetaData();
         return genotypeMap;
@@ -110,18 +107,19 @@ public class VcfCommand extends Lr2PgCommand {
 
 
 
-
+    @Override
     public void run() throws Lr2pgException {
-        this.factory  = deYamylate(this.yamlPath);
+        this.factory = deYamylate(this.yamlPath);
         showParams();
-
-
-
-        Map<TermId, Gene2Genotype> genotypeMap = getVcf2GenotypeMap();
+        String vcf = factory.vcfPath();
+        MVStore mvstore = factory.mvStore();
+        JannovarData jannovarData = factory.jannovarData();
+        GenomeAssembly assembly = factory.getAssembly();
+        Map<TermId, Gene2Genotype> genotypeMap = getVcf2GenotypeMap(vcf,mvstore,jannovarData,assembly);
         //debugPrintGenotypeMap(genotypeMap);
         GenotypeLikelihoodRatio genoLr = getGenotypeLR();
         List<TermId> observedHpoTerms = factory.observedHpoTerms();
-        HpoOntology ontology = factory.hpoOntology();
+        Ontology ontology = factory.hpoOntology();
         Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
 
         PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
@@ -146,23 +144,16 @@ public class VcfCommand extends Lr2PgCommand {
     }
 
 
-    private void outputHTML(HpoCase hcase,HpoOntology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
+    private void outputHTML(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
         HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata,this.LR_THRESHOLD);
-        caseoutput.outputFile();
+        caseoutput.outputFile(this.outfilePrefix);
     }
 
     /** Output a tab-separated values file with one line per differential diagnosis. */
-    private void outputTSV(HpoCase hcase,HpoOntology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
+    private void outputTSV(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
         Lr2pgTemplate template = new TsvTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata);
-        template.outputFile();
+        template.outputFile(this.outfilePrefix);
     }
-
-
-
-
-
-
-
 
 
 
@@ -190,6 +181,9 @@ public class VcfCommand extends Lr2PgCommand {
     private Lr2PgFactory deYamylate(String yamlPath) {
 
         Lr2PgFactory factory = null;
+        if (yamlPath==null || !new File(yamlPath).exists()) {
+            throw new PhenolRuntimeException("[ERROR] Could not find YAML configuration file for VCF analysis. Terminating program");
+        }
         try {
             YamlParser yparser = new YamlParser(yamlPath);
             Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().
@@ -198,6 +192,7 @@ public class VcfCommand extends Lr2PgCommand {
                     .mim2genemedgen(yparser.getMedgen())
                     .geneInfo(yparser.getGeneInfo())
                     .phenotypeAnnotation(yparser.phenotypeAnnotation())
+                    .genomeAssembly(yparser.getGenomeAssembly())
                     .observedHpoTerms(yparser.getHpoTermList())
                     .vcf(yparser.vcfPath()).
                             jannovarFile(yparser.jannovarFile());

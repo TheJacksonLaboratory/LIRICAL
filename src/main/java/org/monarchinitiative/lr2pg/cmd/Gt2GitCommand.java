@@ -77,6 +77,7 @@ public class Gt2GitCommand extends Lr2PgCommand {
 
         Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder()
                 .jannovarFile(jannovarFile)
+                .genomeAssembly(this.genomeAssemblyString)
                 .mvStore(mvStorePath);
 
         Lr2PgFactory factory = builder.build();

@@ -6,7 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -40,7 +40,7 @@ public abstract class Lr2pgTemplate {
     protected final Map<TermId,String> geneId2symbol;
 
     public Lr2pgTemplate(HpoCase hcase,
-                         HpoOntology ontology,
+                         Ontology ontology,
                          Map<TermId, Gene2Genotype> genotypeMap,
                          Map<TermId,String> geneid2sym,
                          Map<String,String> metadat){
@@ -53,9 +53,9 @@ public abstract class Lr2pgTemplate {
     }
 
 
-    abstract public void outputFile();
+    abstract public void outputFile(String prefix);
 
-    private void initTemplateData(HpoCase hcase, HpoOntology ontology, Map<TermId, Gene2Genotype> genotypeMap, Map<String,String> metadat) {
+    private void initTemplateData(HpoCase hcase, Ontology ontology, Map<TermId, Gene2Genotype> genotypeMap, Map<String,String> metadat) {
         for(Map.Entry<String,String> entry : metadat.entrySet()) {
             templateData.put(entry.getKey(),entry.getValue());
         }

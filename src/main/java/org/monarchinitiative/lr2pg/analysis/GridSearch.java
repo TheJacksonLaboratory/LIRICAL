@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.BufferedWriter;
@@ -27,13 +27,13 @@ public class GridSearch  {
     /** key: a disease id such as OMIM:654321; value: coirresponding {@link HpoDisease} object. */
     private final Map<TermId, HpoDisease> diseaseMap;
     /** Reference to HPO ontology object. */
-    private final HpoOntology ontology;
+    private final Ontology ontology;
 
 
     /**
      *
      */
-    public GridSearch(HpoOntology ontology, Map<TermId, HpoDisease> diseaseMap ) {
+    public GridSearch(Ontology ontology, Map<TermId, HpoDisease> diseaseMap ) {
         this.ontology=ontology;
         this.diseaseMap=diseaseMap;
     }

@@ -30,12 +30,12 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This class is responsible for parsing the VCF file and extracting variants and genotypes. Its
@@ -118,9 +118,9 @@ public class Vcf2GenotypeMap {
             final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(vcfPath));
             if (seqDict != null) {
                 final GenomeRegionListFactoryFromSAMSequenceDictionary factory = new GenomeRegionListFactoryFromSAMSequenceDictionary();
-                this.progressReporter = new ProgressReporter(factory.construct(seqDict), 60);
-                this.progressReporter.printHeader();
-                this.progressReporter.start();
+//                this.progressReporter = new ProgressReporter(factory.construct(seqDict), 60);
+//                this.progressReporter.printHeader();
+//                this.progressReporter.start();
             } else {
                 logger.warn("Progress reporting does not work because VCF file is missing the contig "
                         + "lines in the header.");
@@ -133,7 +133,7 @@ public class Vcf2GenotypeMap {
             if (sampleNames.size()==1) {
                 this.vcfMetaData.put("sample_name",sampleNames.get(0));
             } else {
-                String names=sampleNames.stream().collect(Collectors.joining("; "));
+                String names=String.join("; ",sampleNames);
                 this.vcfMetaData.put("sample_name",sampleNames.get(0));
                 this.vcfMetaData.put("sample_names",names);
             }
@@ -147,7 +147,7 @@ public class Vcf2GenotypeMap {
                     new VariantContextAnnotator(this.referenceDictionary, this.chromosomeMap,
                             new VariantContextAnnotator.Options());
             // Note that we do not use Genomiser data in this version of LR2PG
-            // THerefore, just pass in an empty list to satisfy the API
+            // Therefore, just pass in an empty list to satisfy the API
             List<RegulatoryFeature> emtpylist = ImmutableList.of();
             ChromosomalRegionIndex<RegulatoryFeature> emptyRegionIndex = ChromosomalRegionIndex.of(emtpylist);
             JannovarVariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(genomeAssembly, jannovarData, emptyRegionIndex);
@@ -165,7 +165,13 @@ public class Vcf2GenotypeMap {
                     if (!variantEffect.isOffExome()) {
                         String genIdString = va.getGeneId(); // for now assume this is an Entrez Gene ID
                         String symbol = va.getGeneSymbol();
-                        TermId geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
+                        TermId geneId;
+                        try {
+                            geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
+                        } catch (PhenolRuntimeException pre) {
+                            logger.error("Could not identify gene \"{}\" with symbol \"{}\" for variant {}", genIdString,symbol,va.toString());
+                            continue;
+                        }
                         gene2genotypeMap.putIfAbsent(geneId, new Gene2Genotype(geneId, symbol));
                         Gene2Genotype genotype = gene2genotypeMap.get(geneId);
                         VariantEvaluation veval = buildVariantEvaluation(vc, va);
@@ -184,7 +190,7 @@ public class Vcf2GenotypeMap {
                             // this is not an error, the variant could be very rare or otherwise not seen before
                             freq = DEFAULT_FREQUENCY;
                             path = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
-                            genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, path, freq);
+                            genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, path, freq, ClinVarData.ClinSig.NOT_PROVIDED);
                         } else {
                             FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
                             PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);
@@ -193,17 +199,15 @@ public class Vcf2GenotypeMap {
                             ClinVarData cVarData = pathogenicityData.getClinVarData();
                             genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, pathogenicity, freq, cVarData.getPrimaryInterpretation());
                         }
+
                     }
                 }
             }
             final long endTime = System.nanoTime();
 
-            logger.info("Finished Annotating VCF (time= " + (endTime-startTime)/100_000_000 + " sec)");
+            logger.info(String.format("Finished Annotating VCF (time= %.2f sec).", (endTime-startTime)/1_000_000_000.0 ));
         }
 
-        //debugPrintGenotypes();
-        if (progressReporter != null)
-            progressReporter.done();
         return gene2genotypeMap;
     }
 

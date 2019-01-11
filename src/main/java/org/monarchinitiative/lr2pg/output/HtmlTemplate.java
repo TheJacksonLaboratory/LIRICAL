@@ -8,7 +8,7 @@ import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.lr2pg.svg.Lr2Svg;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.BufferedWriter;
@@ -39,7 +39,7 @@ public class HtmlTemplate extends Lr2pgTemplate {
      * @param thres threshold posterior probability to show differential in detail
      */
     public HtmlTemplate(HpoCase hcase,
-                        HpoOntology ontology,
+                        Ontology ontology,
                         Map<TermId, Gene2Genotype> genotypeMap,
                         Map<TermId,String> geneid2sym,
                         Map<String,String> metadat,
@@ -109,8 +109,9 @@ public class HtmlTemplate extends Lr2pgTemplate {
 
 
     @Override
-    public void outputFile(){
-        try (BufferedWriter out = new BufferedWriter(new FileWriter("myout.html"))) {
+    public void outputFile(String prefix){
+        String outname=String.format("%s.html",prefix );
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(outname))) {
             Template template = cfg.getTemplate("lrhtml.ftl");
             template.process(templateData, out);
         } catch (TemplateException | IOException te) {

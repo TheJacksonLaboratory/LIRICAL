@@ -8,18 +8,16 @@ import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.io.obo.hpo.HpOboParser;
+import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Map;
 
 /**
  * This class coordinates simulation of cases with only phenotype.
- * TODO allow client code to set parameters
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Simulate phenotype-only cases")
@@ -50,19 +48,14 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
         this.phenotypeAnnotationPath=String.format("%s%s%s",absDirPath,File.separator,"phenotype.hpoa");
     }
 
-    /** Initialize the HpoOnotlogy object from the hp.obo file. */
-    protected HpoOntology initializeOntology() throws Lr2pgException{
-        try {
-            HpOboParser parser = new HpOboParser(new File(this.hpoOboPath));
-            return parser.parse();
-        } catch (PhenolException | FileNotFoundException ioe) {
-            throw new Lr2pgException("Could not parse hp.obo file: " + ioe.getMessage());
-        }
+    /** Initialize the HpoOntology object from the hp.obo file. */
+    protected Ontology initializeOntology() {
+        return OntologyLoader.loadOntology(new File(this.hpoOboPath));
     }
 
 
 
-    protected Map<TermId, HpoDisease> parseHpoAnnotations(HpoOntology ontology) throws Lr2pgException {
+    protected Map<TermId, HpoDisease> parseHpoAnnotations(Ontology ontology) throws Lr2pgException {
         if (ontology==null) {
             throw new Lr2pgException("HpoOntology object not intitialized");
         }
@@ -80,7 +73,7 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
      * @throws Lr2pgException if an error occurs in the simulation code.
      */
     protected PhenotypeOnlyHpoCaseSimulator getPhenotypeOnlySimulator()throws Lr2pgException {
-        HpoOntology ontology = initializeOntology();
+        Ontology ontology = initializeOntology();
         Map<TermId, HpoDisease> diseaseMap = parseHpoAnnotations(ontology);
         return new PhenotypeOnlyHpoCaseSimulator(ontology,
                 diseaseMap,

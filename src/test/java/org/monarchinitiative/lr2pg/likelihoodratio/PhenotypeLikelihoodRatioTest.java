@@ -4,12 +4,11 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
-import org.monarchinitiative.phenol.io.obo.hpo.HpOboParser;
+import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
@@ -40,8 +39,9 @@ public class PhenotypeLikelihoodRatioTest {
         ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.small.obo").getFile();
         String annotationPath = classLoader.getResource("small.hpoa").getFile();
-        HpOboParser parser = new HpOboParser(new File(hpoPath));
-        HpoOntology ontology = parser.parse();
+        // The HPO is in the default  curie map and only contains known relationships / HP terms
+        Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));
+
 
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationPath,ontology);
         diseaseMap=annotationParser.parse();

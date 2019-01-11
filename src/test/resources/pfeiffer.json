@@ -1,0 +1,72 @@
+{
+  "subject": {
+    "id": "manuel",
+    "phenotypes": [{
+      "type": {
+        "id": "HP:0000244",
+        "label": "Turribrachycephaly"
+      },
+      "classOfOnset": {
+        "id": "HP:0003577",
+        "label": "Congenital onset"
+      }
+    }, {
+      "type": {
+        "id": "HP:0001363",
+        "label": "Craniosynostosis"
+      },
+      "classOfOnset": {
+        "id": "HP:0003577",
+        "label": "Congenital onset"
+      }
+    }, {
+      "type": {
+        "id": "HP:0000453",
+        "label": "Choanal atresia"
+      },
+      "classOfOnset": {
+        "id": "HP:0003577",
+        "label": "Congenital onset"
+      }
+    }, {
+      "type": {
+        "id": "HP:0000327",
+        "label": "Hypoplasia of the maxilla"
+      },
+      "classOfOnset": {
+        "id": "HP:0003577",
+        "label": "Congenital onset"
+      }
+    }, {
+      "type": {
+        "id": "HP:0000238",
+        "label": "Hydrocephalus"
+      },
+      "classOfOnset": {
+        "id": "HP:0003577",
+        "label": "Congenital onset"
+      }
+    }]
+  },
+  "htsFiles": [{
+    "htsFormat": "VCF",
+    "individualToSampleIdentifiers": {
+      "manuel": "manuel"
+    },
+    "genomeAssembly": "GRCH_37",
+    "file": {
+      "path": "/home/robinp/data/exomiser-cli-9.0.1/examples/Pfeiffer.vcf"
+    }
+  }],
+  "metaData": {
+    "createdBy": "Peter R.",
+    "resources": [{
+      "id": "hp",
+      "name": "human phenotype ontology",
+      "namespacePrefix": "HP",
+      "url": "http://purl.obolibrary.org/obo/hp.owl",
+      "version": "2018-03-08",
+      "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
+    }]
+  }
+}
