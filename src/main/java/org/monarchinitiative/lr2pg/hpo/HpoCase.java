@@ -6,7 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
-import org.monarchinitiative.phenol.formats.hpo.HpoOntology;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
@@ -77,7 +77,7 @@ public final class HpoCase {
 
     /** Output the results for a specific HPO disease.
      * This is ugly and just for development. */
-    public void outputLrToShell(TermId diseaseId, HpoOntology ontology, Map<TermId, Gene2Genotype> g2gmap) {
+    public void outputLrToShell(TermId diseaseId, Ontology ontology, Map<TermId, Gene2Genotype> g2gmap) {
         int rank = getRank(diseaseId);
 
         TestResult r = getResult(diseaseId);
@@ -118,7 +118,7 @@ public final class HpoCase {
      * Ootputs the top n results to the shell
      * @param n number of top results to org.monarchinitiative.lr2pg.output.
      */
-    public void outputTopResults(int n, HpoOntology ontology, Map<TermId, Gene2Genotype> g2gmap) {
+    public void outputTopResults(int n, Ontology ontology, Map<TermId, Gene2Genotype> g2gmap) {
         List<TestResult> resultlist = new ArrayList<>(this.disease2resultMap.values());
         resultlist.sort(Collections.reverseOrder());
         int i=0;

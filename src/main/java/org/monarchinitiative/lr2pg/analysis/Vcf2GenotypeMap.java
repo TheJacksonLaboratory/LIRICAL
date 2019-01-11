@@ -30,6 +30,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
@@ -133,7 +134,7 @@ public class Vcf2GenotypeMap {
             if (sampleNames.size()==1) {
                 this.vcfMetaData.put("sample_name",sampleNames.get(0));
             } else {
-                String names=sampleNames.stream().collect(Collectors.joining("; "));
+                String names=String.join("; ",sampleNames);
                 this.vcfMetaData.put("sample_name",sampleNames.get(0));
                 this.vcfMetaData.put("sample_names",names);
             }
@@ -147,7 +148,7 @@ public class Vcf2GenotypeMap {
                     new VariantContextAnnotator(this.referenceDictionary, this.chromosomeMap,
                             new VariantContextAnnotator.Options());
             // Note that we do not use Genomiser data in this version of LR2PG
-            // THerefore, just pass in an empty list to satisfy the API
+            // Therefore, just pass in an empty list to satisfy the API
             List<RegulatoryFeature> emtpylist = ImmutableList.of();
             ChromosomalRegionIndex<RegulatoryFeature> emptyRegionIndex = ChromosomalRegionIndex.of(emtpylist);
             JannovarVariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(genomeAssembly, jannovarData, emptyRegionIndex);
@@ -165,7 +166,13 @@ public class Vcf2GenotypeMap {
                     if (!variantEffect.isOffExome()) {
                         String genIdString = va.getGeneId(); // for now assume this is an Entrez Gene ID
                         String symbol = va.getGeneSymbol();
-                        TermId geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
+                        TermId geneId=null;
+                        try {
+                            geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
+                        } catch (PhenolRuntimeException pre) {
+                            logger.error("Could not identify gene \"{}\" with symbol \"{}\" for variant {}", genIdString,symbol,va.toString());
+                            continue;
+                        }
                         gene2genotypeMap.putIfAbsent(geneId, new Gene2Genotype(geneId, symbol));
                         Gene2Genotype genotype = gene2genotypeMap.get(geneId);
                         VariantEvaluation veval = buildVariantEvaluation(vc, va);
