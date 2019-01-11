@@ -8,9 +8,11 @@ import de.charite.compbio.jannovar.data.SerializationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.h2.mvstore.MVStore;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.phenol.base.PhenolException;
+import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.io.assoc.HpoAssociationParser;
@@ -50,7 +52,9 @@ public class Lr2PgFactory {
     /** List of HPO terms (phenotypic abnormalities) observed in the person being evaluated. */
     private final List<TermId> hpoIdList;
 
-    private final Ontology ontology = null;
+    private final GenomeAssembly assembly;
+
+    private final Ontology ontology;
     private MVStore mvstore = null;
     private Multimap<TermId,TermId> gene2diseaseMultiMap=null;
     private Multimap<TermId,TermId> disease2geneIdMultiMap=null;
@@ -66,12 +70,31 @@ public class Lr2PgFactory {
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
         this.vcfPath=builder.vcfPath;
         this.jannovarTranscriptFile=builder.jannovarTranscriptFile;
+        String ga = builder.genomeAssembly;
+        switch(ga.toLowerCase()) {
+            case "hg19":
+            case "hg37":
+            case  "grc37":
+                this.assembly=GenomeAssembly.HG19;
+                break;
+            case "hg38":
+            case "grc38":
+                this.assembly=GenomeAssembly.HG38;
+                break;
+            default:
+                this.assembly=null;
+        }
         ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
         for (String id : builder.observedHpoTerms) {
             TermId hpoId = TermId.of(id);
             listbuilder.add(hpoId);
         }
         this.hpoIdList=listbuilder.build();
+        if (builder.hpOboPath!=null) {
+            this.ontology=hpoOntology();
+        } else {
+            throw new PhenolRuntimeException("Error - must past hp.obo path to run LR2PG");
+        }
     }
 
     /**
@@ -79,7 +102,6 @@ public class Lr2PgFactory {
      * @throws Lr2pgException if one of the terms is not in the HPO Ontology
      */
     public List<TermId> observedHpoTerms() throws Lr2pgException{
-        if (ontology==null) hpoOntology();
         for (TermId hpoId : hpoIdList) {
             if (! this.ontology.getTermMap().containsKey(hpoId)) {
                 throw new Lr2pgException("Could not find HPO term " + hpoId.getValue() + " in ontology");
@@ -88,12 +110,21 @@ public class Lr2PgFactory {
         return hpoIdList;
     }
 
+    /** @return the genome assembly corresponding to the VCF file. Can be null. */
+    public GenomeAssembly getAssembly() {
+        return assembly;
+    }
 
     /** @return HpoOntology object. */
     public Ontology hpoOntology() {
         if (ontology != null) return ontology;
         // The HPO is in the default  curie map and only contains known relationships / HP terms
-        return OntologyLoader.loadOntology(new File(this.hpoOboFilePath));
+        Ontology ontology =  OntologyLoader.loadOntology(new File(this.hpoOboFilePath));
+        if (ontology==null) {
+            throw new PhenolRuntimeException("Could not load ontology from \"" + this.hpoOboFilePath +"\"");
+        } else {
+            return ontology;
+        }
     }
 
     /** @return MVStore object with Exomiser data on variant pathogenicity and frequency. */
@@ -227,6 +258,7 @@ public class Lr2PgFactory {
         private String backgroundFrequencyPath=null;
         private String vcfPath=null;
         private String jannovarTranscriptFile=null;
+        private String genomeAssembly=null;
         private List<String> observedHpoTerms=ImmutableList.of();
 
         public Builder(){
@@ -236,6 +268,11 @@ public class Lr2PgFactory {
 
         public Builder hp_obo(String hpPath) {
             hpOboPath=hpPath;
+            return this;
+        }
+
+        public Builder genomeAssembly(String ga) {
+            this.genomeAssembly=ga;
             return this;
         }
 

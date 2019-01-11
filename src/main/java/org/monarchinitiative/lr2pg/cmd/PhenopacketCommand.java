@@ -25,6 +25,7 @@ import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.output.HtmlTemplate;
 import org.monarchinitiative.lr2pg.output.Lr2pgTemplate;
 import org.monarchinitiative.lr2pg.output.TsvTemplate;
+import org.monarchinitiative.lr2pg.vcf.SimpleVariant;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -114,6 +115,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
                 MVStore mvstore = factory.mvStore();
                 JannovarData jannovarData = jannovarData(jannovarPath);
                 GenomeAssembly assembly = getGenomeAssembly(this.genomeAssembly);
+                SimpleVariant.setGenomeBuildForUrl(assembly);
 
                 Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap(jannovarData,mvstore, assembly);
                 GenotypeLikelihoodRatio genoLr = getGenotypeLR();

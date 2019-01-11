@@ -72,11 +72,8 @@ public class VcfCommand extends Lr2PgCommand {
      * @return a map with key: An NCBI Gene Id, and value: corresponding {@link Gene2Genotype} object.
      * @throws Lr2pgException upon error parsing the VCF file or creating the Jannovar object
      */
-    private Map<TermId, Gene2Genotype> getVcf2GenotypeMap() throws Lr2pgException {
-        String vcf = factory.vcfPath();
-        MVStore mvstore = factory.mvStore();
-        JannovarData jannovarData = factory.jannovarData();
-        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcf, jannovarData, mvstore, GenomeAssembly.HG19);
+    private Map<TermId, Gene2Genotype> getVcf2GenotypeMap(String vcf,MVStore mvstore,JannovarData jannovarData, GenomeAssembly assembly ) throws Lr2pgException {
+        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcf, jannovarData, mvstore, assembly);
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
         this.metadata = vcf2geno.getVcfMetaData();
         return genotypeMap;
@@ -111,12 +108,18 @@ public class VcfCommand extends Lr2PgCommand {
 
 
     public void run() throws Lr2pgException {
-        this.factory  = deYamylate(this.yamlPath);
+        try {
+            this.factory = deYamylate(this.yamlPath);
+        } catch (Lr2pgException e) {
+            System.err.println("[ERROR] Unable to parse YAML configuration file at " + this.yamlPath +". " + e.getMessage());
+            System.exit(1);
+        }
         showParams();
-
-
-
-        Map<TermId, Gene2Genotype> genotypeMap = getVcf2GenotypeMap();
+        String vcf = factory.vcfPath();
+        MVStore mvstore = factory.mvStore();
+        JannovarData jannovarData = factory.jannovarData();
+        GenomeAssembly assembly = factory.getAssembly();
+        Map<TermId, Gene2Genotype> genotypeMap = getVcf2GenotypeMap(vcf,mvstore,jannovarData,assembly);
         //debugPrintGenotypeMap(genotypeMap);
         GenotypeLikelihoodRatio genoLr = getGenotypeLR();
         List<TermId> observedHpoTerms = factory.observedHpoTerms();
@@ -186,7 +189,7 @@ public class VcfCommand extends Lr2PgCommand {
      * @param yamlPath Path to the YAML file for the VCF analysis
      * @return An {@link Lr2PgFactory} object with various settings.
      */
-    private Lr2PgFactory deYamylate(String yamlPath) {
+    private Lr2PgFactory deYamylate(String yamlPath) throws Lr2pgException {
 
         Lr2PgFactory factory = null;
         try {
@@ -197,6 +200,7 @@ public class VcfCommand extends Lr2PgCommand {
                     .mim2genemedgen(yparser.getMedgen())
                     .geneInfo(yparser.getGeneInfo())
                     .phenotypeAnnotation(yparser.phenotypeAnnotation())
+                    .genomeAssembly(yparser.getGenomeAssembly())
                     .observedHpoTerms(yparser.getHpoTermList())
                     .vcf(yparser.vcfPath()).
                             jannovarFile(yparser.jannovarFile());

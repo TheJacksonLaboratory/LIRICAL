@@ -270,7 +270,7 @@ table.redTable tfoot .links a{
           </thead>
               <#list  dd.varlist as svar>
               <tr>
-                <td>${svar.chromosome}:${svar.position}${svar.ref}&gt;${svar.alt}</td>
+                <td>${svar.ucsc}</td>
                 <#if svar.isInPathogenicBin() >
                 <td class="red">${svar.pathogenicity}</td>
                 <#else>
@@ -282,7 +282,7 @@ table.redTable tfoot .links a{
                 <td>
                 <ul>
                   <#list svar.annotationList as annot>
-                   <li> ${annot.hgvsCdna} ${annot.hgvsProtein} ${annot.variantEffect}</li>
+                   <li>${annot.accession}: ${annot.hgvsCdna} ${annot.hgvsProtein} ${annot.variantEffect}</li>
                   </#list>
                   </ul>
                 </td>

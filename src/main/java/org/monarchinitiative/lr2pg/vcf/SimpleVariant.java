@@ -2,6 +2,7 @@ package org.monarchinitiative.lr2pg.vcf;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 
@@ -23,6 +24,9 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
                     ClinVarData.ClinSig.LIKELY_PATHOGENIC);
     /** The threshold predicted pathogenicity score for being in the pathogenic bin. */
     private static final float PATHOGENICITY_THRESHOLD=0.80f;
+    /** Must be either hg19 or hg38 -- we are using this for the UCSC URL. */
+    private static String genomeBuild=null;
+
 
 
     private final String chromosome;
@@ -78,6 +82,15 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
             default: this.chromosome =String.format("chr%d",chrom);
         }
 
+    }
+
+    /** This can be set so that we will correctly build the URL to view the location of mutation in UCSC. */
+    public static void setGenomeBuildForUrl(GenomeAssembly assembly) {
+        if (assembly.equals(GenomeAssembly.HG19)) {
+            genomeBuild="hg19";
+        } else if (assembly.equals(GenomeAssembly.HG38)) {
+            genomeBuild="hg38";
+        }
     }
 
 
@@ -156,5 +169,21 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
 
     public SimpleGenotype getGtype() {
         return gtype;
+    }
+
+    /**
+     * This method generates an HTML link to the UCSC genome browser that shows the general neighborhood of this variant
+     * @return A String with an HTML link to the UCSC Genome browser.
+     */
+    public String getUcsc() {
+        int delta=10;
+        String display= String.format("%s:%d%s&gt;%s",chromosome,position,ref,alt );
+        if (genomeBuild==null) {
+            return display;
+        } else {
+            int start = position-delta;
+            int end = position + ref.length() + delta;
+            return String.format("<a href=\"http://genome.ucsc.edu/cgi-bin/hgTracks?db=%s&position=%s:%d-%d\" target=\"__blank\">%s</a>", genomeBuild,chromosome,start,end,display );
+        }
     }
 }
