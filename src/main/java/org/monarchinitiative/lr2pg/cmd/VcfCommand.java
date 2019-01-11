@@ -19,6 +19,7 @@ import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.output.HtmlTemplate;
 import org.monarchinitiative.lr2pg.output.Lr2pgTemplate;
 import org.monarchinitiative.lr2pg.output.TsvTemplate;
+import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -192,6 +193,9 @@ public class VcfCommand extends Lr2PgCommand {
     private Lr2PgFactory deYamylate(String yamlPath) throws Lr2pgException {
 
         Lr2PgFactory factory = null;
+        if (yamlPath==null || !new File(yamlPath).exists()) {
+            throw new PhenolRuntimeException("[ERROR] Could not find YAML configuration file for VCF analysis. Terminating program");
+        }
         try {
             YamlParser yparser = new YamlParser(yamlPath);
             Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().

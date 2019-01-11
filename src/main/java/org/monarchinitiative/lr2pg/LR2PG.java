@@ -21,7 +21,7 @@ public class LR2PG  {
     private static final Logger logger = LogManager.getLogger();
 
 
-    @Parameter(names = {"-h", "--help"}, help = true, description = "display this help message")
+    @Parameter(names = {"-h", "--help"}, help = true, arity = 0,description = "display this help message")
     private boolean usageHelpRequested;
 
 
@@ -49,7 +49,24 @@ public class LR2PG  {
             jc.parse(args);
         } catch (ParameterException e) {
             System.err.println("[ERROR] "+e.getMessage());
+            for (String a:args) {
+                if (a.contains("h")) {
+                    System.err.println("[ERROR] to get subcommand help, enter -h <subcommand> (not <subcommand> -h)");
+                    System.exit(1);
+                }
+            }
             jc.usage();
+            System.exit(1);
+        }
+        String parsedCommand = jc.getParsedCommand();
+
+        if ( lr2pg.usageHelpRequested) {
+            if (parsedCommand==null) {
+                jc.usage();
+            } else {
+                System.out.println("USAGE HELP");
+                jc.usage(parsedCommand);
+            }
             System.exit(1);
         }
 
@@ -60,6 +77,7 @@ public class LR2PG  {
        }
 
         if ( lr2pg.usageHelpRequested) {
+
             jc.usage();
             System.exit(1);
         }
