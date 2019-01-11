@@ -3,6 +3,7 @@ package org.monarchinitiative.lr2pg.cmd;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.google.common.collect.Multimap;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
@@ -15,9 +16,15 @@ import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
+import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.lr2pg.io.PhenopacketImporter;
+import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
+import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
+import org.monarchinitiative.lr2pg.output.HtmlTemplate;
+import org.monarchinitiative.lr2pg.output.Lr2pgTemplate;
+import org.monarchinitiative.lr2pg.output.TsvTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -26,8 +33,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
-import static org.monarchinitiative.lr2pg.io.PhenopacketImporter.fromJson;
 
 /**
  * Download a number of files needed for the analysis
@@ -60,17 +65,26 @@ public class PhenopacketCommand extends Lr2PgCommand{
 
 
     private boolean hasVcf;
-
-    List<TermId> hpoIdList;
-    List<TermId> negatedHpoIdList;
-    String genomeAssembly;
-    String vcfPath;
+    /** List of HPO terms observed in the subject of the investigation. */
+    private List<TermId> hpoIdList;
+    /** List of excluded HPO terms in the subject. */
+    private List<TermId> negatedHpoIdList;
+    /** String representing the genome build (hg19 or hg38). */
+    private String genomeAssembly;
+    /** Path to the VCF file (if any). */
+    private String vcfPath=null;
     /** Representation of the Exomiser database (http://www.h2database.com/html/mvstore.html). */
     private MVStore mvstore;
 
 
     public PhenopacketCommand(){
-        // read the Phenopacket
+
+    }
+
+    @Override
+    public void run() {
+// read the Phenopacket
+        logger.trace("Will analyze phenopacket at " + phenopacketPath);
         try {
             PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
             this.vcfPath = importer.getVcfPath();
@@ -82,26 +96,50 @@ public class PhenopacketCommand extends Lr2PgCommand{
             logger.fatal("Could not read phenopacket");
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void run() {
-
         String hpoOboPath = String.format("%s%s%s",datadir,File.separator,"hp.obo" );
         String phenotypeHpoaPath = String.format("%s%s%s",datadir,File.separator,"phenotype.hpoa" );
-
+        String hsapiensGeneInfoPath = String.format("%s%s%s",datadir,File.separator,"Homo_sapiens_gene_info.gz");
+        String mim2geneMedgenPath = String.format("%s%s%s",datadir,File.separator,"mim2gene_medgen");
 
 
         if (hasVcf) {
             try {
-                Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap();
-                GenotypeLikelihoodRatio genoLr = getGenotypeLR();
                 Lr2PgFactory factory = new Lr2PgFactory.Builder()
                         .hp_obo(hpoOboPath)
                         .phenotypeAnnotation(phenotypeHpoaPath)
+                        .geneInfo(hsapiensGeneInfoPath)
+                        .mim2genemedgen(mim2geneMedgenPath)
                         .mvStore(this.mvpath).build();
+
+                MVStore mvstore = factory.mvStore();
+                JannovarData jannovarData = jannovarData(jannovarPath);
+                GenomeAssembly assembly = getGenomeAssembly(this.genomeAssembly);
+
+                Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap(jannovarData,mvstore, assembly);
+                GenotypeLikelihoodRatio genoLr = getGenotypeLR();
                 Ontology ontology = factory.hpoOntology();
                 Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
+                PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
+                Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
+                Map<TermId,String> geneId2symbol = factory.geneId2symbolMap();
+                CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(this.hpoIdList)
+                        .ontology(ontology)
+                        .diseaseMap(diseaseMap)
+                        .disease2geneMultimap(disease2geneMultimap)
+                        .genotypeMap(genotypemap)
+                        .phenotypeLr(phenoLr)
+                        .genotypeLr(genoLr);
+
+                CaseEvaluator evaluator = caseBuilder.build();
+                HpoCase hcase = evaluator.evaluate();
+                hcase.outputTopResults(5,ontology,genotypemap);// TODO remove this outputs to the shell
+                if (outputTSV) {
+                    Lr2pgTemplate template = new TsvTemplate(hcase,ontology,genotypemap,geneId2symbol,this.metadata);
+                    template.outputFile();
+                } else {
+                    HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypemap,geneId2symbol,this.metadata,this.LR_THRESHOLD);
+                    caseoutput.outputFile();
+                }
             } catch (Lr2pgException e) {
                 e.printStackTrace();
             }
@@ -157,12 +195,10 @@ public class PhenopacketCommand extends Lr2PgCommand{
     /**
      * Identify the variants and genotypes from the VCF file.
      * @return a map with key: An NCBI Gene Id, and value: corresponding {@link Gene2Genotype} object.
-     * @throws Lr2pgException upon error parsing the VCF file or creating the Jannovar object
      */
-    private Map<TermId, Gene2Genotype> getVcf2GenotypeMap() throws Lr2pgException {
-        JannovarData jannovarData = jannovarData(jannovarPath);
-        GenomeAssembly assembly = getGenomeAssembly(this.genomeAssembly);
-        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath, jannovarData, this.mvstore, assembly);
+    private Map<TermId, Gene2Genotype> getVcf2GenotypeMap(JannovarData jannovarData, MVStore mvstore, GenomeAssembly assembly) {
+
+        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath, jannovarData, mvstore, assembly);
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
         this.metadata = vcf2geno.getVcfMetaData();
         return genotypeMap;

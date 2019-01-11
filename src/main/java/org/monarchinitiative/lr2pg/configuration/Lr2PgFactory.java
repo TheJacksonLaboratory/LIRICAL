@@ -19,7 +19,6 @@ import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +50,7 @@ public class Lr2PgFactory {
     /** List of HPO terms (phenotypic abnormalities) observed in the person being evaluated. */
     private final List<TermId> hpoIdList;
 
-    private Ontology ontology = null;
+    private final Ontology ontology = null;
     private MVStore mvstore = null;
     private Multimap<TermId,TermId> gene2diseaseMultiMap=null;
     private Multimap<TermId,TermId> disease2geneIdMultiMap=null;
@@ -91,15 +90,10 @@ public class Lr2PgFactory {
 
 
     /** @return HpoOntology object. */
-    public Ontology hpoOntology() throws Lr2pgException {
+    public Ontology hpoOntology() {
         if (ontology != null) return ontology;
-        try {
-            // The HPO is in the default  curie map and only contains known relationships / HP terms
-            Ontology hpoOntology = OntologyLoader.loadOntology(new File(this.hpoOboFilePath));
-            return hpoOntology;
-        } catch (PhenolException ioe) {
-            throw new Lr2pgException("Could not parse hp.obo file: " + ioe.getMessage());
-        }
+        // The HPO is in the default  curie map and only contains known relationships / HP terms
+        return OntologyLoader.loadOntology(new File(this.hpoOboFilePath));
     }
 
     /** @return MVStore object with Exomiser data on variant pathogenicity and frequency. */

@@ -1,6 +1,8 @@
 package org.monarchinitiative.lr2pg.io;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -11,12 +13,10 @@ import org.phenopackets.schema.v1.core.Individual;
 import org.phenopackets.schema.v1.core.OntologyClass;
 import org.phenopackets.schema.v1.core.Phenotype;
 import org.phenopackets.schema.v1.io.PhenoPacketFormat;
-import sonumina.math.combinatorics.IMultisetCallback;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -25,6 +25,7 @@ import java.util.function.Predicate;
  * @author Peter Robinson
  */
 public class PhenopacketImporter {
+    private static final Logger logger = LogManager.getLogger();
     /** The Phenopacket that represents the individual being sequenced in the current run. */
     private final PhenoPacket phenoPacket;
     /** A list of non-negated HPO terms observed in the subject of this Phenopacket. */
@@ -45,6 +46,7 @@ public class PhenopacketImporter {
      */
     public static PhenopacketImporter fromJson(String pathToJsonPhenopacketFile) throws ParseException,IOException {
         JSONParser parser = new JSONParser();
+        logger.error("Tring to import " + pathToJsonPhenopacketFile);
         Object obj = parser.parse(new FileReader(pathToJsonPhenopacketFile));
         JSONObject jsonObject = (JSONObject) obj;
         String phenopacketJsonString = jsonObject.toJSONString();

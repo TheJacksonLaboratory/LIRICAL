@@ -34,6 +34,7 @@ public class LR2PG  {
         GridSearchCommand grid = new GridSearchCommand();
         Gt2GitCommand gt2git = new Gt2GitCommand();
         VcfCommand vcf = new VcfCommand();
+        PhenopacketCommand phenopacket = new PhenopacketCommand();
         JCommander jc = JCommander.newBuilder()
                 .addObject(lr2pg)
                 .addCommand("download", download)
@@ -41,6 +42,7 @@ public class LR2PG  {
                 .addCommand("grid", grid)
                 .addCommand("gt2git",gt2git)
                 .addCommand("vcf",vcf)
+                .addCommand("phenopacket",phenopacket)
                 .build();
         jc.setProgramName("java -jar Lr2pg.jar");
         try {
@@ -55,7 +57,9 @@ public class LR2PG  {
             System.err.println("[ERROR] no command passed");
             jc.usage();
            System.exit(1);
-       }
+       } else {
+            System.out.println("Got parsed command = " + jc.getParsedCommand());
+        }
 
         if ( lr2pg.usageHelpRequested) {
             jc.usage();
@@ -80,6 +84,9 @@ public class LR2PG  {
            case "vcf":
                lr2pgcommand =vcf;
                break;
+           case "phenopacket":
+                lr2pgcommand =phenopacket;
+                break;
            default:
                System.err.println(String.format("[ERROR] command \"%s\" not recognized",command));
                jc.usage();

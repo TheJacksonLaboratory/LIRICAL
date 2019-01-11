@@ -48,17 +48,9 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
         this.phenotypeAnnotationPath=String.format("%s%s%s",absDirPath,File.separator,"phenotype.hpoa");
     }
 
-    /** Initialize the HpoOnotlogy object from the hp.obo file. */
-    protected Ontology initializeOntology() throws Lr2pgException{
-        try {
-           // HpOboParser parser = new HpOboParser(new File(this.hpoOboPath));
-            // The HPO is in the default  curie map and only contains known relationships / HP terms
-            Ontology hpoOntology = OntologyLoader.loadOntology(new File(this.hpoOboPath));
-
-            return hpoOntology;
-        } catch (PhenolException e) {
-            throw new Lr2pgException("Could not parse hp.obo file: " + e.getMessage());
-        }
+    /** Initialize the HpoOntology object from the hp.obo file. */
+    protected Ontology initializeOntology() {
+        return OntologyLoader.loadOntology(new File(this.hpoOboPath));
     }
 
 
