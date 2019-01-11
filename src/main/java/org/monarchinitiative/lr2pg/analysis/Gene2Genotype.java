@@ -54,7 +54,7 @@ public class Gene2Genotype {
         return sumOfPathBinScores;
     }
 
-    public void addVariant(int chrom, int pos, String ref, String alt,
+    /*public void addVariant(int chrom, int pos, String ref, String alt,
                            List<TranscriptAnnotation> annotList, String genotypeString, float path, float freq){
         SimpleVariant simplevar = new SimpleVariant(chrom, pos, ref, alt,  annotList, path,  freq, genotypeString);
         this.varList.add(simplevar);
@@ -67,7 +67,7 @@ public class Gene2Genotype {
             }
         }
         Collections.sort(varList); // keep variant list sorted
-    }
+    }*/
 
     public void addVariant(int chrom, int pos, String ref, String alt,
                            List<TranscriptAnnotation> annotList, String genotypeString, float path, float freq,ClinVarData.ClinSig clinv){

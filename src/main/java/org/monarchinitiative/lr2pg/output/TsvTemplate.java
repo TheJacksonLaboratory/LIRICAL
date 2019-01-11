@@ -14,7 +14,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This class coordinates the output of a TSV file that contains a suymmary of the analysis results.
@@ -37,7 +36,7 @@ public class TsvTemplate extends Lr2pgTemplate {
         ClassLoader classLoader = TsvTemplate.class.getClassLoader();
         cfg.setClassLoaderForTemplateLoading(classLoader,"");
         List<TsvDifferential> diff = new ArrayList<>();
-        String header= Arrays.stream(tsvHeader).collect(Collectors.joining("\t"));
+        String header= String.join("\t",tsvHeader);
         templateData.put("header",header);
         int counter=0;
         // Note the following results are already sorted
@@ -49,11 +48,11 @@ public class TsvTemplate extends Lr2pgTemplate {
                 TermId geneId = result.getEntrezGeneId();
                 Gene2Genotype g2g = genotypeMap.get(geneId);
                 if (g2g != null) {
-                    symbol = g2g.getSymbol();
+                   // symbol = g2g.getSymbol();
                     tsvdiff.addG2G(g2g);
                 } else {
                     tsvdiff.setNoVariantsFoundString("no variants found in " + this.geneId2symbol.get(geneId));
-                    symbol = "no variants found in " + this.geneId2symbol.get(geneId);// will be used by SVG (IntelliJ warning wrong)
+                    //symbol = "no variants found in " + this.geneId2symbol.get(geneId);//
                 }
             } else {
                 tsvdiff.setNoVariantsFoundString("No known disease gene");
@@ -66,9 +65,10 @@ public class TsvTemplate extends Lr2pgTemplate {
 
 
     @Override
-    public void outputFile(){
+    public void outputFile(String prefix){
         logger.debug("Outputting TSV file");
-        try (BufferedWriter out = new BufferedWriter(new FileWriter("myout.tsv"))) {
+        String outname=String.format("%s.tsv",prefix );
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(outname))) {
             Template template = cfg.getTemplate("lr2pgTSV.ftl");
             template.process(templateData, out);
         } catch (TemplateException | IOException te) {

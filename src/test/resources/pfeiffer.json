@@ -53,6 +53,7 @@
     "individualToSampleIdentifiers": {
       "manuel": "manuel"
     },
+    "genomeAssembly": "GRCH_37",
     "file": {
       "path": "/home/robinp/data/exomiser-cli-9.0.1/examples/Pfeiffer.vcf"
     }

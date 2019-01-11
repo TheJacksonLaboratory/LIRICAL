@@ -142,7 +142,7 @@ public class CaseEvaluator {
                             if (genotypeLR == null) {
                                 genotypeLR = opt.get();
                                 geneId = entrezGeneId;
-                            } else if (genotypeLR > opt.get()) {
+                            } else if (genotypeLR < opt.get()) { // if the new genotype LR is better, replace!
                                 genotypeLR = opt.get();
                                 geneId = entrezGeneId;
                             }

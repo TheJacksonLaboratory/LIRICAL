@@ -58,7 +58,8 @@ public class VcfCommand extends Lr2PgCommand {
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
     @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
     private double LR_THRESHOLD=0.01;
-
+    @Parameter(names={"-o", "--outfile"},description = "prefix of outfile")
+    private String outfilePrefix="lr2pg";
 
     /**
      * Command pattern to coordinate analysis of a VCF file with LR2PG.
@@ -71,9 +72,8 @@ public class VcfCommand extends Lr2PgCommand {
     /**
      * Identify the variants and genotypes from the VCF file.
      * @return a map with key: An NCBI Gene Id, and value: corresponding {@link Gene2Genotype} object.
-     * @throws Lr2pgException upon error parsing the VCF file or creating the Jannovar object
      */
-    private Map<TermId, Gene2Genotype> getVcf2GenotypeMap(String vcf,MVStore mvstore,JannovarData jannovarData, GenomeAssembly assembly ) throws Lr2pgException {
+    private Map<TermId, Gene2Genotype> getVcf2GenotypeMap(String vcf,MVStore mvstore,JannovarData jannovarData, GenomeAssembly assembly ) {
         Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcf, jannovarData, mvstore, assembly);
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
         this.metadata = vcf2geno.getVcfMetaData();
@@ -107,14 +107,9 @@ public class VcfCommand extends Lr2PgCommand {
 
 
 
-
+    @Override
     public void run() throws Lr2pgException {
-        try {
-            this.factory = deYamylate(this.yamlPath);
-        } catch (Lr2pgException e) {
-            System.err.println("[ERROR] Unable to parse YAML configuration file at " + this.yamlPath +". " + e.getMessage());
-            System.exit(1);
-        }
+        this.factory = deYamylate(this.yamlPath);
         showParams();
         String vcf = factory.vcfPath();
         MVStore mvstore = factory.mvStore();
@@ -151,21 +146,14 @@ public class VcfCommand extends Lr2PgCommand {
 
     private void outputHTML(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
         HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata,this.LR_THRESHOLD);
-        caseoutput.outputFile();
+        caseoutput.outputFile(this.outfilePrefix);
     }
 
     /** Output a tab-separated values file with one line per differential diagnosis. */
     private void outputTSV(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
         Lr2pgTemplate template = new TsvTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata);
-        template.outputFile();
+        template.outputFile(this.outfilePrefix);
     }
-
-
-
-
-
-
-
 
 
 
@@ -190,7 +178,7 @@ public class VcfCommand extends Lr2PgCommand {
      * @param yamlPath Path to the YAML file for the VCF analysis
      * @return An {@link Lr2PgFactory} object with various settings.
      */
-    private Lr2PgFactory deYamylate(String yamlPath) throws Lr2pgException {
+    private Lr2PgFactory deYamylate(String yamlPath) {
 
         Lr2PgFactory factory = null;
         if (yamlPath==null || !new File(yamlPath).exists()) {

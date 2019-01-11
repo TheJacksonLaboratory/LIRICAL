@@ -3,6 +3,7 @@ package org.monarchinitiative.lr2pg.analysis;
 import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
@@ -21,7 +22,7 @@ public class Gene2GenotypeTest {
         Gene2Genotype g2g = new Gene2Genotype(geneId,symbol);
         List<TranscriptAnnotation> emptyList = ImmutableList.of();
         float pathscore=0.95f;
-        g2g.addVariant(1,114713908, "A","G",emptyList,"0/1",pathscore,0.001f);
+        g2g.addVariant(1,114713908, "A","G",emptyList,"0/1",pathscore,0.001f, ClinVarData.ClinSig.NOT_PROVIDED);
         assertEquals(pathscore,g2g.getSumOfPathBinScores(),EPSILON);
     }
 

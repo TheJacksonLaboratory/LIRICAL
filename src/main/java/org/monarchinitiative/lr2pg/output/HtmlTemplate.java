@@ -109,8 +109,9 @@ public class HtmlTemplate extends Lr2pgTemplate {
 
 
     @Override
-    public void outputFile(){
-        try (BufferedWriter out = new BufferedWriter(new FileWriter("myout.html"))) {
+    public void outputFile(String prefix){
+        String outname=String.format("%s.html",prefix );
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(outname))) {
             Template template = cfg.getTemplate("lrhtml.ftl");
             template.process(templateData, out);
         } catch (TemplateException | IOException te) {

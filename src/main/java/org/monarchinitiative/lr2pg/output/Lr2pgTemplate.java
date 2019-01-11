@@ -53,7 +53,7 @@ public abstract class Lr2pgTemplate {
     }
 
 
-    abstract public void outputFile();
+    abstract public void outputFile(String prefix);
 
     private void initTemplateData(HpoCase hcase, Ontology ontology, Map<TermId, Gene2Genotype> genotypeMap, Map<String,String> metadat) {
         for(Map.Entry<String,String> entry : metadat.entrySet()) {

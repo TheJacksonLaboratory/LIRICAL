@@ -165,7 +165,7 @@ public class Vcf2GenotypeMap {
                     if (!variantEffect.isOffExome()) {
                         String genIdString = va.getGeneId(); // for now assume this is an Entrez Gene ID
                         String symbol = va.getGeneSymbol();
-                        TermId geneId=null;
+                        TermId geneId;
                         try {
                             geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
                         } catch (PhenolRuntimeException pre) {
@@ -190,7 +190,7 @@ public class Vcf2GenotypeMap {
                             // this is not an error, the variant could be very rare or otherwise not seen before
                             freq = DEFAULT_FREQUENCY;
                             path = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
-                            genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, path, freq);
+                            genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, path, freq, ClinVarData.ClinSig.NOT_PROVIDED);
                         } else {
                             FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
                             PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);

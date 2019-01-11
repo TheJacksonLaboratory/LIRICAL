@@ -74,7 +74,7 @@ public class Lr2PgFactory {
         switch(ga.toLowerCase()) {
             case "hg19":
             case "hg37":
-            case  "grc37":
+            case  "grch37":
                 this.assembly=GenomeAssembly.HG19;
                 break;
             case "hg38":
@@ -93,7 +93,7 @@ public class Lr2PgFactory {
         if (builder.hpOboPath!=null) {
             this.ontology=hpoOntology();
         } else {
-            throw new PhenolRuntimeException("Error - must past hp.obo path to run LR2PG");
+            this.ontology=null;
         }
     }
 

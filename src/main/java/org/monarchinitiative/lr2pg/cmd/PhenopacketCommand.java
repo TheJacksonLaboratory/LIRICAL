@@ -5,8 +5,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.collect.Multimap;
 import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.JannovarDataSerializer;
-import de.charite.compbio.jannovar.data.SerializationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.h2.mvstore.MVStore;
@@ -56,6 +54,8 @@ public class PhenopacketCommand extends Lr2PgCommand{
     private String mvpath;
     @Parameter(names={"-j","--jannovar"}, description = "path to Jannovar transcript information file", required = true)
     private String jannovarPath;
+    @Parameter(names={"-o", "--outfile"},description = "prefix of outfile")
+    private String outfilePrefix="lr2pg";
 
     ///// TODO ADD THIS TO RESOURCES!!!!!!
     /** Default name of the background frequency file. */
@@ -110,10 +110,12 @@ public class PhenopacketCommand extends Lr2PgCommand{
                         .phenotypeAnnotation(phenotypeHpoaPath)
                         .geneInfo(hsapiensGeneInfoPath)
                         .mim2genemedgen(mim2geneMedgenPath)
+                        .genomeAssembly(this.genomeAssembly)
+                        .jannovarFile(this.jannovarPath)
                         .mvStore(this.mvpath).build();
 
                 MVStore mvstore = factory.mvStore();
-                JannovarData jannovarData = jannovarData(jannovarPath);
+                JannovarData jannovarData = factory.jannovarData();
                 GenomeAssembly assembly = getGenomeAssembly(this.genomeAssembly);
                 SimpleVariant.setGenomeBuildForUrl(assembly);
 
@@ -137,10 +139,10 @@ public class PhenopacketCommand extends Lr2PgCommand{
                 hcase.outputTopResults(5,ontology,genotypemap);// TODO remove this outputs to the shell
                 if (outputTSV) {
                     Lr2pgTemplate template = new TsvTemplate(hcase,ontology,genotypemap,geneId2symbol,this.metadata);
-                    template.outputFile();
+                    template.outputFile(this.outfilePrefix);
                 } else {
                     HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypemap,geneId2symbol,this.metadata,this.LR_THRESHOLD);
-                    caseoutput.outputFile();
+                    caseoutput.outputFile(this.outfilePrefix);
                 }
             } catch (Lr2pgException e) {
                 e.printStackTrace();
@@ -161,21 +163,6 @@ public class PhenopacketCommand extends Lr2PgCommand{
         return new GenotypeLikelihoodRatio(gene2back);
     }
 
-
-
-    /** @return the object created by deserilizing a Jannovar file. */
-    public JannovarData jannovarData(String jannovarTranscriptFile) throws Lr2pgException {
-        if (jannovarTranscriptFile == null) {
-            throw new Lr2pgException("Path to jannovar transcript file not found");
-        }
-        try {
-            return new JannovarDataSerializer(jannovarTranscriptFile).load();
-
-        } catch (SerializationException e) {
-            throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
-                    jannovarTranscriptFile, e.getMessage()));
-        }
-    }
 
     private GenomeAssembly getGenomeAssembly(String ga) {
         switch (ga) {
