@@ -28,14 +28,17 @@ public class GridSearch  {
     private final Map<TermId, HpoDisease> diseaseMap;
     /** Reference to HPO ontology object. */
     private final Ontology ontology;
+    /** Number of cases to be simulated for any given parameter combination */
+    private final int n_cases_to_simulate_per_run;
 
 
     /**
      *
      */
-    public GridSearch(Ontology ontology, Map<TermId, HpoDisease> diseaseMap ) {
+    public GridSearch(Ontology ontology, Map<TermId, HpoDisease> diseaseMap, int n_cases ) {
         this.ontology=ontology;
         this.diseaseMap=diseaseMap;
+        this.n_cases_to_simulate_per_run=n_cases;
     }
 
 
@@ -52,12 +55,11 @@ public class GridSearch  {
         double[][] Z;
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfilename))) {
             Z = new double[termnumber.length][randomtermnumber.length];
-            int n_cases = 100;
             PhenotypeOnlyHpoCaseSimulator simulator;
             for (int i = 0; i < termnumber.length; i++) {
                 for (int j = 0; j < randomtermnumber.length; j++) {
                     boolean imprec = (j > 4);
-                    simulator = new PhenotypeOnlyHpoCaseSimulator( ontology,diseaseMap,n_cases, termnumber[i], randomtermnumber[j], imprec);
+                    simulator = new PhenotypeOnlyHpoCaseSimulator( ontology,diseaseMap,n_cases_to_simulate_per_run, termnumber[i], randomtermnumber[j], imprec);
                     simulator.simulateCases();
                     Z[i][j] = simulator.getProportionAtRank1();
                     writer.write(String.format("terms: %d; noise terms: %d; percentage at rank 1: %.2f\n",

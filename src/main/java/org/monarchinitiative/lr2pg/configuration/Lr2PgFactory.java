@@ -71,18 +71,22 @@ public class Lr2PgFactory {
         this.vcfPath=builder.vcfPath;
         this.jannovarTranscriptFile=builder.jannovarTranscriptFile;
         String ga = builder.genomeAssembly;
-        switch(ga.toLowerCase()) {
-            case "hg19":
-            case "hg37":
-            case  "grch37":
-                this.assembly=GenomeAssembly.HG19;
-                break;
-            case "hg38":
-            case "grc38":
-                this.assembly=GenomeAssembly.HG38;
-                break;
-            default:
-                this.assembly=null;
+        if (ga!=null) {
+            switch (ga.toLowerCase()) {
+                case "hg19":
+                case "hg37":
+                case "grch37":
+                    this.assembly = GenomeAssembly.HG19;
+                    break;
+                case "hg38":
+                case "grc38":
+                    this.assembly = GenomeAssembly.HG38;
+                    break;
+                default:
+                    this.assembly = null;
+            }
+        } else {
+            this.assembly = null;
         }
         ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
         for (String id : builder.observedHpoTerms) {
@@ -129,6 +133,11 @@ public class Lr2PgFactory {
 
     /** @return MVStore object with Exomiser data on variant pathogenicity and frequency. */
     public MVStore mvStore() {
+        File f = new File(mvStoreAbsolutePath);
+        if (!f.exists()) {
+            System.err.println("[FATAL] Could not find Exomiser database file at " + mvStoreAbsolutePath);
+            System.exit(1);
+        }
         if (mvstore==null) {
             mvstore = new MVStore.Builder()
                     .fileName(mvStoreAbsolutePath)
@@ -213,6 +222,11 @@ public class Lr2PgFactory {
         if (jannovarData != null) return jannovarData;
         if (this.jannovarTranscriptFile == null) {
             throw new Lr2pgException("Path to jannovar transcript file not found");
+        }
+        File f = new File(this.jannovarTranscriptFile);
+        if (!f.exists()) {
+            System.err.println("[FATAL] Could not find Jannovar transcript file at " + this.jannovarTranscriptFile);
+            System.exit(1);
         }
         try {
             this.jannovarData = new JannovarDataSerializer(jannovarTranscriptFile).load();
