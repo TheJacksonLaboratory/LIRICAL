@@ -30,13 +30,6 @@
             <version>2.3.23</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.semanticweb.owlapi/owlapi
-        <dependency>
-            <groupId>org.semanticweb.owlapi</groupId>
-            <artifactId>owlapi</artifactId>
-
-        </dependency>-->
-
         <dependency>
             <groupId>org.monarchinitiative.exomiser</groupId>
             <artifactId>exomiser-core</artifactId>

@@ -22,7 +22,11 @@ files automatically as follows. ::
 
     $ java -jar Lr2pg.jar download
 
-LR2PG will not download the files if they are already present unless the user passes the ``--overwrite`` argument.
+LR2PG will not download the files if they are already present unless the ``--overwrite`` argument is passed. For
+instance, the following command would download the four files to a directory called datafiles and would
+overwrite any previously downloaded files. ::
+
+    $ java -jar Lr2pg.jar download -d datafiles --overwrite
 
 
 If desired, you can download these files on your own but you need to place them all in the

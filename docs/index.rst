@@ -21,14 +21,14 @@ LR2PG
 ~~~~~
 
 This application performs phenotype-driven prioritization of candidate diseases and genes in the setting of
-genomic diagnostics (exome or genome) in which the phenotypic abnormalities of the individual being sequenced
-are available as `Human Phenotype Ontology (HPO) <http://www.human-phenotype-ontology.org>`_ terms.
+genomic diagnostics (exome or genome) in which the phenotypic abnormalities are described
+as `Human Phenotype Ontology (HPO) <http://www.human-phenotype-ontology.org>`_ terms.
 
 
 Installation
 ~~~~~~~~~~~~
 
-Users can go the GitHub page of `LR2PG <https://github.com/TheJacksonLaboratory/LR2PG>`_, clone or download the project,
+Go the GitHub page of `LR2PG <https://github.com/TheJacksonLaboratory/LR2PG>`_, clone or download the project,
 and build the executable from source with maven, and then test the build. ::
 
     $ git clone https://github.com/TheJacksonLaboratory/LR2PG.git

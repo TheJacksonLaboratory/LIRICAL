@@ -46,7 +46,7 @@ public class GridSearchCommand extends Lr2PgCommand {
 
 
 
-        GridSearch gridSearch = new GridSearch(ontology,diseaseMap, n_cases_to_simulate);
+        GridSearch gridSearch = new GridSearch(ontology,diseaseMap, n_cases_to_simulate, imprecise_phenotype);
         gridSearch.gridsearch();
     }
 }
