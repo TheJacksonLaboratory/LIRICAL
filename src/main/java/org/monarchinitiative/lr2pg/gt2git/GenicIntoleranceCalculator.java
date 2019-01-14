@@ -200,6 +200,7 @@ public class GenicIntoleranceCalculator {
     private void binPathogenicityData() {
         logger.trace("Binning pathogenicity data...");
         logger.info("Binning pathogenicity data...2");
+        int c=0;
         for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : alleleMap.entrySet()) {
             AlleleProto.AlleleKey alleleKey = entry.getKey();
             AlleleProto.AlleleProperties alleleProperties = entry.getValue();
@@ -278,6 +279,10 @@ public class GenicIntoleranceCalculator {
                     float frequencyAsPercentage = sas.getFrequency();
                     addToBin(genesymbol, id, frequencyAsPercentage, pathogenicity, GNOMAD_E_SAS);
                 }
+                if (c++%100_000==0) {
+                    System.out.println("Processed variant "+c);
+                }
+                if (c>300001)break;
             }
         }
     }

@@ -29,11 +29,11 @@ public class Gt2GitCommand extends Lr2PgCommand {
     @Parameter(names={"-d","--data"}, description ="directory to download data (default: data)" )
     private String datadir="data";
     /** One of HG38 (default) or HG19. */
-    private final GenomeAssembly genomeAssembly;
+    private GenomeAssembly genomeAssembly;
     /** Name of the output file (e.g., background-hg19.txt). Determined automatically based on genome build..*/
-    private final String outputFileName;
+    private String outputFileName;
     /** (e.g., ="/Users/peterrobinson/Documents/data/exomiser/1802_hg19/1802_hg19_variants.mv.db") */
-    @Parameter(names={"-m","--mvStorePath"}, description = "path to Exomiser MVStore file")
+    @Parameter(names={"-m","--mvstore"}, description = "path to Exomiser MVStore file")
     private String mvStorePath;
 
     /** Path of the Jannovar file. Note this can be taken from the Exomiser distribution, e.g.,
@@ -51,6 +51,11 @@ public class Gt2GitCommand extends Lr2PgCommand {
      *
      */
     public Gt2GitCommand(){
+
+    }
+
+    @Override
+    public void run() throws Lr2pgException  {
         if (genomeAssemblyString.toLowerCase().contains("hg19")) {
             this.genomeAssembly=GenomeAssembly.HG19;
             outputFileName="background-hg19.txt";
@@ -63,10 +68,6 @@ public class Gt2GitCommand extends Lr2PgCommand {
             this.genomeAssembly=GenomeAssembly.HG38;
             outputFileName="background-hg38.txt";
         }
-    }
-
-    @Override
-    public void run() throws Lr2pgException  {
         if (this.mvStorePath ==null) {
             throw new Lr2pgException("Need to specify the MVStore file: -m <mvStorePath> to run gt2git command!");
         }
