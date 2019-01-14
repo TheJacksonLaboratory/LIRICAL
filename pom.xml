@@ -202,7 +202,7 @@
                 <directory>src/main/resources/template</directory>
             </resource>
             <resource>
-                <directory>src/main/resources/yaml</directory>
+                <directory>src/test/resources/yaml</directory>
             </resource>
             <resource>
                 <directory>src/main/java</directory>

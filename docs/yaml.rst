@@ -18,11 +18,11 @@ Here is an example YAML configuration file. ::
         genomeAssembly: hg19
         vcf: /home/robinp/data/exomiser-cli-9.0.1/examples/Pfeiffer.vcf
         jannovar: /home/robinp/data/exomiserdata/1802_hg19/1802_hg19_transcripts_refseq.ser
-        hp.obo : data/hp.obo
-        phenotype.hpoa : data/phenotype.hpoa
-        gene_info : data/Homo_sapiens_gene_info.gz
-        medgen : data/mim2gene_medgen
-        background_freq : data/background-freq.txt
+      #  hp.obo : data/hp.obo
+       # phenotype.hpoa : data/phenotype.hpoa
+      #  gene_info : data/Homo_sapiens_gene_info.gz
+      #  medgen : data/mim2gene_medgen
+       # background_freq : data/background-freq.txt
         datadir: data
         mvstore: /home/robinp/data/exomiserdata/1802_hg19/1802_hg19_variants.mv.db
     hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']

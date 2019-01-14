@@ -2,8 +2,6 @@ package org.monarchinitiative.lr2pg.io;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-//import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-//import org.apache.commons.lang.builder.ToStringStyle;
 import org.monarchinitiative.lr2pg.configuration.YamlConfig;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 
@@ -39,18 +37,20 @@ public class YamlParser {
     }
 
     public String getHpOboPath() throws Lr2pgException {
-        if (yconfig.getAnalysis().containsKey("hp.obo")) {
-            return yconfig.getAnalysis().get("hp.obo");
+        if (yconfig.getAnalysis().containsKey("datadir")) {
+            String datadir=yconfig.getAnalysis().get("datadir");
+            return String.format("%s%s%s",datadir,File.separator,"hp.obo");
         } else {
-            throw new Lr2pgException("No hp.obo path found in YAML configuration file");
+            throw new Lr2pgException("No data/hp.obo path found in YAML configuration file");
         }
     }
 
     public String getMedgen() throws Lr2pgException {
-        if (yconfig.getAnalysis().containsKey("medgen")) {
-            return yconfig.getAnalysis().get("medgen");
+        if (yconfig.getAnalysis().containsKey("datadir")) {
+            String datadir=yconfig.getAnalysis().get("datadir");
+            return String.format("%s%s%s",datadir,File.separator,"mim2gene_medgen");
         }  else {
-            throw new Lr2pgException("No mim2gene_medgen path found in YAML configuration file");
+            throw new Lr2pgException("No data/mim2gene_medgen path found in YAML configuration file");
         }
     }
 
@@ -65,8 +65,9 @@ public class YamlParser {
 
 
     public String getGeneInfo() throws Lr2pgException {
-        if (yconfig.getAnalysis().containsKey("gene_info")) {
-            return yconfig.getAnalysis().get("gene_info");
+        if (yconfig.getAnalysis().containsKey("datadir")) {
+            String datadir=yconfig.getAnalysis().get("datadir");
+            return String.format("%s%s%s",datadir,File.separator,"Homo_sapiens_gene_info.gz");
         }  else {
             throw new Lr2pgException("No Homo_sapiens_gene_info.gz path found in YAML configuration file");
         }
@@ -89,8 +90,9 @@ public class YamlParser {
     }
 
     public String phenotypeAnnotation() throws Lr2pgException {
-        if (yconfig.getAnalysis().containsKey("phenotype.hpoa")) {
-            return yconfig.getAnalysis().get("phenotype.hpoa");
+        if (yconfig.getAnalysis().containsKey("datadir")) {
+            String datadir=yconfig.getAnalysis().get("datadir");
+            return String.format("%s%s%s",datadir,File.separator,"phenotype.hpoa");
         }  else {
             throw new Lr2pgException("No phenotype.hpoa path found in YAML configuration file");
         }
