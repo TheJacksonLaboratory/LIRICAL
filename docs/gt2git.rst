@@ -1,4 +1,12 @@
+GT2GIT
+######
 
+This module is used to calculate the background frequency of predicted pathogenic mutations in genes. It
+creates a file called ``background-frequency-hg19.txt`` or ``background-frequency-hg38.txt``. We have put
+these files into the src/main/resources/background folder so that end users do not need to regenerate the
+files themselves. However, we leave the source code in the project for those who desire to reproduce or
+extend the findings in the manuscript. The main class that implements this is
+GenicIntoleranceCalculator. The same class can also be used to extract ClinVar pathogenicity scores (see :ref:`ClinVar <clinvar>`).
 
 
 

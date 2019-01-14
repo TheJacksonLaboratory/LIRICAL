@@ -1,11 +1,15 @@
 Generating the ClinVar score distribution
 =========================================
+.. _clinvar:
 
 This step is only needed for those who desire to reproduce or extend the data in the original publication,
 and it is not needed to run LR2PG.
 
 Purpose
 ~~~~~~~
+
+
+
 LR2PG uses a cutoff Exomiser pathogenicity score of 0.8, which offers a good, if imperfect,
 separation between variants called pathogenic by ClinVar and those that are not so called.
 
