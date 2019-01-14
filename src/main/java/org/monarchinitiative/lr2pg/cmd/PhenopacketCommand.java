@@ -56,6 +56,10 @@ public class PhenopacketCommand extends Lr2PgCommand{
     private String jannovarPath;
     @Parameter(names={"-o", "--outfile"},description = "prefix of outfile")
     private String outfilePrefix="lr2pg";
+    @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory")
+    private String exomiserDataDirectory;
+    @Parameter(names={"--transcriptdb"}, description = "transcript database (USCS, Ensembl, RefSeq)")
+    String transcriptDb="ucsc";
 
     ///// TODO ADD THIS TO RESOURCES!!!!!!
     /** Default name of the background frequency file. */
