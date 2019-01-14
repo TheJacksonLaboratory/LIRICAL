@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PhenopacketImporterTest {
 
     private static String phenopacketJsonString;
+    private static String phenopacketPfeifferNoVcf;
 
     @BeforeAll
     static void setup() throws ParseException, IOException,NullPointerException {
@@ -38,6 +39,17 @@ public class PhenopacketImporterTest {
         Object obj = parser.parse(new FileReader(phenopacketPath));
         JSONObject jsonObject = (JSONObject) obj;
         phenopacketJsonString = jsonObject.toJSONString();
+
+        resource = classLoader.getResource("pfeifferNoVcf.json");
+        if (resource==null){
+            throw new FileNotFoundException("Could not find pfeifferNoVcf phenopacket file");
+
+        }
+        phenopacketPath = resource.getFile();
+        parser = new JSONParser();
+        obj = parser.parse(new FileReader(phenopacketPath));
+        jsonObject = (JSONObject) obj;
+        phenopacketPfeifferNoVcf = jsonObject.toJSONString();
     }
 
 
@@ -84,9 +96,18 @@ public class PhenopacketImporterTest {
         PhenoPacket fromJson = PhenoPacketFormat.fromJson(phenopacketJsonString);
         PhenopacketImporter importer = new PhenopacketImporter(fromJson);
         String expectedVcfPath="/home/user/example.vcf"; // as in the Json phenopacket file
+        assertTrue(importer.hasVcf());
         assertEquals(expectedVcfPath,importer.getVcfPath());
         String expectedGenomeBuild="GRCH_38"; // as in the Json phenopacket file
         assertEquals(expectedGenomeBuild,importer.getGenomeAssembly());
+    }
+
+
+    @Test
+    void testGetPathToVcfFileWhenNotPresent() throws IOException {
+        PhenoPacket fromJson = PhenoPacketFormat.fromJson(phenopacketPfeifferNoVcf);
+        PhenopacketImporter importer = new PhenopacketImporter(fromJson);
+        assertFalse(importer.hasVcf());
     }
 
 

@@ -5,10 +5,12 @@ import com.google.common.collect.Multimap;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.phenol.base.PhenolException;
@@ -37,8 +39,8 @@ public class Lr2PgFactory {
     private final String hpoOboFilePath;
     /** Path to the {@code phenotype.hpoa} file. */
     private final String phenotypeAnnotationPath;
-    /** Path to the Exomiser data file. */
-    private final String mvStoreAbsolutePath;
+    /** UCSC, RefSeq, Ensembl. */
+    private final String transcriptdatabase;
     /** Path to the {@code Homo_sapiens_gene_info.gz} file. */
     private final String geneInfoPath;
     /** Path to the mimgene/medgen file with MIM to gene associations. */
@@ -47,10 +49,10 @@ public class Lr2PgFactory {
     private final String backgroundFrequencyPath;
     /** Path to the VCF file that is be evaluated. */
     private final String vcfPath;
-    /** Path to the Jannovar file with transcript definitions to be used for the VCF analysis. */
-    private final String jannovarTranscriptFile;
     /** List of HPO terms (phenotypic abnormalities) observed in the person being evaluated. */
     private final List<TermId> hpoIdList;
+
+    private String exomiserPath;
 
     private final GenomeAssembly assembly;
 
@@ -63,13 +65,13 @@ public class Lr2PgFactory {
 
     public Lr2PgFactory(Builder builder) {
         this.hpoOboFilePath = builder.hpOboPath;
-        this.mvStoreAbsolutePath = builder.mvStorePath;
+        this.exomiserPath = builder.exomiserDataDir;
         this.geneInfoPath=builder.geneInfoPath;
         this.mim2genemedgenPath=builder.mim2genemedgenPath;
         this.backgroundFrequencyPath=builder.backgroundFrequencyPath;
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
+        this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
-        this.jannovarTranscriptFile=builder.jannovarTranscriptFile;
         String ga = builder.genomeAssembly;
         if (ga!=null) {
             switch (ga.toLowerCase()) {
@@ -131,16 +133,34 @@ public class Lr2PgFactory {
         }
     }
 
+
+    public TranscriptDatabase transcriptdb() {
+            switch (this.transcriptdatabase.toUpperCase()) {
+                case "UCSC": return TranscriptDatabase.UCSC;
+                case "ENSEMBL": return TranscriptDatabase.ENSEMBL;
+                case "REFSEQ": return TranscriptDatabase.REFSEQ;
+            }
+        // default
+        return TranscriptDatabase.UCSC;
+    }
+
+
+
+
     /** @return MVStore object with Exomiser data on variant pathogenicity and frequency. */
     public MVStore mvStore() {
-        File f = new File(mvStoreAbsolutePath);
+        // Remove the trailing directory slash if any
+        this.exomiserPath= FilenameUtils.getFullPathNoEndSeparator(this.exomiserPath);
+        String basename=FilenameUtils.getBaseName(this.exomiserPath);
+        String filename=String.format("%s_variants.mv.db", basename);
+        String fullpath=String.format("%s%s%s", exomiserPath,File.separator,filename);
+        File f = new File(fullpath);
         if (!f.exists()) {
-            System.err.println("[FATAL] Could not find Exomiser database file at " + mvStoreAbsolutePath);
-            System.exit(1);
+            throw new Lr2PgRuntimeException("[FATAL] Could not find Exomiser database file/variants.mv.db at " + fullpath);
         }
         if (mvstore==null) {
             mvstore = new MVStore.Builder()
-                    .fileName(mvStoreAbsolutePath)
+                    .fileName(fullpath)
                     .readOnly()
                     .open();
         }
@@ -217,23 +237,54 @@ public class Lr2PgFactory {
         return gdingestor.parse();
     }
 
+
+    public String getPathWithoutTrailingSeparatorIfPresent(String path) {
+        String sep = File.separator;
+        if (path.endsWith(sep)) {
+            int i=path.lastIndexOf(sep);
+            return path.substring(0,i);
+        } else {
+            return path;
+        }
+    }
+
+
+
     /** @return the object created by deserilizing a Jannovar file. */
     public JannovarData jannovarData() throws Lr2pgException {
         if (jannovarData != null) return jannovarData;
-        if (this.jannovarTranscriptFile == null) {
-            throw new Lr2pgException("Path to jannovar transcript file not found");
+        // Remove the trailing directory slash if any
+        this.exomiserPath= getPathWithoutTrailingSeparatorIfPresent(this.exomiserPath);
+        String basename=FilenameUtils.getBaseName(this.exomiserPath);
+        TranscriptDatabase tdb = transcriptdb();
+        String fullpath=null;
+        switch (tdb) {
+            case REFSEQ:
+                String refseqfilename=String.format("%s_transcripts_refseq.ser", basename);
+                fullpath=String.format("%s%s%s", exomiserPath,File.separator,refseqfilename);
+                break;
+            case ENSEMBL:
+                String ensemblfilename=String.format("%s_transcripts_ensembl.ser", basename);
+                fullpath=String.format("%s%s%s", exomiserPath,File.separator,ensemblfilename);
+                break;
+            case UCSC:
+            default:
+                String ucscfilename=String.format("%s_transcripts_ucsc.ser", basename);
+                fullpath=String.format("%s%s%s", exomiserPath,File.separator,ucscfilename);
+                break;
         }
-        File f = new File(this.jannovarTranscriptFile);
+
+        File f = new File(fullpath);
+
         if (!f.exists()) {
-            System.err.println("[FATAL] Could not find Jannovar transcript file at " + this.jannovarTranscriptFile);
+            System.err.println("[FATAL] Could not find Jannovar transcript file at " + fullpath);
             System.exit(1);
         }
         try {
-            this.jannovarData = new JannovarDataSerializer(jannovarTranscriptFile).load();
-
+            this.jannovarData = new JannovarDataSerializer(fullpath).load();
         } catch (SerializationException e) {
             throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
-                    jannovarTranscriptFile, e.getMessage()));
+                    fullpath, e.getMessage()));
         }
         return jannovarData;
     }
@@ -266,13 +317,13 @@ public class Lr2PgFactory {
 
         private String hpOboPath=null;
         private String phenotypeAnnotationPath=null;
-        private String mvStorePath=null;
+        private String exomiserDataDir=null;
         private String geneInfoPath=null;
         private String mim2genemedgenPath=null;
         private String backgroundFrequencyPath=null;
         private String vcfPath=null;
-        private String jannovarTranscriptFile=null;
         private String genomeAssembly=null;
+        private String transcriptdatabase=null;
         private List<String> observedHpoTerms=ImmutableList.of();
 
         public Builder(){
@@ -290,8 +341,8 @@ public class Lr2PgFactory {
             return this;
         }
 
-        public Builder mvStore(String mvsPath) {
-            this.mvStorePath=mvsPath;
+        public Builder transcriptdatabase(String tdb) {
+            this.transcriptdatabase=tdb;
             return this;
         }
 
@@ -320,10 +371,11 @@ public class Lr2PgFactory {
             return this;
         }
 
-        public Builder jannovarFile(String jf) {
-            this.jannovarTranscriptFile=jf;
+        public Builder exomiser(String exomiser) {
+            this.exomiserDataDir=exomiser;
             return this;
         }
+
 
         public Builder observedHpoTerms(String [] terms) {
             this.observedHpoTerms=new ArrayList<>();

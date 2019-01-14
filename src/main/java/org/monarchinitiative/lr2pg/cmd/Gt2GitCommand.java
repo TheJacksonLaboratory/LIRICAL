@@ -33,16 +33,19 @@ public class Gt2GitCommand extends Lr2PgCommand {
     /** Name of the output file (e.g., background-hg19.txt). Determined automatically based on genome build..*/
     private String outputFileName;
     /** (e.g., ="/Users/peterrobinson/Documents/data/exomiser/1802_hg19/1802_hg19_variants.mv.db") */
-    @Parameter(names={"-m","--mvstore"}, description = "path to Exomiser MVStore file")
+   // @Parameter(names={"-m","--mvstore"}, description = "path to Exomiser MVStore file")
     private String mvStorePath;
+    private String jannovarFile;
 
     /** Path of the Jannovar file. Note this can be taken from the Exomiser distribution, e.g.,
      * {@code exomiser/1802_hg19/1802_hg19_transcripts_refseq.ser}. */
-    @Parameter(names={"-j","--jannovar"}, description = "path to Jannovar transcript file")
-    private String jannovarFile;
+    @Parameter(names={"-e","--exomiser"}, description = "path to Exomiser database directory")
+    private String exomiser;
     /** SHould be one of hg19 or hg38. */
     @Parameter(names={"-g", "--genome"}, description = "string representing the genome assembly (hg19,hg38)")
     private String genomeAssemblyString="hg38";
+    @Parameter(names={"--transcriptdb"}, description = "Jannovar transcript database (UCSC, Ensembl, RefSeq)")
+    private String transcriptdatabase="UCSC";
     /** If true, calculate the distribution of ClinVar pathogenicity scores. */
     @Parameter(names="--clinvar", description = "determine distribution of ClinVar pathogenicity scores")
     private boolean doClinvar;
@@ -68,18 +71,16 @@ public class Gt2GitCommand extends Lr2PgCommand {
             this.genomeAssembly=GenomeAssembly.HG38;
             outputFileName="background-hg38.txt";
         }
-        if (this.mvStorePath ==null) {
-            throw new Lr2pgException("Need to specify the MVStore file: -m <mvStorePath> to run gt2git command!");
+        if (this.exomiser ==null) {
+            throw new Lr2pgException("Need to specify the Exomiser data directory: -e <path> to run gt2git command!");
         }
-        if (this.jannovarFile==null) {
-            throw new Lr2pgException("Need to specify the jannovar transcript file: -j <jannovar> to run gt2git command!");
-        }
+
 
 
         Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder()
-                .jannovarFile(jannovarFile)
-                .genomeAssembly(this.genomeAssemblyString)
-                .mvStore(mvStorePath);
+                .exomiser(exomiser)
+                .transcriptdatabase(transcriptdatabase)
+                .genomeAssembly(this.genomeAssemblyString);
 
         Lr2PgFactory factory = builder.build();
 

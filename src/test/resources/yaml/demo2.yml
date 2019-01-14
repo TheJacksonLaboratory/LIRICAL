@@ -7,9 +7,8 @@ analysis:
   # make sure the Jannovar transcript file is taken from the same genome build
   genomeAssembly: hg19
   vcf: /home/peter/data/exomiser/Pfeiffer.vcf
-  jannovar: /home/peter/data/exomiser/1802_hg19/1802_hg19_transcripts_refseq.ser
-  background_freq : data/background-freq.txt
   datadir: data
-  mvstore: /home/peter/data/exomiser/1802_hg19/1802_hg19_variants.mv.db
+  exomiser: /home/peter/data/exomiser/1802_hg19/
+  background_freq : data/background-freq.txt
 hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
-output:
+prefix: pfeiffer

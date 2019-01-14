@@ -93,7 +93,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
         try {
             PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
             this.vcfPath = importer.getVcfPath();
-            if (vcfPath!=null) hasVcf=true;
+            hasVcf = importer.hasVcf();
             this.genomeAssembly = importer.getGenomeAssembly();
             this.hpoIdList = importer.getHpoTerms();
             this.negatedHpoIdList = importer.getNegatedHpoTerms();
@@ -101,10 +101,10 @@ public class PhenopacketCommand extends Lr2PgCommand{
             logger.fatal("Could not read phenopacket");
             e.printStackTrace();
         }
-        String hpoOboPath = String.format("%s%s%s",datadir,File.separator,"hp.obo" );
-        String phenotypeHpoaPath = String.format("%s%s%s",datadir,File.separator,"phenotype.hpoa" );
-        String hsapiensGeneInfoPath = String.format("%s%s%s",datadir,File.separator,"Homo_sapiens_gene_info.gz");
-        String mim2geneMedgenPath = String.format("%s%s%s",datadir,File.separator,"mim2gene_medgen");
+        String hpoOboPath = String.format("%s%s%s", datadir, File.separator, "hp.obo");
+        String phenotypeHpoaPath = String.format("%s%s%s", datadir, File.separator, "phenotype.hpoa");
+        String hsapiensGeneInfoPath = String.format("%s%s%s", datadir, File.separator, "Homo_sapiens_gene_info.gz");
+        String mim2geneMedgenPath = String.format("%s%s%s", datadir, File.separator, "mim2gene_medgen");
 
 
         if (hasVcf) {
@@ -115,21 +115,21 @@ public class PhenopacketCommand extends Lr2PgCommand{
                         .geneInfo(hsapiensGeneInfoPath)
                         .mim2genemedgen(mim2geneMedgenPath)
                         .genomeAssembly(this.genomeAssembly)
-                        .jannovarFile(this.jannovarPath)
-                        .mvStore(this.mvpath).build();
+                        .exomiser(this.exomiserDataDirectory)
+                        .build();
 
                 MVStore mvstore = factory.mvStore();
                 JannovarData jannovarData = factory.jannovarData();
                 GenomeAssembly assembly = getGenomeAssembly(this.genomeAssembly);
                 SimpleVariant.setGenomeBuildForUrl(assembly);
 
-                Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap(jannovarData,mvstore, assembly);
+                Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap(jannovarData, mvstore, assembly);
                 GenotypeLikelihoodRatio genoLr = getGenotypeLR();
                 Ontology ontology = factory.hpoOntology();
                 Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
-                PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
-                Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
-                Map<TermId,String> geneId2symbol = factory.geneId2symbolMap();
+                PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
+                Multimap<TermId, TermId> disease2geneMultimap = factory.disease2geneMultimap();
+                Map<TermId, String> geneId2symbol = factory.geneId2symbolMap();
                 CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(this.hpoIdList)
                         .ontology(ontology)
                         .diseaseMap(diseaseMap)
@@ -140,12 +140,40 @@ public class PhenopacketCommand extends Lr2PgCommand{
 
                 CaseEvaluator evaluator = caseBuilder.build();
                 HpoCase hcase = evaluator.evaluate();
-                hcase.outputTopResults(5,ontology,genotypemap);// TODO remove this outputs to the shell
+                hcase.outputTopResults(5, ontology, genotypemap);// TODO remove this outputs to the shell
                 if (outputTSV) {
-                    Lr2pgTemplate template = new TsvTemplate(hcase,ontology,genotypemap,geneId2symbol,this.metadata);
+                    Lr2pgTemplate template = new TsvTemplate(hcase, ontology, genotypemap, geneId2symbol, this.metadata);
                     template.outputFile(this.outfilePrefix);
                 } else {
-                    HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypemap,geneId2symbol,this.metadata,this.LR_THRESHOLD);
+                    HtmlTemplate caseoutput = new HtmlTemplate(hcase, ontology, genotypemap, geneId2symbol, this.metadata, this.LR_THRESHOLD);
+                    caseoutput.outputFile(this.outfilePrefix);
+                }
+            } catch (Lr2pgException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                // i.e., the Phenopacket has no VCF reference -- LR2PG will work on just phenotypes!
+                Lr2PgFactory factory = new Lr2PgFactory.Builder()
+                        .hp_obo(hpoOboPath)
+                        .phenotypeAnnotation(phenotypeHpoaPath)
+                        .build();
+                Ontology ontology = factory.hpoOntology();
+                Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
+                PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
+                CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(this.hpoIdList)
+                        .ontology(ontology)
+                        .diseaseMap(diseaseMap)
+                        .phenotypeLr(phenoLr);
+
+                CaseEvaluator evaluator = caseBuilder.build();
+                HpoCase hcase = evaluator.evaluate();
+                //hcase.outputTopResults(5,ontology);// TODO remove this outputs to the shell
+                if (outputTSV) {
+                    Lr2pgTemplate template = new TsvTemplate(hcase, ontology, this.metadata);
+                    template.outputFile(this.outfilePrefix);
+                } else {
+                    HtmlTemplate caseoutput = new HtmlTemplate(hcase, ontology, this.metadata, this.LR_THRESHOLD);
                     caseoutput.outputFile(this.outfilePrefix);
                 }
             } catch (Lr2pgException e) {

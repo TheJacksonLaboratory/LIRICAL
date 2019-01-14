@@ -187,15 +187,14 @@ public class VcfCommand extends Lr2PgCommand {
         try {
             YamlParser yparser = new YamlParser(yamlPath);
             Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().
-                    hp_obo(yparser.getHpOboPath()).
-                    mvStore(yparser.getMvStorePath())
+                    hp_obo(yparser.getHpOboPath())
+                    .exomiser(yparser.getExomiserDataDir())
                     .mim2genemedgen(yparser.getMedgen())
                     .geneInfo(yparser.getGeneInfo())
                     .phenotypeAnnotation(yparser.phenotypeAnnotation())
                     .genomeAssembly(yparser.getGenomeAssembly())
                     .observedHpoTerms(yparser.getHpoTermList())
-                    .vcf(yparser.vcfPath()).
-                            jannovarFile(yparser.jannovarFile());
+                    .vcf(yparser.vcfPath());
             factory = builder.build();
         } catch (Lr2pgException e) {
             e.printStackTrace();

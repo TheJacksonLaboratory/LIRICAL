@@ -1,9 +1,14 @@
 package org.monarchinitiative.lr2pg.io;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.monarchinitiative.lr2pg.configuration.TranscriptDatabase;
 import org.monarchinitiative.lr2pg.configuration.YamlConfig;
+import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,20 +26,110 @@ public class YamlParser {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         try {
             yconfig = mapper.readValue(new File(path), YamlConfig.class);
-            //System.out.println(ReflectionToStringBuilder.toString(yconfig, ToStringStyle.MULTI_LINE_STYLE));
+        } catch (JsonMappingException e) {
+            throw new Lr2PgRuntimeException(String.format("[FATAL] Malformed YAML file: Unrecognized field name in YAML file %s.\n %s" , path ,e.getMessage()));
+        } catch (JsonParseException e ) {
+            System.err.println("[FATAL] YAML file parse error " + e.getMessage());
         } catch (IOException e) {
             yconfig=null;
-            throw new Lr2pgException("Could not find YAML file: "+ e.getMessage());
+            throw new Lr2PgRuntimeException("Could not find YAML file: "+ e.getMessage());
         }
     }
 
     public String getMvStorePath() throws Lr2pgException {
-        if (yconfig.getAnalysis().containsKey("mvstore")) {
-            return yconfig.getAnalysis().get("mvstore");
+        if (yconfig.getAnalysis().containsKey("exomiser")) {
+            String exomiserPath = yconfig.getAnalysis().get("exomiser");
+            // Remove the trailing directory slash if any
+            exomiserPath=FilenameUtils.getFullPathNoEndSeparator(exomiserPath);
+            String basename=FilenameUtils.getBaseName(exomiserPath);
+            String filename=String.format("%s_variants.mv.db", basename);
+            return String.format("%s%s%s", exomiserPath,File.separator,filename);
         } else {
             throw new Lr2pgException("No MvStore path found in YAML configuration file");
         }
     }
+
+    /**
+     * Returns the default
+     * @return
+     * @throws Lr2pgException
+     */
+    public String jannovarFile() throws Lr2pgException {
+        TranscriptDatabase tdb = transcriptdb();
+        switch (tdb) {
+            case UCSC: return jannovarFileUCSC();
+            case ENSEMBL: return jannovarFileEnsembl();
+            case REFSEQ: return jannovarFileRefSeq();
+        }
+        return jannovarFileUCSC();
+    }
+
+
+    public TranscriptDatabase transcriptdb() {
+        if (yconfig.getAnalysis().containsKey("transcriptdb")) {
+            String trdb = yconfig.getAnalysis().get("transcriptdb");
+            switch (trdb.toUpperCase()) {
+                case "UCSC": return TranscriptDatabase.UCSC;
+                case "ENSEMBL": return TranscriptDatabase.ENSEMBL;
+                case "REFSEQ": return TranscriptDatabase.REFSEQ;
+            }
+        }
+        // default
+        return TranscriptDatabase.UCSC;
+    }
+
+    public String getExomiserDataDir() throws Lr2pgException{
+        if (yconfig.getAnalysis().containsKey("exomiser")) {
+            String datadir=yconfig.getAnalysis().get("exomiser");
+            return datadir;
+        }  else {
+            throw new Lr2pgException("No data/mim2gene_medgen path found in YAML configuration file");
+        }
+    }
+
+
+
+
+    public String jannovarFileUCSC() throws Lr2pgException {
+        if (yconfig.getAnalysis().containsKey("exomiser")) {
+            String exomiserPath = yconfig.getAnalysis().get("exomiser");
+            // Remove the trailing directory slash if any
+            exomiserPath=FilenameUtils.getFullPathNoEndSeparator(exomiserPath);
+            String basename=FilenameUtils.getBaseName(exomiserPath);
+            String filename=String.format("%s_transcripts_ucsc.ser", basename);
+            return String.format("%s%s%s", exomiserPath,File.separator,filename);
+        }  else {
+            throw new Lr2pgException("No jannovar UCSC transcript file path found in YAML configuration file");
+        }
+    }
+
+    public String jannovarFileEnsembl() throws Lr2pgException {
+        if (yconfig.getAnalysis().containsKey("exomiser")) {
+            String exomiserPath = yconfig.getAnalysis().get("exomiser");
+            // Remove the trailing directory slash if any
+            exomiserPath=FilenameUtils.getFullPathNoEndSeparator(exomiserPath);
+            String basename=FilenameUtils.getBaseName(exomiserPath);
+            String filename=String.format("%s_transcripts_ensembl.ser", basename);
+            return String.format("%s%s%s", exomiserPath,File.separator,filename);
+        }  else {
+            throw new Lr2pgException("No jannovar UCSC transcript file path found in YAML configuration file");
+        }
+    }
+
+    public String jannovarFileRefSeq() throws Lr2pgException {
+        if (yconfig.getAnalysis().containsKey("exomiser")) {
+            String exomiserPath = yconfig.getAnalysis().get("exomiser");
+            // Remove the trailing directory slash if any
+            exomiserPath=FilenameUtils.getFullPathNoEndSeparator(exomiserPath);
+            String basename=FilenameUtils.getBaseName(exomiserPath);
+            String filename=String.format("%s_transcripts_refseq.ser", basename);
+            return String.format("%s%s%s", exomiserPath,File.separator,filename);
+        }  else {
+            throw new Lr2pgException("No jannovar UCSC transcript file path found in YAML configuration file");
+        }
+    }
+
+
 
     public String getHpOboPath() throws Lr2pgException {
         if (yconfig.getAnalysis().containsKey("datadir")) {
@@ -81,13 +176,7 @@ public class YamlParser {
         }
     }
 
-    public String jannovarFile() throws Lr2pgException {
-        if (yconfig.getAnalysis().containsKey("jannovar")) {
-            return yconfig.getAnalysis().get("jannovar");
-        }  else {
-            throw new Lr2pgException("No jannovar transcript file path found in YAML configuration file");
-        }
-    }
+
 
     public String phenotypeAnnotation() throws Lr2pgException {
         if (yconfig.getAnalysis().containsKey("datadir")) {

@@ -54,5 +54,20 @@ class YamlParserTest {
         });
     }
 
+    /**
+     * In the YAML file, the exomiser path is given as
+     * exomiser: /home/robinp/data/exomiserdata/1811_hg19.
+     * Here we test if we can extract the correct mvstore and Jannovar files
+     * @throws Lr2pgException
+     */
+    @Test
+    void testExomiserData()throws Lr2pgException  {
+        YamlParser parser = new YamlParser(demo1path);
+        String expectedMvStore = "/home/robinp/data/exomiserdata/1811_hg19/1811_hg19_variants.mv.db";
+        assertEquals(expectedMvStore,parser.getMvStorePath());
+        String expectedJannovar = "/home/robinp/data/exomiserdata/1811_hg19/1811_hg19_transcripts_refseq.ser";
+        assertEquals(expectedJannovar,parser.jannovarFile());
+    }
+
 
 }
