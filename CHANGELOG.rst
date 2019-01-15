@@ -2,11 +2,11 @@
 Changelog
 =========
 ------
-v0.9.4
+v0.9.7
 ------
 - Adding functionality for running LR2PG from a Phenopacket with VCF file path
-
-
+- now using phenol-1.3.2 from maven central
+- adding Q/C code for input files.
 
 ------
 v0.9.4

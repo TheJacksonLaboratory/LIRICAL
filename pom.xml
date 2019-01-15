@@ -5,7 +5,7 @@
 
     <groupId>org.monarchinitiative</groupId>
     <artifactId>lr2pg</artifactId>
-    <version>0.9.6</version>
+    <version>0.9.7</version>
     <packaging>jar</packaging>
 
     <name>lr2pg</name>
