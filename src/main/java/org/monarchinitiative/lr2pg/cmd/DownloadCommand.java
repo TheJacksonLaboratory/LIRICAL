@@ -7,7 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Download a number of files needed for the analysis
+ * Download a number of files needed for the analysis. We download by default to a subdirectory called
+ * {@code data}, which is created if necessary. We download the files {@code hp.obo}, {@code phenotype.hpoa},
+ * {@code Homo_sapiencs_gene_info.gz}, and {@code mim2gene_medgen}.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Download files for LR2PG")
