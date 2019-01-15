@@ -342,7 +342,7 @@ public class Lr2PgFactory {
 
 
 
-    private void qcExternalFilesInDataDir() {
+    public void qcExternalFilesInDataDir() {
         File f1 = new File(this.mim2genemedgenPath);
         if (!f1.exists() && f1.isFile()) {
             logger.fatal("Could not find valid mim2gene_medgen file at {}",mim2genemedgenPath);
@@ -359,16 +359,16 @@ public class Lr2PgFactory {
         }
     }
 
-    private void qcExomiserFiles() {
+    public void qcExomiserFiles() {
         File exomiserDir = new File(exomiserPath);
         if (!exomiserDir.exists()) {
-            logger.fatal("Could not find Exomiser data directory at {}",datadir);
-            throw new Lr2PgRuntimeException(String.format("Could not find Exomiser data directory at %s",datadir));
+            logger.fatal("Could not find Exomiser data directory at {}",exomiserPath);
+            throw new Lr2PgRuntimeException(String.format("Could not find Exomiser data directory at %s",exomiserPath));
         } else if (!exomiserDir.isDirectory()) {
-            logger.fatal("Exomiser data path ({}) is not a directory.",datadir);
-            throw new Lr2PgRuntimeException(String.format("Exomiser data path (%s) is not a directory.",datadir));
+            logger.fatal("Exomiser data path ({}) is not a directory.",exomiserPath);
+            throw new Lr2PgRuntimeException(String.format("Exomiser data path (%s) is not a directory.",exomiserPath));
         } else {
-            logger.trace("Exomiser data: {}", datadir);
+            logger.trace("Exomiser data: {}", exomiserPath);
         }
 
     }
