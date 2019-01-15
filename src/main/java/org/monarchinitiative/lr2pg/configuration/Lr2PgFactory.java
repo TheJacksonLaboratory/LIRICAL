@@ -10,6 +10,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.jannovar.InvalidFileFormatException;
+import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
 import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
@@ -23,6 +25,8 @@ import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -185,8 +189,7 @@ public class Lr2PgFactory {
         }
         File mim2genemedgenFile = new File(this.mim2genemedgenPath);
         if (!mim2genemedgenFile.exists()) {
-            System.err.println("Could not find medgen file at " + this.mim2genemedgenPath + ". Run download!");
-            System.exit(1);
+            throw new Lr2PgRuntimeException("Could not find medgen file at " + this.mim2genemedgenPath + ". Run download!");
         }
         File orphafilePlaceholder = null;//we do not need this for now
         HpoAssociationParser assocParser = new HpoAssociationParser(geneInfoFile,
@@ -247,8 +250,13 @@ public class Lr2PgFactory {
 
 
 
-    /** @return the object created by deserilizing a Jannovar file. */
-    public JannovarData jannovarData() throws Lr2pgException {
+    /**
+     * Deserialize the Jannovar transcript data file that comes with Exomiser. Note that Exomiser
+     * uses its own ProtoBuf serializetion and so we need to use its Deserializser. In case the user
+     * provides a standard Jannovar serialzied file, we try the legacy deserializer if the protobuf
+     * deserializer doesn't work.
+     * @return the object created by deserializing a Jannovar file. */
+    public JannovarData jannovarData()  {
         if (jannovarData != null) return jannovarData;
         // Remove the trailing directory slash if any
         this.exomiserPath= getPathWithoutTrailingSeparatorIfPresent(this.exomiserPath);
@@ -272,18 +280,24 @@ public class Lr2PgFactory {
         }
 
         File f = new File(fullpath);
-
         if (!f.exists()) {
-            System.err.println("[FATAL] Could not find Jannovar transcript file at " + fullpath);
-            System.exit(1);
+            throw new Lr2PgRuntimeException("[FATAL] Could not find Jannovar transcript file at " + fullpath);
         }
         try {
-            this.jannovarData = new JannovarDataSerializer(fullpath).load();
+            Path p = Paths.get(fullpath);
+            this.jannovarData=JannovarDataProtoSerialiser.load(p);
+            return jannovarData;
+        } catch (InvalidFileFormatException e) {
+            logger.error("Could not deserialize Jannovar file with Protobuf deserializer, trying legacy deserializer...");
+        }
+        try {
+            this.jannovarData=new JannovarDataSerializer(fullpath).load();
+            return jannovarData;
         } catch (SerializationException e) {
-            throw new Lr2pgException(String.format("Could not load Jannovar data from %s (%s)",
+            logger.error("Could not deserialize Jannovar file with legacy deserializer...");
+            throw new Lr2PgRuntimeException(String.format("Could not load Jannovar data from %s (%s)",
                     fullpath, e.getMessage()));
         }
-        return jannovarData;
     }
 
     /** @return a map with key: a disease id (e.g., OMIM:654321) and key the corresponding {@link HpoDisease} object.*/

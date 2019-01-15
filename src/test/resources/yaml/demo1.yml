@@ -12,4 +12,4 @@ analysis:
   exomiser: /home/robinp/data/exomiserdata/1802_hg19/
   transcriptdb: refseq
 hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
-preix: pfeiffer1
+prefix: pfeiffer1

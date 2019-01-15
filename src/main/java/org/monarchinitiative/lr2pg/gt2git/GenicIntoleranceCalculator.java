@@ -282,7 +282,6 @@ public class GenicIntoleranceCalculator {
                 if (c++%100_000==0) {
                     System.out.println("Processed variant "+c);
                 }
-                if (c>300001)break;
             }
         }
     }
@@ -335,7 +334,7 @@ public class GenicIntoleranceCalculator {
         String line = String.format("%s\t%s\t%s\t%f\n",
                 genesymbol,
                 geneid,
-                values.stream().collect(Collectors.joining("\t")),
+                String.join("\t",values),
                 mean);
         writer.write(line);
     }
@@ -348,7 +347,7 @@ public class GenicIntoleranceCalculator {
         // First arrange all gene symbols in order
         List<String> symbolList = new ArrayList<>(geneSymbolSet);
         Collections.sort(symbolList);
-        String header = Arrays.stream(headerFields).collect(Collectors.joining("\t"));
+        String header = String.join("\t",headerFields);
         header = String.format("Gene\tEntrezId\t%s\tMean\n",header );
         logger.trace("Outputting background freqeuncy file to " + this.outputFileName);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(this.outputFileName))) {

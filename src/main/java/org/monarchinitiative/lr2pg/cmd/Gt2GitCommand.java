@@ -54,7 +54,6 @@ public class Gt2GitCommand extends Lr2PgCommand {
      *
      */
     public Gt2GitCommand(){
-
     }
 
     @Override
@@ -64,7 +63,7 @@ public class Gt2GitCommand extends Lr2PgCommand {
             outputFileName="background-hg19.txt";
         } else if (genomeAssemblyString.toLowerCase().contains("hg38")) {
             this.genomeAssembly=GenomeAssembly.HG38;
-            outputFileName="background-hg19.txt";
+            outputFileName="background-hg38.txt";
         } else {
             logger.warn("Could not determine genome assembly from argument: \""+
                     genomeAssemblyString +"\". We will use the default of hg38");
@@ -84,6 +83,7 @@ public class Gt2GitCommand extends Lr2PgCommand {
 
         Lr2PgFactory factory = builder.build();
         factory.qcExomiserFiles();
+        logger.trace("Will output background frequency file to " + outputFileName);
 
         MVStore alleleStore = factory.mvStore();
         JannovarData jannovarData = factory.jannovarData();
