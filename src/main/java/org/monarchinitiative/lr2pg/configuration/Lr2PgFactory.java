@@ -254,7 +254,7 @@ public class Lr2PgFactory {
         this.exomiserPath= getPathWithoutTrailingSeparatorIfPresent(this.exomiserPath);
         String basename=FilenameUtils.getBaseName(this.exomiserPath);
         TranscriptDatabase tdb = transcriptdb();
-        String fullpath=null;
+        String fullpath;
         switch (tdb) {
             case REFSEQ:
                 String refseqfilename=String.format("%s_transcripts_refseq.ser", basename);
@@ -313,7 +313,7 @@ public class Lr2PgFactory {
      * It writes one line to the logger for each file it checks, and throws a RunTime exception if a file is
      * missing (in this case we cannot continue with program execution).
      */
-    private void qcDataDirAndHpFiles() {
+    public void qcHumanPhenotypeOntologyFiles() {
         File datadirfile = new File(datadir);
         if (!datadirfile.exists()) {
             logger.fatal("Could not find LR2PG data directory at {}",datadir);
@@ -339,6 +339,8 @@ public class Lr2PgFactory {
             logger.trace("phenotype.hpoa: {}",phenotypeAnnotationPath);
         }
     }
+
+
 
     private void qcExternalFilesInDataDir() {
         File f1 = new File(this.mim2genemedgenPath);
@@ -457,7 +459,7 @@ public class Lr2PgFactory {
         public Lr2PgFactory buildForGenomicDiagnostics() {
 
             Lr2PgFactory factory = new Lr2PgFactory(this);
-            factory.qcDataDirAndHpFiles();
+            factory.qcHumanPhenotypeOntologyFiles();
             factory.qcExternalFilesInDataDir();
             factory.qcExomiserFiles();
             return factory;

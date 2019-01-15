@@ -11,7 +11,6 @@ import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.io.File;
 import java.util.Map;
 
 /**
@@ -21,10 +20,6 @@ import java.util.Map;
 @Parameters(commandDescription = "Simulate phenotype-only cases")
 public class SimulatePhenotypesCommand extends Lr2PgCommand {
     private static final Logger logger = LogManager.getLogger();
-    /** path to hp.obo file. (Must be in same directory as phenotype.hpoa). Set via {@link #datadir}. */
-    private String hpoOboPath;
-    /** path to phenotype.hpoa file. (Must be in same directory as hp.obo). Set via {@link #datadir}. */
-    private String phenotypeAnnotationPath;
     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
     @Parameter(names={"-d","--data"}, description ="directory to download data" )
     private String datadir="data";
@@ -38,22 +33,21 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
     private boolean imprecise_phenotype = false;
 
 
-
+    /** No-op constructor meant to demo the phenotype LR2PG algorithm by similating some case based on
+     * randomly chosen diseases and HPO terms.
+     */
     public SimulatePhenotypesCommand(){
-
     }
 
 
     @Override
     public void run() throws Lr2pgException {
-//        File datadirFile = new File(datadir);
-       // String absDirPath=datadirFile.getAbsolutePath();
-//        this.hpoOboPath=String.format("%s%s%s",absDirPath,File.separator,"hp.obo");
-//        this.phenotypeAnnotationPath=String.format("%s%s%s",absDirPath,File.separator,"phenotype.hpoa");
-
         Lr2PgFactory factory = new Lr2PgFactory.Builder()
                 .datadir(this.datadir)
                 .build();
+        factory.qcHumanPhenotypeOntologyFiles();
+        logger.trace("Running simulation with {} cases, {} terms/case, {} noise terms/case. Imprecision: {}",
+                n_cases_to_simulate,n_terms_per_case,n_noise_terms,imprecise_phenotype?"yes":"no");
         Ontology ontology = factory.hpoOntology();
         Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
 
