@@ -38,8 +38,7 @@ public class GridSearchCommand extends Lr2PgCommand {
         String phenotypeAnnotationPath=String.format("%s%s%s",absDirPath,File.separator,"phenotype.hpoa");
 
         Lr2PgFactory factory = new Lr2PgFactory.Builder()
-                .hp_obo(hpoOboPath)
-                .phenotypeAnnotation(phenotypeAnnotationPath)
+                .datadir(this.datadir)
                 .build();
         Ontology ontology = factory.hpoOntology();
         Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);

@@ -40,7 +40,7 @@ public class Lr2PgFactory {
     /** Path to the {@code phenotype.hpoa} file. */
     private final String phenotypeAnnotationPath;
     /** UCSC, RefSeq, Ensembl. */
-    private final String transcriptdatabase;
+    private final TranscriptDatabase transcriptdatabase;
     /** Path to the {@code Homo_sapiens_gene_info.gz} file. */
     private final String geneInfoPath;
     /** Path to the mimgene/medgen file with MIM to gene associations. */
@@ -51,7 +51,9 @@ public class Lr2PgFactory {
     private final String vcfPath;
     /** List of HPO terms (phenotypic abnormalities) observed in the person being evaluated. */
     private final List<TermId> hpoIdList;
-
+    /** The directory in which several files are stored. */
+    private final String datadir;
+    /** The directory with the Exomiser database and Jannovar transcript files. */
     private String exomiserPath;
 
     private final GenomeAssembly assembly;
@@ -63,7 +65,7 @@ public class Lr2PgFactory {
     private Map<TermId,String> geneId2SymbolMap=null;
     private JannovarData jannovarData=null;
 
-    public Lr2PgFactory(Builder builder) {
+    private Lr2PgFactory(Builder builder) {
         this.hpoOboFilePath = builder.hpOboPath;
         this.exomiserPath = builder.exomiserDataDir;
         this.geneInfoPath=builder.geneInfoPath;
@@ -72,6 +74,7 @@ public class Lr2PgFactory {
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
+        this.datadir=builder.lr2pgDataDir;
         String ga = builder.genomeAssembly;
         if (ga!=null) {
             switch (ga.toLowerCase()) {
@@ -135,13 +138,7 @@ public class Lr2PgFactory {
 
 
     public TranscriptDatabase transcriptdb() {
-            switch (this.transcriptdatabase.toUpperCase()) {
-                case "UCSC": return TranscriptDatabase.UCSC;
-                case "ENSEMBL": return TranscriptDatabase.ENSEMBL;
-                case "REFSEQ": return TranscriptDatabase.REFSEQ;
-            }
-        // default
-        return TranscriptDatabase.UCSC;
+            return this.transcriptdatabase;
     }
 
 
@@ -150,7 +147,7 @@ public class Lr2PgFactory {
     /** @return MVStore object with Exomiser data on variant pathogenicity and frequency. */
     public MVStore mvStore() {
         // Remove the trailing directory slash if any
-        this.exomiserPath= FilenameUtils.getFullPathNoEndSeparator(this.exomiserPath);
+        this.exomiserPath= getPathWithoutTrailingSeparatorIfPresent(this.exomiserPath);
         String basename=FilenameUtils.getBaseName(this.exomiserPath);
         String filename=String.format("%s_variants.mv.db", basename);
         String fullpath=String.format("%s%s%s", exomiserPath,File.separator,filename);
@@ -238,7 +235,7 @@ public class Lr2PgFactory {
     }
 
 
-    public String getPathWithoutTrailingSeparatorIfPresent(String path) {
+    private static String getPathWithoutTrailingSeparatorIfPresent(String path) {
         String sep = File.separator;
         if (path.endsWith(sep)) {
             int i=path.lastIndexOf(sep);
@@ -311,30 +308,91 @@ public class Lr2PgFactory {
         }
     }
 
+    /**
+     * This is used by the Builder to check that all of the necessary files in the Data directory are present.
+     * It writes one line to the logger for each file it checks, and throws a RunTime exception if a file is
+     * missing (in this case we cannot continue with program execution).
+     */
+    private void qcDataDirAndHpFiles() {
+        File datadirfile = new File(datadir);
+        if (!datadirfile.exists()) {
+            logger.fatal("Could not find LR2PG data directory at {}",datadir);
+            throw new Lr2PgRuntimeException(String.format("Could not find LR2PG data directory at %s",datadir));
+        } else if (!datadirfile.isDirectory()) {
+            logger.fatal("LR2PG datadir path ({}) is not a directory.",datadir);
+            throw new Lr2PgRuntimeException(String.format("LR2PG datadir path (%s) is not a directory.",datadir));
+        } else {
+            logger.trace("LR2PG datadirectory: {}", datadir);
+        }
+        File f1 = new File(this.hpoOboFilePath);
+        if (!f1.exists() && f1.isFile()) {
+            logger.fatal("Could not find valid hp.obo file at {}",hpoOboFilePath);
+            throw new Lr2PgRuntimeException(String.format("Could not find valid hp.obo file at %s",hpoOboFilePath));
+        } else {
+            logger.trace("hp.obo: {}",hpoOboFilePath);
+        }
+        File f2 = new File(this.phenotypeAnnotationPath);
+        if (!f2.exists() && f2.isFile()) {
+            logger.fatal("Could not find valid phenotype.hpoa file at {}",phenotypeAnnotationPath);
+            throw new Lr2PgRuntimeException(String.format("Could not find valid phenotype.hpoa file at %s",phenotypeAnnotationPath));
+        } else {
+            logger.trace("phenotype.hpoa: {}",phenotypeAnnotationPath);
+        }
+    }
+
+    private void qcExternalFilesInDataDir() {
+        File f1 = new File(this.mim2genemedgenPath);
+        if (!f1.exists() && f1.isFile()) {
+            logger.fatal("Could not find valid mim2gene_medgen file at {}",mim2genemedgenPath);
+            throw new Lr2PgRuntimeException(String.format("Could not find valid mim2gene_medgen file at %s",mim2genemedgenPath));
+        } else {
+            logger.trace("mim2gene_medgen: {}",mim2genemedgenPath);
+        }
+        File f2 = new File(this.geneInfoPath);
+        if (!f2.exists() && f2.isFile()) {
+            logger.fatal("Could not find valid Homo_sapiens_gene_info.gz file at {}",geneInfoPath);
+            throw new Lr2PgRuntimeException(String.format("Could not find valid Homo_sapiens_gene_info.gz file at %s",geneInfoPath));
+        } else {
+            logger.trace("Homo_sapiens_gene_info.gz: {}",geneInfoPath);
+        }
+    }
+
+    private void qcExomiserFiles() {
+        File exomiserDir = new File(exomiserPath);
+        if (!exomiserDir.exists()) {
+            logger.fatal("Could not find Exomiser data directory at {}",datadir);
+            throw new Lr2PgRuntimeException(String.format("Could not find Exomiser data directory at %s",datadir));
+        } else if (!exomiserDir.isDirectory()) {
+            logger.fatal("Exomiser data path ({}) is not a directory.",datadir);
+            throw new Lr2PgRuntimeException(String.format("Exomiser data path (%s) is not a directory.",datadir));
+        } else {
+            logger.trace("Exomiser data: {}", datadir);
+        }
+
+    }
+
+
+
 
 
     public static class Builder {
 
         private String hpOboPath=null;
         private String phenotypeAnnotationPath=null;
+        private String lr2pgDataDir=null;
         private String exomiserDataDir=null;
         private String geneInfoPath=null;
         private String mim2genemedgenPath=null;
         private String backgroundFrequencyPath=null;
         private String vcfPath=null;
         private String genomeAssembly=null;
-        private String transcriptdatabase=null;
+        /** The default transcript database is UCSC> */
+        private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
         private List<String> observedHpoTerms=ImmutableList.of();
 
         public Builder(){
         }
 
-
-
-        public Builder hp_obo(String hpPath) {
-            hpOboPath=hpPath;
-            return this;
-        }
 
         public Builder genomeAssembly(String ga) {
             this.genomeAssembly=ga;
@@ -342,29 +400,28 @@ public class Lr2PgFactory {
         }
 
         public Builder transcriptdatabase(String tdb) {
-            this.transcriptdatabase=tdb;
+            switch (tdb.toUpperCase()) {
+                case "ENSEMBL" :
+                    this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
+                case "REFSEQ":
+                    this.transcriptdatabase=TranscriptDatabase.REFSEQ;
+                case "UCSC":
+                default:
+                    this.transcriptdatabase=TranscriptDatabase.UCSC;
+            }
             return this;
         }
 
-        public Builder geneInfo(String gi) {
-            this.geneInfoPath=gi;
-            return this;
-        }
 
-        public Builder mim2genemedgen(String m2gm) {
-            this.mim2genemedgenPath=m2gm;
-            return this;
-        }
+
+
 
         public Builder backgroundFrequency(String bf) {
             this.backgroundFrequencyPath=bf;
             return this;
         }
 
-        public Builder phenotypeAnnotation(String pa) {
-            this.phenotypeAnnotationPath=pa;
-            return this;
-        }
+
 
         public Builder vcf(String vcf) {
             this.vcfPath=vcf;
@@ -383,9 +440,27 @@ public class Lr2PgFactory {
             return this;
         }
 
+        public Builder datadir(String datadir) {
+            this.lr2pgDataDir=getPathWithoutTrailingSeparatorIfPresent(datadir);
+            this.hpOboPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"hp.obo");
+            this.geneInfoPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"Homo_sapiens_gene_info.gz");
+            this.phenotypeAnnotationPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"phenotype.hpoa");
+            this.mim2genemedgenPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"mim2gene_medgen");
+            return this;
+        }
+
 
         public Lr2PgFactory build() {
             return new Lr2PgFactory(this);
+        }
+
+        public Lr2PgFactory buildForGenomicDiagnostics() {
+
+            Lr2PgFactory factory = new Lr2PgFactory(this);
+            factory.qcDataDirAndHpFiles();
+            factory.qcExternalFilesInDataDir();
+            factory.qcExomiserFiles();
+            return factory;
         }
 
 

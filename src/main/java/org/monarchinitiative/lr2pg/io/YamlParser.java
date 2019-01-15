@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.monarchinitiative.lr2pg.configuration.TranscriptDatabase;
+import org.apache.commons.io.FilenameUtils;
 import org.monarchinitiative.lr2pg.configuration.YamlConfig;
 import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
-import org.apache.commons.io.FilenameUtils;
+import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,12 +22,16 @@ public class YamlParser {
     private YamlConfig yconfig;
 
 
-    public YamlParser(String path) throws Lr2pgException {
+    public YamlParser(String yamlPath) {
+        if (yamlPath==null || !new File(yamlPath).exists()) {
+            throw new PhenolRuntimeException("[ERROR] Could not find YAML configuration file for VCF analysis. Terminating program");
+        }
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         try {
-            yconfig = mapper.readValue(new File(path), YamlConfig.class);
+            yconfig = mapper.readValue(new File(yamlPath), YamlConfig.class);
         } catch (JsonMappingException e) {
-            throw new Lr2PgRuntimeException(String.format("[FATAL] Malformed YAML file: Unrecognized field name in YAML file %s.\n %s" , path ,e.getMessage()));
+            throw new Lr2PgRuntimeException(String.format("[FATAL] Malformed YAML file: Unrecognized field name in YAML file %s.\n %s" ,
+                    yamlPath ,e.getMessage()));
         } catch (JsonParseException e ) {
             System.err.println("[FATAL] YAML file parse error " + e.getMessage());
         } catch (IOException e) {
@@ -40,7 +44,7 @@ public class YamlParser {
         if (yconfig.getAnalysis().containsKey("exomiser")) {
             String exomiserPath = yconfig.getAnalysis().get("exomiser");
             // Remove the trailing directory slash if any
-            exomiserPath=FilenameUtils.getFullPathNoEndSeparator(exomiserPath);
+            exomiserPath=getPathWithoutTrailingSeparatorIfPresent(exomiserPath);
             String basename=FilenameUtils.getBaseName(exomiserPath);
             String filename=String.format("%s_variants.mv.db", basename);
             return String.format("%s%s%s", exomiserPath,File.separator,filename);
@@ -49,39 +53,62 @@ public class YamlParser {
         }
     }
 
+
+    private static String getPathWithoutTrailingSeparatorIfPresent(String path) {
+        String sep = File.separator;
+        if (path.endsWith(sep)) {
+            int i=path.lastIndexOf(sep);
+            return path.substring(0,i);
+        } else {
+            return path;
+        }
+    }
+
+
+
+
+
     /**
-     * Returns the default
-     * @return
+     * @return path to the approprioate Jannovar transcript file (UCSC, Ensembl, or RefSeq).
      * @throws Lr2pgException
      */
     public String jannovarFile() throws Lr2pgException {
-        TranscriptDatabase tdb = transcriptdb();
+        String tdb = transcriptdb();
         switch (tdb) {
-            case UCSC: return jannovarFileUCSC();
-            case ENSEMBL: return jannovarFileEnsembl();
-            case REFSEQ: return jannovarFileRefSeq();
+            case "UCSC": return jannovarFileUCSC();
+            case "ENSEMBL": return jannovarFileEnsembl();
+            case "REFSEQ": return jannovarFileRefSeq();
         }
         return jannovarFileUCSC();
     }
 
 
-    public TranscriptDatabase transcriptdb() {
+    public String transcriptdb() {
         if (yconfig.getAnalysis().containsKey("transcriptdb")) {
             String trdb = yconfig.getAnalysis().get("transcriptdb");
             switch (trdb.toUpperCase()) {
-                case "UCSC": return TranscriptDatabase.UCSC;
-                case "ENSEMBL": return TranscriptDatabase.ENSEMBL;
-                case "REFSEQ": return TranscriptDatabase.REFSEQ;
+                case "UCSC": return "UCSC";
+                case "ENSEMBL": return "ENSEMBL";
+                case "REFSEQ": return "REFSEQ";
             }
         }
         // default
-        return TranscriptDatabase.UCSC;
+        return "UCSC";
     }
 
     public String getExomiserDataDir() throws Lr2pgException{
         if (yconfig.getAnalysis().containsKey("exomiser")) {
             String datadir=yconfig.getAnalysis().get("exomiser");
+            datadir=getPathWithoutTrailingSeparatorIfPresent(datadir);
             return datadir;
+        }  else {
+            throw new Lr2pgException("No exomiser path found in YAML configuration file");
+        }
+    }
+
+    public String getDataDir() throws Lr2pgException{
+        if (yconfig.getAnalysis().containsKey("datadir")) {
+            return yconfig.getAnalysis().get("datadir");
         }  else {
             throw new Lr2pgException("No data/mim2gene_medgen path found in YAML configuration file");
         }
@@ -89,8 +116,7 @@ public class YamlParser {
 
 
 
-
-    public String jannovarFileUCSC() throws Lr2pgException {
+    private String jannovarFileUCSC() throws Lr2pgException {
         if (yconfig.getAnalysis().containsKey("exomiser")) {
             String exomiserPath = yconfig.getAnalysis().get("exomiser");
             // Remove the trailing directory slash if any
@@ -103,7 +129,7 @@ public class YamlParser {
         }
     }
 
-    public String jannovarFileEnsembl() throws Lr2pgException {
+    private String jannovarFileEnsembl() throws Lr2pgException {
         if (yconfig.getAnalysis().containsKey("exomiser")) {
             String exomiserPath = yconfig.getAnalysis().get("exomiser");
             // Remove the trailing directory slash if any
@@ -116,7 +142,7 @@ public class YamlParser {
         }
     }
 
-    public String jannovarFileRefSeq() throws Lr2pgException {
+    private String jannovarFileRefSeq() throws Lr2pgException {
         if (yconfig.getAnalysis().containsKey("exomiser")) {
             String exomiserPath = yconfig.getAnalysis().get("exomiser");
             // Remove the trailing directory slash if any

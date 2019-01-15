@@ -46,14 +46,13 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
 
     @Override
     public void run() throws Lr2pgException {
-        File datadirFile = new File(datadir);
-        String absDirPath=datadirFile.getAbsolutePath();
-        this.hpoOboPath=String.format("%s%s%s",absDirPath,File.separator,"hp.obo");
-        this.phenotypeAnnotationPath=String.format("%s%s%s",absDirPath,File.separator,"phenotype.hpoa");
+//        File datadirFile = new File(datadir);
+       // String absDirPath=datadirFile.getAbsolutePath();
+//        this.hpoOboPath=String.format("%s%s%s",absDirPath,File.separator,"hp.obo");
+//        this.phenotypeAnnotationPath=String.format("%s%s%s",absDirPath,File.separator,"phenotype.hpoa");
 
         Lr2PgFactory factory = new Lr2PgFactory.Builder()
-                .hp_obo(hpoOboPath)
-                .phenotypeAnnotation(phenotypeAnnotationPath)
+                .datadir(this.datadir)
                 .build();
         Ontology ontology = factory.hpoOntology();
         Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);

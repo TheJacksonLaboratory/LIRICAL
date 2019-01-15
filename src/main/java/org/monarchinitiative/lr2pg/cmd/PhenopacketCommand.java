@@ -110,10 +110,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
         if (hasVcf) {
             try {
                 Lr2PgFactory factory = new Lr2PgFactory.Builder()
-                        .hp_obo(hpoOboPath)
-                        .phenotypeAnnotation(phenotypeHpoaPath)
-                        .geneInfo(hsapiensGeneInfoPath)
-                        .mim2genemedgen(mim2geneMedgenPath)
+                        .datadir(this.datadir)
                         .genomeAssembly(this.genomeAssembly)
                         .exomiser(this.exomiserDataDirectory)
                         .build();
@@ -155,8 +152,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
             try {
                 // i.e., the Phenopacket has no VCF reference -- LR2PG will work on just phenotypes!
                 Lr2PgFactory factory = new Lr2PgFactory.Builder()
-                        .hp_obo(hpoOboPath)
-                        .phenotypeAnnotation(phenotypeHpoaPath)
+                        .datadir(this.datadir)
                         .build();
                 Ontology ontology = factory.hpoOntology();
                 Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
