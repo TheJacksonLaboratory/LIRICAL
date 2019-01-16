@@ -148,8 +148,8 @@ public class Lr2Svg {
 
         int rank=hpocase.getResult(diseaseCURIE).getRank();
         double ptp = hpocase.getResult(diseaseCURIE).getPosttestProbability();
-        String diseaseLabel=String.format("%s [%s]: Rank: #%d Posttest probability: %f",diseaseName,diseaseCURIE.getValue(),rank,ptp);
-        writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
+        String diseaseLabel=String.format("%s [%s]: Rank: #%d Posttest probability: %.1f%%",diseaseName,diseaseCURIE.getValue(),rank,(100.0*ptp));
+        writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"16px\" font-weight=\"bold\">%s</text>\n",
                 (midline - (maxTick-1)*block),
                 Y + 35,
                 diseaseLabel));
@@ -233,7 +233,8 @@ public class Lr2Svg {
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);
             String label = String.format("%s [%s]",term.getName(),tid.getValue());
-            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
+            //writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
+            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n",
                         WIDTH,
                         currentY + BOX_HEIGHT,
                         label));
@@ -266,7 +267,7 @@ public class Lr2Svg {
                         color));
             }
             // add label of Genotype
-            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
+            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"italic\">%s</text>\n",
                     WIDTH,
                     currentY + BOX_HEIGHT,
                     geneSymbol));

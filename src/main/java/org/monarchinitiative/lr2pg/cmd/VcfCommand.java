@@ -50,7 +50,7 @@ public class VcfCommand extends Lr2PgCommand {
 
     @Parameter(names="--tsv",description = "Use TSV instead of HTML output")
     private boolean outputTSV=false;
-    @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file")
+    @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
     private String yamlPath;
     /** Directory where various files are downloaded/created. */
     @Parameter(names={"-d","--data"}, description ="directory to download data (default: ${DEFAULT-VALUE})" )
@@ -80,44 +80,21 @@ public class VcfCommand extends Lr2PgCommand {
         return genotypeMap;
     }
 
-    private GenotypeLikelihoodRatio getGenotypeLR() throws Lr2pgException {
-        String backgroundFile = String.format("%s%s%s",datadir, File.separator,BACKGROUND_FREQUENCY_FILE);
-        File f = new File(backgroundFile);
-        if (!f.exists()) {
-            throw new Lr2pgException(String.format("Could not find %s",BACKGROUND_FREQUENCY_FILE));
-        }
-        GenotypeDataIngestor ingestor = new GenotypeDataIngestor(backgroundFile);
-        Map<TermId,Double> gene2back = ingestor.parse();
-        return new GenotypeLikelihoodRatio(gene2back);
-    }
 
-
-    private void showParams() {
-        System.out.println("LR2PG: vcf parameters");
-        System.out.println("\tvcf file:" + factory.vcfPath());
-        System.out.println("\tYAML config file: "+yamlPath);
-        System.out.println("\tMVStore file:" + factory.mvStore());
-        System.out.println("\tUse TSV?: "+outputTSV);
-        System.out.println("\tdata directory: "+datadir);
-        System.out.println("\tthreshold: "+LR_THRESHOLD);
-       // System.out.println("\tJannovar file:" + factory.jannovarData().);
-
-
-    }
 
 
 
     @Override
     public void run() throws Lr2pgException {
         this.factory = deYamylate(this.yamlPath);
-        showParams();
+        factory.qcYaml();
         String vcf = factory.vcfPath();
         MVStore mvstore = factory.mvStore();
         JannovarData jannovarData = factory.jannovarData();
         GenomeAssembly assembly = factory.getAssembly();
         Map<TermId, Gene2Genotype> genotypeMap = getVcf2GenotypeMap(vcf,mvstore,jannovarData,assembly);
         //debugPrintGenotypeMap(genotypeMap);
-        GenotypeLikelihoodRatio genoLr = getGenotypeLR();
+        GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
         List<TermId> observedHpoTerms = factory.observedHpoTerms();
         Ontology ontology = factory.hpoOntology();
         Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
@@ -155,22 +132,6 @@ public class VcfCommand extends Lr2PgCommand {
         template.outputFile(this.outfilePrefix);
     }
 
-
-
-    private void debugPrintGenotypeMap(Map<TermId, Gene2Genotype> genotypeMap) {
-        logger.error("debug print");
-        int i=0;
-        int N=genotypeMap.size();
-        for (TermId geneId : genotypeMap.keySet()) {
-            Gene2Genotype g2g = genotypeMap.get(geneId);
-            double path = g2g.getSumOfPathBinScores();
-            String symbol = g2g.getSymbol();
-            String s = String.format("%s [%s] path: %.3f",symbol,geneId.getValue(),path);
-            if (g2g.hasPredictedPathogenicVar()) {
-                System.out.println(++i +"/"+N+") "+s);
-            }
-        }
-    }
 
     /**
      * Parse the YAML file and put the results into an {@link Lr2PgFactory} object.

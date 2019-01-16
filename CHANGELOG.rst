@@ -1,6 +1,13 @@
 =========
 Changelog
 =========
+
+------
+v0.9.8
+------
+- Improved HTML/CSS formating
+- Simplifying command-line interface and adding Q/C checks for the existence of files with better error messages.
+
 ------
 v0.9.7
 ------

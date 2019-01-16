@@ -1,6 +1,8 @@
 Running LR2PG with a Phenopacket file
 =====================================
 
+.. _phenopacket:
+
 `Phenopackets <https://github.com/phenopackets>`_ represent an open standard for sharing disease and phenotype information.
 This is a new standard of the `Global Alliance for Genomics and Health <https://www.ga4gh.org/>`_ that
 links detailed phenotype descriptions with disease, patient, and genetic information. We use PhenoPackets

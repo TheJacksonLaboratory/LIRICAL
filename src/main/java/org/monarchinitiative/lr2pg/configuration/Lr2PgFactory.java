@@ -15,6 +15,7 @@ import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSeri
 import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
+import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
@@ -271,6 +272,22 @@ public class Lr2PgFactory {
         }
     }
 
+    /**
+     * Create a {@link GenotypeLikelihoodRatio} object that will be used to calculated genotype likelhood ratios.
+     * @return a {@link GenotypeLikelihoodRatio} object
+     * @throws Lr2pgException
+     */
+    public GenotypeLikelihoodRatio getGenotypeLR() throws Lr2pgException {
+        File f = new File(backgroundFrequencyPath);
+        if (!f.exists()) {
+            throw new Lr2pgException(String.format("Could not find %s",this.backgroundFrequencyPath));
+        }
+        GenotypeDataIngestor ingestor = new GenotypeDataIngestor(this.backgroundFrequencyPath);
+        Map<TermId,Double> gene2back = ingestor.parse();
+        return new GenotypeLikelihoodRatio(gene2back);
+    }
+
+
 
 
     /**
@@ -354,6 +371,7 @@ public class Lr2PgFactory {
         File datadirfile = new File(datadir);
         if (!datadirfile.exists()) {
             logger.fatal("Could not find LR2PG data directory at {}",datadir);
+            logger.fatal("Consider running download command.");
             throw new Lr2PgRuntimeException(String.format("Could not find LR2PG data directory at %s",datadir));
         } else if (!datadirfile.isDirectory()) {
             logger.fatal("LR2PG datadir path ({}) is not a directory.",datadir);
@@ -412,6 +430,28 @@ public class Lr2PgFactory {
             logger.fatal("Could not find Exomiser database file at {}",this.mvStorePath);
             throw new Lr2PgRuntimeException(String.format("Could not find Exomiser database file at %s",mvStorePath));
         }
+    }
+
+    /**
+     * This method checks whether the background freqeuncy file can be found.
+     */
+    private void qcBackgroundFreqFile() {
+        File bgf = new File(this.backgroundFrequencyPath);
+        if (! bgf.exists()) {
+            logger.fatal("Could not find background frequency file at {}",this.backgroundFrequencyPath);
+            throw new Lr2PgRuntimeException(String.format("Could not find background frequency file at %s",this.backgroundFrequencyPath));
+        } else {
+            logger.trace("Background frequency file: {}", this.backgroundFrequencyPath);
+        }
+    }
+
+
+
+    public void qcYaml() {
+        qcHumanPhenotypeOntologyFiles();
+        qcExternalFilesInDataDir();
+        qcExomiserFiles();
+        qcBackgroundFreqFile();
     }
 
     /**
