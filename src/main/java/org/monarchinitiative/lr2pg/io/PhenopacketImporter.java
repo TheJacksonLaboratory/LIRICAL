@@ -61,6 +61,8 @@ public class PhenopacketImporter {
         extractVcfData();
     }
 
+    public boolean hasVcf() { return  this.vcfPath !=null; }
+
     public List<TermId> getHpoTerms() {
         return hpoTerms;
     }

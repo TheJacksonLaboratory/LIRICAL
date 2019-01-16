@@ -63,6 +63,37 @@ public class TsvTemplate extends Lr2pgTemplate {
         this.templateData.put("diff",diff);
     }
 
+    /**
+     * Constructor for when we do the analysis without genetic data
+     * @param hcase
+     * @param ontology
+     * @param metadat
+     */
+    public TsvTemplate(HpoCase hcase,
+                       Ontology ontology,
+                       Map<String, String> metadat) {
+        super(hcase,ontology,metadat);
+        ClassLoader classLoader = TsvTemplate.class.getClassLoader();
+        cfg.setClassLoaderForTemplateLoading(classLoader,"");
+        List<TsvDifferential> diff = new ArrayList<>();
+        String header= String.join("\t",tsvHeader);
+        templateData.put("header",header);
+        int counter=0;
+        // Note the following results are already sorted
+        for (TestResult result : hcase.getResults()) {
+            String symbol = EMPTY_STRING;
+            TsvDifferential tsvdiff = new TsvDifferential(result);
+            logger.trace("Diff diag for " + result.getDiseaseName());
+            tsvdiff.setNoVariantsFoundString("Analysis performed without genetic data");
+            diff.add(tsvdiff);
+            counter++;
+        }
+        this.templateData.put("diff",diff);
+    }
+
+
+
+
 
     @Override
     public void outputFile(String prefix){

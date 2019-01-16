@@ -200,6 +200,7 @@ public class GenicIntoleranceCalculator {
     private void binPathogenicityData() {
         logger.trace("Binning pathogenicity data...");
         logger.info("Binning pathogenicity data...2");
+        int c=0;
         for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : alleleMap.entrySet()) {
             AlleleProto.AlleleKey alleleKey = entry.getKey();
             AlleleProto.AlleleProperties alleleProperties = entry.getValue();
@@ -278,6 +279,9 @@ public class GenicIntoleranceCalculator {
                     float frequencyAsPercentage = sas.getFrequency();
                     addToBin(genesymbol, id, frequencyAsPercentage, pathogenicity, GNOMAD_E_SAS);
                 }
+                if (c++%100_000==0) {
+                    System.out.println("Processed variant "+c);
+                }
             }
         }
     }
@@ -330,7 +334,7 @@ public class GenicIntoleranceCalculator {
         String line = String.format("%s\t%s\t%s\t%f\n",
                 genesymbol,
                 geneid,
-                values.stream().collect(Collectors.joining("\t")),
+                String.join("\t",values),
                 mean);
         writer.write(line);
     }
@@ -343,7 +347,7 @@ public class GenicIntoleranceCalculator {
         // First arrange all gene symbols in order
         List<String> symbolList = new ArrayList<>(geneSymbolSet);
         Collections.sort(symbolList);
-        String header = Arrays.stream(headerFields).collect(Collectors.joining("\t"));
+        String header = String.join("\t",headerFields);
         header = String.format("Gene\tEntrezId\t%s\tMean\n",header );
         logger.trace("Outputting background freqeuncy file to " + this.outputFileName);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(this.outputFileName))) {

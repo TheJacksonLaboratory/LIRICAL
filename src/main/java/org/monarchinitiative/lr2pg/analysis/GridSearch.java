@@ -28,14 +28,26 @@ public class GridSearch  {
     private final Map<TermId, HpoDisease> diseaseMap;
     /** Reference to HPO ontology object. */
     private final Ontology ontology;
+    /** Number of cases to be simulated for any given parameter combination */
+    private final int n_cases_to_simulate_per_run;
+    /** SHould we exchange the terms with their parents to simulate "imprecise" data entry? */
+    private final boolean useImprecision;
 
 
     /**
-     *
+     * Perform a grid search with the indicated number of simulated cases. We will simulate from
+     * one to ten HPO terms with from zero to four "random" (noise) terms, and write the results to
+     * a file that can be input by R.
+     * @param ontology Reference to the HPO ontology
+     * @param diseaseMap Map of HPO Disease models
+     * @param n_cases Number of cases to simulate
+     * @param imprecision if true, use "imprecision" to change HPO terms to a parent term
      */
-    public GridSearch(Ontology ontology, Map<TermId, HpoDisease> diseaseMap ) {
+    public GridSearch(Ontology ontology, Map<TermId, HpoDisease> diseaseMap, int n_cases, boolean imprecision) {
         this.ontology=ontology;
         this.diseaseMap=diseaseMap;
+        this.n_cases_to_simulate_per_run=n_cases;
+        this.useImprecision=imprecision;
     }
 
 
@@ -47,74 +59,37 @@ public class GridSearch  {
     public void gridsearch() throws Lr2pgException {
 
         int[] termnumber = {1,2,3,4,5,6,7,8,9,10};
-        int[] randomtermnumber = {0,1,2,3,4,0,1,2,3,4};
-        String outfilename="gridsearch.R";
+        int[] randomtermnumber = {0,1,2,3,4};
+        String outfilename=String.format("grid_%d_cases_%s.txt",
+                n_cases_to_simulate_per_run,
+                useImprecision?"imprecise":"precise"
+                );
         double[][] Z;
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outfilename))) {
             Z = new double[termnumber.length][randomtermnumber.length];
-            int n_cases = 100;
             PhenotypeOnlyHpoCaseSimulator simulator;
             for (int i = 0; i < termnumber.length; i++) {
                 for (int j = 0; j < randomtermnumber.length; j++) {
-                    boolean imprec = (j > 4);
-                    simulator = new PhenotypeOnlyHpoCaseSimulator( ontology,diseaseMap,n_cases, termnumber[i], randomtermnumber[j], imprec);
+                    simulator = new PhenotypeOnlyHpoCaseSimulator( ontology,diseaseMap,n_cases_to_simulate_per_run, termnumber[i], randomtermnumber[j], useImprecision);
+                    simulator.setVerbosity(false); // reduce output!
                     simulator.simulateCases();
                     Z[i][j] = simulator.getProportionAtRank1();
-                    writer.write(String.format("terms: %d; noise terms: %d; percentage at rank 1: %.2f\n",
+                    System.out.println(String.format("terms: %d; noise terms: %d; percentage at rank 1: %.2f\n",
                             termnumber[i],
                             randomtermnumber[j],
                             100.0 * Z[i][j]));
                 }
             }
-            String xstring = String.format("X <- c(%s)\n",
-                    Arrays.stream(termnumber).
-                            mapToObj(Integer::toString)
-                            .collect(Collectors.joining(", ")));
-            String ystring = String.format("Y <- c(%s)\n",
-                    Arrays.stream(randomtermnumber).
-                            mapToObj(Integer::toString)
-                            .collect(Collectors.joining(", ")));
-            List<String> Zlist = new ArrayList<>();
+            // output a file that we will input as an R data frame.
+            // see the read-the-docs documentation for how to create a graphic in R with this
+            String[] headerfields={"n.terms","n.random","rank1"};
+            String header=String.join("\t",headerfields);
+            writer.write(header + "\n");
             for (int i = 0; i < termnumber.length; i++) {
                 for (int j = 0; j < randomtermnumber.length; j++) {
-                    Zlist.add(String.format("%.2f", 100.0 * Z[i][j]));
+                    writer.write(String.format("%d\t%d\t%.2f\n", i,j,100.0 * Z[i][j]));
                 }
             }
-            String zstring = String.format("Z <- matrix(c(%s),nrow=%d,ncol=%d)\n",
-                    Zlist.stream().collect(Collectors.joining(",")),
-                    termnumber.length,
-                    randomtermnumber.length);
-            writer.write("library(plot3D)\n");
-            writer.write(xstring + ystring + zstring);
-
-            String xlab = String.format("c(%s)\n",
-                    Arrays.stream(termnumber).
-                            mapToObj(i -> String.format("\"%d\"", i))
-                            .collect(Collectors.joining(", ")));
-            String create3d = String.format(" hist3D(X,Y,Z,xlab=%s, clab=\"%% at rank 1\",zlim=c(0,1))\n", xlab);
-            writer.write(create3d);
-            //alternatively, do a grouped bar plot
-
-            String colnames = Arrays.stream(termnumber)
-                    .mapToObj(i -> String.format("\"%s\"", i))
-                    .collect(Collectors.joining(", "));
-            String rownames = Arrays.stream(randomtermnumber)
-                    .mapToObj(i -> String.format("\"%s\"", i))
-                    .collect(Collectors.joining(", "));
-
-            String barplotLegend = String.format("colnames(Z)=c(%s)\nrownames(Z)=c(%s)\n", colnames, rownames);
-            String barplot = "barplot(Z, col=colors()[30:32], border=\"white\", font.axis=2, beside=T, " +
-                    "legend=rownames(Z), xlab=\"Number of terms\", font.lab=2, cex.lab=2,cex.axis=1.5)\n";
-            writer.write(barplotLegend + barplot);
-
-        for (int i=0;i<termnumber.length;i++) {
-            for (int j=0;j<randomtermnumber.length;j++) {
-                System.err.println(String.format("terms: %d; noise terms: %d; percentage at rank 1: %.2f",
-                        termnumber[i],
-                        randomtermnumber[j],
-                        100.0* Z[i][j]));
-            }
-        }
         } catch (IOException e) {
             throw new Lr2pgException("I/O error: " + e.getMessage());
         }

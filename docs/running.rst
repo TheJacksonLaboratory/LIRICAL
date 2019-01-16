@@ -26,12 +26,11 @@ For example, to run a simulation of Marfan syndrome, we would run the following 
 * HP:0001083 (Ectopia lentis)
 * HP:0003179 (Protrusio acetabuli)
 
-```
-java -jar Lr2pg.jar phenogeno --disease OMIM:154700  --geneid 2200 \
-		--term-list HP:0002751,HP:0001166,HP:0004933,HP:0001083,HP:0003179 \
-		 --varcount 1 --varpath 1.0
-```
+The command would be. ::
 
+    java -jar Lr2pg.jar phenogeno --disease OMIM:154700  --geneid 2200 \
+        --term-list HP:0002751,HP:0001166,HP:0004933,HP:0001083,HP:0003179 \
+        --varcount 1 --varpath 1.0
 
 To run a simulation of Hyperphosphatasia With Mental Retardation Syndrome 1 OMIM:239300
 
@@ -46,11 +45,13 @@ To run a simulation of Hyperphosphatasia With Mental Retardation Syndrome 1 OMIM
 HP:0003155,HP:0001792,HP:0001252,HP:0009882,HP:0001249,HP:0003155
 
 
-```
-java -jar Lr2pg.jar phenogeno --disease OMIM:239300  --geneid 55650 \
-		--term-list HP:0003155,HP:0001792,HP:0001252,HP:0009882,HP:0001249,HP:0003155 \
-		--varcount 2 --varpath 1.0
-```
+The command is. ::
+
+    java -jar Lr2pg.jar phenogeno --disease OMIM:239300  --geneid 55650 \
+        --term-list HP:0003155,HP:0001792,HP:0001252,HP:0009882,HP:0001249,HP:0003155 \
+        --varcount 2 --varpath 1.0
+
+
 
 
 

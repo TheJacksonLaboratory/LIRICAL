@@ -169,7 +169,10 @@ public class Vcf2GenotypeMap {
                         try {
                             geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
                         } catch (PhenolRuntimeException pre) {
-                            logger.error("Could not identify gene \"{}\" with symbol \"{}\" for variant {}", genIdString,symbol,va.toString());
+                           // logger.error("Could not identify gene \"{}\" with symbol \"{}\" for variant {}", genIdString,symbol,va.toString());
+                           // if gene is not included in the Jannovar file then it is not a Mendelian
+                            // disease gene, e.g., abParts.
+                            // Therefore just skip it
                             continue;
                         }
                         gene2genotypeMap.putIfAbsent(geneId, new Gene2Genotype(geneId, symbol));

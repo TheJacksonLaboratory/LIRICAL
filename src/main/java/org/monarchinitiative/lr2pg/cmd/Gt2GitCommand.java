@@ -26,23 +26,26 @@ import java.util.List;
 @Parameters(commandDescription = "Calculation of background variant frequency")
 public class Gt2GitCommand extends Lr2PgCommand {
     private static final Logger logger = LogManager.getLogger();
-    @Parameter(names={"-d","--data"}, description ="directory to download data (default: data)" )
-    private String datadir="data";
+//    @Parameter(names={"-d","--data"}, description ="directory to download data (default: data)" )
+//    private String datadir="data";
     /** One of HG38 (default) or HG19. */
-    private final GenomeAssembly genomeAssembly;
+    private GenomeAssembly genomeAssembly;
     /** Name of the output file (e.g., background-hg19.txt). Determined automatically based on genome build..*/
-    private final String outputFileName;
+    private String outputFileName;
     /** (e.g., ="/Users/peterrobinson/Documents/data/exomiser/1802_hg19/1802_hg19_variants.mv.db") */
-    @Parameter(names={"-m","--mvStorePath"}, description = "path to Exomiser MVStore file")
+   // @Parameter(names={"-m","--mvstore"}, description = "path to Exomiser MVStore file")
     private String mvStorePath;
+    private String jannovarFile;
 
     /** Path of the Jannovar file. Note this can be taken from the Exomiser distribution, e.g.,
      * {@code exomiser/1802_hg19/1802_hg19_transcripts_refseq.ser}. */
-    @Parameter(names={"-j","--jannovar"}, description = "path to Jannovar transcript file")
-    private String jannovarFile;
+    @Parameter(names={"-e","--exomiser"}, description = "path to Exomiser database directory", required = true)
+    private String exomiser;
     /** SHould be one of hg19 or hg38. */
     @Parameter(names={"-g", "--genome"}, description = "string representing the genome assembly (hg19,hg38)")
     private String genomeAssemblyString="hg38";
+    @Parameter(names={"--transcriptdb"}, description = "Jannovar transcript database (UCSC, Ensembl, RefSeq)")
+    private String transcriptdatabase="UCSC";
     /** If true, calculate the distribution of ClinVar pathogenicity scores. */
     @Parameter(names="--clinvar", description = "determine distribution of ClinVar pathogenicity scores")
     private boolean doClinvar;
@@ -51,60 +54,49 @@ public class Gt2GitCommand extends Lr2PgCommand {
      *
      */
     public Gt2GitCommand(){
+    }
+
+    @Override
+    public void run() throws Lr2pgException  {
         if (genomeAssemblyString.toLowerCase().contains("hg19")) {
             this.genomeAssembly=GenomeAssembly.HG19;
             outputFileName="background-hg19.txt";
         } else if (genomeAssemblyString.toLowerCase().contains("hg38")) {
             this.genomeAssembly=GenomeAssembly.HG38;
-            outputFileName="background-hg19.txt";
+            outputFileName="background-hg38.txt";
         } else {
             logger.warn("Could not determine genome assembly from argument: \""+
                     genomeAssemblyString +"\". We will use the default of hg38");
             this.genomeAssembly=GenomeAssembly.HG38;
             outputFileName="background-hg38.txt";
         }
-    }
+        if (this.exomiser ==null) {
+            throw new Lr2pgException("Need to specify the Exomiser data directory: -e <path> to run gt2git command!");
+        }
 
-    @Override
-    public void run() throws Lr2pgException  {
-        if (this.mvStorePath ==null) {
-            throw new Lr2pgException("Need to specify the MVStore file: -m <mvStorePath> to run gt2git command!");
-        }
-        if (this.jannovarFile==null) {
-            throw new Lr2pgException("Need to specify the jannovar transcript file: -j <jannovar> to run gt2git command!");
-        }
 
 
         Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder()
-                .jannovarFile(jannovarFile)
-                .genomeAssembly(this.genomeAssemblyString)
-                .mvStore(mvStorePath);
+                .exomiser(exomiser)
+                .transcriptdatabase(transcriptdatabase)
+                .genomeAssembly(this.genomeAssemblyString);
 
         Lr2PgFactory factory = builder.build();
+        factory.qcExomiserFiles();
+        factory.qcGenomeBuild();
+        logger.trace("Will output background frequency file to " + outputFileName);
 
         MVStore alleleStore = factory.mvStore();
         JannovarData jannovarData = factory.jannovarData();
         List<RegulatoryFeature> emtpylist = ImmutableList.of();
         ChromosomalRegionIndex<RegulatoryFeature> emptyRegionIndex = ChromosomalRegionIndex.of(emtpylist);
         JannovarVariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(genomeAssembly, jannovarData, emptyRegionIndex);
-        createOutputDirectoryIfNecessary();
-        String outputpath=String.format("%s%s%s",this.datadir,File.separator,this.outputFileName);
+        String outputpath=this.outputFileName;
        GenicIntoleranceCalculator calculator = new GenicIntoleranceCalculator(jannovarVariantAnnotator,alleleStore,outputpath,this.doClinvar);
        calculator.run();
     }
 
 
-    private void createOutputDirectoryIfNecessary(){
-        File dir = new File(this.datadir);
-        if (! dir.exists() ) {
-            boolean b = dir.mkdir();
-            if (b) {
-                logger.info("Successfully created directory at " + this.datadir);
-            } else {
-                logger.fatal("Unable to create directory at {}. Terminating program",this.datadir);
-                System.exit(1);
-            }
-        }
-    }
+
 
 }

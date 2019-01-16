@@ -11,7 +11,7 @@ import java.util.Map;
 public class YamlConfig {
 
     private Map<String,String> analysis;
-    private String output;
+    private String prefix;
     private String[] hpoIds;
 
     public void setAnalysis(Map<String,String> an) {
@@ -30,12 +30,12 @@ public class YamlConfig {
     public Map<String,String> getAnalysis(){
         return analysis;
     }
-    public void setOutput(String out) {
-        this.output=out;
-    }
+    //public void setPrefix(String out) {
+   //     this.prefix=out;
+    //}
     /** @return name (prefix) of the output file */
-    public String getOutput() {
-        return output;
+    public String getPrefix() {
+        return prefix;
     }
     public void setHpoIds(String[] ids) {
         this.hpoIds=ids;

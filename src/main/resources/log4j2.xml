@@ -11,11 +11,11 @@
     </Properties>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT" follow="true">
-            <PatternLayout pattern="${sys:CONSOLE_LOG_PATTERN}" />
+            <PatternLayout pattern="[%-5p] %c{1} - %m%n" />
         </Console>
         <RollingFile name="File" fileName="lr2pg.log" filePattern="${sys:LOG_PATH}/$${date:yyyy-MM}/app-%d{yyyy-MM-dd-HH}-%i.log.gz">
             <PatternLayout>
-                <Pattern>${sys:FILE_LOG_PATTERN}</Pattern>
+                <Pattern>"[%-5p] %c{1} - %m%n"</Pattern>
             </PatternLayout>
             <Policies>
                 <SizeBasedTriggeringPolicy size="10 MB" />

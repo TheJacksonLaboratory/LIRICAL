@@ -46,12 +46,12 @@ public class PhenotypeOnlyHpoCaseSimulator {
     /** The proportion of cases at rank 1 in the current simulation */
     private double proportionAtRank1=0.0;
     /** Case currently being simulated/analyzed. */
-    private HpoCase currentCase;
+    //private HpoCase currentCase;
     /** This array will hold the TermIds from the disease map in order -- this will allow us to
      * get random indices for the simulations. */
     private TermId[] termIndices;
-
-
+    /** If true, show lots of results in STDOUT while we are calculating. */
+    private boolean verbose=true;
     /** Root term id in the phenotypic abnormality subontology. */
     private final static TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
@@ -102,6 +102,9 @@ public class PhenotypeOnlyHpoCaseSimulator {
         this.addTermImprecision=imprecise;
     }
 
+
+    public void setVerbosity(boolean v) { this.verbose=v;}
+
     /** @return the proportion of all simulated cases at rank 1.*/
     public double getProportionAtRank1() {
         return proportionAtRank1;
@@ -114,8 +117,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
     public void simulateCases() throws Lr2pgException {
         int c=0;
         Map<Integer,Integer> ranks=new HashMap<>();
-        logger.trace(String.format("Will simulate %d diseases.",diseaseMap.size() ));
-        System.err.println(String.format("Simulating n=%d HPO cases with %d random terms and %d noise terms per case.",n_cases_to_simulate,n_terms_per_case,n_noise_terms));
+        logger.trace(String.format("Simulating n=%d HPO cases with %d random terms and %d noise terms per case.",n_cases_to_simulate,n_terms_per_case,n_noise_terms));
         int size = diseaseMap.size();
 
         int[] randomIndices=IntStream.generate(() -> new Random().nextInt(size)).limit(n_cases_to_simulate).toArray();
@@ -131,14 +133,29 @@ public class PhenotypeOnlyHpoCaseSimulator {
                 continue;
             }
             int rank = simulateCase(disease);
-            System.err.println(String.format("%s: rank=%d",disease.getName(),rank));
+            if (verbose) {
+                System.err.println(String.format("%s: rank=%d", disease.getName(), rank));
+            }
             ranks.putIfAbsent(rank,0);
             ranks.put(rank, ranks.get(rank) + 1);
             if (++c>n_cases_to_simulate) {
                 break; // finished!
             }
-            if (c%100==0) {logger.trace("Simulating case " + c); }
         }
+        if (ranks.containsKey(1)) {
+            proportionAtRank1 = ranks.get(1) / (double) n_cases_to_simulate;
+        } else {
+            proportionAtRank1 = 0.0;
+        }
+        if (verbose) {
+            dump2shell(ranks);
+        }
+
+
+    }
+
+
+    private void dump2shell(Map<Integer,Integer> ranks) {
         int N=n_cases_to_simulate;
         int rank11_20=0;
         int rank21_30=0;
@@ -169,6 +186,8 @@ public class PhenotypeOnlyHpoCaseSimulator {
         System.out.println(String.format("Rank=31-100: count:%d (%.1f%%)", rank31_100, (double) 100 * rank31_100 / N));
         System.out.println(String.format("Rank=101-...: count:%d (%.1f%%)", rank101_up, (double) 100 * rank101_up / N));
     }
+
+
 
 
     /**
@@ -224,20 +243,6 @@ public class PhenotypeOnlyHpoCaseSimulator {
     }
 
 
-
-    /**
-    // * @param diseaseCurie a term id for a disease id such as OMIM:600100
-     * @return the corresponding {@link HpoDisease} object.
-     */
-    //public HpoDisease name2disease(TermId diseaseCurie) {
-    //    return diseaseMap.get(diseaseCurie);
-   // }
-
-
-    //public HpoCase getCurrentCase() {
-       // return currentCase;
-    //}
-
     public int simulateCase(HpoDisease disease) throws Lr2pgException {
         if (disease == null) {
             // should never happen!
@@ -252,21 +257,12 @@ public class PhenotypeOnlyHpoCaseSimulator {
         // the following evaluates the case for each disease with equal pretest probabilities.
         // Object to evaluate the results of differential diagnosis by LR analysis.
         CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
+        evaluator.setVerbosity(this.verbose);
         HpoCase hpocase = evaluator.evaluate();
-        this.currentCase=hpocase;
-        System.err.println(hpocase.toString());
+        if (verbose)
+            System.err.println(hpocase.toString());
         return hpocase.getRank(disease.getDiseaseDatabaseId());
     }
-
-
-
-
-    public void debugPrint() {
-        System.out.println(String.format("Got %d terms and %d diseases",ontology.getAllTermIds().size(),
-                diseaseMap.size()));
-    }
-
-
 
 
 }

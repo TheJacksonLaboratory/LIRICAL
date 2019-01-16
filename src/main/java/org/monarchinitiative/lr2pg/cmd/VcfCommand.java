@@ -181,22 +181,17 @@ public class VcfCommand extends Lr2PgCommand {
     private Lr2PgFactory deYamylate(String yamlPath) {
 
         Lr2PgFactory factory = null;
-        if (yamlPath==null || !new File(yamlPath).exists()) {
-            throw new PhenolRuntimeException("[ERROR] Could not find YAML configuration file for VCF analysis. Terminating program");
-        }
+
         try {
             YamlParser yparser = new YamlParser(yamlPath);
             Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().
-                    hp_obo(yparser.getHpOboPath()).
-                    mvStore(yparser.getMvStorePath())
-                    .mim2genemedgen(yparser.getMedgen())
-                    .geneInfo(yparser.getGeneInfo())
-                    .phenotypeAnnotation(yparser.phenotypeAnnotation())
+                    datadir(yparser.getDataDir())
+                    .exomiser(yparser.getExomiserDataDir())
                     .genomeAssembly(yparser.getGenomeAssembly())
                     .observedHpoTerms(yparser.getHpoTermList())
-                    .vcf(yparser.vcfPath()).
-                            jannovarFile(yparser.jannovarFile());
-            factory = builder.build();
+                    .transcriptdatabase(yparser.transcriptdb())
+                    .vcf(yparser.vcfPath());
+            factory = builder.buildForGenomicDiagnostics();
         } catch (Lr2pgException e) {
             e.printStackTrace();
         }

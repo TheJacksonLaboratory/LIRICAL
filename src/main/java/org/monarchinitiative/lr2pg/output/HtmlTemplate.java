@@ -108,6 +108,53 @@ public class HtmlTemplate extends Lr2pgTemplate {
     }
 
 
+    /**
+     * Constructor to initialize the data that will be needed to output an HTML page.
+     * Used for when we have no genetic data
+     * @param hcase The individual (case) represented in the VCF file
+     * @param ontology The HPO ontology
+
+     * @param metadat Metadata about the analysis.
+     * @param thres threshold posterior probability to show differential in detail
+     */
+    public HtmlTemplate(HpoCase hcase,
+                        Ontology ontology,
+                        Map<String,String> metadat,
+                        double thres){
+        super(hcase, ontology, metadat);
+        this.THRESHOLD=thres;
+
+        List<DifferentialDiagnosis> diff = new ArrayList<>();
+        List<ImprobableDifferential> improbdiff = new ArrayList<>();
+        this.topDiagnosisMap=new HashMap<>();
+        this.topDiagnosisAnchors=new ArrayList<>();
+        ClassLoader classLoader = HtmlTemplate.class.getClassLoader();
+        cfg.setClassLoaderForTemplateLoading(classLoader,"");
+        templateData.put("postprobthreshold",String.format("%.1f%%",100*THRESHOLD));
+        int counter=0;
+        for (TestResult result : hcase.getResults()) {
+            String symbol=EMPTY_STRING;
+            if (result.getPosttestProbability() > THRESHOLD) {
+                DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
+                logger.trace("Diff diag for " + result.getDiseaseName());
+                ddx.setNoVariantsFoundString("Genetic data not available");
+                // now get SVG
+                Lr2Svg lr2svg = new Lr2Svg(hcase, result.getDiseaseCurie(), result.getDiseaseName(), ontology, symbol);
+                String svg = lr2svg.getSvgString();
+                ddx.setSvg(svg);
+                diff.add(ddx);
+                counter++;
+                String counterString=String.format("diagnosis%d",counter);
+                this.topDiagnosisAnchors.add(counterString);
+                ddx.setAnchor(counterString);
+                this.topDiagnosisMap.put(counterString,ddx.getDiseaseName());
+            }
+        }
+        this.templateData.put("improbdiff",improbdiff);
+        this.templateData.put("diff",diff);
+    }
+
+
     @Override
     public void outputFile(String prefix){
         String outname=String.format("%s.html",prefix );

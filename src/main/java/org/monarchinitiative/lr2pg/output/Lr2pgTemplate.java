@@ -1,5 +1,6 @@
 package org.monarchinitiative.lr2pg.output;
 
+import com.google.common.collect.ImmutableMap;
 import freemarker.template.Configuration;
 import freemarker.template.Version;
 import org.apache.logging.log4j.LogManager;
@@ -49,13 +50,23 @@ public abstract class Lr2pgTemplate {
         cfg.setDefaultEncoding("UTF-8");
         this.geneId2symbol=geneid2sym;
 
-        initTemplateData(hcase,ontology,genotypeMap,metadat);
+        initTemplateData(hcase,ontology,metadat);
+    }
+
+    public Lr2pgTemplate(HpoCase hcase,
+                         Ontology ontology,
+                         Map<String,String> metadat){
+
+        this.cfg = new Configuration(new Version("2.3.23"));
+        cfg.setDefaultEncoding("UTF-8");
+        this.geneId2symbol= ImmutableMap.of(); // not needed -- make empty make
+        initTemplateData(hcase,ontology,metadat);
     }
 
 
     abstract public void outputFile(String prefix);
 
-    private void initTemplateData(HpoCase hcase, Ontology ontology, Map<TermId, Gene2Genotype> genotypeMap, Map<String,String> metadat) {
+    private void initTemplateData(HpoCase hcase, Ontology ontology, Map<String,String> metadat) {
         for(Map.Entry<String,String> entry : metadat.entrySet()) {
             templateData.put(entry.getKey(),entry.getValue());
         }

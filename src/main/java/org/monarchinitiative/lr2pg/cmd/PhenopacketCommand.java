@@ -50,17 +50,16 @@ public class PhenopacketCommand extends Lr2PgCommand{
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
     @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
     private double LR_THRESHOLD=0.01;
-    @Parameter(names={"-m","--mvstore"}, description = "path to MV Store Exomiser database file", required = true)
-    private String mvpath;
-    @Parameter(names={"-j","--jannovar"}, description = "path to Jannovar transcript information file", required = true)
-    private String jannovarPath;
+//    @Parameter(names={"-m","--mvstore"}, description = "path to MV Store Exomiser database file", required = true)
+//    private String mvpath;
+//    @Parameter(names={"-j","--jannovar"}, description = "path to Jannovar transcript information file", required = true)
+//    private String jannovarPath;
     @Parameter(names={"-o", "--outfile"},description = "prefix of outfile")
     private String outfilePrefix="lr2pg";
-
-    ///// TODO ADD THIS TO RESOURCES!!!!!!
-    /** Default name of the background frequency file. */
-    private final String BACKGROUND_FREQUENCY_FILE="background-freq.txt";
-
+    @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory", required = true)
+    private String exomiserDataDirectory;
+    @Parameter(names={"--transcriptdb"}, description = "transcript database (USCS, Ensembl, RefSeq)")
+    String transcriptDb="ucsc";
     /** Various metadata that will be used for the HTML org.monarchinitiative.lr2pg.output. */
     private Map<String,String> metadata;
 
@@ -89,7 +88,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
         try {
             PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
             this.vcfPath = importer.getVcfPath();
-            if (vcfPath!=null) hasVcf=true;
+            hasVcf = importer.hasVcf();
             this.genomeAssembly = importer.getGenomeAssembly();
             this.hpoIdList = importer.getHpoTerms();
             this.negatedHpoIdList = importer.getNegatedHpoTerms();
@@ -97,35 +96,29 @@ public class PhenopacketCommand extends Lr2PgCommand{
             logger.fatal("Could not read phenopacket");
             e.printStackTrace();
         }
-        String hpoOboPath = String.format("%s%s%s",datadir,File.separator,"hp.obo" );
-        String phenotypeHpoaPath = String.format("%s%s%s",datadir,File.separator,"phenotype.hpoa" );
-        String hsapiensGeneInfoPath = String.format("%s%s%s",datadir,File.separator,"Homo_sapiens_gene_info.gz");
-        String mim2geneMedgenPath = String.format("%s%s%s",datadir,File.separator,"mim2gene_medgen");
 
 
         if (hasVcf) {
             try {
                 Lr2PgFactory factory = new Lr2PgFactory.Builder()
-                        .hp_obo(hpoOboPath)
-                        .phenotypeAnnotation(phenotypeHpoaPath)
-                        .geneInfo(hsapiensGeneInfoPath)
-                        .mim2genemedgen(mim2geneMedgenPath)
+                        .datadir(this.datadir)
                         .genomeAssembly(this.genomeAssembly)
-                        .jannovarFile(this.jannovarPath)
-                        .mvStore(this.mvpath).build();
+                        .exomiser(this.exomiserDataDirectory)
+                        .build();
 
                 MVStore mvstore = factory.mvStore();
                 JannovarData jannovarData = factory.jannovarData();
+                String backgroundFrequencyFile = factory.getBackgroundFrequencyPath();
                 GenomeAssembly assembly = getGenomeAssembly(this.genomeAssembly);
                 SimpleVariant.setGenomeBuildForUrl(assembly);
 
-                Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap(jannovarData,mvstore, assembly);
-                GenotypeLikelihoodRatio genoLr = getGenotypeLR();
+                Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap(jannovarData, mvstore, assembly);
+                GenotypeLikelihoodRatio genoLr = getGenotypeLR(backgroundFrequencyFile);
                 Ontology ontology = factory.hpoOntology();
                 Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
-                PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
-                Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
-                Map<TermId,String> geneId2symbol = factory.geneId2symbolMap();
+                PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
+                Multimap<TermId, TermId> disease2geneMultimap = factory.disease2geneMultimap();
+                Map<TermId, String> geneId2symbol = factory.geneId2symbolMap();
                 CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(this.hpoIdList)
                         .ontology(ontology)
                         .diseaseMap(diseaseMap)
@@ -136,12 +129,39 @@ public class PhenopacketCommand extends Lr2PgCommand{
 
                 CaseEvaluator evaluator = caseBuilder.build();
                 HpoCase hcase = evaluator.evaluate();
-                hcase.outputTopResults(5,ontology,genotypemap);// TODO remove this outputs to the shell
+                hcase.outputTopResults(5, ontology, genotypemap);// TODO remove this outputs to the shell
                 if (outputTSV) {
-                    Lr2pgTemplate template = new TsvTemplate(hcase,ontology,genotypemap,geneId2symbol,this.metadata);
+                    Lr2pgTemplate template = new TsvTemplate(hcase, ontology, genotypemap, geneId2symbol, this.metadata);
                     template.outputFile(this.outfilePrefix);
                 } else {
-                    HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypemap,geneId2symbol,this.metadata,this.LR_THRESHOLD);
+                    HtmlTemplate caseoutput = new HtmlTemplate(hcase, ontology, genotypemap, geneId2symbol, this.metadata, this.LR_THRESHOLD);
+                    caseoutput.outputFile(this.outfilePrefix);
+                }
+            } catch (Lr2pgException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                // i.e., the Phenopacket has no VCF reference -- LR2PG will work on just phenotypes!
+                Lr2PgFactory factory = new Lr2PgFactory.Builder()
+                        .datadir(this.datadir)
+                        .build();
+                Ontology ontology = factory.hpoOntology();
+                Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
+                PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
+                CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(this.hpoIdList)
+                        .ontology(ontology)
+                        .diseaseMap(diseaseMap)
+                        .phenotypeLr(phenoLr);
+
+                CaseEvaluator evaluator = caseBuilder.build();
+                HpoCase hcase = evaluator.evaluate();
+                //hcase.outputTopResults(5,ontology);// TODO remove this outputs to the shell
+                if (outputTSV) {
+                    Lr2pgTemplate template = new TsvTemplate(hcase, ontology, this.metadata);
+                    template.outputFile(this.outfilePrefix);
+                } else {
+                    HtmlTemplate caseoutput = new HtmlTemplate(hcase, ontology, this.metadata, this.LR_THRESHOLD);
                     caseoutput.outputFile(this.outfilePrefix);
                 }
             } catch (Lr2pgException e) {
@@ -152,13 +172,12 @@ public class PhenopacketCommand extends Lr2PgCommand{
 
 
 
-    private GenotypeLikelihoodRatio getGenotypeLR() throws Lr2pgException {
-        String backgroundFile = String.format("%s%s%s",datadir, File.separator,BACKGROUND_FREQUENCY_FILE);
-        File f = new File(backgroundFile);
+    private GenotypeLikelihoodRatio getGenotypeLR(String backgroundFrequencyFile) throws Lr2pgException {
+        File f = new File(backgroundFrequencyFile);
         if (!f.exists()) {
-            throw new Lr2pgException(String.format("Could not find %s",BACKGROUND_FREQUENCY_FILE));
+            throw new Lr2pgException(String.format("Could not find \"%s\"",backgroundFrequencyFile));
         }
-        GenotypeDataIngestor ingestor = new GenotypeDataIngestor(backgroundFile);
+        GenotypeDataIngestor ingestor = new GenotypeDataIngestor(backgroundFrequencyFile);
         Map<TermId,Double> gene2back = ingestor.parse();
         return new GenotypeLikelihoodRatio(gene2back);
     }

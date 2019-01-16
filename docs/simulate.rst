@@ -46,15 +46,3 @@ It will print a summary of the results to standard out, for instance, ::
     Rank=101-...: count:1 (4.0%)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
