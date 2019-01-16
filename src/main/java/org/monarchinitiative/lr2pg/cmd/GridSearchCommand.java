@@ -18,7 +18,7 @@ import java.util.Map;
  * phenotype-only LR2PG. Can be run with or with imprecision.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-@Parameters(commandDescription = "Grid search for simulation of phenotype-only cases")
+@Parameters(commandDescription = "Grid search for simulation of phenotype-only cases",hidden = true)
 public class GridSearchCommand extends Lr2PgCommand {
     private static final Logger logger = LogManager.getLogger();
     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */

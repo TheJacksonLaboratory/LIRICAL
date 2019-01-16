@@ -7,7 +7,7 @@ analysis:
   # make sure the Jannovar transcript file is taken from the same genome build
   genomeAssembly: hg19
   vcf: /home/robinp/data/exomiser-cli-9.0.1/examples/Pfeiffer.vcf
-  background_freq : data/background-freq.txt
+  background_freq : data/background-hg38.txt
   datadir: data
   exomiser: /home/robinp/data/exomiserdata/1802_hg19/
   transcriptdb: refseq

@@ -77,7 +77,7 @@ public class GridSearch  {
                     System.out.println(String.format("terms: %d; noise terms: %d; percentage at rank 1: %.2f\n",
                             termnumber[i],
                             randomtermnumber[j],
-                            100.0 * Z[i][j]));
+                            100.00 * Z[i][j]));
                 }
             }
             // output a file that we will input as an R data frame.
@@ -87,7 +87,7 @@ public class GridSearch  {
             writer.write(header + "\n");
             for (int i = 0; i < termnumber.length; i++) {
                 for (int j = 0; j < randomtermnumber.length; j++) {
-                    writer.write(String.format("%d\t%d\t%.2f\n", i,j,100.0 * Z[i][j]));
+                    writer.write(String.format("%d\t%d\t%.2f\n", termnumber[i],randomtermnumber[j],100.00 * Z[i][j]));
                 }
             }
         } catch (IOException e) {

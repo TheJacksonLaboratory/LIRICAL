@@ -17,7 +17,7 @@ import java.util.Map;
  * This class coordinates simulation of cases with only phenotype.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-@Parameters(commandDescription = "Simulate phenotype-only cases")
+@Parameters(commandDescription = "Simulate phenotype-only cases",hidden = true)
 public class SimulatePhenotypesCommand extends Lr2PgCommand {
     private static final Logger logger = LogManager.getLogger();
     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */

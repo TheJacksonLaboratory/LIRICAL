@@ -7,6 +7,8 @@ details how to download these files and prepare to run LR2PG.
 The download command
 ~~~~~~~~~~~~~~~~~~~~
 
+.. _lr2pgdownload:
+
 LR2PG makes use of a data directory to store four required files.
 
 1. ``hp.obo``. The main Human Phenotype Ontology file
@@ -36,6 +38,7 @@ same directory to run LR2PG.
 Exomiser data
 ~~~~~~~~~~~~~
 
+.. _exomiserdata:
 
 LR2PG makes use of the Exomiser data resources, which need to be downloaded from the Exomiser FTP site
 (https://data.monarchinitiative.org/exomiser/latest/).  For instance, to do the analysis with the hg38
