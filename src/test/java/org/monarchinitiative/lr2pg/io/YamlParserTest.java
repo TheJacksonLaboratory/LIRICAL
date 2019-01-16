@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatioTest;
+import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -49,7 +50,7 @@ class YamlParserTest {
     @Test
     void testBadMvStorePath() {
         String badPath="/nonexistant/path/1802_hg19_variants.mv.db";
-        Assertions.assertThrows(Lr2pgException.class, () -> {
+        Assertions.assertThrows(PhenolRuntimeException.class, () -> {
             YamlParser parser = new YamlParser(badPath);
         });
     }
@@ -63,9 +64,9 @@ class YamlParserTest {
     @Test
     void testExomiserData()throws Lr2pgException  {
         YamlParser parser = new YamlParser(demo1path);
-        String expectedMvStore = "/home/robinp/data/exomiserdata/1811_hg19/1811_hg19_variants.mv.db";
+        String expectedMvStore = "/home/robinp/data/exomiserdata/1802_hg19/1802_hg19_variants.mv.db";
         assertEquals(expectedMvStore,parser.getMvStorePath());
-        String expectedJannovar = "/home/robinp/data/exomiserdata/1811_hg19/1811_hg19_transcripts_refseq.ser";
+        String expectedJannovar = "/home/robinp/data/exomiserdata/1802_hg19/1802_hg19_transcripts_refseq.ser";
         assertEquals(expectedJannovar,parser.jannovarFile());
     }
 

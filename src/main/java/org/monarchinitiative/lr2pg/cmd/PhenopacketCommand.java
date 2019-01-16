@@ -50,21 +50,16 @@ public class PhenopacketCommand extends Lr2PgCommand{
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
     @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
     private double LR_THRESHOLD=0.01;
-    @Parameter(names={"-m","--mvstore"}, description = "path to MV Store Exomiser database file", required = true)
-    private String mvpath;
-    @Parameter(names={"-j","--jannovar"}, description = "path to Jannovar transcript information file", required = true)
-    private String jannovarPath;
+//    @Parameter(names={"-m","--mvstore"}, description = "path to MV Store Exomiser database file", required = true)
+//    private String mvpath;
+//    @Parameter(names={"-j","--jannovar"}, description = "path to Jannovar transcript information file", required = true)
+//    private String jannovarPath;
     @Parameter(names={"-o", "--outfile"},description = "prefix of outfile")
     private String outfilePrefix="lr2pg";
-    @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory")
+    @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory", required = true)
     private String exomiserDataDirectory;
     @Parameter(names={"--transcriptdb"}, description = "transcript database (USCS, Ensembl, RefSeq)")
     String transcriptDb="ucsc";
-
-    ///// TODO ADD THIS TO RESOURCES!!!!!!
-    /** Default name of the background frequency file. */
-    private final String BACKGROUND_FREQUENCY_FILE="background-freq.txt";
-
     /** Various metadata that will be used for the HTML org.monarchinitiative.lr2pg.output. */
     private Map<String,String> metadata;
 
@@ -101,10 +96,6 @@ public class PhenopacketCommand extends Lr2PgCommand{
             logger.fatal("Could not read phenopacket");
             e.printStackTrace();
         }
-        String hpoOboPath = String.format("%s%s%s", datadir, File.separator, "hp.obo");
-        String phenotypeHpoaPath = String.format("%s%s%s", datadir, File.separator, "phenotype.hpoa");
-        String hsapiensGeneInfoPath = String.format("%s%s%s", datadir, File.separator, "Homo_sapiens_gene_info.gz");
-        String mim2geneMedgenPath = String.format("%s%s%s", datadir, File.separator, "mim2gene_medgen");
 
 
         if (hasVcf) {
@@ -117,11 +108,12 @@ public class PhenopacketCommand extends Lr2PgCommand{
 
                 MVStore mvstore = factory.mvStore();
                 JannovarData jannovarData = factory.jannovarData();
+                String backgroundFrequencyFile = factory.getBackgroundFrequencyPath();
                 GenomeAssembly assembly = getGenomeAssembly(this.genomeAssembly);
                 SimpleVariant.setGenomeBuildForUrl(assembly);
 
                 Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap(jannovarData, mvstore, assembly);
-                GenotypeLikelihoodRatio genoLr = getGenotypeLR();
+                GenotypeLikelihoodRatio genoLr = getGenotypeLR(backgroundFrequencyFile);
                 Ontology ontology = factory.hpoOntology();
                 Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
                 PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
@@ -180,13 +172,12 @@ public class PhenopacketCommand extends Lr2PgCommand{
 
 
 
-    private GenotypeLikelihoodRatio getGenotypeLR() throws Lr2pgException {
-        String backgroundFile = String.format("%s%s%s",datadir, File.separator,BACKGROUND_FREQUENCY_FILE);
-        File f = new File(backgroundFile);
+    private GenotypeLikelihoodRatio getGenotypeLR(String backgroundFrequencyFile) throws Lr2pgException {
+        File f = new File(backgroundFrequencyFile);
         if (!f.exists()) {
-            throw new Lr2pgException(String.format("Could not find %s",BACKGROUND_FREQUENCY_FILE));
+            throw new Lr2pgException(String.format("Could not find \"%s\"",backgroundFrequencyFile));
         }
-        GenotypeDataIngestor ingestor = new GenotypeDataIngestor(backgroundFile);
+        GenotypeDataIngestor ingestor = new GenotypeDataIngestor(backgroundFrequencyFile);
         Map<TermId,Double> gene2back = ingestor.parse();
         return new GenotypeLikelihoodRatio(gene2back);
     }

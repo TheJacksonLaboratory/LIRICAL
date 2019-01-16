@@ -9,181 +9,262 @@
   <meta name="viewport" content="w idth=device-width, initial-scale=1, shrink-to-fit=no">
 
   <style>
-@charset "UTF-8";
+@import url("https://www.jax.org/_res/css/modules/jax-base/p01-fonts.css");
+@import url("https://www.jax.org/_res/css/modules/fonts-extended.css");
 
-article, aside, footer, header, main, nav, section {
-  display: block;
+
+* {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box
 }
 
-html, body, h1, ul, li, a, p, article, aside, footer, header, main, nav, section {
-  padding: 0;
-  margin: 0;
+html, body, h1, li, a, article, aside, footer, header, main, nav, section {
+	padding: 0;
+	margin: 0;
 }
 
-h2,h3 { padding 5px; }
-
-.banner {
-  background-color: #3C5488;// equal to rgb(60,84,136)
-  color: white;
-  padding: 10px 20px;
+html, body {
+	font-size:14px;
 }
 
 body {
-  width: 1120px;
-  margin-left: auto;
-  margin-right: auto;
-  background-color: #f0f0f0;
-  font-family: Helvetica, Arial, sans-serif;
-  font-size: 15px;
+	font-family:"DIN Next", Helvetica, Arial, sans-serif;
+	line-height:1.25;
+	background-color:#e0e3ea;
+}
+
+
+body > header, nav, main, body > section, footer {
+max-width:1200px;
+margin-left:auto;
+margin-right:auto;
+}
+
+@media(min-width:1440px) {
+body > header, nav, main, body > section, footer {
+    width:83.3333%;
+    max-width:unset;
+    }
+}
+
+main, body > section {
+	margin-top:1.5rem;
+	margin-bottom:1.5rem;
+}
+
+body > header, body > section {
+	padding:2.1rem 2rem 1.6rem;
+}
+
+a[href] {
+	color:#05396b;
+}
+
+a[href]:hover {
+	color:#009ed0;
+}
+
+p {
+	padding:0;
+	margin:0.75rem 0;
+}
+
+h1 {
+	font-family:"DIN Next", Helvetica, Arial, sans-serif;
+	font-weight:700;
+	font-size:1.8rem;
+	line-height:1;
+}
+
+/* Your really should address semantic issues with your markup that make selectors like this necessary */
+
+main > section > a[name="othergenes"] > h3,
+h2 {
+	font-family:"DIN Next", Helvetica, Arial, sans-serif;
+	font-weight:700;
+	font-size:1.5rem;
+	line-height:1;
+	margin:0 0 0.5rem;
+	padding:0;
+}
+
+h3 {
+	font-family:"DIN Next", Helvetica, Arial, sans-serif;
+	font-weight:700;
+	font-size:1.2rem;
+	line-height:1;
+	margin:0 0 0.5rem;
+	padding:0;
+}
+
+
+
+main ul, main ol {
+	margin:0.5rem 0 0.5rem 1.4rem;
+	padding:0;
+}
+
+main li {
+	margin:0.25rem 0;
+	padding:0;
+}
+
+
+
+
+.banner {
+	background-color: #05396b;
+	color: white;
 }
 
 nav {
-  background-color: rgb(60,84,136,0.9);
-  padding: 5px;
-  margin-top: 1px;
+	background-color: #05396b;
+	margin-top:1px;
+	overflow:auto;
+	zoom:1;
+	padding:0;
 }
 
-div#navi li a {
-  color: white;
+nav a[href] {
+	color:white;
+	text-decoration:none;
+	color:rgba(255,255,255,0.8);
+	font-size:1.2rem;
+	display:block;
+	padding:1rem;
+	font-weight:400;
 }
 
-div#navi li {
-  display: inline;
-  margin-left: 15px;
-  margin-right: 15px;
-  font-size: 20px;
-  font-variant: small-caps;
-  font-weight: bold;
+nav li:last-child a[href] {
+	padding-right:2.25rem;
 }
 
-li {
-  margin-left: 15px;
-  margin-right: 15px;
-  font-size: 12px;
+nav a[href]:hover {
+	color:#05396b;
+	background-color:#04c3ff;
 }
 
-section {
-  background-color: rgb(176,156,133);
-  margin-top: 10px;
-  padding: 5px;
+#navi ul {
+	display:table;
+	float:right;
+	margin:0;
 }
 
-article {
-  background-color: white;
-  margin-top: 5px;
-  margin-bottom 5px;
-  padding: 10px 15px;
+#navi li {
+	display:block;
+	float:left;
 }
 
-aside {
-  background-color: #bbbbbb;
-  width: 1px;
-  float: right;
-  padding: 20px;
-  margin-top: 10px;
+
+main > section:first-child {
+	margin-top:1.5rem;
+	margin-bottom:1.5rem;
+	background-color:white;
+	padding:2.1rem 2rem 1.6rem;
+
 }
 
-footer {
-  clear: both;
-  background-color: #20416c;
-  color: white;
-  padding: 5px 20px;
+main > section:nth-child(2) {
+	margin-top:1.5rem;
+	margin-bottom:0;
+	background-color:white;
+	padding:2.1rem 2rem 1.6rem;
+
+}
+
+main > section + section ~ section > article {
+	padding:2.1rem 2rem 1.6rem;
+	margin-top:1px;
+	background-color:white;
+}
+
+main > section > a[name="othergenes"] {
+	display:block;
+	margin-top:1.5rem;
+	background-color:white;
+	padding:2.1rem 2rem 1.6rem;
+}
+
+table {
+	border-collapse: collapse;
+	width:100%;
+	margin:0.5rem 0;
+}
+
+th, td {
+	text-align:left;
+	padding:0.4rem 0.5rem 0.25rem;
+}
+
+th {
+	background-color: #e0e3ea;
+	border-bottom:1px solid white;
 }
 
 table.redTable {
-  border: 2px solid #3C5488;
-  background-color: rgb(145,209,194,0.8);
-  width: 100%;
-  text-align: center;
-  border-collapse: collapse;
-}
-table.redTable td, table.redTable th {
-  border: 1px solid #AAAAAA;
-  padding: 3px 2px;
-}
-table.redTable tbody td {
-  font-size: 13px;
-}
-table.redTable tr:nth-child(even) {
-  background: rgb(243,155,127,0.8);
-}
-table.redTable thead {
-  background: #A40808;
-}
-table.redTable thead th {
-  font-size: 19px;
-  font-weight: bold;
-  color: #FFFFFF;
-  text-align: center;
-  border-left: 2px solid #A40808;
-}
-table.redTable thead th:first-child {
-  border-left: none;
+	width:auto;
+	min-width:50%;
 }
 
-table.redTable tfoot {
-  font-size: 13px;
-  font-weight: bold;
-  color: #FFFFFF;
-  background: #A40808;
+table.redTable td {
+	background-color:#f0f3fa;
 }
-table.redTable tfoot td {
-  font-size: 13px;
-}
-table.redTable tfoot .links {
-  text-align: right;
-}
-table.redTable tfoot .links a{
-  display: inline-block;
-  background: #FFFFFF;
-  color: #A40808;
-  padding: 2px 8px;
-  border-radius: 5px;
-}
- table.minimalistBlack {
-    border: 3px solid #000000;
-    width: 100%;
-    text-align: left;
-    border-collapse: collapse;
- }
- table.minimalistBlack td, table.minimalistBlack th {
-   border: 1px solid #000000;
-   padding: 5px 4px;
- }
 
- table.minimalistBlack.red td {
-  background: red;
-  }
+table.minimalistBlack th,
+table.minimalistBlack td {
+	border:2px solid #e0e3ea;
+}
 
-  table.minimalistBlack tbody td {
-    font-size: 13px;
-  }
-  table.minimalistBlack thead {
-    background: #CFCFCF;
-    background: -moz-linear-gradient(top, #dbdbdb 0%, #d3d3d3 66%, #CFCFCF 100%);
-    background: -webkit-linear-gradient(top, #dbdbdb 0%, #d3d3d3 66%, #CFCFCF 100%);
-    background: linear-gradient(to bottom, #dbdbdb 0%, #d3d3d3 66%, #CFCFCF 100%);
-    border-bottom: 3px solid #000000;
-  }
-  table.minimalistBlack thead th {
-    font-size: 15px;
-    font-weight: bold;
-    color: #000000;
-    text-align: left;
-  }
-  table.minimalistBlack tfoot {
-    font-size: 14px;
-    font-weight: bold;
-    color: #000000;
-    border-top: 3px solid #000000;
-  }
-  table.minimalistBlack tfoot td {
-    font-size: 14px;
-  }
-/* We use this to color cells with 'pathogenic' variants */
-   td.red {
-    background: rgba(137,145,180,0.3);
-    }
+table.minimalistBlack.red td {
+	background: red;
+}
+
+td.red {
+	background-color:#f0f3fa;
+}
+
+
+a[name="othergenes"] table.redTable {
+
+}
+
+a[name="othergenes"] table.redTable td {
+	font-size:0.928rem;
+	padding-top:0.35rem;
+	padding-bottom:0.15rem;
+	text-transform: lowercase
+}
+
+a[name="othergenes"] table.redTable > tbody > tr:nth-child(even) > td {
+	background-color:white;
+}
+
+a[name="othergenes"] table.redTable > tbody > tr:hover > td {
+	background-color:#cceaff;
+}
+
+a[name="othergenes"] table.redTable a {
+	text-decoration: none;
+	display:block;
+}
+
+a[name="othergenes"] table.redTable a:hover {
+	text-decoration: underline;
+}
+
+a[name="othergenes"] table.redTable a::first-letter {
+	text-transform: uppercase;
+}
+
+
+
+
+footer {
+
+	background-color: #05396b;
+	color: white;
+	padding: 1rem 2rem;
 }
   </style>
 </head>

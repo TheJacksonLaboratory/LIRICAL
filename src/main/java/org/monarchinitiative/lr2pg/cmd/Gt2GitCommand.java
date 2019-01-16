@@ -83,6 +83,7 @@ public class Gt2GitCommand extends Lr2PgCommand {
 
         Lr2PgFactory factory = builder.build();
         factory.qcExomiserFiles();
+        factory.qcGenomeBuild();
         logger.trace("Will output background frequency file to " + outputFileName);
 
         MVStore alleleStore = factory.mvStore();

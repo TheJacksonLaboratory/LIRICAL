@@ -63,40 +63,47 @@ public class Lr2PgFactory {
     private final GenomeAssembly assembly;
 
     private final Ontology ontology;
+    /** The path to the Exomiser database file, e.g., {@code 1811_hg19_variants.mv.db}. */
+    private String mvStorePath=null;
+    /** An object representing the Exomiser database. */
     private MVStore mvstore = null;
     private Multimap<TermId,TermId> gene2diseaseMultiMap=null;
     private Multimap<TermId,TermId> disease2geneIdMultiMap=null;
     private Map<TermId,String> geneId2SymbolMap=null;
+
+    /** Path of the Jannovar UCSC transcript file (from the Exomiser distribution) */
+    private String jannovarUcscPath=null;
+    /** Path of the Jannovar Ensembl transcript file (from the Exomiser distribution) */
+    private String jannovarEnsemblPath=null;
+    /** Path of the Jannovar RefSeq transcript file (from the Exomiser distribution) */
+    private String jannovarRefSeqPath=null;
+
+
     private JannovarData jannovarData=null;
 
     private Lr2PgFactory(Builder builder) {
         this.hpoOboFilePath = builder.hpOboPath;
         this.exomiserPath = builder.exomiserDataDir;
+        if (exomiserPath!=null) {
+            initializeExomiserPaths();
+        }
+        this.assembly=builder.getAssembly();
+        if (assembly.equals(GenomeAssembly.HG19)) {
+            this.backgroundFrequencyPath=Paths.get("src","main","resources","background","background-hg19.txt").toAbsolutePath().toString();
+        } else if (assembly.equals(GenomeAssembly.HG38)) {
+            this.backgroundFrequencyPath=Paths.get("src","main","resources","background","background-hg38.txt").toAbsolutePath().toString();
+        } else {
+            this.backgroundFrequencyPath=null; // should never happen
+        }
+
         this.geneInfoPath=builder.geneInfoPath;
         this.mim2genemedgenPath=builder.mim2genemedgenPath;
-        this.backgroundFrequencyPath=builder.backgroundFrequencyPath;
+
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
         this.datadir=builder.lr2pgDataDir;
-        String ga = builder.genomeAssembly;
-        if (ga!=null) {
-            switch (ga.toLowerCase()) {
-                case "hg19":
-                case "hg37":
-                case "grch37":
-                    this.assembly = GenomeAssembly.HG19;
-                    break;
-                case "hg38":
-                case "grc38":
-                    this.assembly = GenomeAssembly.HG38;
-                    break;
-                default:
-                    this.assembly = null;
-            }
-        } else {
-            this.assembly = null;
-        }
+
         ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
         for (String id : builder.observedHpoTerms) {
             TermId hpoId = TermId.of(id);
@@ -145,23 +152,39 @@ public class Lr2PgFactory {
             return this.transcriptdatabase;
     }
 
+    public String getBackgroundFrequencyPath() {
+        return backgroundFrequencyPath;
+    }
 
+    /**
+     * This is called if the user passes the {@code --exomiser/-e} option. We expect there to be
+     * the Jannovar and the MVStore files in the directory and want to construct the paths here.
+     */
+    private void initializeExomiserPaths() {
+        // Remove the trailing directory slash if any
+        this.exomiserPath=getPathWithoutTrailingSeparatorIfPresent(this.exomiserPath);
+        String basename=FilenameUtils.getBaseName(this.exomiserPath);
+        String filename=String.format("%s_variants.mv.db", basename);
+        this.mvStorePath=String.format("%s%s%s", exomiserPath,File.separator,filename);
+        filename=String.format("%s_transcripts_ucsc.ser", basename);
+        this.jannovarUcscPath=filename;
+        filename=String.format("%s_transcripts_ensembl.ser", basename);
+        this.jannovarEnsemblPath=filename;
+        filename=String.format("%s_transcripts_refseq.ser", basename);
+        this.jannovarRefSeqPath=filename;
+
+    }
 
 
     /** @return MVStore object with Exomiser data on variant pathogenicity and frequency. */
     public MVStore mvStore() {
-        // Remove the trailing directory slash if any
-        this.exomiserPath= getPathWithoutTrailingSeparatorIfPresent(this.exomiserPath);
-        String basename=FilenameUtils.getBaseName(this.exomiserPath);
-        String filename=String.format("%s_variants.mv.db", basename);
-        String fullpath=String.format("%s%s%s", exomiserPath,File.separator,filename);
-        File f = new File(fullpath);
+        File f = new File(this.mvStorePath);
         if (!f.exists()) {
-            throw new Lr2PgRuntimeException("[FATAL] Could not find Exomiser database file/variants.mv.db at " + fullpath);
+            throw new Lr2PgRuntimeException("[FATAL] Could not find Exomiser database file/variants.mv.db at " + this.mvStorePath);
         }
         if (mvstore==null) {
             mvstore = new MVStore.Builder()
-                    .fileName(fullpath)
+                    .fileName(this.mvStorePath)
                     .readOnly()
                     .open();
         }
@@ -384,7 +407,28 @@ public class Lr2PgFactory {
         } else {
             logger.trace("Exomiser data: {}", exomiserPath);
         }
+        File mvStoreFile=new File(this.mvStorePath);
+        if (!mvStoreFile.exists()) {
+            logger.fatal("Could not find Exomiser database file at {}",this.mvStorePath);
+            throw new Lr2PgRuntimeException(String.format("Could not find Exomiser database file at %s",mvStorePath));
+        }
+    }
 
+    /**
+     * Perform Q/C of the input variables to try to ensure that the correct (matching) genome build is being used.
+     */
+    public void qcGenomeBuild() {
+        if (this.assembly.equals(GenomeAssembly.HG19)) {
+            if (! this.exomiserPath.contains("hg19")) {
+                throw new Lr2PgRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg19", this.exomiserPath));
+            }
+        } else if (this.assembly.equals(GenomeAssembly.HG38)) {
+            if (! this.exomiserPath.contains("hg38")) {
+                throw new Lr2PgRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg38", this.exomiserPath));
+            }
+        } else {
+            logger.trace("Genome assembly: {}",this.assembly.toString());
+        }
     }
 
 
@@ -429,7 +473,21 @@ public class Lr2PgFactory {
         }
 
 
-
+        /** @return an {@link org.monarchinitiative.exomiser.core.genome.GenomeAssembly} object representing the genome build.*/
+        public GenomeAssembly getAssembly() {
+            if (genomeAssembly!=null) {
+                switch (genomeAssembly.toLowerCase()) {
+                    case "hg19":
+                    case "hg37":
+                    case "grch37":
+                        return GenomeAssembly.HG19;
+                    case "hg38":
+                    case "grc38":
+                        return GenomeAssembly.HG38;
+                }
+            }
+            return GenomeAssembly.HG38; // the default.
+        }
 
 
         public Builder backgroundFrequency(String bf) {
