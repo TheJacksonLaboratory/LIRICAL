@@ -7,30 +7,25 @@ these files into the src/main/resources/background folder so that end users do n
 files themselves. However, we leave the source code in the project for those who desire to reproduce or
 extend the findings in the manuscript. The main class that implements this is
 GenicIntoleranceCalculator. The same class can also be used to extract ClinVar pathogenicity scores (see :ref:`ClinVar <clinvar>`).
+The command is hidden in the default command line interface, but can be seen with the following. ::
 
+    $ java -jar target/Lr2pg.jar gt2git -h
 
 
 gt2git
 ~~~~~~
 
-
-
-LR2PG makes use of the Exomiser data resources, which need to be downloaded from the Exomiser FTP site
+To run the gt2git command, download the desired Exomiser data resource from the Exomiser FTP site
 (https://data.monarchinitiative.org/exomiser/latest/).  For instance, to do the analysis with the hg38
-genome assembly, download the data file 1805_hg38.zip  and unzip it. The Exomiser will first calculate
+genome assembly (Exomiser version 1811), download the data file ``1811_hg38.zip``  and unzip it. The Exomiser will first calculate
 the expected background frequency of predicted pathogenic variants and write this to a file that will
 be used in subsequent steps (this will take about an hour on a typical laptop). ::
 
-    $ java -jar target/Lr2pg.jar gt2git -m <mvstore> -j <jannovar> -g <genome>
+    $ java -jar target/Lr2pg.jar gt2git -e <exomiser-data-path> -g <genome>
 
 
-In this command, ``mvstore`` refers to the path of the Exomiser data store, e.g., ``1802_hg19_variants.mv.db``;
-``jannovar`` refers to the path of the Jannovar transcript data file, e.g., ``1802_hg19_transcripts_refseq.ser``;
-and ``genome`` refers to the genome build. Use the corresponding genome build, ``hg19`` or ``hg38``.
+In this command, ``exomiser-data-path`` refers to the path of the Exomiser data directory, e.g., ``1802_hg19``,
+and ``genome`` refers to the genome build. Use the  genome build that corresponds to the Exomiser
+genome build, ``hg19`` or ``hg38``.
 
-This command will output the background frequency file to the data direcotry (by default, a subdirectory call ``data`` in the
-current working direcgtory; the data directory can also be specified with the ``-d`` flag). THe location of this file must be
-specified in the YAML configuration file to run the prioritization function.
 
-For the final release, we will add the background files for hg19 and hg38 to the distribution, but let's finish testing
-prior to doing that.
