@@ -60,7 +60,7 @@ public class GridSearch  {
 
         int[] termnumber = {1,2,3,4,5,6,7,8,9,10};
         int[] randomtermnumber = {0,1,2,3,4};
-        String outfilename=String.format("grid_%d_cases_%s.txt",
+        String outfilename=String.format("grid_%d_cases_%s.R",
                 n_cases_to_simulate_per_run,
                 useImprecision?"imprecise":"precise"
                 );
@@ -82,14 +82,21 @@ public class GridSearch  {
             }
             // output a file that we will input as an R data frame.
             // see the read-the-docs documentation for how to create a graphic in R with this
-            String[] headerfields={"n.terms","n.random","rank1"};
-            String header=String.join("\t",headerfields);
-            writer.write(header + "\n");
-            for (int i = 0; i < termnumber.length; i++) {
-                for (int j = 0; j < randomtermnumber.length; j++) {
-                    writer.write(String.format("%d\t%d\t%.2f\n", termnumber[i],randomtermnumber[j],100.00 * Z[i][j]));
+            writer.write("library(plot3D)\n");
+            writer.write("mat <- matrix(\n");
+
+            List<Double> values=new ArrayList<>();
+            for (int j = 0; j < randomtermnumber.length; j++) {
+                for (int i = 0; i < termnumber.length; i++) {
+                    values.add(Z[i][j]);
                 }
             }
+            String valuestring=values.stream().map(String::valueOf).collect(Collectors.joining(","));
+            writer.write("c(" + valuestring +"),\n");
+            writer.write("nrow=5,\nncol=10,\nbyrow=TRUE)\n");
+            writer.write("hist3D(z = mat, scale = FALSE, expand = 0.5, bty = \"g\", phi = 20,\n" +
+                    "      col = \"#0072B2\", border = \"black\", shade = 0.2, ltheta = 99,\n" +
+                    "      space = 0.3, ticktype = \"detailed\", d = 2)");
         } catch (IOException e) {
             throw new Lr2pgException("I/O error: " + e.getMessage());
         }

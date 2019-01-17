@@ -12,8 +12,6 @@ hs_err_pid*
 .idea
 target/
 /lr2pg.iml
-Results.txt
-ResultsLR.txt
 lr2pg.log.1
 lr2pg.log.2
 data/
