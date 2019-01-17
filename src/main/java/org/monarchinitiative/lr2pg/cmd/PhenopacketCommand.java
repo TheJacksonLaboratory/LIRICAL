@@ -30,6 +30,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,13 +51,9 @@ public class PhenopacketCommand extends Lr2PgCommand{
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
     @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
     private double LR_THRESHOLD=0.01;
-//    @Parameter(names={"-m","--mvstore"}, description = "path to MV Store Exomiser database file", required = true)
-//    private String mvpath;
-//    @Parameter(names={"-j","--jannovar"}, description = "path to Jannovar transcript information file", required = true)
-//    private String jannovarPath;
     @Parameter(names={"-o", "--outfile"},description = "prefix of outfile")
     private String outfilePrefix="lr2pg";
-    @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory", required = true)
+    @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory")
     private String exomiserDataDirectory;
     @Parameter(names={"--transcriptdb"}, description = "transcript database (USCS, Ensembl, RefSeq)")
     String transcriptDb="ucsc";
@@ -105,6 +102,10 @@ public class PhenopacketCommand extends Lr2PgCommand{
                         .genomeAssembly(this.genomeAssembly)
                         .exomiser(this.exomiserDataDirectory)
                         .build();
+                factory.qcHumanPhenotypeOntologyFiles();
+                factory.qcExternalFilesInDataDir();
+                factory.qcExomiserFiles();
+                factory.qcGenomeBuild();
 
                 MVStore mvstore = factory.mvStore();
                 JannovarData jannovarData = factory.jannovarData();
@@ -146,6 +147,8 @@ public class PhenopacketCommand extends Lr2PgCommand{
                 Lr2PgFactory factory = new Lr2PgFactory.Builder()
                         .datadir(this.datadir)
                         .build();
+                factory.qcHumanPhenotypeOntologyFiles();
+                factory.qcExternalFilesInDataDir();
                 Ontology ontology = factory.hpoOntology();
                 Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
                 PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
@@ -154,7 +157,10 @@ public class PhenopacketCommand extends Lr2PgCommand{
                         .diseaseMap(diseaseMap)
                         .phenotypeLr(phenoLr);
 
-                CaseEvaluator evaluator = caseBuilder.build();
+                this.metadata=new HashMap<>();
+                metadata.put("sample_name","todo");
+
+                CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
                 HpoCase hcase = evaluator.evaluate();
                 //hcase.outputTopResults(5,ontology);// TODO remove this outputs to the shell
                 if (outputTSV) {
