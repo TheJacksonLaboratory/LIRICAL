@@ -4,9 +4,21 @@ Likelihood ratio analysis of phenotypes and genotypes
 
 ## Likelihood Ratio Analysis of Phenotype/Genotype Data for Genomic Diagnostics
 
-TODO-- finish this README.
+Detailed documentation is available in the ``docs`` subdirectory and will be put onto the public read-the docs site
+as soon as we make this repository public. See below for how to make the read-the-docs locally.
 
-For now please see the read the docs in the docs/ subdirectory!
+
+## Running LR2PG for the impatient
+
+Please see the read-the-docs page for detailed instructions. For those who just can't wait, the following
+steps are sufficient to get LR2PG running on your system and to perform an initial analysis.
+
+
+
+
+
+
+
 
 ## How to generate the documentation
 
