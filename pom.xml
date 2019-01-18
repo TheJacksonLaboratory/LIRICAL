@@ -20,6 +20,7 @@
         <junit.version>5.1.0</junit.version>
         <phenol.version>1.3.2</phenol.version>
         <exomiser.version>11.0.0</exomiser.version>
+        <slf4j.version>1.7.24</slf4j.version>
     </properties>
 
 
@@ -41,16 +42,40 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+
+        <!-- SLF4J API -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <!--
+         Embedded components such as libraries or frameworks should not declare a dependency on any SLF4J binding
+         but only depend on slf4j-api. When a library declares a compile-time dependency on a SLF4J binding,
+         it imposes that binding on the end-user, thus negating SLF4J's purpose.
+          -->
+
+        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.11.1</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.11.1</version>
+            <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+
         <dependency>
             <groupId>org.monarchinitiative.phenol</groupId>
             <artifactId>phenol-core</artifactId>

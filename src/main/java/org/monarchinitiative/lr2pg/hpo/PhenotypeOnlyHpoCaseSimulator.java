@@ -110,6 +110,20 @@ public class PhenotypeOnlyHpoCaseSimulator {
         return proportionAtRank1;
     }
 
+    public TermId getNextRandomDisease(Random r) {
+        int i = r.nextInt(diseaseMap.size());
+        TermId tid = termIndices[i];
+        HpoDisease disease = diseaseMap.get(tid);
+        while (disease.getPhenotypicAbnormalities().size() < this.n_terms_per_case) {
+            i = r.nextInt(diseaseMap.size());
+            tid = termIndices[i];
+            disease = diseaseMap.get(tid);
+        }
+        return tid;
+    }
+
+
+
     /** This will run simulations according to the parameters {@link #n_cases_to_simulate},
      * {@link #n_terms_per_case} and {@link #n_noise_terms}.
      * @throws Lr2pgException if there is an issue running the simulation
@@ -120,13 +134,15 @@ public class PhenotypeOnlyHpoCaseSimulator {
         logger.trace(String.format("Simulating n=%d HPO cases with %d random terms and %d noise terms per case.",n_cases_to_simulate,n_terms_per_case,n_noise_terms));
         int size = diseaseMap.size();
 
-        int[] randomIndices=IntStream.generate(() -> new Random().nextInt(size)).limit(n_cases_to_simulate).toArray();
+        //int[] randomIndices=IntStream.generate(() -> new Random().nextInt(diseaseMap.size())).limit(n_cases_to_simulate).toArray();
+
+        Random r = new Random();
 
         for (int i=0;i<n_cases_to_simulate;++i) {
-            TermId diseaseToSimulate = termIndices[randomIndices[i]];
+            TermId diseaseToSimulate = getNextRandomDisease(r);//termIndices[randomIndices[i]];
             HpoDisease disease = diseaseMap.get(diseaseToSimulate);
             //logger.trace("Simulating disease "+diseasename);
-            if (disease.getNumberOfPhenotypeAnnotations() == 0) {
+            if (disease.getNumberOfPhenotypeAnnotations() <this.n_terms_per_case) {
                 logger.trace(String.format("Skipping disease %s [%s] because it has no phenotypic annotations",
                         disease.getName(),
                         disease.getDiseaseDatabaseId()));
