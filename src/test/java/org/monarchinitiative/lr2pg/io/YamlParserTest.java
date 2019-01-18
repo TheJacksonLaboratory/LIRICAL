@@ -10,12 +10,16 @@ import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class YamlParserTest {
 
     private static String demo1path;
+    private static String demo3path;
 
     @BeforeAll
     static void init() throws FileNotFoundException{
@@ -25,6 +29,11 @@ class YamlParserTest {
             throw new FileNotFoundException("Could not find demo1.yml file");
         }
         demo1path = resource.getFile();
+        resource = classLoader.getResource("yaml/demo3.yml");
+        if (resource==null){
+            throw new FileNotFoundException("Could not find demo3.yml file");
+        }
+        demo3path = resource.getFile();
     }
 
     @Test
@@ -68,6 +77,27 @@ class YamlParserTest {
         assertEquals(expectedMvStore,parser.getMvStorePath());
         String expectedJannovar = "/home/robinp/data/exomiserdata/1802_hg19/1802_hg19_transcripts_refseq.ser";
         assertEquals(expectedJannovar,parser.jannovarFile());
+    }
+
+    /**
+     * The default path for the background frequency is src/main/resources/background/ but it can be
+     * overrridden in the YAML file
+     */
+    @Test
+    void testBackFrequencyPath() {
+        YamlParser parser = new YamlParser(demo1path);
+        String expected="data/background-hg38.txt";
+        Optional<String> backgroundOpt = parser.getBackgroundPath();
+        assertTrue(backgroundOpt.isPresent());
+        assertEquals(expected,backgroundOpt.get());
+    }
+
+    /** demo3.yml does not indicate the background frequency and thus isPresent should be false.*/
+    @Test
+    void testBackFrequencyPathNotPresent() {
+        YamlParser parser = new YamlParser(demo3path);
+        Optional<String> backgroundOpt = parser.getBackgroundPath();
+        assertFalse(backgroundOpt.isPresent());
     }
 
 

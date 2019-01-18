@@ -12,6 +12,7 @@ import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * This class ingests a YAML file with parameters that will be used for the analysis.
@@ -40,7 +41,7 @@ public class YamlParser {
         }
     }
 
-    public String getMvStorePath() throws Lr2pgException {
+    public String getMvStorePath()  {
         if (yconfig.getAnalysis().containsKey("exomiser")) {
             String exomiserPath = yconfig.getAnalysis().get("exomiser");
             // Remove the trailing directory slash if any
@@ -49,7 +50,7 @@ public class YamlParser {
             String filename=String.format("%s_variants.mv.db", basename);
             return String.format("%s%s%s", exomiserPath,File.separator,filename);
         } else {
-            throw new Lr2pgException("No MvStore path found in YAML configuration file");
+            throw new Lr2PgRuntimeException("No MvStore path found in YAML configuration file");
         }
     }
 
@@ -61,6 +62,20 @@ public class YamlParser {
             return path.substring(0,i);
         } else {
             return path;
+        }
+    }
+
+    /**
+     * The YAML file is allowed to have an element called analysis/background_freq for the background
+     * frequency file. If it is present, we return in in an Optional object. Usually, users should use
+     * the default files and not include this element in the yaml file.
+     * @return path to the background-frequency path if present, otherwise an empty Optional object.
+     */
+    public Optional<String> getBackgroundPath() {
+        if (yconfig.getAnalysis().containsKey("background_freq")) {
+            return Optional.of(yconfig.getAnalysis().get("background_freq"));
+        } else {
+            return Optional.empty();
         }
     }
 
@@ -96,21 +111,28 @@ public class YamlParser {
         return "UCSC";
     }
 
-    public String getExomiserDataDir() throws Lr2pgException{
+    public String getExomiserDataDir(){
         if (yconfig.getAnalysis().containsKey("exomiser")) {
             String datadir=yconfig.getAnalysis().get("exomiser");
             datadir=getPathWithoutTrailingSeparatorIfPresent(datadir);
             return datadir;
         }  else {
-            throw new Lr2pgException("No exomiser path found in YAML configuration file");
+            throw new Lr2PgRuntimeException("No exomiser path found in YAML configuration file");
         }
     }
 
-    public String getDataDir() throws Lr2pgException{
+    /**
+     * In most cases, users should use the default data directory ("data") that is created by the LR2PG download
+     * command by default. If users choose another path, they should enter a datadir element in the YAML file.
+     * An empty Optional object is return if nothing is present in the YAML file, indicating that the default
+     * should be used
+     * @return Path of non-default data directory, if present.
+     */
+    public Optional<String> getDataDir() {
         if (yconfig.getAnalysis().containsKey("datadir")) {
-            return yconfig.getAnalysis().get("datadir");
+            return Optional.of(yconfig.getAnalysis().get("datadir"));
         }  else {
-            throw new Lr2pgException("No data/mim2gene_medgen path found in YAML configuration file");
+            return Optional.empty();
         }
     }
 
@@ -176,11 +198,11 @@ public class YamlParser {
     }
 
     /**@return A String representing the genome assembly of the VCF file (should be hg19 or hg38). */
-    public String getGenomeAssembly() throws Lr2pgException {
+    public String getGenomeAssembly() {
         if (yconfig.getAnalysis().containsKey("genomeAssembly")) {
             return yconfig.getAnalysis().get("genomeAssembly");
         }  else {
-            throw new Lr2pgException("genomeAssembly not found in YAML configuration file");
+            throw new Lr2PgRuntimeException("genomeAssembly not found in YAML configuration file");
         }
     }
 
@@ -194,11 +216,16 @@ public class YamlParser {
         }
     }
 
-    public String vcfPath() throws Lr2pgException {
+    /**
+     * The user can choose to run LR2PG without a VCF file. Then, a phenotype only analysis is performed.
+     * In this case, we return an empty Optional object.
+     * @return Path to VCF file, if present.
+     */
+    public Optional<String> vcfPath()  {
         if (yconfig.getAnalysis().containsKey("vcf")) {
-            return yconfig.getAnalysis().get("vcf");
+            return Optional.of(yconfig.getAnalysis().get("vcf"));
         }  else {
-            throw new Lr2pgException("No VCF file path found in YAML configuration file");
+            return Optional.empty();
         }
     }
 

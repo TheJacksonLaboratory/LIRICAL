@@ -11,7 +11,6 @@ import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
-import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.lr2pg.io.YamlParser;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
@@ -19,14 +18,12 @@ import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.output.HtmlTemplate;
 import org.monarchinitiative.lr2pg.output.Lr2pgTemplate;
 import org.monarchinitiative.lr2pg.output.TsvTemplate;
-import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -52,13 +49,10 @@ public class VcfCommand extends Lr2PgCommand {
     private boolean outputTSV=false;
     @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
     private String yamlPath;
-    /** Directory where various files are downloaded/created. */
-    @Parameter(names={"-d","--data"}, description ="directory to download data (default: ${DEFAULT-VALUE})" )
-    private String datadir="data";
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
     @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
     private double LR_THRESHOLD=0.01;
-    @Parameter(names={"-o", "--outfile"},description = "prefix of outfile")
+    /** Prefix for the output files (defailt {@code lr2pg}). Can be set via the YAML file. */
     private String outfilePrefix="lr2pg";
 
     /**
@@ -140,22 +134,9 @@ public class VcfCommand extends Lr2PgCommand {
      * @return An {@link Lr2PgFactory} object with various settings.
      */
     private Lr2PgFactory deYamylate(String yamlPath) {
-
-        Lr2PgFactory factory = null;
-
-        try {
-            YamlParser yparser = new YamlParser(yamlPath);
-            Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().
-                    datadir(yparser.getDataDir())
-                    .exomiser(yparser.getExomiserDataDir())
-                    .genomeAssembly(yparser.getGenomeAssembly())
-                    .observedHpoTerms(yparser.getHpoTermList())
-                    .transcriptdatabase(yparser.transcriptdb())
-                    .vcf(yparser.vcfPath());
-            factory = builder.buildForGenomicDiagnostics();
-        } catch (Lr2pgException e) {
-            e.printStackTrace();
-        }
+        YamlParser yparser = new YamlParser(yamlPath);
+        Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().yaml(yparser);
+        Lr2PgFactory  factory = builder.buildForGenomicDiagnostics();
         return factory;
     }
 }
