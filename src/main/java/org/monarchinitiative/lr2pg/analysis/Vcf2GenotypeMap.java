@@ -78,11 +78,19 @@ public class Vcf2GenotypeMap {
      */
     private final GenomeAssembly genomeAssembly;
 
-    private final Map<String,String> vcfMetaData=new HashMap<>();
+   // private final Map<String,String> vcfMetaData=new HashMap<>();
     /**
      * Key: an EntrezGene gene id; value a {@link Gene2Genotype} obhject with variants/genotypes in this gene.
      */
     private Map<TermId, Gene2Genotype> gene2genotypeMap;
+    /** Number of samples in the VCF file. */
+    private int n_samples;
+    /** Name of the proband in the VCF file. */
+    private String samplename;
+    /** List of all names in the VCF file */
+    private List<String> samplenames;
+
+
     /**
      * A map with data from the Exomiser database.
      */
@@ -106,39 +114,20 @@ public class Vcf2GenotypeMap {
     }
 
     /** map with some information about the VCF file that will be shown on the hTML org.monarchinitiative.lr2pg.output. */
-    public Map<String, String> getVcfMetaData() {
-        return vcfMetaData;
-    }
+//    public Map<String, String> getVcfMetaData() {
+//        return vcfMetaData;
+//    }
 
     public Map<TermId, Gene2Genotype> vcf2genotypeMap() {
         // whether or not to just look at a specific genomic interval
         final boolean useInterval = false;
         this.gene2genotypeMap = new HashMap<>();
         try (VCFFileReader vcfReader = new VCFFileReader(new File(vcfPath), useInterval)) {
-            final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(vcfPath));
-            if (seqDict != null) {
-                final GenomeRegionListFactoryFromSAMSequenceDictionary factory = new GenomeRegionListFactoryFromSAMSequenceDictionary();
-//                this.progressReporter = new ProgressReporter(factory.construct(seqDict), 60);
-//                this.progressReporter.printHeader();
-//                this.progressReporter.start();
-            } else {
-                logger.warn("Progress reporting does not work because VCF file is missing the contig "
-                        + "lines in the header.");
-            }
-
-
+            //final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(vcfPath));
             VCFHeader vcfHeader = vcfReader.getFileHeader();
-            List<String> sampleNames = vcfHeader.getSampleNamesInOrder();
-            this.vcfMetaData.put("N_samples",String.valueOf(sampleNames.size()));
-            if (sampleNames.size()==1) {
-                this.vcfMetaData.put("sample_name",sampleNames.get(0));
-            } else {
-                String names=String.join("; ",sampleNames);
-                this.vcfMetaData.put("sample_name",sampleNames.get(0));
-                this.vcfMetaData.put("sample_names",names);
-            }
-            this.vcfMetaData.put("genome",this.genomeAssembly.toString());
-
+            this.samplenames = vcfHeader.getSampleNamesInOrder();
+            this.n_samples=samplenames.size();
+            this.samplename=samplenames.get(0);
             logger.trace("Annotating VCF at " + vcfPath);
             final long startTime = System.nanoTime();
             CloseableIterator<VariantContext> iter = vcfReader.iterator();
@@ -214,25 +203,21 @@ public class Vcf2GenotypeMap {
         return gene2genotypeMap;
     }
 
-    /**
-     * For testing. Show all of the genotypes we obtain from the VCF file.
-     */
-    private void debugPrintGenotypes() {
-        int i = 0;
-        for (TermId geneId : this.gene2genotypeMap.keySet()) {
-            i++;
-            Gene2Genotype gtype = gene2genotypeMap.get(geneId);
-            if (gtype.hasPathogenicClinvarVar()) {
-                System.err.print("CLINVAR");
-            }
-            if (gtype.hasPredictedPathogenicVar()) {
-                System.err.println(i + ") " + gtype);
-
-            }
-        }
-        System.err.println("Number of genotypes " + gene2genotypeMap.size());
+    public int getN_samples() {
+        return n_samples;
     }
 
+    public String getSamplename() {
+        return samplename;
+    }
+
+    public List<String> getSamplenames() {
+        return samplenames;
+    }
+
+    public GenomeAssembly getGenomeAssembly() {
+        return genomeAssembly;
+    }
 
     /**
      * Calculate a pathogenicity score for the current variant in the same way that the Exomiser does.

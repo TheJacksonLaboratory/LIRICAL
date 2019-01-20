@@ -302,6 +302,9 @@ footer {
           </#list>
         </ul>
       </p>
+      <#if vcf_file?has_content>
+          <p>VCF file: ${vcf_file}</p>
+      </#if>
     </article>
   </section>
 

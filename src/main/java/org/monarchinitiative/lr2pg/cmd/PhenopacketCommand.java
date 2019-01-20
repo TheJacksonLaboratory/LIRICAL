@@ -82,6 +82,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
     public void run() {
 // read the Phenopacket
         logger.trace("Will analyze phenopacket at " + phenopacketPath);
+        this.metadata=new HashMap<>();
         try {
             PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
             this.vcfPath = importer.getVcfPath();
@@ -157,7 +158,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
                         .diseaseMap(diseaseMap)
                         .phenotypeLr(phenoLr);
 
-                this.metadata=new HashMap<>();
+
                 metadata.put("sample_name","todo");
 
                 CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
@@ -214,7 +215,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
 
         Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath, jannovarData, mvstore, assembly);
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
-        this.metadata = vcf2geno.getVcfMetaData();
+        this.metadata.put("sample_name",vcf2geno.getSamplename());
         return genotypeMap;
     }
 

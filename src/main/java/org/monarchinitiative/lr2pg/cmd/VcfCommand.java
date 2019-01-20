@@ -24,6 +24,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -63,31 +64,20 @@ public class VcfCommand extends Lr2PgCommand {
 
 
 
-    /**
-     * Identify the variants and genotypes from the VCF file.
-     * @return a map with key: An NCBI Gene Id, and value: corresponding {@link Gene2Genotype} object.
-     */
-    private Map<TermId, Gene2Genotype> getVcf2GenotypeMap(String vcf,MVStore mvstore,JannovarData jannovarData, GenomeAssembly assembly ) {
-        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcf, jannovarData, mvstore, assembly);
-        Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
-        this.metadata = vcf2geno.getVcfMetaData();
-        return genotypeMap;
-    }
-
-
-
-
-
     @Override
     public void run() throws Lr2pgException {
         this.factory = deYamylate(this.yamlPath);
         factory.qcYaml();
-        String vcf = factory.vcfPath();
+        this.metadata=new HashMap<>();
+        String vcfFilePath = factory.vcfPath();
         MVStore mvstore = factory.mvStore();
         JannovarData jannovarData = factory.jannovarData();
         GenomeAssembly assembly = factory.getAssembly();
-        Map<TermId, Gene2Genotype> genotypeMap = getVcf2GenotypeMap(vcf,mvstore,jannovarData,assembly);
-        //debugPrintGenotypeMap(genotypeMap);
+        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfFilePath, jannovarData, mvstore, assembly);
+        Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
+        this.metadata.put("sample_name", vcf2geno.getSamplename());
+        this.metadata.put("vcf_file", vcfFilePath);
+        vcf2geno=null;// no longer needed, GC if necessary
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
         List<TermId> observedHpoTerms = factory.observedHpoTerms();
         Ontology ontology = factory.hpoOntology();
