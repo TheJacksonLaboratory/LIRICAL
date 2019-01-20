@@ -229,7 +229,7 @@ a[name="othergenes"] table.redTable {
 
 }
 
-a[name="othergenes"] table.redTable td {
+a[name="othergenes"] table.redTable td.disease {
 	font-size:0.928rem;
 	padding-top:0.35rem;
 	padding-bottom:0.15rem;
@@ -408,7 +408,7 @@ footer {
       <table class="redTable">
         <tr><th style="width:60%">Disease</th><th>Gene</th><th>Post test probability</th><th>variant count</th></tr>
         <#list improbdiff as ipd>
-          <tr><td><a href="https://omim.org/${ipd.diseaseId}" target="_blank">${ipd.diseaseName}</a></td><td>${ipd.geneName}</td><td>${ipd.posttestProbability}</td><td>${ipd.varcount}</td></tr>
+          <tr><td class="disease"><a href="https://omim.org/${ipd.diseaseId}" target="_blank">${ipd.diseaseName}</a></td><td><i>${ipd.geneName}</i></td><td>${ipd.posttestProbability}</td><td>${ipd.varcount}</td></tr>
         </#list>
        </table>
     </article>
