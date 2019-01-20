@@ -24,6 +24,9 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +80,9 @@ public class VcfCommand extends Lr2PgCommand {
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
         this.metadata.put("sample_name", vcf2geno.getSamplename());
         this.metadata.put("vcf_file", vcfFilePath);
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+        Date date = new Date();
+        this.metadata.put("analysis_date", dateFormat.format(date));
         vcf2geno=null;// no longer needed, GC if necessary
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
         List<TermId> observedHpoTerms = factory.observedHpoTerms();

@@ -30,6 +30,9 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +86,9 @@ public class PhenopacketCommand extends Lr2PgCommand{
 // read the Phenopacket
         logger.trace("Will analyze phenopacket at " + phenopacketPath);
         this.metadata=new HashMap<>();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+        Date date = new Date();
+        this.metadata.put("analysis_date", dateFormat.format(date));
         try {
             PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
             this.vcfPath = importer.getVcfPath();

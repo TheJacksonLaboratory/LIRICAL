@@ -305,6 +305,7 @@ footer {
       <#if vcf_file?has_content>
           <p>VCF file: ${vcf_file}</p>
       </#if>
+      <p>LR2PG analysis performed on ${analysis_date}.</p>
     </article>
   </section>
 
