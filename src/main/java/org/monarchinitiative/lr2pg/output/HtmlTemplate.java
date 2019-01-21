@@ -28,8 +28,8 @@ public class HtmlTemplate extends Lr2pgTemplate {
 
     /** Threshold posterior probability to show a differential diagnosis in detail. */
     private final double THRESHOLD;
-
-    private final int MIN_DIAGNOSES_TO_SHOW=5;
+    /** Have the HTML output show at least this many differntials (default: 5). */
+    private final int MIN_DIAGNOSES_TO_SHOW;
 
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
@@ -45,9 +45,11 @@ public class HtmlTemplate extends Lr2pgTemplate {
                         Map<TermId, Gene2Genotype> genotypeMap,
                         Map<TermId,String> geneid2sym,
                         Map<String,String> metadat,
-                        double thres){
+                        double thres,
+                        int minDifferentials){
         super(hcase, ontology, genotypeMap, geneid2sym, metadat);
         this.THRESHOLD=thres;
+        this.MIN_DIAGNOSES_TO_SHOW=minDifferentials;
 
         List<DifferentialDiagnosis> diff = new ArrayList<>();
         List<ImprobableDifferential> improbdiff = new ArrayList<>();
@@ -59,7 +61,7 @@ public class HtmlTemplate extends Lr2pgTemplate {
         int counter=0;
         for (TestResult result : hcase.getResults()) {
             String symbol=EMPTY_STRING;
-            if (result.getPosttestProbability() > THRESHOLD) {
+            if (result.getPosttestProbability() > THRESHOLD || counter < MIN_DIAGNOSES_TO_SHOW) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.trace("Diff diag for " + result.getDiseaseName());
                 if (result.hasGenotype()) {
@@ -122,9 +124,11 @@ public class HtmlTemplate extends Lr2pgTemplate {
     public HtmlTemplate(HpoCase hcase,
                         Ontology ontology,
                         Map<String,String> metadat,
-                        double thres){
+                        double thres,
+                        int minDifferentials){
         super(hcase, ontology, metadat);
         this.THRESHOLD=thres;
+        this.MIN_DIAGNOSES_TO_SHOW=minDifferentials;
 
         List<DifferentialDiagnosis> diff = new ArrayList<>();
         List<ImprobableDifferential> improbdiff = new ArrayList<>();
@@ -178,7 +182,6 @@ public class HtmlTemplate extends Lr2pgTemplate {
             te.printStackTrace();
         }
     }
-
 
 
 

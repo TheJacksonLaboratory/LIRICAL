@@ -58,7 +58,8 @@ public class VcfCommand extends Lr2PgCommand {
     private double LR_THRESHOLD=0.01;
     /** Prefix for the output files (defailt {@code lr2pg}). Can be set via the YAML file. */
     private String outfilePrefix="lr2pg";
-
+    @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
+    private int minDifferentialsToShow=5;
     /**
      * Command pattern to coordinate analysis of a VCF file with LR2PG.
      */
@@ -112,7 +113,13 @@ public class VcfCommand extends Lr2PgCommand {
 
 
     private void outputHTML(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
-        HtmlTemplate caseoutput = new HtmlTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata,this.LR_THRESHOLD);
+        HtmlTemplate caseoutput = new HtmlTemplate(hcase,
+                ontology,
+                genotypeMap,
+                this.geneId2symbol,
+                this.metadata,
+                this.LR_THRESHOLD,
+                minDifferentialsToShow);
         caseoutput.outputFile(this.outfilePrefix);
     }
 

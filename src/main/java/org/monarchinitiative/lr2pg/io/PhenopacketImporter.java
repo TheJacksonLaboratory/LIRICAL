@@ -16,8 +16,10 @@ import org.phenopackets.schema.v1.io.PhenoPacketFormat;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * This class ingests a phenopacket, which is required to additionally contain the
@@ -89,13 +91,15 @@ public class PhenopacketImporter {
     /**
      * This method extracts a list of
      * all of the non-negated HPO terms that are annotated to the proband of this
-     * phenopacket.
+     * phenopacket. Note that we use "distinct" to get only distinct elements, defensively,
+     * even though a valid phenopacket should not have duplicates.
      */
     private void extractProbandHpoTerms() {
         Individual subject =phenoPacket.getSubject();
         this.hpoTerms= subject
                 .getPhenotypesList()
                 .stream()
+                .distinct()
                 .filter(((Predicate<Phenotype>) Phenotype::getNegated).negate()) // i.e., just take non-negated phenotypes
                 .map(Phenotype::getType)
                 .map(OntologyClass::getId)
