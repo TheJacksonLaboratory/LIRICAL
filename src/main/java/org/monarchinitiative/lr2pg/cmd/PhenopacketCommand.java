@@ -89,6 +89,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
         this.metadata.put("analysis_date", dateFormat.format(date));
+        this.metadata.put("phenopacket_file", this.phenopacketPath);
         try {
             PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
             this.vcfPath = importer.getVcfPath();
@@ -96,6 +97,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
             this.genomeAssembly = importer.getGenomeAssembly();
             this.hpoIdList = importer.getHpoTerms();
             this.negatedHpoIdList = importer.getNegatedHpoTerms();
+            metadata.put("sample_name",importer.getSamplename());
         } catch (ParseException | IOException e) {
             logger.fatal("Could not read phenopacket");
             e.printStackTrace();
@@ -165,7 +167,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
                         .phenotypeLr(phenoLr);
 
 
-                metadata.put("sample_name","todo");
+
 
                 CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
                 HpoCase hcase = evaluator.evaluate();

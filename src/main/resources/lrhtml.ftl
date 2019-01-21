@@ -305,6 +305,9 @@ footer {
       <#if vcf_file?has_content>
           <p>VCF file: ${vcf_file}</p>
       </#if>
+      <#if phenopacket_file?has_content>
+                <p>Phenopacket file: ${phenopacket_file}</p>
+            </#if>
       <p>LR2PG analysis performed on ${analysis_date}.</p>
     </article>
   </section>

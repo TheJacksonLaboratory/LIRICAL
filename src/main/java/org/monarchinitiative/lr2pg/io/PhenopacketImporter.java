@@ -36,6 +36,8 @@ public class PhenopacketImporter {
     private String vcfPath;
     /** Genome assembly of the VCF file in {@link #vcfPath}. */
     private String genomeAssembly;
+    /** Name of the proband of the Phenopacket (corresponds to the {@code id} element of the phenopacket). */
+    private String samplename;
 
     /**
      * Factory method to obtain a PhenopacketImporter object starting from a phenopacket in Json format
@@ -56,6 +58,7 @@ public class PhenopacketImporter {
 
     public PhenopacketImporter(PhenoPacket ppack){
         this.phenoPacket=ppack;
+        this.samplename = this.phenoPacket.getSubject().getId();
         extractProbandHpoTerms();
         extractNegatedProbandHpoTerms();
         extractVcfData();
@@ -77,6 +80,10 @@ public class PhenopacketImporter {
 
     public String getGenomeAssembly() {
         return genomeAssembly;
+    }
+
+    public String getSamplename() {
+        return samplename;
     }
 
     /**
