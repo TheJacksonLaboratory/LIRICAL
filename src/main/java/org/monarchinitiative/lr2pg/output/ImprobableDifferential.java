@@ -25,10 +25,10 @@ public class ImprobableDifferential {
      * @param ptprob posterior probability
      * @param count number of variants in {@code gene}
      */
-    public ImprobableDifferential(String name, String id,String gene, double ptprob, int count) {
+    public ImprobableDifferential(String name, String id, String gene, double ptprob, int count) {
         this.diseaseName=name;
         this.diseaseId=id;
-        this.geneName=gene;
+        this.geneName=gene.toUpperCase();
         this.posttestProbability=formatter2(ptprob);
         this.varcount=count;
     }

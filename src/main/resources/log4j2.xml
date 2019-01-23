@@ -1,22 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
-    <Properties>
-        <Property name="PID">????</Property>
-        <Property name="LOG_EXCEPTION_CONVERSION_WORD">%xwEx</Property>
-        <Property name="LOG_LEVEL_PATTERN">%4p</Property>
-        <Property name="LOG_DATEFORMAT_PATTERN">yyyy-MM-dd HH:mm:ss</Property>
-        <Property name="CONSOLE_LOG_PATTERN">[${LOG_LEVEL_PATTERN}] %clr{%d{${LOG_DATEFORMAT_PATTERN}}}{faint} %clr{---}{faint} %clr{%-40.40c{1.}}{cyan} %clr{:}{faint} %m%n</Property>
-        <Property name="FILE_LOG_PATTERN">%d{${LOG_DATEFORMAT_PATTERN}} ${LOG_LEVEL_PATTERN} ${sys:PID} --- [%t] %-40.40c{1.} : %m%n</Property>
-
-    </Properties>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT" follow="true">
             <PatternLayout pattern="[%-5p] %c{1} - %m%n" />
         </Console>
         <RollingFile name="File" fileName="lr2pg.log" filePattern="${sys:LOG_PATH}/$${date:yyyy-MM}/app-%d{yyyy-MM-dd-HH}-%i.log.gz">
-            <PatternLayout>
-                <Pattern>"[%-5p] %c{1} - %m%n"</Pattern>
-            </PatternLayout>
+            <PatternLayout pattern="[%-5p] %c{1} - %m%n" />
             <Policies>
                 <SizeBasedTriggeringPolicy size="10 MB" />
             </Policies>

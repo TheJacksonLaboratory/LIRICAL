@@ -30,6 +30,9 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,10 +54,12 @@ public class PhenopacketCommand extends Lr2PgCommand{
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
     @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
     private double LR_THRESHOLD=0.01;
-    @Parameter(names={"-o", "--outfile"},description = "prefix of outfile")
+    @Parameter(names={"-x", "--prefix"},description = "prefix of outfile")
     private String outfilePrefix="lr2pg";
     @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory")
     private String exomiserDataDirectory;
+    @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
+    private int minDifferentialsToShow=5;
     @Parameter(names={"--transcriptdb"}, description = "transcript database (USCS, Ensembl, RefSeq)")
     String transcriptDb="ucsc";
     /** Various metadata that will be used for the HTML org.monarchinitiative.lr2pg.output. */
@@ -82,6 +87,11 @@ public class PhenopacketCommand extends Lr2PgCommand{
     public void run() {
 // read the Phenopacket
         logger.trace("Will analyze phenopacket at " + phenopacketPath);
+        this.metadata=new HashMap<>();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+        Date date = new Date();
+        this.metadata.put("analysis_date", dateFormat.format(date));
+        this.metadata.put("phenopacket_file", this.phenopacketPath);
         try {
             PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
             this.vcfPath = importer.getVcfPath();
@@ -89,6 +99,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
             this.genomeAssembly = importer.getGenomeAssembly();
             this.hpoIdList = importer.getHpoTerms();
             this.negatedHpoIdList = importer.getNegatedHpoTerms();
+            metadata.put("sample_name",importer.getSamplename());
         } catch (ParseException | IOException e) {
             logger.fatal("Could not read phenopacket");
             e.printStackTrace();
@@ -135,7 +146,13 @@ public class PhenopacketCommand extends Lr2PgCommand{
                     Lr2pgTemplate template = new TsvTemplate(hcase, ontology, genotypemap, geneId2symbol, this.metadata);
                     template.outputFile(this.outfilePrefix);
                 } else {
-                    HtmlTemplate caseoutput = new HtmlTemplate(hcase, ontology, genotypemap, geneId2symbol, this.metadata, this.LR_THRESHOLD);
+                    HtmlTemplate caseoutput = new HtmlTemplate(hcase,
+                            ontology,
+                            genotypemap,
+                            geneId2symbol,
+                            this.metadata,
+                            this.LR_THRESHOLD,
+                            this.minDifferentialsToShow);
                     caseoutput.outputFile(this.outfilePrefix);
                 }
             } catch (Lr2pgException e) {
@@ -156,10 +173,6 @@ public class PhenopacketCommand extends Lr2PgCommand{
                         .ontology(ontology)
                         .diseaseMap(diseaseMap)
                         .phenotypeLr(phenoLr);
-
-                this.metadata=new HashMap<>();
-                metadata.put("sample_name","todo");
-
                 CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
                 HpoCase hcase = evaluator.evaluate();
                 //hcase.outputTopResults(5,ontology);// TODO remove this outputs to the shell
@@ -167,7 +180,10 @@ public class PhenopacketCommand extends Lr2PgCommand{
                     Lr2pgTemplate template = new TsvTemplate(hcase, ontology, this.metadata);
                     template.outputFile(this.outfilePrefix);
                 } else {
-                    HtmlTemplate caseoutput = new HtmlTemplate(hcase, ontology, this.metadata, this.LR_THRESHOLD);
+                    HtmlTemplate caseoutput = new HtmlTemplate(hcase, ontology,
+                            this.metadata,
+                            this.LR_THRESHOLD,
+                            this.minDifferentialsToShow);
                     caseoutput.outputFile(this.outfilePrefix);
                 }
             } catch (Lr2pgException e) {
@@ -214,7 +230,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
 
         Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath, jannovarData, mvstore, assembly);
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
-        this.metadata = vcf2geno.getVcfMetaData();
+        this.metadata.put("sample_name",vcf2geno.getSamplename());
         return genotypeMap;
     }
 

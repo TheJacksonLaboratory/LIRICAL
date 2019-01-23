@@ -15,6 +15,7 @@ import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSeri
 import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
+import org.monarchinitiative.lr2pg.io.YamlParser;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
@@ -28,10 +29,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Not a full implementation of the factory pattern but rather a convenience class to create objects of various
@@ -58,6 +56,8 @@ public class Lr2PgFactory {
     private final List<TermId> hpoIdList;
     /** The directory in which several files are stored. */
     private final String datadir;
+    /** THe default data directory */
+    private final static String DEFAULT_DATA_DIRECTORY="data";
     /** The directory with the Exomiser database and Jannovar transcript files. */
     private String exomiserPath;
 
@@ -89,12 +89,16 @@ public class Lr2PgFactory {
             initializeExomiserPaths();
         }
         this.assembly=builder.getAssembly();
-        if (assembly.equals(GenomeAssembly.HG19)) {
-            this.backgroundFrequencyPath=Paths.get("src","main","resources","background","background-hg19.txt").toAbsolutePath().toString();
-        } else if (assembly.equals(GenomeAssembly.HG38)) {
-            this.backgroundFrequencyPath=Paths.get("src","main","resources","background","background-hg38.txt").toAbsolutePath().toString();
+        if (builder.backgroundFrequencyPath!=null) {
+            this.backgroundFrequencyPath=builder.backgroundFrequencyPath;
         } else {
-            this.backgroundFrequencyPath=null; // should never happen
+            if (assembly.equals(GenomeAssembly.HG19)) {
+                this.backgroundFrequencyPath=Paths.get("src","main","resources","background","background-hg19.txt").toAbsolutePath().toString();
+            } else if (assembly.equals(GenomeAssembly.HG38)) {
+                this.backgroundFrequencyPath=Paths.get("src","main","resources","background","background-hg38.txt").toAbsolutePath().toString();
+            } else {
+                this.backgroundFrequencyPath=null; // should never happen
+            }
         }
 
         this.geneInfoPath=builder.geneInfoPath;
@@ -117,6 +121,8 @@ public class Lr2PgFactory {
             this.ontology=null;
         }
     }
+
+
 
     /**
      * @return a list of observed HPO terms (from the YAML file)
@@ -493,6 +499,49 @@ public class Lr2PgFactory {
         public Builder(){
         }
 
+        public Builder yaml(YamlParser yp) {
+            /*
+            new Lr2PgFactory.Builder().
+
+                    .exomiser(yparser.getExomiserDataDir())
+                    .genomeAssembly(yparser.getGenomeAssembly())
+                    .observedHpoTerms(yparser.getHpoTermList())
+                    .transcriptdatabase(yparser.transcriptdb())
+                    .vcf(yparser.vcfPath());
+             */
+            Optional<String> datadirOpt=yp.getDataDir();
+            if (datadirOpt.isPresent()) {
+                this.lr2pgDataDir = getPathWithoutTrailingSeparatorIfPresent(datadirOpt.get());
+            } else {
+                this.lr2pgDataDir=DEFAULT_DATA_DIRECTORY;
+            }
+            initDatadirFiles();
+            this.exomiserDataDir=yp.getExomiserDataDir();
+            this.genomeAssembly=yp.getGenomeAssembly();
+            this.observedHpoTerms=new ArrayList<>();
+            Collections.addAll(this.observedHpoTerms, yp.getHpoTermList());
+            switch (yp.transcriptdb().toUpperCase()) {
+                case "ENSEMBL" :
+                    this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
+                case "REFSEQ":
+                    this.transcriptdatabase=TranscriptDatabase.REFSEQ;
+                case "UCSC":
+                default:
+                    this.transcriptdatabase=TranscriptDatabase.UCSC;
+            }
+            Optional<String> vcfOpt=yp.vcfPath();
+            if (vcfOpt.isPresent()) {
+                this.vcfPath=vcfOpt.get();
+            } else {
+                vcfPath=null;
+            }
+            Optional<String> backgroundOpt = yp.getBackgroundPath();
+            backgroundOpt.ifPresent(s -> this.backgroundFrequencyPath = s);
+
+
+            return this;
+        }
+
 
         public Builder genomeAssembly(String ga) {
             this.genomeAssembly=ga;
@@ -554,12 +603,21 @@ public class Lr2PgFactory {
             return this;
         }
 
-        public Builder datadir(String datadir) {
-            this.lr2pgDataDir=getPathWithoutTrailingSeparatorIfPresent(datadir);
+        /** Initializes the paths to the four files that should be in the data directory. This method
+         * should be called only after {@link #lr2pgDataDir} has been set.
+         */
+        private void initDatadirFiles() {
             this.hpOboPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"hp.obo");
             this.geneInfoPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"Homo_sapiens_gene_info.gz");
             this.phenotypeAnnotationPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"phenotype.hpoa");
             this.mim2genemedgenPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"mim2gene_medgen");
+        }
+
+
+
+        public Builder datadir(String datadir) {
+            this.lr2pgDataDir=getPathWithoutTrailingSeparatorIfPresent(datadir);
+           initDatadirFiles();
             return this;
         }
 

@@ -28,6 +28,8 @@ public class HtmlTemplate extends Lr2pgTemplate {
 
     /** Threshold posterior probability to show a differential diagnosis in detail. */
     private final double THRESHOLD;
+    /** Have the HTML output show at least this many differntials (default: 5). */
+    private final int MIN_DIAGNOSES_TO_SHOW;
 
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
@@ -43,9 +45,11 @@ public class HtmlTemplate extends Lr2pgTemplate {
                         Map<TermId, Gene2Genotype> genotypeMap,
                         Map<TermId,String> geneid2sym,
                         Map<String,String> metadat,
-                        double thres){
+                        double thres,
+                        int minDifferentials){
         super(hcase, ontology, genotypeMap, geneid2sym, metadat);
         this.THRESHOLD=thres;
+        this.MIN_DIAGNOSES_TO_SHOW=minDifferentials;
 
         List<DifferentialDiagnosis> diff = new ArrayList<>();
         List<ImprobableDifferential> improbdiff = new ArrayList<>();
@@ -57,7 +61,7 @@ public class HtmlTemplate extends Lr2pgTemplate {
         int counter=0;
         for (TestResult result : hcase.getResults()) {
             String symbol=EMPTY_STRING;
-            if (result.getPosttestProbability() > THRESHOLD) {
+            if (result.getPosttestProbability() > THRESHOLD || counter < MIN_DIAGNOSES_TO_SHOW) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.trace("Diff diag for " + result.getDiseaseName());
                 if (result.hasGenotype()) {
@@ -120,9 +124,11 @@ public class HtmlTemplate extends Lr2pgTemplate {
     public HtmlTemplate(HpoCase hcase,
                         Ontology ontology,
                         Map<String,String> metadat,
-                        double thres){
+                        double thres,
+                        int minDifferentials){
         super(hcase, ontology, metadat);
         this.THRESHOLD=thres;
+        this.MIN_DIAGNOSES_TO_SHOW=minDifferentials;
 
         List<DifferentialDiagnosis> diff = new ArrayList<>();
         List<ImprobableDifferential> improbdiff = new ArrayList<>();
@@ -134,7 +140,7 @@ public class HtmlTemplate extends Lr2pgTemplate {
         int counter=0;
         for (TestResult result : hcase.getResults()) {
             String symbol=EMPTY_STRING;
-            if (result.getPosttestProbability() > THRESHOLD) {
+            if (result.getPosttestProbability() > THRESHOLD || counter < MIN_DIAGNOSES_TO_SHOW) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.trace("Diff diag for " + result.getDiseaseName());
                 ddx.setNoVariantsFoundString("Genetic data not available");
@@ -148,6 +154,17 @@ public class HtmlTemplate extends Lr2pgTemplate {
                 this.topDiagnosisAnchors.add(counterString);
                 ddx.setAnchor(counterString);
                 this.topDiagnosisMap.put(counterString,ddx.getDiseaseName());
+            } else {
+                TermId geneId = result.getEntrezGeneId();
+                String name = shortName(result.getDiseaseName());
+                String id = result.getDiseaseCurie().getId();// This is intended to work with OMIM
+                if (name==null) {
+                    logger.error("Got null string for disease name from result="+result.toString());
+                    name=EMPTY_STRING;// avoid errors
+                }
+                int c=0;
+                ImprobableDifferential ipd = new ImprobableDifferential(name,id,symbol,result.getPosttestProbability(),c);
+                improbdiff.add(ipd);
             }
         }
         this.templateData.put("improbdiff",improbdiff);
@@ -165,7 +182,6 @@ public class HtmlTemplate extends Lr2pgTemplate {
             te.printStackTrace();
         }
     }
-
 
 
 

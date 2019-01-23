@@ -28,6 +28,11 @@ $ mvn clean package
 ```
 This will create an executable jar file in the ``target`` subdirectory. In the following, we move this file to the
 current working directory and check the build.
+
+Note that we are in the process of updating the LR2PG code to Java 11.
+This is a useful website for Ubuntu users: http://ubuntuhandbook.org/index.php/2018/11/how-to-install-oracle-java-11-in-ubuntu-18-04-18-10/
+
+
 ```
 $ mv target/Lr2pg.jar .
 $ java -jar Lr2pg.jar -h

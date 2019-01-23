@@ -2,6 +2,12 @@
 Changelog
 =========
 
+-------
+v0.9.10
+-------
+- Compiling with Java 11
+- Simplifying and extending metadata and display in HTML
+
 ------
 v0.9.8
 ------
