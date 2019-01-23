@@ -3,6 +3,7 @@ package org.monarchinitiative.lr2pg.io;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatioTest;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
@@ -15,6 +16,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.condition.OS.WINDOWS;
+
 
 class YamlParserTest {
 
@@ -49,7 +52,11 @@ class YamlParserTest {
         assertEquals(expected,parser.phenotypeAnnotation());
     }
 
-    @Test
+    /**
+     * This test is disabled on windows because it depends on the File separator (/ vs \).
+     * @throws Lr2pgException
+     */
+    @Test @DisabledOnOs(WINDOWS)
     void testMvStorePath() throws Lr2pgException {
         YamlParser parser = new YamlParser(demo1path);
         String expected="/home/robinp/data/exomiserdata/1802_hg19/1802_hg19_variants.mv.db";
@@ -68,9 +75,10 @@ class YamlParserTest {
      * In the YAML file, the exomiser path is given as
      * exomiser: /home/robinp/data/exomiserdata/1811_hg19.
      * Here we test if we can extract the correct mvstore and Jannovar files
+     * This test is disabled on windows because it depends on the File separator (/ vs \).
      * @throws Lr2pgException
      */
-    @Test
+    @Test @DisabledOnOs(WINDOWS)
     void testExomiserData()throws Lr2pgException  {
         YamlParser parser = new YamlParser(demo1path);
         String expectedMvStore = "/home/robinp/data/exomiserdata/1802_hg19/1802_hg19_variants.mv.db";
