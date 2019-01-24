@@ -133,6 +133,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
                 Map<TermId, String> geneId2symbol = factory.geneId2symbolMap();
                 CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(this.hpoIdList)
                         .ontology(ontology)
+                        .negated(this.negatedHpoIdList)
                         .diseaseMap(diseaseMap)
                         .disease2geneMultimap(disease2geneMultimap)
                         .genotypeMap(genotypemap)
@@ -171,6 +172,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
                 PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
                 CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(this.hpoIdList)
                         .ontology(ontology)
+                        .negated(this.negatedHpoIdList)
                         .diseaseMap(diseaseMap)
                         .phenotypeLr(phenoLr);
                 CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();

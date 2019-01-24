@@ -23,6 +23,8 @@ public class CaseEvaluator {
     private static final Logger logger = LogManager.getLogger();
     /** List of abnormalities seen in the person being evaluated. */
     private final List<TermId> phenotypicAbnormalities;
+    /** List of abnormalities excluded in the person being evaluated. */
+    private final List<TermId> negatedPhenotypicAbnormalities;
     /** Map of the observed genotypes in the VCF file. Key is an EntrezGene is, and the value is the average pathogenicity score times the
      * count of all variants in the pathogenic bin.*/
     private final Map<TermId,Gene2Genotype> genotypeMap;
@@ -55,10 +57,12 @@ public class CaseEvaluator {
      * @param phenotypeLrEvaluator class to evaluate phenotype likelihood ratios.
      */
     private CaseEvaluator(List<TermId> hpoTerms,
+                          List<TermId> negatedHpoTerms,
                           Ontology ontology,
                           Map<TermId,HpoDisease> diseaseMap,
                           PhenotypeLikelihoodRatio phenotypeLrEvaluator) {
         this.phenotypicAbnormalities=hpoTerms;
+        this.negatedPhenotypicAbnormalities=negatedHpoTerms;
         this.ontology=ontology;
         this.diseaseMap=diseaseMap;
         this.phenotypeLRevaluator=phenotypeLrEvaluator;
@@ -80,6 +84,7 @@ public class CaseEvaluator {
 
 
     private CaseEvaluator(List<TermId> hpoTerms,
+                          List<TermId> negatedHpoTerms,
                           Ontology ontology,
                           Map<TermId,HpoDisease> diseaseMap,
                           Multimap<TermId,TermId> disease2geneMultimap,
@@ -87,9 +92,8 @@ public class CaseEvaluator {
                           GenotypeLikelihoodRatio genotypeLrEvalutator,
                           Map<TermId,Gene2Genotype> genotypeMap,
                           double thres) {
-        phenotypicAbnormalities=hpoTerms;
-
-
+        this.phenotypicAbnormalities=hpoTerms;
+        this.negatedPhenotypicAbnormalities=negatedHpoTerms;
         this.diseaseMap=diseaseMap;
         this.disease2geneMultimap=disease2geneMultimap;
         this.phenotypeLRevaluator =phenotypeLrEvaluator;
@@ -126,6 +130,11 @@ public class CaseEvaluator {
                 double LR = phenotypeLRevaluator.getLikelihoodRatio(tid, diseaseId);
                 builder.add(LR);
             }
+            for (TermId negated : this.negatedPhenotypicAbnormalities) {
+                double LR = phenotypeLRevaluator.getLikelihoodRatioForExcludedTerm(negated, diseaseId);
+                builder.add(LR);
+            }
+
             TestResult result;
             // 2. get genotype LR if available
             Double genotypeLR=null;
@@ -205,6 +214,9 @@ public class CaseEvaluator {
     public static class Builder {
         /** The abnormalities observed in the individual being investigated. */
         private final List<TermId> hpoTerms;
+        /** These abnormalities were excluded in the proband (i.e., normal). */
+        private List<TermId> negatedHpoTerms=null;
+
         private Ontology ontology;
         /** Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
         private Map<TermId,HpoDisease> diseaseMap;
@@ -235,13 +247,22 @@ public class CaseEvaluator {
 
         public Builder threshold(double t) { this.threshold=t; return this;}
 
+        public Builder negated(List<TermId> negated) {
+            this.negatedHpoTerms=negated;
+
+            return this;
+        }
+
 
         public CaseEvaluator build() {
             Objects.requireNonNull(hpoTerms);
             Objects.requireNonNull(ontology);
             Objects.requireNonNull(diseaseMap);
             Objects.requireNonNull(disease2geneMultimap);
-            return new CaseEvaluator(hpoTerms,ontology,diseaseMap,disease2geneMultimap,phenotypeLR,genotypeLR,genotypeMap,threshold);
+            if (negatedHpoTerms==null) {
+                negatedHpoTerms=ImmutableList.of();
+            }
+            return new CaseEvaluator(hpoTerms,negatedHpoTerms,ontology,diseaseMap,disease2geneMultimap,phenotypeLR,genotypeLR,genotypeMap,threshold);
         }
 
 
@@ -249,7 +270,10 @@ public class CaseEvaluator {
             Objects.requireNonNull(hpoTerms);
             Objects.requireNonNull(ontology);
             Objects.requireNonNull(phenotypeLR);
-            return new CaseEvaluator(hpoTerms,ontology,diseaseMap,phenotypeLR);
+            if (negatedHpoTerms==null) {
+                negatedHpoTerms=ImmutableList.of();
+            }
+            return new CaseEvaluator(hpoTerms,negatedHpoTerms,ontology,diseaseMap,phenotypeLR);
         }
     }
     
