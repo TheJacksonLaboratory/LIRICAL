@@ -1,0 +1,477 @@
+{
+  "id": "",
+  "subject": {
+    "id": "3 month old boy",
+    "datasetId": "",
+    "ageAtCollection": {
+      "age": "3 months"
+    },
+    "sex": {
+      "id": "PATO:0000384",
+      "label": "male"
+    },
+    "phenotypes": [{
+      "description": "",
+      "type": {
+        "id": "HP:0000437",
+        "label": "Depressed nasal tip"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0001510",
+        "label": "Growth delay"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0000369",
+        "label": "Low-set ears"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0001612",
+        "label": "Weak cry"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0000175",
+        "label": "Cleft palate"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0001623",
+        "label": "Breech presentation"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0007655",
+        "label": "Eversion of lateral third of lower eyelids"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0031508",
+        "label": "Abnormal thyroid hormone level"
+      },
+      "negated": true,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0000411",
+        "label": "Protruding ear"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0008897",
+        "label": "Postnatal growth retardation"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0001626",
+        "label": "Abnormality of the cardiovascular system"
+      },
+      "negated": true,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0001385",
+        "label": "Hip dysplasia"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0006956",
+        "label": "Dilation of lateral ventricles"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0001743",
+        "label": "Abnormality of the spleen"
+      },
+      "negated": true,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0000347",
+        "label": "Micrognathia"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0001392",
+        "label": "Abnormality of the liver"
+      },
+      "negated": true,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0000238",
+        "label": "Hydrocephalus"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0045075",
+        "label": "Sparse eyebrow"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0000218",
+        "label": "High palate"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0000637",
+        "label": "Long palpebral fissure"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }, {
+      "description": "",
+      "type": {
+        "id": "HP:0001290",
+        "label": "Generalized hypotonia"
+      },
+      "negated": false,
+      "modifiers": [],
+      "evidence": [{
+        "evidenceCode": {
+          "id": "ECO:0000033",
+          "label": "author statement supported by traceable reference"
+        },
+        "reference": {
+          "id": "PMID:30509212",
+          "description": ""
+        }
+      }]
+    }],
+    "taxonomy": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "externalIdentifiers": []
+  },
+  "individuals": [],
+  "biosamples": [],
+  "genes": [{
+    "id": "ENTREZ:8085",
+    "symbol": "KMT2D"
+  }],
+  "variants": [{
+    "genomeAssembly": "GRCH_37",
+    "sequence": "17",
+    "coordinateSystem": "ONE_BASED",
+    "position": 29665775,
+    "deletion": "T",
+    "insertion": "TTT",
+    "hgvs": "",
+    "sampleGenotypes": {
+      "3 month old boy": {
+        "id": "GENO:0000135",
+        "label": "heterozygous"
+      }
+    }
+  }, {
+    "genomeAssembly": "GRCH_37",
+    "sequence": "X",
+    "coordinateSystem": "ONE_BASED",
+    "position": 44833910,
+    "deletion": "G",
+    "insertion": "T",
+    "hgvs": "",
+    "sampleGenotypes": {
+      "3 month old boy": {
+        "id": "GENO:0000134",
+        "label": "hemizygous"
+      }
+    }
+  }],
+  "diseases": [{
+    "id": "OMIM:300867",
+    "label": "KABUKI SYNDROME 2; KABUK2"
+  }],
+  "htsFiles": [],
+  "metaData": {
+    "createdBy": "HPO:probinson",
+    "resources": [{
+      "id": "hp",
+      "name": "human phenotype ontology",
+      "namespacePrefix": "HP",
+      "url": "http://purl.obolibrary.org/obo/hp.owl",
+      "version": "2018-03-08",
+      "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
+    }, {
+      "id": "pato",
+      "name": "Phenotype And Trait Ontology",
+      "namespacePrefix": "PATO",
+      "url": "http://purl.obolibrary.org/obo/pato.owl",
+      "version": "2018-03-28",
+      "iriPrefix": "http://purl.obolibrary.org/obo/PATO_"
+    }, {
+      "id": "geno",
+      "name": "Genotype Ontology",
+      "namespacePrefix": "GENO",
+      "url": "http://purl.obolibrary.org/obo/geno.owl",
+      "version": "19-03-2018",
+      "iriPrefix": "http://purl.obolibrary.org/obo/GENO_"
+    }, {
+      "id": "ncbitaxon",
+      "name": "NCBI organismal classification",
+      "namespacePrefix": "NCBITaxon",
+      "url": "http://purl.obolibrary.org/obo/ncbitaxon.owl",
+      "version": "2018-03-02",
+      "iriPrefix": ""
+    }, {
+      "id": "eco",
+      "name": "Evidence and Conclusion Ontology",
+      "namespacePrefix": "ECO",
+      "url": "http://purl.obolibrary.org/obo/eco.owl",
+      "version": "2018-11-10",
+      "iriPrefix": "http://purl.obolibrary.org/obo/ECO_"
+    }]
+  }
+}

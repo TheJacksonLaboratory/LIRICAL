@@ -183,6 +183,7 @@ public class CaseEvaluator {
         }
         Map<TermId,TestResult> results = evaluateRanks(mapbuilder.build());
         HpoCase.Builder casebuilder = new HpoCase.Builder(phenotypicAbnormalities)
+                .excluded(negatedPhenotypicAbnormalities)
                 .results(results);
         return casebuilder.build();
     }
