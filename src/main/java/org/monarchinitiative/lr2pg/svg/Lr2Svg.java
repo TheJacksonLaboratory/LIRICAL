@@ -84,8 +84,13 @@ public class Lr2Svg {
         HEIGHT = this.heightOfMiddleLine + 4*MIN_VERTICAL_OFFSET + 7*BOX_OFFSET;
     }
 
-
-    public void writeSvg2(Writer writer)  throws IOException {
+    /**
+     * This method can be used to output the SVG code to any Java Writer. Currently,
+     * we use this with a StringWriter to include the code in the HTML output (see {@link #getSvgString()}).
+     * @param writer Handle to a Writer object
+     * @throws IOException If there is an IO error
+     */
+    private void writeSvg(Writer writer)  throws IOException {
         writeHeader(writer);
         writeVerticalLine(writer);
         writeLrBoxes(writer);
@@ -95,7 +100,7 @@ public class Lr2Svg {
     public String getSvgString() {
         try {
             StringWriter swriter = new StringWriter();
-            writeSvg2(swriter);
+            writeSvg(swriter);
             return swriter.toString();
         } catch (IOException e) {
             e.printStackTrace();
@@ -106,7 +111,7 @@ public class Lr2Svg {
     public void writeSvg(String path) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(path));
-            writeSvg2(writer);
+            writeSvg(writer);
             writer.close();
         } catch (IOException e) {
             System.err.println("[ERROR] Unable to write SVG file: "+path);
@@ -198,14 +203,14 @@ public class Lr2Svg {
         double max=0;
         for (int i=0;i<termIdList.size();i++) {
             TermId tid = termIdList.get(i);
-            double ratio = result.getRatio(i);
+            double ratio = result.getObservedPhenotypeRatio(i);
             if (max < Math.abs(ratio)) { max = Math.abs(ratio); }
             double lgratio = Math.log10(ratio);
             unsortedmap.put(tid,lgratio);
         }
         for (int i=0;i<excludedTermIdList.size();i++) {
             TermId tid = excludedTermIdList.get(i);
-            double ratio = result.getRatio(i);
+            double ratio = result.getExcludedPhenotypeRatio(i);
             if (max < Math.abs(ratio)) { max = Math.abs(ratio); }
             double lgratio = Math.log10(ratio);
             unsortedexcludedmap.put(tid,lgratio);

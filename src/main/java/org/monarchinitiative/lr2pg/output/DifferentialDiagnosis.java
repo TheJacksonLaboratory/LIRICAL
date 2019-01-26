@@ -22,6 +22,7 @@ public class DifferentialDiagnosis {
     private final int rank;
     private final String pretestprob;
     private final String posttestprob;
+    /** The base-10 logarithm of the likelihood ratio. */
     private final double compositeLR;
     private final String entrezGeneId;
     private final String url;
@@ -58,7 +59,7 @@ public class DifferentialDiagnosis {
         } else {
             this.pretestprob = String.format("%.6f",ptp);
         }
-        this.compositeLR=result.getCompositeLR();
+        this.compositeLR=Math.log10(result.getCompositeLR());
         if (result.hasGenotype()) {
             this.entrezGeneId = result.getEntrezGeneId().getValue();
         } else {

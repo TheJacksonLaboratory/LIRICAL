@@ -124,15 +124,17 @@ public class CaseEvaluator {
         for (TermId diseaseId : diseaseMap.keySet()) {
             HpoDisease disease = this.diseaseMap.get(diseaseId);
             double pretest = pretestProbabilityMap.get(diseaseId);
-            // 1. get phenotype LR
-            ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
+            // 1. get phenotype LR for observed phenotypes
+            ImmutableList.Builder<Double> builderObserved = new ImmutableList.Builder<>();
             for (TermId tid : this.phenotypicAbnormalities) {
                 double LR = phenotypeLRevaluator.getLikelihoodRatio(tid, diseaseId);
-                builder.add(LR);
+                builderObserved.add(LR);
             }
+            // 2. get phenotype LR for excluded phenotypes
+            ImmutableList.Builder<Double> builderExcluded = new ImmutableList.Builder<>();
             for (TermId negated : this.negatedPhenotypicAbnormalities) {
                 double LR = phenotypeLRevaluator.getLikelihoodRatioForExcludedTerm(negated, diseaseId);
-                builder.add(LR);
+                builderExcluded.add(LR);
             }
 
             TestResult result;
@@ -163,9 +165,9 @@ public class CaseEvaluator {
             }
 
             if (useGenotypeAnalysis && genotypeLR != null) {
-                result = new TestResult(builder.build(), disease, genotypeLR, geneId, pretest);
+                result = new TestResult(builderObserved.build(), builderExcluded.build(),disease, genotypeLR, geneId, pretest);
             } else {
-                result = new TestResult(builder.build(), disease, pretest);
+                result = new TestResult(builderObserved.build(),builderExcluded.build(), disease, pretest);
             }
             if (result.getPosttestProbability() > this.threshold) {
                 Gene2Genotype g2g = this.genotypeMap.get(geneId);
