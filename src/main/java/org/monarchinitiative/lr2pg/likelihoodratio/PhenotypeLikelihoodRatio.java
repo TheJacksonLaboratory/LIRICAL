@@ -93,6 +93,14 @@ public class PhenotypeLikelihoodRatio {
         return excludedFrequency/(1.0-backgroundFrequency);
     }
 
+    /** NOTE: Use the version in phenol-1.3.3 once it becomes available!
+     *
+     * @param tid
+     * @param disease
+     * @param ontology
+     * @return
+     */
+    @Deprecated
     private boolean isIndirectlyAnnotatedTo(TermId tid, HpoDisease disease, Ontology ontology) {
         List<TermId> direct = disease.getPhenotypicAbnormalityTermIdList();
         Set<TermId> ancs = ontology.getAllAncestorTermIds(direct,true);
@@ -100,6 +108,7 @@ public class PhenotypeLikelihoodRatio {
     }
 
     /**
+     * Switch to phenol 1.3.3 implementation once released
      * Get the frequency of a term in the disease. This includes if any disease term is an ancestor of the
      * query term -- we take the maximum of any ancestor term.
      * @param tid Term ID of an HPO term whose frequency we want to know
@@ -107,6 +116,7 @@ public class PhenotypeLikelihoodRatio {
      * @param ontology Reference to the HPO ontology
      * @return frequency of the term in the disease (including annotation propagation)
      */
+    @Deprecated
     private double getFrequencyOfTermInDiseaseWithAnnotationPropagation(TermId tid, HpoDisease disease, Ontology ontology) {
         double freq=0.0;
         for (TermId diseaseTermId :  disease.getPhenotypicAbnormalityTermIdList() ) {
