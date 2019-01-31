@@ -238,8 +238,9 @@ public class PhenotypeOnlyHpoCaseSimulator {
      * @return HpoCase object with a randomized selection of phenotypes from the disease
      */
     private List<TermId> getRandomTermsFromDisease(HpoDisease disease) {
-        int n_terms=Math.min(disease.getNumberOfPhenotypeAnnotations(),n_terms_per_case);
-        int n_random=Math.min(n_terms, n_noise_terms);// do not take more random than real terms.
+        int n_terms = Math.min(disease.getNumberOfPhenotypeAnnotations(), n_terms_per_case);
+        ImmutableList.Builder<TermId> termIdBuilder = new ImmutableList.Builder<>();
+        /*int n_random=Math.min(n_terms, n_noise_terms);// do not take more random than real terms.
         logger.trace("Creating simulated case with n_terms="+n_terms + ", n_random="+n_random);
         // the creation of a new ArrayList is needed because disease returns an immutable list.
         List<HpoAnnotation> abnormalities = new ArrayList<>(disease.getPhenotypicAbnormalities());
@@ -255,8 +256,29 @@ public class PhenotypeOnlyHpoCaseSimulator {
             }
             termIdBuilder.add(t);
         }
+        return termIdBuilder.build();*/
+        if (n_noise_terms <= n_terms) {
+            logger.trace("Creating simulated case with n_terms=" + n_terms + ", n_random=" + n_noise_terms);
+            // the creation of a new ArrayList is needed because disease returns an immutable list.
+            List<HpoAnnotation> abnormalities = new ArrayList<>(disease.getPhenotypicAbnormalities());
+
+            Collections.shuffle(abnormalities); // randomize order of phenotypes
+            // take the first n_random terms of the randomized list
+            abnormalities.stream().limit(n_terms).forEach(a -> termIdBuilder.add(a.getTermId()));
+            // now add n_random "noise" terms to the list of abnormalities of our case.
+            for (int i = 0; i < n_noise_terms; i++) {
+                TermId t = getRandomPhenotypeTerm();
+                if (addTermImprecision) {
+                    t = getRandomParentTerm(t);
+                }
+                termIdBuilder.add(t);
+            }
+        }
         return termIdBuilder.build();
     }
+
+
+
 
 
     public int simulateCase(HpoDisease disease) throws Lr2pgException {
