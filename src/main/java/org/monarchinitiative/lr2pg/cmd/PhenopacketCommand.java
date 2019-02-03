@@ -13,6 +13,7 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
+import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
@@ -102,7 +103,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
             metadata.put("sample_name",importer.getSamplename());
         } catch (ParseException | IOException e) {
             logger.fatal("Could not read phenopacket");
-            e.printStackTrace();
+            throw new Lr2PgRuntimeException("Could not find Phenopacket at " + phenopacketPath +": "+e.getMessage());
         }
 
 
