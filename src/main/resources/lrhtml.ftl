@@ -391,9 +391,9 @@ footer {
               <tr>
                 <td>${svar.ucsc}</td>
                 <#if svar.isInPathogenicBin() >
-                <td class="red">${svar.pathogenicity}</td>
+                <td class="red">${svar.pathogenicity!"n/a"}</td>
                 <#else>
-                 <td>${svar.pathogenicityScore}</td>
+                 <td>${svar.pathogenicityScore!"n/a"}</td>
                 </#if>
                 <td>${svar.frequency}%</td>
                 <td>${svar.gtype}</td>
