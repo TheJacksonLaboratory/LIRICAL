@@ -151,8 +151,15 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
 
     /** @return Exomiser like pathogenicity score that multiplies the predicted pathogenicity by the frequency factor. */
     private double pathogenicityScore() {
-        double freqScore = Math.max(0,1-0.13533*Math.exp(100*this.frequency));
-        return this.pathogenicity * freqScore;
+        //double freqScore = Math.max(0,1-0.13533*Math.exp(100*this.frequency));
+        //return this.pathogenicity * freqScore;
+        if (frequency <= 0) {
+            return 1f*pathogenicity;
+        } else if (frequency > 2) {
+            return 0f;
+        } else {
+            return pathogenicity * (1.13533f - (0.13533f * (float) Math.exp(frequency)));
+        }
     }
 
 
