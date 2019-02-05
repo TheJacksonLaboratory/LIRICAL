@@ -153,15 +153,18 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
     private double pathogenicityScore() {
         //double freqScore = Math.max(0,1-0.13533*Math.exp(100*this.frequency));
         //return this.pathogenicity * freqScore;
+        return pathogenicity * frequencyScore();
+    }
+
+    private double frequencyScore() {
         if (frequency <= 0) {
-            return 1f*pathogenicity;
+            return 1f;
         } else if (frequency > 2) {
             return 0f;
         } else {
-            return pathogenicity * (1.13533f - (0.13533f * (float) Math.exp(frequency)));
+            return 1.13533f - (0.13533f * (float) Math.exp(frequency));
         }
     }
-
 
 
     public boolean isClinVarPathogenic() {
