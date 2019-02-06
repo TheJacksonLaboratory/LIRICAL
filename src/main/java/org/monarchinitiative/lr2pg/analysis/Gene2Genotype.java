@@ -54,20 +54,6 @@ public class Gene2Genotype {
         return sumOfPathBinScores;
     }
 
-    /*public void addVariant(int chrom, int pos, String ref, String alt,
-                           List<TranscriptAnnotation> annotList, String genotypeString, float path, float freq){
-        SimpleVariant simplevar = new SimpleVariant(chrom, pos, ref, alt,  annotList, path,  freq, genotypeString);
-        this.varList.add(simplevar);
-        if (simplevar.isInPathogenicBin()) {
-            SimpleGenotype sgenotype=simplevar.getGtype();
-            if (sgenotype.equals(SimpleGenotype.HOMOZYGOUS_ALT)) {
-                this.sumOfPathBinScores += 2*simplevar.getPathogenicity();
-            } else  { // assume het
-                this.sumOfPathBinScores+=simplevar.getPathogenicity();
-            }
-        }
-        Collections.sort(varList); // keep variant list sorted
-    }*/
 
     public void addVariant(int chrom, int pos, String ref, String alt,
                            List<TranscriptAnnotation> annotList, String genotypeString, float path, float freq,ClinVarData.ClinSig clinv){

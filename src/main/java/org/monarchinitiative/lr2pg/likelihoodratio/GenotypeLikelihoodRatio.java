@@ -50,6 +50,7 @@ public class GenotypeLikelihoodRatio {
             }
         }
 
+
         double lambda_background = this.gene2backgroundFrequency.getOrDefault(geneId, DEFAULT_LAMBDA_BACKGROUND);
         if (inheritancemodes==null || inheritancemodes.isEmpty()) {
             return Optional.empty();
@@ -60,6 +61,18 @@ public class GenotypeLikelihoodRatio {
             if (inheritanceId.equals(AUTOSOMAL_RECESSIVE) || inheritanceId.equals(X_LINKED_RECESSIVE)) {
                 lambda_disease=2.0;
             }
+            // Heuristic for the case where we have more called pathogenic variants than we should have
+            // for instance, we have an autosomal recessive disease but there are 5 called pathogenic
+            // variants
+            if (observedWeightedPathogenicVariantCount>lambda_disease) {
+                PoissonDistribution pdDisease = new PoissonDistribution(lambda_disease);
+                double D = pdDisease.probability(observedWeightedPathogenicVariantCount);
+                PoissonDistribution pdBackground = new PoissonDistribution(observedWeightedPathogenicVariantCount);
+                double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
+                return Optional.of(D/B);
+            }
+
+
             double D;
             if (observedWeightedPathogenicVariantCount<EPSILON) {
                 D=0.05; // heuristic--chance of zero variants given this is disease is 5%
