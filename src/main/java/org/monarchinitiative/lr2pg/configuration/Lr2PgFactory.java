@@ -27,6 +27,7 @@ import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -92,13 +93,23 @@ public class Lr2PgFactory {
         if (builder.backgroundFrequencyPath!=null) {
             this.backgroundFrequencyPath=builder.backgroundFrequencyPath;
         } else {
+            // Note-- background files for hg19 and hg38 are stored in src/main/resources/background
+            // and are included in the resources by the maven resource plugin
+            ClassLoader classLoader = Lr2PgFactory.class.getClassLoader();
+            URL resource;
             if (assembly.equals(GenomeAssembly.HG19)) {
-                this.backgroundFrequencyPath=Paths.get("src","main","resources","background","background-hg19.txt").toAbsolutePath().toString();
+                resource = classLoader.getResource("background/background-hg19.txt");
             } else if (assembly.equals(GenomeAssembly.HG38)) {
-                this.backgroundFrequencyPath=Paths.get("src","main","resources","background","background-hg38.txt").toAbsolutePath().toString();
+                resource = classLoader.getResource("background/background-hg38.txt");
             } else {
-                this.backgroundFrequencyPath=null; // should never happen
+                logger.fatal("Did not recognize genome assembly: {}",assembly);
+                throw new Lr2PgRuntimeException("Did not recognize genome assembly: "+assembly);
             }
+            if (resource==null) {
+                logger.fatal("Could not find resource for background file");
+                throw new Lr2PgRuntimeException("Could not find resource for background file");
+            }
+            this.backgroundFrequencyPath=resource.getFile();
         }
 
         this.geneInfoPath=builder.geneInfoPath;
