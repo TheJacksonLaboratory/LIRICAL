@@ -38,17 +38,6 @@ import java.util.Map;
 @Parameters(commandDescription = "Phenotype-driven analysis of VCF (Exome/Genome) data")
 public class VcfCommand extends Lr2PgCommand {
     private static final Logger logger = LoggerFactory.getLogger(VcfCommand.class);
-    /** An object that contains parameters from the YAML file for configuration. */
-    private Lr2PgFactory factory;
-    /** Default name of the background frequency file. */
-    private final String BACKGROUND_FREQUENCY_FILE="background-freq.txt";
-    /** Key: an EntrezGene id; value: corresponding gene symbol. */
-    private Map<TermId,String> geneId2symbol;
-    /** Various metadata that will be used for the HTML org.monarchinitiative.lr2pg.output. */
-    private Map<String,String> metadata;
-
-
-
     @Parameter(names="--tsv",description = "Use TSV instead of HTML output")
     private boolean outputTSV=false;
     @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
@@ -60,6 +49,14 @@ public class VcfCommand extends Lr2PgCommand {
     private String outfilePrefix="lr2pg";
     @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
     private int minDifferentialsToShow=5;
+
+    /** An object that contains parameters from the YAML file for configuration. */
+    private Lr2PgFactory factory;
+    /** Key: an EntrezGene id; value: corresponding gene symbol. */
+    private Map<TermId,String> geneId2symbol;
+    /** Various metadata that will be used for the HTML org.monarchinitiative.lr2pg.output. */
+    private Map<String,String> metadata;
+
     /**
      * Command pattern to coordinate analysis of a VCF file with LR2PG.
      */

@@ -45,28 +45,30 @@ import java.util.Map;
 @Parameters(commandDescription = "Run LR2PG from a Phenopacket")
 public class PhenopacketCommand extends Lr2PgCommand{
     private static final Logger logger = LogManager.getLogger();
-    @Parameter(names="--tsv",description = "Use TSV instead of HTML output")
-    private boolean outputTSV=false;
-    @Parameter(names = {"-p","--phenopacket"}, description = "path to phenopacket file", required = true)
-    private String phenopacketPath;
+    @Parameter(names={"-b","--background"}, description = "path to non-default background frequency file")
+    private String backgroundFrequencyFile;
     /** Directory where various files are downloaded/created. */
     @Parameter(names={"-d","--data"}, description ="directory to download data (default: ${DEFAULT-VALUE})" )
     private String datadir="data";
-    /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
-    @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
-    private double LR_THRESHOLD=0.01;
-    @Parameter(names={"-x", "--prefix"},description = "prefix of outfile")
-    private String outfilePrefix="lr2pg";
+    @Parameter(names = {"-p","--phenopacket"}, description = "path to phenopacket file", required = true)
+    private String phenopacketPath;
     @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory")
     private String exomiserDataDirectory;
     @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
     private int minDifferentialsToShow=5;
+    /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
+    @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
+    private double LR_THRESHOLD=0.01;
     @Parameter(names={"--transcriptdb"}, description = "transcript database (USCS, Ensembl, RefSeq)")
     String transcriptDb="ucsc";
+    @Parameter(names="--tsv",description = "Use TSV instead of HTML output")
+    private boolean outputTSV=false;
+    @Parameter(names={"-x", "--prefix"},description = "prefix of outfile")
+    private String outfilePrefix="lr2pg";
+
     /** Various metadata that will be used for the HTML org.monarchinitiative.lr2pg.output. */
     private Map<String,String> metadata;
-
-
+    /** If true, the phenopacket contains the path of a VCF file. */
     private boolean hasVcf;
     /** List of HPO terms observed in the subject of the investigation. */
     private List<TermId> hpoIdList;
@@ -76,8 +78,6 @@ public class PhenopacketCommand extends Lr2PgCommand{
     private String genomeAssembly;
     /** Path to the VCF file (if any). */
     private String vcfPath=null;
-    /** Representation of the Exomiser database (http://www.h2database.com/html/mvstore.html). */
-    private MVStore mvstore;
 
 
     public PhenopacketCommand(){
@@ -113,6 +113,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
                         .datadir(this.datadir)
                         .genomeAssembly(this.genomeAssembly)
                         .exomiser(this.exomiserDataDirectory)
+                        .backgroundFrequency(this.backgroundFrequencyFile)
                         .build();
                 factory.qcHumanPhenotypeOntologyFiles();
                 factory.qcExternalFilesInDataDir();
@@ -206,24 +207,6 @@ public class PhenopacketCommand extends Lr2PgCommand{
         Map<TermId,Double> gene2back = ingestor.parse();
         return new GenotypeLikelihoodRatio(gene2back);
     }
-
-/*
-    private GenomeAssembly getGenomeAssembly(String ga) {
-        switch (ga) {
-            case "HG19":
-            case "hg19":
-            case "GRC37":
-            case "hg37":
-                return GenomeAssembly.HG19;
-            case "HG38":
-            case "hg38":
-            case "GRC38":
-                return GenomeAssembly.HG38;
-            default:
-                return GenomeAssembly.HG19;
-        }
-    }
-*/
 
     /**
      * Identify the variants and genotypes from the VCF file.

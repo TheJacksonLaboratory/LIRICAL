@@ -90,7 +90,7 @@ public class Lr2PgFactory {
             initializeExomiserPaths();
         }
         this.assembly=builder.getAssembly();
-        if (builder.backgroundFrequencyPath!=null) {
+        if (builder.backgroundFrequencyPath!=null && !builder.backgroundFrequencyPath.isEmpty()) {
             this.backgroundFrequencyPath=builder.backgroundFrequencyPath;
         } else {
             // Note-- background files for hg19 and hg38 are stored in src/main/resources/background
