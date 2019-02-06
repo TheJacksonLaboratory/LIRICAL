@@ -9,9 +9,7 @@ import de.charite.compbio.jannovar.data.Chromosome;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
-import de.charite.compbio.jannovar.progress.GenomeRegionListFactoryFromSAMSequenceDictionary;
 import de.charite.compbio.jannovar.progress.ProgressReporter;
-import htsjdk.samtools.SAMSequenceDictionary;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -114,7 +112,7 @@ public class Vcf2GenotypeMap {
     }
 
     /** map with some information about the VCF file that will be shown on the hTML org.monarchinitiative.lr2pg.output. */
-//    public Map<String, String> getVcfMetaData() {
+//    public Map<String, String > getVcfMetaData() {
 //        return vcfMetaData;
 //    }
 

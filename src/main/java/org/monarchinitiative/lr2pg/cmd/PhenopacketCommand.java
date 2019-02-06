@@ -122,7 +122,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
                 MVStore mvstore = factory.mvStore();
                 JannovarData jannovarData = factory.jannovarData();
                 String backgroundFrequencyFile = factory.getBackgroundFrequencyPath();
-                GenomeAssembly assembly = getGenomeAssembly(this.genomeAssembly);
+                GenomeAssembly assembly = factory.getAssembly();
                 SimpleVariant.setGenomeBuildForUrl(assembly);
 
                 Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap(jannovarData, mvstore, assembly);
@@ -207,7 +207,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
         return new GenotypeLikelihoodRatio(gene2back);
     }
 
-
+/*
     private GenomeAssembly getGenomeAssembly(String ga) {
         switch (ga) {
             case "HG19":
@@ -223,7 +223,7 @@ public class PhenopacketCommand extends Lr2PgCommand{
                 return GenomeAssembly.HG19;
         }
     }
-
+*/
 
     /**
      * Identify the variants and genotypes from the VCF file.

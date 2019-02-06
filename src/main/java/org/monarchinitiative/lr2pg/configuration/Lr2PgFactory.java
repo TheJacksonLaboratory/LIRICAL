@@ -280,13 +280,13 @@ public class Lr2PgFactory {
 
     /**
      * Create a {@link GenotypeLikelihoodRatio} object that will be used to calculated genotype likelhood ratios.
+     * A runtime exception will be thrown if the file cannot be found.
      * @return a {@link GenotypeLikelihoodRatio} object
-     * @throws Lr2pgException
      */
-    public GenotypeLikelihoodRatio getGenotypeLR() throws Lr2pgException {
+    public GenotypeLikelihoodRatio getGenotypeLR() {
         File f = new File(backgroundFrequencyPath);
         if (!f.exists()) {
-            throw new Lr2pgException(String.format("Could not find %s",this.backgroundFrequencyPath));
+            throw new Lr2PgRuntimeException(String.format("Could not find background frequency file at %s",this.backgroundFrequencyPath));
         }
         GenotypeDataIngestor ingestor = new GenotypeDataIngestor(this.backgroundFrequencyPath);
         Map<TermId,Double> gene2back = ingestor.parse();
@@ -500,15 +500,6 @@ public class Lr2PgFactory {
         }
 
         public Builder yaml(YamlParser yp) {
-            /*
-            new Lr2PgFactory.Builder().
-
-                    .exomiser(yparser.getExomiserDataDir())
-                    .genomeAssembly(yparser.getGenomeAssembly())
-                    .observedHpoTerms(yparser.getHpoTermList())
-                    .transcriptdatabase(yparser.transcriptdb())
-                    .vcf(yparser.vcfPath());
-             */
             Optional<String> datadirOpt=yp.getDataDir();
             if (datadirOpt.isPresent()) {
                 this.lr2pgDataDir = getPathWithoutTrailingSeparatorIfPresent(datadirOpt.get());
@@ -569,9 +560,11 @@ public class Lr2PgFactory {
                     case "hg19":
                     case "hg37":
                     case "grch37":
+                    case "grch_37":
                         return GenomeAssembly.HG19;
                     case "hg38":
-                    case "grc38":
+                    case "grch38":
+                    case "grch_38":
                         return GenomeAssembly.HG38;
                 }
             }
