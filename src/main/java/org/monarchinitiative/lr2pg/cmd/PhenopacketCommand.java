@@ -16,7 +16,6 @@ import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
-import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
 import org.monarchinitiative.lr2pg.io.PhenopacketImporter;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
@@ -29,7 +28,6 @@ import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -97,6 +95,9 @@ public class PhenopacketCommand extends Lr2PgCommand{
             PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
             this.vcfPath = importer.getVcfPath();
             hasVcf = importer.hasVcf();
+            if (hasVcf) {
+                this.metadata.put("vcf_file", this.vcfPath);
+            }
             this.genomeAssembly = importer.getGenomeAssembly();
             this.hpoIdList = importer.getHpoTerms();
             this.negatedHpoIdList = importer.getNegatedHpoTerms();
@@ -122,12 +123,11 @@ public class PhenopacketCommand extends Lr2PgCommand{
 
                 MVStore mvstore = factory.mvStore();
                 JannovarData jannovarData = factory.jannovarData();
-                String backgroundFrequencyFile = factory.getBackgroundFrequencyPath();
                 GenomeAssembly assembly = factory.getAssembly();
                 SimpleVariant.setGenomeBuildForUrl(assembly);
 
                 Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap(jannovarData, mvstore, assembly);
-                GenotypeLikelihoodRatio genoLr = getGenotypeLR(backgroundFrequencyFile);
+                GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
                 Ontology ontology = factory.hpoOntology();
                 Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
                 PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
@@ -194,18 +194,6 @@ public class PhenopacketCommand extends Lr2PgCommand{
                 e.printStackTrace();
             }
         }
-    }
-
-
-
-    private GenotypeLikelihoodRatio getGenotypeLR(String backgroundFrequencyFile) throws Lr2pgException {
-        File f = new File(backgroundFrequencyFile);
-        if (!f.exists()) {
-            throw new Lr2pgException(String.format("Could not find \"%s\"",backgroundFrequencyFile));
-        }
-        GenotypeDataIngestor ingestor = new GenotypeDataIngestor(backgroundFrequencyFile);
-        Map<TermId,Double> gene2back = ingestor.parse();
-        return new GenotypeLikelihoodRatio(gene2back);
     }
 
     /**

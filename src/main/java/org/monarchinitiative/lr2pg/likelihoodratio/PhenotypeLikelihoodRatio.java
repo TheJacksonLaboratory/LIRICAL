@@ -95,10 +95,10 @@ public class PhenotypeLikelihoodRatio {
 
     /** NOTE: Use the version in phenol-1.3.3 once it becomes available!
      *
-     * @param tid
-     * @param disease
-     * @param ontology
-     * @return
+     * @param tid TermId of an HPO term
+     * @param disease the disease being studied
+     * @param ontology reference to HPO Ontology
+     * @return true if the disease has a direct (explicit) annotation to tid
      */
     @Deprecated
     private boolean isIndirectlyAnnotatedTo(TermId tid, HpoDisease disease, Ontology ontology) {

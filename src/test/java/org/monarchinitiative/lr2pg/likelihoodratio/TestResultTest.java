@@ -70,7 +70,6 @@ class TestResultTest {
     @Test
     void testGlaucomaLR2() {
         TestResult tresult;
-        TermId glaucomaId = TermId.of("MONDO:123");
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
         ImmutableList<Double> excluded = ImmutableList.of();
         // The prevalence of glaucoma is 2.5%
@@ -97,7 +96,6 @@ class TestResultTest {
     @Test
     void testCompositepositiveLR() {
         TestResult tresult;
-        TermId glaucomaId = TermId.of("MONDO:123");
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
         ImmutableList<Double> excluded = ImmutableList.of();
         // The prevalence of glaucoma is 2.5%

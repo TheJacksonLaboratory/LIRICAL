@@ -17,7 +17,6 @@ import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.gt2git.GenicIntoleranceCalculator;
 
-import java.io.File;
 import java.util.List;
 
 /**

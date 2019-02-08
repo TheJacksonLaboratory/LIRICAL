@@ -65,9 +65,9 @@ public class TsvTemplate extends Lr2pgTemplate {
 
     /**
      * Constructor for when we do the analysis without genetic data
-     * @param hcase
-     * @param ontology
-     * @param metadat
+     * @param hcase The current HPO case whose results we are about to output
+     * @param ontology Reference toHPO Ontology object
+     * @param metadat Reference to a map of "metadata"-information we will use for the output file
      */
     public TsvTemplate(HpoCase hcase,
                        Ontology ontology,

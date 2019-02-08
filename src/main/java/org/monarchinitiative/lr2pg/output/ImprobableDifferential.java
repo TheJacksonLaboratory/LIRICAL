@@ -1,6 +1,5 @@
 package org.monarchinitiative.lr2pg.output;
 
-import javax.print.DocFlavor;
 import java.text.DecimalFormat;
 
 /**

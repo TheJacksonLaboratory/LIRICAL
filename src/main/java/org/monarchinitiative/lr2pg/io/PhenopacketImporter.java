@@ -16,10 +16,8 @@ import org.phenopackets.schema.v1.io.PhenoPacketFormat;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * This class ingests a phenopacket, which is required to additionally contain the

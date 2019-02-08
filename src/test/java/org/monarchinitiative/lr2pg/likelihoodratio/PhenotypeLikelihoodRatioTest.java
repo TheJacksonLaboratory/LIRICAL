@@ -35,7 +35,7 @@ public class PhenotypeLikelihoodRatioTest {
 
 
     @BeforeAll
-    static void setup() throws PhenolException, FileNotFoundException,NullPointerException {
+    static void setup() throws PhenolException, NullPointerException {
         ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
         String hpoPath = classLoader.getResource("hp.small.obo").getFile();
         String annotationPath = classLoader.getResource("small.hpoa").getFile();

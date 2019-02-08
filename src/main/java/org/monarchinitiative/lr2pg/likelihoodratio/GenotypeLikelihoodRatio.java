@@ -6,7 +6,6 @@ import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.poisson.PoissonDistribution;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

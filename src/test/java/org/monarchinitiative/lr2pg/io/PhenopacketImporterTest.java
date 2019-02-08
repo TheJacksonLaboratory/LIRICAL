@@ -22,7 +22,7 @@ import org.json.simple.parser.ParseException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class PhenopacketImporterTest {
+class PhenopacketImporterTest {
 
     private static String phenopacketJsonString;
     private static String phenopacketPfeifferNoVcf;

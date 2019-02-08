@@ -2,7 +2,6 @@ package org.monarchinitiative.lr2pg.output;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;

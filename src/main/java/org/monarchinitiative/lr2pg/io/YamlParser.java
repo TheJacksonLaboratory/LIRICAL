@@ -85,7 +85,7 @@ public class YamlParser {
 
     /**
      * @return path to the approprioate Jannovar transcript file (UCSC, Ensembl, or RefSeq).
-     * @throws Lr2pgException
+     * @throws Lr2pgException if there is an error retrieving the Jannovar data object
      */
     public String jannovarFile() throws Lr2pgException {
         String tdb = transcriptdb();

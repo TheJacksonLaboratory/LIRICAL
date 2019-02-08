@@ -49,7 +49,6 @@ public class VcfCommand extends Lr2PgCommand {
     private String outfilePrefix="lr2pg";
     @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
     private int minDifferentialsToShow=5;
-
     /** An object that contains parameters from the YAML file for configuration. */
     private Lr2PgFactory factory;
     /** Key: an EntrezGene id; value: corresponding gene symbol. */

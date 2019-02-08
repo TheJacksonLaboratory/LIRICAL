@@ -1,14 +1,12 @@
 package org.monarchinitiative.lr2pg.vcf;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 
 
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
