@@ -126,7 +126,7 @@ public class Vcf2GenotypeMap {
             this.samplenames = vcfHeader.getSampleNamesInOrder();
             this.n_samples=samplenames.size();
             this.samplename=samplenames.get(0);
-            logger.trace("Annotating VCF at " + vcfPath);
+            logger.trace("Annotating VCF at " + vcfPath + " for sample " + this.samplename);
             final long startTime = System.nanoTime();
             CloseableIterator<VariantContext> iter = vcfReader.iterator();
 

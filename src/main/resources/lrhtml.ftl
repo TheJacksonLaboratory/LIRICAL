@@ -301,7 +301,7 @@ footer {
 <main>
   <section>
     <a name="sample"/>
-    <h2>Sample name: ${sample_name}</h2>
+    <h2>Sample name: ${sample_name!"n/a"}</h2>
     <article>
       <div class="row">
         <div class="column" style="background-color:#aaa;">

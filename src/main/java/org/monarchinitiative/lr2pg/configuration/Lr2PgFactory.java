@@ -12,6 +12,8 @@ import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.jannovar.InvalidFileFormatException;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
+import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
+import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
@@ -30,6 +32,8 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -79,6 +83,8 @@ public class Lr2PgFactory {
     private String jannovarEnsemblPath=null;
     /** Path of the Jannovar RefSeq transcript file (from the Exomiser distribution) */
     private String jannovarRefSeqPath=null;
+    /** Name of sample in VCF file, if any. The default value is n/a to indicate this field has not been initiatilized. */
+    private String sampleName="n/a";
 
 
     private JannovarData jannovarData=null;
@@ -172,6 +178,15 @@ public class Lr2PgFactory {
 
     public String getBackgroundFrequencyPath() {
         return backgroundFrequencyPath;
+    }
+
+    public String getSampleName() {
+        return sampleName;
+    }
+
+    public String getVcfPath() {
+
+        return vcfPath;
     }
 
     /**
@@ -377,6 +392,20 @@ public class Lr2PgFactory {
         } catch (PhenolException pe) {
             throw new Lr2pgException("Could not parse annotation file: " + pe.getMessage());
         }
+    }
+
+    public  Map<TermId, Gene2Genotype> getGene2GenotypeMap() {
+        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(this.vcfPath, jannovarData(), mvStore(), getAssembly());
+        Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
+        this.sampleName=vcf2geno.getSamplename();
+        return genotypeMap;
+    }
+
+    /** @return a string with today's date in the format yyyy/MM/dd. */
+    public String getTodaysDate() {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+        Date date = new Date();
+        return dateFormat.format(date);
     }
 
     /**

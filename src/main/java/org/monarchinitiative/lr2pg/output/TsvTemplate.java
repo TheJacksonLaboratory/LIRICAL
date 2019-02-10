@@ -97,8 +97,8 @@ public class TsvTemplate extends Lr2pgTemplate {
 
     @Override
     public void outputFile(String prefix){
-        logger.debug("Outputting TSV file");
         String outname=String.format("%s.tsv",prefix );
+        logger.trace("Writing TSV file to {}",outname);
         try (BufferedWriter out = new BufferedWriter(new FileWriter(outname))) {
             Template template = cfg.getTemplate("lr2pgTSV.ftl");
             template.process(templateData, out);

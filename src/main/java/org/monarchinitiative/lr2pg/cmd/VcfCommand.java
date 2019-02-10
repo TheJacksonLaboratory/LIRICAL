@@ -72,18 +72,11 @@ public class VcfCommand extends Lr2PgCommand {
         this.factory = deYamylate(this.yamlPath);
         factory.qcYaml();
         this.metadata=new HashMap<>();
-        String vcfFilePath = factory.vcfPath();
-        MVStore mvstore = factory.mvStore();
-        JannovarData jannovarData = factory.jannovarData();
-        GenomeAssembly assembly = factory.getAssembly();
-        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfFilePath, jannovarData, mvstore, assembly);
-        Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
-        this.metadata.put("sample_name", vcf2geno.getSamplename());
-        this.metadata.put("vcf_file", vcfFilePath);
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        Date date = new Date();
-        this.metadata.put("analysis_date", dateFormat.format(date));
-        vcf2geno=null;// no longer needed, GC if necessary
+        Map<TermId, Gene2Genotype> genotypeMap = factory.getGene2GenotypeMap();
+        this.metadata.put("sample_name", factory.getSampleName());
+        this.metadata.put("vcf_file", factory.vcfPath());
+        String todaysDate = factory.getTodaysDate();
+        this.metadata.put("analysis_date", todaysDate);
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
         List<TermId> observedHpoTerms = factory.observedHpoTerms();
         Ontology ontology = factory.hpoOntology();
