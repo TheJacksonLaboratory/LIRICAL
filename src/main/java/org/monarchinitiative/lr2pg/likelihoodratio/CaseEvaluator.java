@@ -41,6 +41,8 @@ public class CaseEvaluator {
     private final GenotypeLikelihoodRatio genotypeLrEvalutator;
     /** Reference to the Human Phenotype Ontology object. */
     private final Ontology ontology;
+    /** retain candidates even if no candidate variant is found */
+    private boolean keepIfNoCandidateVariant;
 
     private static final double DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD=0.01;
 
@@ -79,11 +81,23 @@ public class CaseEvaluator {
         }
         this.useGenotypeAnalysis =false;
         this.threshold=DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD;
+        this.keepIfNoCandidateVariant=true; // needs to be true for phenotype-only analysis!
     }
 
 
-
-
+    /**
+     * Constructor for LR2PG anaysis with a VCF file.
+     * @param hpoTerms list of observed abnormalities
+     * @param negatedHpoTerms list of excluded abnormalities
+     * @param ontology reference to HPO ontology
+     * @param diseaseMap map to HPO disease objects
+     * @param disease2geneMultimap map from disease id to the corresponding gene symbols
+     * @param phenotypeLrEvaluator reference to object that evaluates the phenotype LR
+     * @param genotypeLrEvalutator reference to object that evaluates the genotype LR
+     * @param genotypeMap Map of gene symbol to genotype evaluations
+     * @param thres threshold posterior probability
+     * @param keep if true, do not discard candidates if they do not have a candidate variant
+     */
     private CaseEvaluator(List<TermId> hpoTerms,
                           List<TermId> negatedHpoTerms,
                           Ontology ontology,
@@ -92,7 +106,8 @@ public class CaseEvaluator {
                           PhenotypeLikelihoodRatio phenotypeLrEvaluator,
                           GenotypeLikelihoodRatio genotypeLrEvalutator,
                           Map<TermId,Gene2Genotype> genotypeMap,
-                          double thres) {
+                          double thres,
+                          boolean keep) {
         this.phenotypicAbnormalities=hpoTerms;
         this.negatedPhenotypicAbnormalities=negatedHpoTerms;
         this.diseaseMap=diseaseMap;
@@ -101,6 +116,7 @@ public class CaseEvaluator {
         this.genotypeLrEvalutator=genotypeLrEvalutator;
         this.ontology=ontology;
         this.threshold=thres;
+        this.keepIfNoCandidateVariant=keep;
 
         // For now, assume equal pretest probabilities
         this.pretestProbabilityMap =new HashMap<>();
@@ -149,6 +165,9 @@ public class CaseEvaluator {
                 if (associatedGenes != null && associatedGenes.size() > 0) {
                     for (TermId entrezGeneId : associatedGenes) {
                         Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
+                        if (!keepIfNoCandidateVariant && (g2g==null || !g2g.hasPredictedPathogenicVar())) {
+                            continue;
+                        }
                         Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(g2g,
                                 inheritancemodes,
                                 entrezGeneId);
@@ -232,6 +251,8 @@ public class CaseEvaluator {
         private GenotypeLikelihoodRatio genotypeLR;
         /** Key: geneId (e.g., NCBI Entrez Gene); value: observed variants/genotypes as {@link org.monarchinitiative.lr2pg.analysis.Gene2Genotype} object.*/
         private Map<TermId,Gene2Genotype> genotypeMap;
+        /** retain candidates even if no candidate variant is found (default: false)*/
+        private boolean keepIfNoCandidateVariant=false;
 
         private double threshold=DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD;
 
@@ -251,6 +272,10 @@ public class CaseEvaluator {
 
         public Builder threshold(double t) { this.threshold=t; return this;}
 
+        public Builder keepCandidates(boolean keep) {
+            this.keepIfNoCandidateVariant=keep;
+            return this;
+        }
         public Builder negated(List<TermId> negated) {
             this.negatedHpoTerms=negated;
 
@@ -269,7 +294,7 @@ public class CaseEvaluator {
             if (negatedHpoTerms==null) {
                 negatedHpoTerms=ImmutableList.of();
             }
-            return new CaseEvaluator(hpoTerms,negatedHpoTerms,ontology,diseaseMap,disease2geneMultimap,phenotypeLR,genotypeLR,genotypeMap,threshold);
+            return new CaseEvaluator(hpoTerms,negatedHpoTerms,ontology,diseaseMap,disease2geneMultimap,phenotypeLR,genotypeLR,genotypeMap,threshold,keepIfNoCandidateVariant);
         }
 
 

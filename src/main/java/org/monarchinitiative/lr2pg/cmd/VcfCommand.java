@@ -38,6 +38,10 @@ import java.util.Map;
 @Parameters(commandDescription = "Phenotype-driven analysis of VCF (Exome/Genome) data")
 public class VcfCommand extends Lr2PgCommand {
     private static final Logger logger = LoggerFactory.getLogger(VcfCommand.class);
+    @Parameter(names={"-k","--keep"}, description = "retain candidates even if no candidate variant is found")
+    private boolean keepIfNoCandidateVariant=false;
+    @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
+    private int minDifferentialsToShow=5;
     @Parameter(names="--tsv",description = "Use TSV instead of HTML output")
     private boolean outputTSV=false;
     @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
@@ -47,8 +51,7 @@ public class VcfCommand extends Lr2PgCommand {
     private double LR_THRESHOLD=0.01;
     /** Prefix for the output files (defailt {@code lr2pg}). Can be set via the YAML file. */
     private String outfilePrefix="lr2pg";
-    @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
-    private int minDifferentialsToShow=5;
+
     /** An object that contains parameters from the YAML file for configuration. */
     private Lr2PgFactory factory;
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
