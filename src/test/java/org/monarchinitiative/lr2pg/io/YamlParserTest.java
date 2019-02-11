@@ -54,10 +54,9 @@ class YamlParserTest {
 
     /**
      * This test is disabled on windows because it depends on the File separator (/ vs \).
-     * @throws Lr2pgException
      */
     @Test @DisabledOnOs(WINDOWS)
-    void testMvStorePath() throws Lr2pgException {
+    void testMvStorePath() {
         YamlParser parser = new YamlParser(demo1path);
         String expected="/home/robinp/data/exomiserdata/1802_hg19/1802_hg19_variants.mv.db";
         assertEquals(expected,parser.getMvStorePath());
@@ -76,7 +75,6 @@ class YamlParserTest {
      * exomiser: /home/robinp/data/exomiserdata/1811_hg19.
      * Here we test if we can extract the correct mvstore and Jannovar files
      * This test is disabled on windows because it depends on the File separator (/ vs \).
-     * @throws Lr2pgException
      */
     @Test @DisabledOnOs(WINDOWS)
     void testExomiserData()throws Lr2pgException  {

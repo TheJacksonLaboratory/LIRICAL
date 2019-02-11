@@ -257,11 +257,22 @@ a[name="othergenes"] table.redTable a::first-letter {
 	text-transform: uppercase;
 }
 
+/* Create two equal columns that floats next to each other */
+.column {
+  float: left;
+  width: 50%;
+  padding: 10px;
+}
 
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
 
 
 footer {
-
 	background-color: #05396b;
 	color: white;
 	padding: 1rem 2rem;
@@ -290,18 +301,38 @@ footer {
 <main>
   <section>
     <a name="sample"/>
-    <h2>Sample name: ${sample_name}</h2>
+    <h2>Sample name: ${sample_name!"n/a"}</h2>
     <article>
-      <header>
-        <h3>Observed phenotypic features:</h3>
-      </header>
-      <p>
-        <ul>
-          <#list  observedHPOs as hpo>
-          <li>${hpo}</li>
-          </#list>
-        </ul>
-      </p>
+      <div class="row">
+        <div class="column" style="background-color:#aaa;">
+          <h2>Observed Phenotypic Features</h2>
+          <p>
+                  <ul>
+                    <#list  observedHPOs as hpo>
+                    <li>${hpo}</li>
+                    </#list>
+                  </ul>
+                </p>
+        </div>
+        <div class="column" style="background-color:#bbb;">
+           <p>
+              <h2> Excluded phenotypic features:</h2>
+              <#if excludedHPOs?has_content>
+                 <ul>
+                 <#list excludedHPOs as hpo>
+                   <li>Excluded: ${hpo}</li>
+                 </#list>
+                 </ul>
+              <#else>
+                None provided
+              </#if>
+           </p>
+        </div>
+      </div>
+
+
+
+
       <#if vcf_file?has_content>
           <p>VCF file: ${vcf_file}</p>
       </#if>
@@ -338,8 +369,8 @@ footer {
            <a name="${dd.anchor}"/>
           <p>
            <table class="redTable">
-             <tr><th>Pretest probability</th><th>Posttest probability</th></tr>
-             <tr><td>${dd.pretestprob}</td><td>${dd.posttestprob}</td></tr>
+             <tr><th>Pretest probability</th><th>Composite likelihood ratio</th><th>Posttest probability</th></tr>
+             <tr><td>${dd.pretestprob}</td><td>${dd.compositeLR}<td>${dd.posttestprob}</td></tr>
            </table>
           </p>
           <br/>
@@ -360,9 +391,9 @@ footer {
               <tr>
                 <td>${svar.ucsc}</td>
                 <#if svar.isInPathogenicBin() >
-                <td class="red">${svar.pathogenicity}</td>
+                <td class="red">${svar.pathogenicity!"n/a"}</td>
                 <#else>
-                 <td>${svar.pathogenicityScore}</td>
+                 <td>${svar.pathogenicityScore!"n/a"}</td>
                 </#if>
                 <td>${svar.frequency}%</td>
                 <td>${svar.gtype}</td>

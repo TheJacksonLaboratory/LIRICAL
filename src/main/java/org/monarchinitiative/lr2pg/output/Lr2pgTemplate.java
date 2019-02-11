@@ -70,16 +70,25 @@ public abstract class Lr2pgTemplate {
         for(Map.Entry<String,String> entry : metadat.entrySet()) {
             templateData.put(entry.getKey(),entry.getValue());
         }
-
-        List<TermId> observedIds = hcase.getObservedAbnormalities();
         List<String> observedHPOs = new ArrayList<>();
-        for (TermId id:observedIds) {
+        for (TermId id:hcase.getObservedAbnormalities()) {
             Term term = ontology.getTermMap().get(id);
             String tstr = String.format("%s (<a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>)",term.getName(),id.getValue(),id.getValue());
             observedHPOs.add(tstr);
         }
         this.templateData.put("observedHPOs",observedHPOs);
-
+        List<String> excludedHpos = new ArrayList<>();
+        for (TermId id:hcase.getExcludedAbnormalities()) {
+            Term term = ontology.getTermMap().get(id);
+            String tstr = String.format("%s (<a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>)",term.getName(),id.getValue(),id.getValue());
+            excludedHpos.add(tstr);
+        }
+        this.templateData.put("excludedHPOs",excludedHpos);
+        // This is a flag for the output to only show the list if there are some phenotypes that were excluded in the
+        // proband.
+        if (excludedHpos.size()>0) {
+            this.templateData.put("hasExcludedHPOs","true");
+        }
 
 
 

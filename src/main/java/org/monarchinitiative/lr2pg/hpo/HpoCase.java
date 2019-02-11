@@ -77,6 +77,7 @@ public final class HpoCase {
 
     /** Output the results for a specific HPO disease.
      * This is ugly and just for development. */
+    @Deprecated
     public void outputLrToShell(TermId diseaseId, Ontology ontology, Map<TermId, Gene2Genotype> g2gmap) {
         int rank = getRank(diseaseId);
 
@@ -92,7 +93,7 @@ public final class HpoCase {
                 r.getCompositeLR(),
                 niceFormat(r.getPosttestProbability())));
         for (int i = 0; i < r.getNumberOfTests(); i++) {
-            double ratio = r.getRatio(i);
+            double ratio = r.getObservedPhenotypeRatio(i);
             TermId tid = getObservedAbnormalities().get(i);
             String term = String.format("%s [%s]", ontology.getTermMap().get(tid).getName(), tid.getValue());
             System.err.println(String.format("%s: ratio=%s", term, niceFormat(ratio)));

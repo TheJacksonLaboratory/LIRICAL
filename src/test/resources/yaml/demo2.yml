@@ -9,6 +9,5 @@ analysis:
   vcf: /home/peter/data/exomiser/Pfeiffer.vcf
   datadir: data
   exomiser: /home/peter/data/exomiser/1802_hg19/
-  background_freq : data/background-freq.txt
 hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
 prefix: pfeiffer

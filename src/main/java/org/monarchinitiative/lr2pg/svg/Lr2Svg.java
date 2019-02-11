@@ -45,12 +45,20 @@ public class Lr2Svg {
     private final static String BLUE ="#4dbbd5";
     private final static String RED ="#e64b35";
     private final static String BROWN="#7e6148";
-    /** The midle line is the central line around which the likelihood ratio 'bars' will be drawn. This
+    /** The middle line is the central line around which the likelihood ratio 'bars' will be drawn. This
      * variable is calculated as the height that this bar will need to have in order to show all of the
      * likelihood ratio bars.
      */
     private int heightOfMiddleLine;
 
+    /**
+     * Constructor to draw an SVG representation of the phenotype and genotype likelihood ratios
+     * @param hcase The proband (case) we are analyzing
+     * @param diseaseId The current differential diagnosis id (e.g., OMIM:600123)
+     * @param diseaseName  The current differential diagnosis name
+     * @param ont Reference to HPO ontology
+     * @param symbol Gene symbol (if any, can be null)
+     */
     public Lr2Svg(HpoCase hcase, TermId diseaseId, String diseaseName, Ontology ont, String symbol) {
         this.hpocase=hcase;
         this.diseaseCURIE=diseaseId;
@@ -76,8 +84,13 @@ public class Lr2Svg {
         HEIGHT = this.heightOfMiddleLine + 4*MIN_VERTICAL_OFFSET + 7*BOX_OFFSET;
     }
 
-
-    public void writeSvg2(Writer writer)  throws IOException {
+    /**
+     * This method can be used to output the SVG code to any Java Writer. Currently,
+     * we use this with a StringWriter to include the code in the HTML output (see {@link #getSvgString()}).
+     * @param writer Handle to a Writer object
+     * @throws IOException If there is an IO error
+     */
+    private void writeSvg(Writer writer)  throws IOException {
         writeHeader(writer);
         writeVerticalLine(writer);
         writeLrBoxes(writer);
@@ -87,7 +100,7 @@ public class Lr2Svg {
     public String getSvgString() {
         try {
             StringWriter swriter = new StringWriter();
-            writeSvg2(swriter);
+            writeSvg(swriter);
             return swriter.toString();
         } catch (IOException e) {
             e.printStackTrace();
@@ -98,7 +111,7 @@ public class Lr2Svg {
     public void writeSvg(String path) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(path));
-            writeSvg2(writer);
+            writeSvg(writer);
             writer.close();
         } catch (IOException e) {
             System.err.println("[ERROR] Unable to write SVG file: "+path);
@@ -184,14 +197,23 @@ public class Lr2Svg {
         int currentY= MIN_VERTICAL_OFFSET + BOX_OFFSET*2;
         int midline=WIDTH/2;
         List<TermId> termIdList=hpocase.getObservedAbnormalities();
+        List<TermId> excludedTermIdList=hpocase.getExcludedAbnormalities();
         Map<TermId, Double> unsortedmap = new HashMap<>();
+        Map<TermId, Double> unsortedexcludedmap = new HashMap<>();
         double max=0;
         for (int i=0;i<termIdList.size();i++) {
             TermId tid = termIdList.get(i);
-            double ratio = result.getRatio(i);
+            double ratio = result.getObservedPhenotypeRatio(i);
             if (max < Math.abs(ratio)) { max = Math.abs(ratio); }
             double lgratio = Math.log10(ratio);
             unsortedmap.put(tid,lgratio);
+        }
+        for (int i=0;i<excludedTermIdList.size();i++) {
+            TermId tid = excludedTermIdList.get(i);
+            double ratio = result.getExcludedPhenotypeRatio(i);
+            if (max < Math.abs(ratio)) { max = Math.abs(ratio); }
+            double lgratio = Math.log10(ratio);
+            unsortedexcludedmap.put(tid,lgratio);
         }
         // also check if the genotype LR is better than any of the phenotype LR's, so that max will be
         // correctly calculated!
@@ -240,6 +262,44 @@ public class Lr2Svg {
                         label));
             currentY += BOX_HEIGHT+BOX_OFFSET;
         }
+        // Now add negated terms if any
+        Map<TermId, Double> sortedexcludedmap = sortByValue(unsortedexcludedmap);
+        for (Map.Entry<TermId,Double> entry : sortedexcludedmap.entrySet()) {
+            TermId tid = entry.getKey();
+            double ratio = entry.getValue();
+            double boxwidth=ratio*scaling;
+            double xstart = midline;
+            if (ratio<0) {
+                boxwidth=Math.abs(boxwidth);
+                xstart = 1+ midline - boxwidth;
+            }
+            if ((int)boxwidth==0) {
+                int X=(int)xstart;
+                writeDiamond(writer,X,currentY);
+            } else {
+                // red for features that do not support the diagnosis, green for those that do
+                String color = xstart<midline ? RED : BLUE;
+                writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
+                                "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
+                        BOX_HEIGHT,
+                        (int) boxwidth,
+                        currentY,
+                        (int) xstart,
+                        color));
+            }
+            // add label of corresponding HPO term
+            Term term = ontology.getTermMap().get(tid);
+            String label = String.format("Excluded: %s [%s]",term.getName(),tid.getValue());
+            //writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
+            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n",
+                    WIDTH,
+                    currentY + BOX_HEIGHT,
+                    label));
+            currentY += BOX_HEIGHT+BOX_OFFSET;
+        }
+
+
+
         if (result.hasGenotype()) {
             currentY += 0.5*(BOX_HEIGHT+BOX_OFFSET);
 

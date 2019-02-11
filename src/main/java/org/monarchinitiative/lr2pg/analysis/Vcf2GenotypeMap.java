@@ -9,9 +9,7 @@ import de.charite.compbio.jannovar.data.Chromosome;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
-import de.charite.compbio.jannovar.progress.GenomeRegionListFactoryFromSAMSequenceDictionary;
 import de.charite.compbio.jannovar.progress.ProgressReporter;
-import htsjdk.samtools.SAMSequenceDictionary;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -77,6 +75,15 @@ public class Vcf2GenotypeMap {
      * Should be hg37 or hg38
      */
     private final GenomeAssembly genomeAssembly;
+    /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
+     * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
+     * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
+     * can be turned off by entering {@code -q false} or {@code --quality} false. */
+    private final boolean filterOnFILTER;
+    /** Number of variants that were not removed because of the quality filter. */
+    private int n_good_quality_variants=0;
+    /** Number of variants that were removed because of the quality filter. */
+    private int n_filtered_variants=0;
 
    // private final Map<String,String> vcfMetaData=new HashMap<>();
     /**
@@ -104,17 +111,18 @@ public class Vcf2GenotypeMap {
                     ClinVarData.ClinSig.LIKELY_PATHOGENIC);
 
 
-    public Vcf2GenotypeMap(String vcf, JannovarData jannovar, MVStore mvs, GenomeAssembly ga) {
+    public Vcf2GenotypeMap(String vcf, JannovarData jannovar, MVStore mvs, GenomeAssembly ga, boolean filter) {
         this.vcfPath = vcf;
         this.jannovarData = jannovar;
         this.alleleMap = MvStoreUtil.openAlleleMVMap(mvs);
         this.referenceDictionary = jannovarData.getRefDict();
         this.chromosomeMap = jannovarData.getChromosomes();
         this.genomeAssembly = ga;
+        this.filterOnFILTER=filter;
     }
 
     /** map with some information about the VCF file that will be shown on the hTML org.monarchinitiative.lr2pg.output. */
-//    public Map<String, String> getVcfMetaData() {
+//    public Map<String, String > getVcfMetaData() {
 //        return vcfMetaData;
 //    }
 
@@ -128,7 +136,7 @@ public class Vcf2GenotypeMap {
             this.samplenames = vcfHeader.getSampleNamesInOrder();
             this.n_samples=samplenames.size();
             this.samplename=samplenames.get(0);
-            logger.trace("Annotating VCF at " + vcfPath);
+            logger.trace("Annotating VCF at " + vcfPath + " for sample " + this.samplename);
             final long startTime = System.nanoTime();
             CloseableIterator<VariantContext> iter = vcfReader.iterator();
 
@@ -142,6 +150,14 @@ public class Vcf2GenotypeMap {
             JannovarVariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(genomeAssembly, jannovarData, emptyRegionIndex);
             while (iter.hasNext()) {
                 VariantContext vc = iter.next();
+                if (vc.isFiltered()) {
+                    // this is a failing VariantContext
+                    logger.warn("Skipping low-quality variant: {}",vc.getFilters());
+                    n_filtered_variants++;
+                    continue;
+                } else {
+                    n_good_quality_variants++;
+                }
                 vc = variantEffectAnnotator.annotateVariantContext(vc);
                 List<Allele> altAlleles = vc.getAlternateAlleles();
                 String contig = vc.getContig();
@@ -198,6 +214,8 @@ public class Vcf2GenotypeMap {
             final long endTime = System.nanoTime();
 
             logger.info(String.format("Finished Annotating VCF (time= %.2f sec).", (endTime-startTime)/1_000_000_000.0 ));
+            logger.info("Extracted {} non-filtered variants and {} variants that were removed because of a quality filter",
+                    n_good_quality_variants,n_filtered_variants);
         }
 
         return gene2genotypeMap;
@@ -217,6 +235,14 @@ public class Vcf2GenotypeMap {
 
     public GenomeAssembly getGenomeAssembly() {
         return genomeAssembly;
+    }
+
+    public int getN_good_quality_variants() {
+        return n_good_quality_variants;
+    }
+
+    public int getN_filtered_variants() {
+        return n_filtered_variants;
     }
 
     /**

@@ -36,30 +36,10 @@ import java.util.Map;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Phenotype-driven analysis of VCF (Exome/Genome) data")
-public class VcfCommand extends Lr2PgCommand {
+public class VcfCommand extends PrioritizeCommand {
     private static final Logger logger = LoggerFactory.getLogger(VcfCommand.class);
-    /** An object that contains parameters from the YAML file for configuration. */
-    private Lr2PgFactory factory;
-    /** Default name of the background frequency file. */
-    private final String BACKGROUND_FREQUENCY_FILE="background-freq.txt";
-    /** Key: an EntrezGene id; value: corresponding gene symbol. */
-    private Map<TermId,String> geneId2symbol;
-    /** Various metadata that will be used for the HTML org.monarchinitiative.lr2pg.output. */
-    private Map<String,String> metadata;
-
-
-
-    @Parameter(names="--tsv",description = "Use TSV instead of HTML output")
-    private boolean outputTSV=false;
     @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
     private String yamlPath;
-    /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
-    @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
-    private double LR_THRESHOLD=0.01;
-    /** Prefix for the output files (defailt {@code lr2pg}). Can be set via the YAML file. */
-    private String outfilePrefix="lr2pg";
-    @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
-    private int minDifferentialsToShow=5;
     /**
      * Command pattern to coordinate analysis of a VCF file with LR2PG.
      */
@@ -73,18 +53,12 @@ public class VcfCommand extends Lr2PgCommand {
         this.factory = deYamylate(this.yamlPath);
         factory.qcYaml();
         this.metadata=new HashMap<>();
-        String vcfFilePath = factory.vcfPath();
-        MVStore mvstore = factory.mvStore();
-        JannovarData jannovarData = factory.jannovarData();
-        GenomeAssembly assembly = factory.getAssembly();
-        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfFilePath, jannovarData, mvstore, assembly);
-        Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
-        this.metadata.put("sample_name", vcf2geno.getSamplename());
-        this.metadata.put("vcf_file", vcfFilePath);
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        Date date = new Date();
-        this.metadata.put("analysis_date", dateFormat.format(date));
-        vcf2geno=null;// no longer needed, GC if necessary
+        Map<TermId, Gene2Genotype> genotypeMap = factory.getGene2GenotypeMap();
+        this.metadata.put("sample_name", factory.getSampleName());
+        this.metadata.put("vcf_file", factory.vcfPath());
+        this.metadata.put("n_filtered_variants", String.valueOf(factory.getN_filtered_variants()));
+        this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
+        this.metadata.put("analysis_date", factory.getTodaysDate());
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
         List<TermId> observedHpoTerms = factory.observedHpoTerms();
         Ontology ontology = factory.hpoOntology();
@@ -111,25 +85,6 @@ public class VcfCommand extends Lr2PgCommand {
         }
     }
 
-
-    private void outputHTML(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
-        HtmlTemplate caseoutput = new HtmlTemplate(hcase,
-                ontology,
-                genotypeMap,
-                this.geneId2symbol,
-                this.metadata,
-                this.LR_THRESHOLD,
-                minDifferentialsToShow);
-        caseoutput.outputFile(this.outfilePrefix);
-    }
-
-    /** Output a tab-separated values file with one line per differential diagnosis. */
-    private void outputTSV(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
-        Lr2pgTemplate template = new TsvTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata);
-        template.outputFile(this.outfilePrefix);
-    }
-
-
     /**
      * Parse the YAML file and put the results into an {@link Lr2PgFactory} object.
      *
@@ -138,7 +93,9 @@ public class VcfCommand extends Lr2PgCommand {
      */
     private Lr2PgFactory deYamylate(String yamlPath) {
         YamlParser yparser = new YamlParser(yamlPath);
-        Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().yaml(yparser);
+        Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().
+                yaml(yparser).
+                filter(filterOnFILTER);
         Lr2PgFactory  factory = builder.buildForGenomicDiagnostics();
         return factory;
     }

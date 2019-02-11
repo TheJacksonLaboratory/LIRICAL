@@ -12,6 +12,8 @@ import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.jannovar.InvalidFileFormatException;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
+import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
+import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.io.GenotypeDataIngestor;
@@ -27,8 +29,11 @@ import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -60,6 +65,10 @@ public class Lr2PgFactory {
     private final static String DEFAULT_DATA_DIRECTORY="data";
     /** The directory with the Exomiser database and Jannovar transcript files. */
     private String exomiserPath;
+    /** Number of variants that were not removed because of the quality filter. */
+    private int n_good_quality_variants=0;
+    /** Number of variants that were removed because of the quality filter. */
+    private int n_filtered_variants=0;
 
     private final GenomeAssembly assembly;
 
@@ -71,6 +80,11 @@ public class Lr2PgFactory {
     private Multimap<TermId,TermId> gene2diseaseMultiMap=null;
     private Multimap<TermId,TermId> disease2geneIdMultiMap=null;
     private Map<TermId,String> geneId2SymbolMap=null;
+    /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
+     * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
+     * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
+     * can be turned off by entering {@code -q false} or {@code --quality} false. */
+    private final boolean filterOnFILTER;
 
     /** Path of the Jannovar UCSC transcript file (from the Exomiser distribution) */
     private String jannovarUcscPath=null;
@@ -78,6 +92,8 @@ public class Lr2PgFactory {
     private String jannovarEnsemblPath=null;
     /** Path of the Jannovar RefSeq transcript file (from the Exomiser distribution) */
     private String jannovarRefSeqPath=null;
+    /** Name of sample in VCF file, if any. The default value is n/a to indicate this field has not been initiatilized. */
+    private String sampleName="n/a";
 
 
     private JannovarData jannovarData=null;
@@ -89,16 +105,26 @@ public class Lr2PgFactory {
             initializeExomiserPaths();
         }
         this.assembly=builder.getAssembly();
-        if (builder.backgroundFrequencyPath!=null) {
+        if (builder.backgroundFrequencyPath!=null && !builder.backgroundFrequencyPath.isEmpty()) {
             this.backgroundFrequencyPath=builder.backgroundFrequencyPath;
         } else {
+            // Note-- background files for hg19 and hg38 are stored in src/main/resources/background
+            // and are included in the resources by the maven resource plugin
+            ClassLoader classLoader = Lr2PgFactory.class.getClassLoader();
+            URL resource;
             if (assembly.equals(GenomeAssembly.HG19)) {
-                this.backgroundFrequencyPath=Paths.get("src","main","resources","background","background-hg19.txt").toAbsolutePath().toString();
+                resource = classLoader.getResource("background/background-hg19.txt");
             } else if (assembly.equals(GenomeAssembly.HG38)) {
-                this.backgroundFrequencyPath=Paths.get("src","main","resources","background","background-hg38.txt").toAbsolutePath().toString();
+                resource = classLoader.getResource("background/background-hg38.txt");
             } else {
-                this.backgroundFrequencyPath=null; // should never happen
+                logger.fatal("Did not recognize genome assembly: {}",assembly);
+                throw new Lr2PgRuntimeException("Did not recognize genome assembly: "+assembly);
             }
+            if (resource==null) {
+                logger.fatal("Could not find resource for background file");
+                throw new Lr2PgRuntimeException("Could not find resource for background file");
+            }
+            this.backgroundFrequencyPath=resource.getFile();
         }
 
         this.geneInfoPath=builder.geneInfoPath;
@@ -120,6 +146,7 @@ public class Lr2PgFactory {
         } else {
             this.ontology=null;
         }
+        this.filterOnFILTER=builder.filterFILTER;
     }
 
 
@@ -161,6 +188,17 @@ public class Lr2PgFactory {
 
     public String getBackgroundFrequencyPath() {
         return backgroundFrequencyPath;
+    }
+
+    public String getSampleName() {
+        return sampleName;
+    }
+
+    public String getVcfPath() {
+        if (this.vcfPath==null) {
+            throw new Lr2PgRuntimeException("VCF path not initialized");
+        }
+        return vcfPath;
     }
 
     /**
@@ -280,13 +318,13 @@ public class Lr2PgFactory {
 
     /**
      * Create a {@link GenotypeLikelihoodRatio} object that will be used to calculated genotype likelhood ratios.
+     * A runtime exception will be thrown if the file cannot be found.
      * @return a {@link GenotypeLikelihoodRatio} object
-     * @throws Lr2pgException
      */
-    public GenotypeLikelihoodRatio getGenotypeLR() throws Lr2pgException {
+    public GenotypeLikelihoodRatio getGenotypeLR() {
         File f = new File(backgroundFrequencyPath);
         if (!f.exists()) {
-            throw new Lr2pgException(String.format("Could not find %s",this.backgroundFrequencyPath));
+            throw new Lr2PgRuntimeException(String.format("Could not find background frequency file at %s",this.backgroundFrequencyPath));
         }
         GenotypeDataIngestor ingestor = new GenotypeDataIngestor(this.backgroundFrequencyPath);
         Map<TermId,Double> gene2back = ingestor.parse();
@@ -366,6 +404,34 @@ public class Lr2PgFactory {
         } catch (PhenolException pe) {
             throw new Lr2pgException("Could not parse annotation file: " + pe.getMessage());
         }
+    }
+
+    public  Map<TermId, Gene2Genotype> getGene2GenotypeMap() {
+        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(getVcfPath(),
+                jannovarData(),
+                mvStore(),
+                getAssembly(),
+                this.filterOnFILTER);
+        Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
+        this.sampleName=vcf2geno.getSamplename();
+        this.n_filtered_variants=vcf2geno.getN_filtered_variants();
+        this.n_good_quality_variants=vcf2geno.getN_good_quality_variants();
+        return genotypeMap;
+    }
+
+    /** @return a string with today's date in the format yyyy/MM/dd. */
+    public String getTodaysDate() {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+        Date date = new Date();
+        return dateFormat.format(date);
+    }
+
+    public int getN_good_quality_variants() {
+        return n_good_quality_variants;
+    }
+
+    public int getN_filtered_variants() {
+        return n_filtered_variants;
     }
 
     /**
@@ -478,11 +544,11 @@ public class Lr2PgFactory {
     }
 
 
-
-
-
+    /**
+     * A convenience Builder class for creating {@link Lr2PgFactory} objects
+     */
     public static class Builder {
-
+        /** path to hp.obo file.*/
         private String hpOboPath=null;
         private String phenotypeAnnotationPath=null;
         private String lr2pgDataDir=null;
@@ -492,6 +558,7 @@ public class Lr2PgFactory {
         private String backgroundFrequencyPath=null;
         private String vcfPath=null;
         private String genomeAssembly=null;
+        private boolean filterFILTER=true;
         /** The default transcript database is UCSC> */
         private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
         private List<String> observedHpoTerms=ImmutableList.of();
@@ -500,15 +567,6 @@ public class Lr2PgFactory {
         }
 
         public Builder yaml(YamlParser yp) {
-            /*
-            new Lr2PgFactory.Builder().
-
-                    .exomiser(yparser.getExomiserDataDir())
-                    .genomeAssembly(yparser.getGenomeAssembly())
-                    .observedHpoTerms(yparser.getHpoTermList())
-                    .transcriptdatabase(yparser.transcriptdb())
-                    .vcf(yparser.vcfPath());
-             */
             Optional<String> datadirOpt=yp.getDataDir();
             if (datadirOpt.isPresent()) {
                 this.lr2pgDataDir = getPathWithoutTrailingSeparatorIfPresent(datadirOpt.get());
@@ -569,9 +627,11 @@ public class Lr2PgFactory {
                     case "hg19":
                     case "hg37":
                     case "grch37":
+                    case "grch_37":
                         return GenomeAssembly.HG19;
                     case "hg38":
-                    case "grc38":
+                    case "grch38":
+                    case "grch_38":
                         return GenomeAssembly.HG38;
                 }
             }
@@ -581,6 +641,11 @@ public class Lr2PgFactory {
 
         public Builder backgroundFrequency(String bf) {
             this.backgroundFrequencyPath=bf;
+            return this;
+        }
+
+        public Builder filter(boolean f) {
+            this.filterFILTER=f;
             return this;
         }
 

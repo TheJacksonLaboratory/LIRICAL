@@ -41,13 +41,14 @@ class TestResultTest {
         TestResult tresult;
 
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
+        ImmutableList<Double> excluded = ImmutableList.of();
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
         // test #1
         // we obtain a test result with 60% sensitivity and 97% specifity
         double LR1 = ratio(0.60, 0.97);
         builder.add(LR1);
-        tresult = new TestResult(builder.build(), glaucoma,prevalence);
+        tresult = new TestResult(builder.build(), excluded,glaucoma,prevalence);
         // There should be a LR of 20 after just one test
         assertEquals(1, tresult.getNumberOfTests());
         // There should be a LR of 20
@@ -69,8 +70,8 @@ class TestResultTest {
     @Test
     void testGlaucomaLR2() {
         TestResult tresult;
-        TermId glaucomaId = TermId.of("MONDO:123");
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
+        ImmutableList<Double> excluded = ImmutableList.of();
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
         // We now do two tests. The first test is the same as above
@@ -80,7 +81,7 @@ class TestResultTest {
         // IOP: (50% sensitivity and 92% specificity[9])
         double LR2 = ratio(0.50, 0.92);
         builder.add(LR2);
-        tresult = new TestResult(builder.build(), glaucoma,prevalence);
+        tresult = new TestResult(builder.build(),excluded, glaucoma,prevalence);
         // the pretest odds are the same as with the first test because they are based only on
         // the population prevalence.
         double expectedPretestOdds = 0.02564103;
@@ -95,8 +96,8 @@ class TestResultTest {
     @Test
     void testCompositepositiveLR() {
         TestResult tresult;
-        TermId glaucomaId = TermId.of("MONDO:123");
         ImmutableList.Builder<Double> builder = new ImmutableList.Builder<>();
+        ImmutableList<Double> excluded = ImmutableList.of();
         // The prevalence of glaucoma is 2.5%
         double prevalence = 0.025;
         //IOP test
@@ -109,7 +110,7 @@ class TestResultTest {
         double LR3 = ratio(0.60, 0.97);
         builder.add(LR3);
 
-        tresult = new TestResult(builder.build(),glaucoma,prevalence);
+        tresult = new TestResult(builder.build(),excluded,glaucoma,prevalence);
          //PretestOdds = pretest prob / (1-pretest prob) = 0.95 / 0.05 = 19.0
         double expectedPretestOdds = 0.0256410;
         assertEquals(expectedPretestOdds, tresult.pretestodds(), EPSILON);
@@ -139,10 +140,11 @@ class TestResultTest {
         List<Double> list1 = ImmutableList.of(2.0,3.0,4.0);
         List<Double> list2 = ImmutableList.of(20.0,3.0,4.0);
         List<Double> list3 = ImmutableList.of(20.0,30.0,4.0);
+        ImmutableList<Double> excluded = ImmutableList.of();
         double prevalence = 0.025;
-        TestResult result1 = new TestResult(list1,d1,prevalence);
-        TestResult result2 = new TestResult(list2,d2,prevalence);
-        TestResult result3 = new TestResult(list3,d3,prevalence);
+        TestResult result1 = new TestResult(list1,excluded,d1,prevalence);
+        TestResult result2 = new TestResult(list2,excluded,d2,prevalence);
+        TestResult result3 = new TestResult(list3,excluded,d3,prevalence);
         assertEquals(24.0,result1.getCompositeLR(),EPSILON);
         assertEquals(240.0,result2.getCompositeLR(),EPSILON);
         assertEquals(2400.0,result3.getCompositeLR(),EPSILON);
@@ -159,7 +161,7 @@ class TestResultTest {
         // result4 should now be the top hit
         double genotypeLR=2.0;
         TermId geneId=TermId.of("NCBI:Fake");
-        TestResult result4=new TestResult(list3,d3,genotypeLR,geneId,prevalence);
+        TestResult result4=new TestResult(list3,excluded,d3,genotypeLR,geneId,prevalence);
         lst.add(result4);
         assertEquals(lst.get(3),result4);
         lst.sort(Comparator.reverseOrder());

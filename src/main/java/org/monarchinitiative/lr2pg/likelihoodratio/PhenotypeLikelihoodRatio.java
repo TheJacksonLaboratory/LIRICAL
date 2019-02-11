@@ -61,6 +61,78 @@ public class PhenotypeLikelihoodRatio {
     }
 
     /**
+     * Calculate and return the likelihood ratio of an EXCLUDED HPO feature tid in an individual
+     * with the disease "diseaseId"
+     * @param tid An HPO phenotypic abnormality
+     * @param diseaseId The CURIE (e.g., OMIM:600300) of the disease
+     * @return the likelihood ratio of an EXCLUDED HPO term in the diseases
+     */
+    public double getLikelihoodRatioForExcludedTerm(TermId tid, TermId diseaseId) {
+        HpoDisease disease = this.diseaseMap.get(diseaseId);
+        double backgroundFrequency=getBackgroundFrequency(tid);
+        // probability a feature is present but not recorded or not noticed.
+        final double FALSE_NEGATIVE_OBSERVATION_OF_PHENOTYPE_PROB=0.01;
+        if (backgroundFrequency>0.99) {
+            logger.error("Warning, unusually high bachground freuqency calculated for {} of {} (should never happen)",
+                    backgroundFrequency,tid.getValue());
+            return 1.0; // should never happen, but protect against divide by zero if there is some error
+        }
+        if (! isIndirectlyAnnotatedTo(tid,disease,ontology)) {
+            return 1.0/(1.0-backgroundFrequency); // this is the negative LR if the disease does not have the term
+        }
+        double frequency=getFrequencyOfTermInDiseaseWithAnnotationPropagation(tid,disease,ontology);
+        // If the disease actually does have the abnormality in question, but the abnormality was ruled out in
+        // the patient, we model this as the 1-F, where F is the frequency of the term in question.
+        // We model the frequency of a term "by chance" as one half of its frequency across the entire corpus
+        // of diseases.
+        // if the frequency of a feature in a disease is 100%, then the expected frequency of its exclusion
+        // in that disease is 0%. However, a disease can occur by chance, and we calculate this as
+        //backgroundFrequency/0.5
+        double excludedFrequency=Math.max(FALSE_NEGATIVE_OBSERVATION_OF_PHENOTYPE_PROB, 1-frequency);
+        // now calculate and return the likelihood ratio
+        return excludedFrequency/(1.0-backgroundFrequency);
+    }
+
+    /** NOTE: Use the version in phenol-1.3.3 once it becomes available!
+     *
+     * @param tid TermId of an HPO term
+     * @param disease the disease being studied
+     * @param ontology reference to HPO Ontology
+     * @return true if the disease has a direct (explicit) annotation to tid
+     */
+    @Deprecated
+    private boolean isIndirectlyAnnotatedTo(TermId tid, HpoDisease disease, Ontology ontology) {
+        List<TermId> direct = disease.getPhenotypicAbnormalityTermIdList();
+        Set<TermId> ancs = ontology.getAllAncestorTermIds(direct,true);
+        return ancs.contains(tid);
+    }
+
+    /**
+     * Switch to phenol 1.3.3 implementation once released
+     * Get the frequency of a term in the disease. This includes if any disease term is an ancestor of the
+     * query term -- we take the maximum of any ancestor term.
+     * @param tid Term ID of an HPO term whose frequency we want to know
+     * @param disease The disease in which we want to know the frequency of tid
+     * @param ontology Reference to the HPO ontology
+     * @return frequency of the term in the disease (including annotation propagation)
+     */
+    @Deprecated
+    private double getFrequencyOfTermInDiseaseWithAnnotationPropagation(TermId tid, HpoDisease disease, Ontology ontology) {
+        double freq=0.0;
+        for (TermId diseaseTermId :  disease.getPhenotypicAbnormalityTermIdList() ) {
+            Set<TermId> ancs = ontology.getAncestorTermIds(diseaseTermId,true);
+            if (ancs.contains(tid)) {
+                double f = disease.getFrequencyOfTermInDisease(diseaseTermId);
+                freq = Math.max(f,freq);
+            }
+        }
+        return freq;
+    }
+
+
+
+
+    /**
      * Calcultates the frequency of a phenotypic abnormality represented by the TermId tid in the disease.
      * If the disease is not annotated to tid, the method {@link #getFrequencyIfNotAnnotated(TermId, HpoDisease)}
      * is called to provide an estimate.

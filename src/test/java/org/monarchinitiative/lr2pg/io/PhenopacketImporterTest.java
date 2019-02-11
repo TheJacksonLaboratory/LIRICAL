@@ -22,15 +22,16 @@ import org.json.simple.parser.ParseException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class PhenopacketImporterTest {
+class PhenopacketImporterTest {
 
     private static String phenopacketJsonString;
     private static String phenopacketPfeifferNoVcf;
+    private static String phenopacketKabuki2NoVcf;
 
     @BeforeAll
     static void setup() throws ParseException, IOException,NullPointerException {
         ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
-        URL resource = classLoader.getResource("spherocytosis.json");
+        URL resource = classLoader.getResource("phenopacket/spherocytosis.json");
         if (resource==null){
             throw new FileNotFoundException("Could not find phenopacket file");
         }
@@ -40,7 +41,7 @@ public class PhenopacketImporterTest {
         JSONObject jsonObject = (JSONObject) obj;
         phenopacketJsonString = jsonObject.toJSONString();
 
-        resource = classLoader.getResource("pfeifferNoVcf.json");
+        resource = classLoader.getResource("phenopacket/pfeifferNoVcf.json");
         if (resource==null){
             throw new FileNotFoundException("Could not find pfeifferNoVcf phenopacket file");
 
@@ -50,6 +51,15 @@ public class PhenopacketImporterTest {
         obj = parser.parse(new FileReader(phenopacketPath));
         jsonObject = (JSONObject) obj;
         phenopacketPfeifferNoVcf = jsonObject.toJSONString();
+        resource = classLoader.getResource("phenopacket/Kabuki2.phenopacket");
+        if (resource==null){
+            throw new FileNotFoundException("Could not find Kabuki2 phenopacket file");
+        }
+        phenopacketPath = resource.getFile();
+        parser = new JSONParser();
+        obj = parser.parse(new FileReader(phenopacketPath));
+        jsonObject = (JSONObject) obj;
+        phenopacketKabuki2NoVcf = jsonObject.toJSONString();
     }
 
 
@@ -108,6 +118,18 @@ public class PhenopacketImporterTest {
         PhenoPacket fromJson = PhenoPacketFormat.fromJson(phenopacketPfeifferNoVcf);
         PhenopacketImporter importer = new PhenopacketImporter(fromJson);
         assertFalse(importer.hasVcf());
+    }
+
+
+    @Test
+    void testNegatedFeatures() throws IOException {
+        PhenoPacket fromJson = PhenoPacketFormat.fromJson(phenopacketKabuki2NoVcf);
+        PhenopacketImporter importer = new PhenopacketImporter(fromJson);
+        List<TermId> negatedTerms = importer.getNegatedHpoTerms();
+        // Not Abnormality of the spleen
+        TermId abnSpleen = TermId.of("HP:0001743");
+        assertTrue(negatedTerms.contains(abnSpleen));
+
     }
 
 

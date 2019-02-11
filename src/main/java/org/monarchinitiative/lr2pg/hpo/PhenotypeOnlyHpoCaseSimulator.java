@@ -14,7 +14,6 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getParentTerms;
@@ -45,8 +44,6 @@ public class PhenotypeOnlyHpoCaseSimulator {
     private boolean addTermImprecision = false;
     /** The proportion of cases at rank 1 in the current simulation */
     private double proportionAtRank1=0.0;
-    /** Case currently being simulated/analyzed. */
-    //private HpoCase currentCase;
     /** This array will hold the TermIds from the disease map in order -- this will allow us to
      * get random indices for the simulations. */
     private TermId[] termIndices;

@@ -1,6 +1,10 @@
 =========
 Changelog
 =========
+-------
+v0.9.11
+-------
+- Adding support for excluded phenotypes
 
 -------
 v0.9.10

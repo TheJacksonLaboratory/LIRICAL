@@ -21,7 +21,6 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Map;
 import java.util.Objects;
 
