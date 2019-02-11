@@ -195,7 +195,9 @@ public class Lr2PgFactory {
     }
 
     public String getVcfPath() {
-
+        if (this.vcfPath==null) {
+            throw new Lr2PgRuntimeException("VCF path not initialized");
+        }
         return vcfPath;
     }
 
@@ -405,7 +407,7 @@ public class Lr2PgFactory {
     }
 
     public  Map<TermId, Gene2Genotype> getGene2GenotypeMap() {
-        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(this.vcfPath,
+        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(getVcfPath(),
                 jannovarData(),
                 mvStore(),
                 getAssembly(),
