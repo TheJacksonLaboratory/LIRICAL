@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public abstract class PrioritizeCommand extends Lr2PgCommand {
     /** Directory where various files are downloaded/created. */
-    @Parameter(names={"-d","--data"}, description ="directory to download data (default: ${DEFAULT-VALUE})" )
+    @Parameter(names={"-d","--data"}, description ="directory to download data" )
     protected String datadir="data";
     /** Discard any candidate disease with no known disease gene or for which no predicted pathogenic variant
      * was found in the corresponding disease gene. */
@@ -31,11 +31,13 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
      * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
      * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
      * can be turned off by entering {@code -q false} or {@code --quality} false. */
-    @Parameter(names={"-f","--filter"},description = "filter on VCF FILTER quality (default: true)",arity = 1)
+    @Parameter(names={"-f","--filter"},description = "filter on VCF FILTER quality",arity = 1)
     protected boolean filterOnFILTER=true;
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
-    @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
+    @Parameter(names= {"-t","--threshold"}, description = "minimum post-test prob. to show diagnosis in HTML output")
     protected double LR_THRESHOLD=0.01;
+    @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC, Ensembl, RefSeq)")
+    protected String transcriptDb="ucsc";
     /** If true, the program will not output an HTML file but will output a Tab Separated Values file instead.*/
     @Parameter(names="--tsv",description = "Use TSV instead of HTML output")
     protected boolean outputTSV=false;

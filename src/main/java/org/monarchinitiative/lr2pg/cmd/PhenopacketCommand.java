@@ -49,8 +49,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
     private String phenopacketPath;
     @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory")
     private String exomiserDataDirectory;
-    @Parameter(names={"--transcriptdb"}, description = "transcript database (USCS, Ensembl, RefSeq)")
-    String transcriptDb="ucsc";
+
 
     /** If true, the phenopacket contains the path of a VCF file. */
     private boolean hasVcf;
