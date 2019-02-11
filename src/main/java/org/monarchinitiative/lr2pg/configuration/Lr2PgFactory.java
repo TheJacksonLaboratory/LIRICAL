@@ -65,6 +65,10 @@ public class Lr2PgFactory {
     private final static String DEFAULT_DATA_DIRECTORY="data";
     /** The directory with the Exomiser database and Jannovar transcript files. */
     private String exomiserPath;
+    /** Number of variants that were not removed because of the quality filter. */
+    private int n_good_quality_variants=0;
+    /** Number of variants that were removed because of the quality filter. */
+    private int n_filtered_variants=0;
 
     private final GenomeAssembly assembly;
 
@@ -76,6 +80,11 @@ public class Lr2PgFactory {
     private Multimap<TermId,TermId> gene2diseaseMultiMap=null;
     private Multimap<TermId,TermId> disease2geneIdMultiMap=null;
     private Map<TermId,String> geneId2SymbolMap=null;
+    /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
+     * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
+     * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
+     * can be turned off by entering {@code -q false} or {@code --quality} false. */
+    private final boolean filterOnFILTER;
 
     /** Path of the Jannovar UCSC transcript file (from the Exomiser distribution) */
     private String jannovarUcscPath=null;
@@ -137,6 +146,7 @@ public class Lr2PgFactory {
         } else {
             this.ontology=null;
         }
+        this.filterOnFILTER=builder.filterFILTER;
     }
 
 
@@ -395,9 +405,15 @@ public class Lr2PgFactory {
     }
 
     public  Map<TermId, Gene2Genotype> getGene2GenotypeMap() {
-        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(this.vcfPath, jannovarData(), mvStore(), getAssembly());
+        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(this.vcfPath,
+                jannovarData(),
+                mvStore(),
+                getAssembly(),
+                this.filterOnFILTER);
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
         this.sampleName=vcf2geno.getSamplename();
+        this.n_filtered_variants=vcf2geno.getN_filtered_variants();
+        this.n_good_quality_variants=vcf2geno.getN_good_quality_variants();
         return genotypeMap;
     }
 
@@ -406,6 +422,14 @@ public class Lr2PgFactory {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
         return dateFormat.format(date);
+    }
+
+    public int getN_good_quality_variants() {
+        return n_good_quality_variants;
+    }
+
+    public int getN_filtered_variants() {
+        return n_filtered_variants;
     }
 
     /**
@@ -518,11 +542,11 @@ public class Lr2PgFactory {
     }
 
 
-
-
-
+    /**
+     * A convenience Builder class for creating {@link Lr2PgFactory} objects
+     */
     public static class Builder {
-
+        /** path to hp.obo file.*/
         private String hpOboPath=null;
         private String phenotypeAnnotationPath=null;
         private String lr2pgDataDir=null;
@@ -532,6 +556,7 @@ public class Lr2PgFactory {
         private String backgroundFrequencyPath=null;
         private String vcfPath=null;
         private String genomeAssembly=null;
+        private boolean filterFILTER=true;
         /** The default transcript database is UCSC> */
         private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
         private List<String> observedHpoTerms=ImmutableList.of();
@@ -614,6 +639,11 @@ public class Lr2PgFactory {
 
         public Builder backgroundFrequency(String bf) {
             this.backgroundFrequencyPath=bf;
+            return this;
+        }
+
+        public Builder filter(boolean f) {
+            this.filterFILTER=f;
             return this;
         }
 

@@ -41,31 +41,17 @@ import java.util.Map;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Run LR2PG from a Phenopacket")
-public class PhenopacketCommand extends Lr2PgCommand{
+public class PhenopacketCommand extends PrioritizeCommand {
     private static final Logger logger = LogManager.getLogger();
     @Parameter(names={"-b","--background"}, description = "path to non-default background frequency file")
     private String backgroundFrequencyFile;
-    /** Directory where various files are downloaded/created. */
-    @Parameter(names={"-d","--data"}, description ="directory to download data (default: ${DEFAULT-VALUE})" )
-    private String datadir="data";
     @Parameter(names = {"-p","--phenopacket"}, description = "path to phenopacket file", required = true)
     private String phenopacketPath;
     @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory")
     private String exomiserDataDirectory;
-    @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
-    private int minDifferentialsToShow=5;
-    /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
-    @Parameter(names= {"-t","--threshold"}, description = "threshold for showing diagnosis in HTML output")
-    private double LR_THRESHOLD=0.01;
     @Parameter(names={"--transcriptdb"}, description = "transcript database (USCS, Ensembl, RefSeq)")
     String transcriptDb="ucsc";
-    @Parameter(names="--tsv",description = "Use TSV instead of HTML output")
-    private boolean outputTSV=false;
-    @Parameter(names={"-x", "--prefix"},description = "prefix of outfile")
-    private String outfilePrefix="lr2pg";
 
-    /** Various metadata that will be used for the HTML org.monarchinitiative.lr2pg.output. */
-    private Map<String,String> metadata;
     /** If true, the phenopacket contains the path of a VCF file. */
     private boolean hasVcf;
     /** List of HPO terms observed in the subject of the investigation. */
@@ -121,12 +107,16 @@ public class PhenopacketCommand extends Lr2PgCommand{
                 factory.qcExomiserFiles();
                 factory.qcGenomeBuild();
 
-                MVStore mvstore = factory.mvStore();
+                /*MVStore mvstore = factory.mvStore();
                 JannovarData jannovarData = factory.jannovarData();
                 GenomeAssembly assembly = factory.getAssembly();
                 SimpleVariant.setGenomeBuildForUrl(assembly);
 
                 Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap(jannovarData, mvstore, assembly);
+                */
+
+                Map<TermId, Gene2Genotype> genotypemap = factory.getGene2GenotypeMap();
+
                 GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
                 Ontology ontology = factory.hpoOntology();
                 Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
@@ -146,17 +136,9 @@ public class PhenopacketCommand extends Lr2PgCommand{
                 HpoCase hcase = evaluator.evaluate();
                 hcase.outputTopResults(5, ontology, genotypemap);// TODO remove this outputs to the shell
                 if (outputTSV) {
-                    Lr2pgTemplate template = new TsvTemplate(hcase, ontology, genotypemap, geneId2symbol, this.metadata);
-                    template.outputFile(this.outfilePrefix);
+                    outputTSV(hcase,ontology,genotypemap);
                 } else {
-                    HtmlTemplate caseoutput = new HtmlTemplate(hcase,
-                            ontology,
-                            genotypemap,
-                            geneId2symbol,
-                            this.metadata,
-                            this.LR_THRESHOLD,
-                            this.minDifferentialsToShow);
-                    caseoutput.outputFile(this.outfilePrefix);
+                    outputHTML(hcase,ontology,genotypemap);
                 }
             } catch (Lr2pgException e) {
                 e.printStackTrace();
@@ -181,31 +163,13 @@ public class PhenopacketCommand extends Lr2PgCommand{
                 HpoCase hcase = evaluator.evaluate();
                 //hcase.outputTopResults(5,ontology);// TODO remove this outputs to the shell
                 if (outputTSV) {
-                    Lr2pgTemplate template = new TsvTemplate(hcase, ontology, this.metadata);
-                    template.outputFile(this.outfilePrefix);
+                    outputTSV(hcase,ontology);
                 } else {
-                    HtmlTemplate caseoutput = new HtmlTemplate(hcase, ontology,
-                            this.metadata,
-                            this.LR_THRESHOLD,
-                            this.minDifferentialsToShow);
-                    caseoutput.outputFile(this.outfilePrefix);
+                    outputHTML(hcase,ontology);
                 }
             } catch (Lr2pgException e) {
                 e.printStackTrace();
             }
         }
     }
-
-    /**
-     * Identify the variants and genotypes from the VCF file.
-     * @return a map with key: An NCBI Gene Id, and value: corresponding {@link Gene2Genotype} object.
-     */
-    private Map<TermId, Gene2Genotype> getVcf2GenotypeMap(JannovarData jannovarData, MVStore mvstore, GenomeAssembly assembly) {
-
-        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath, jannovarData, mvstore, assembly);
-        Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
-        this.metadata.put("sample_name",vcf2geno.getSamplename());
-        return genotypeMap;
-    }
-
 }
