@@ -415,7 +415,7 @@ footer {
           <p><table class="minimalistBlack">
                        <thead>
                        <tr>
-                       <th>${dd.noVariantsFound}</th>
+                       <th>${dd.explanation}</th>
                        </tr></table></p>
           </#if>
           <br/>

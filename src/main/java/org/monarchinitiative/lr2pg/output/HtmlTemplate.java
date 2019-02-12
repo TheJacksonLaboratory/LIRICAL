@@ -71,13 +71,13 @@ public class HtmlTemplate extends Lr2pgTemplate {
                         symbol = g2g.getSymbol();
                         ddx.addG2G(g2g);
                     } else {
-                        ddx.setNoVariantsFoundString("no variants found in " + this.geneId2symbol.get(geneId));
+                        ddx.setExplanation("no variants found in " + this.geneId2symbol.get(geneId));
                         symbol="no variants found in " + this.geneId2symbol.get(geneId);// will be used by SVG
                     }
                     String expl=result.getExplanation();
-                    ddx.setGenotypeScoreExplanation(expl);
+                    ddx.setExplanation(expl);
                 } else {
-                    ddx.setNoVariantsFoundString("No known disease gene");
+                    ddx.setExplanation("No known disease gene");
                 }
                 // now get SVG
                 Lr2Svg lr2svg = new Lr2Svg(hcase, result.getDiseaseCurie(), result.getDiseaseName(), ontology, symbol);
@@ -143,7 +143,7 @@ public class HtmlTemplate extends Lr2pgTemplate {
             if (result.getPosttestProbability() > THRESHOLD || counter < MIN_DIAGNOSES_TO_SHOW) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.trace("Diff diag for " + result.getDiseaseName());
-                ddx.setNoVariantsFoundString("Genetic data not available");
+                ddx.setExplanation("Genetic data not available");
                 // now get SVG
                 Lr2Svg lr2svg = new Lr2Svg(hcase, result.getDiseaseCurie(), result.getDiseaseName(), ontology, symbol);
                 String svg = lr2svg.getSvgString();

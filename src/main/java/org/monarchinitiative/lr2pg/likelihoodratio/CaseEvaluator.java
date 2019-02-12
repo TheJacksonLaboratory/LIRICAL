@@ -132,6 +132,49 @@ public class CaseEvaluator {
     public void setVerbosity(boolean v) { this.verbose=v;}
 
 
+    private TestResult getResultNoDiseaseGene(HpoDisease disease,double pretest, List<Double> observed, List<Double> excluded) {
+        return new TestResult(observed,excluded,disease,pretest);
+    }
+
+    private TestResult getResultDiseaseGeneNoVariantsFound(HpoDisease disease,double pretest, List<Double> observed, List<Double> excluded) {
+        return new TestResult(observed,excluded,disease,pretest);
+    }
+
+
+    private List<Double> observedPhenotypesLikelihoodRatios(TermId diseaseId) {
+        ImmutableList.Builder<Double> builderObserved = new ImmutableList.Builder<>();
+        for (TermId tid : this.phenotypicAbnormalities) {
+            double LR = phenotypeLRevaluator.getLikelihoodRatio(tid, diseaseId);
+            builderObserved.add(LR);
+        }
+        return builderObserved.build();
+    }
+
+    private List<Double> excludedPhenotypesLikelihoodRatios(TermId diseaseId) {
+        ImmutableList.Builder<Double> builderExcluded = new ImmutableList.Builder<>();
+        for (TermId negated : this.negatedPhenotypicAbnormalities) {
+            double LR = phenotypeLRevaluator.getLikelihoodRatioForExcludedTerm(negated, diseaseId);
+            builderExcluded.add(LR);
+        }
+        return builderExcluded.build();
+    }
+
+
+
+    private  Map<TermId,TestResult>  phenotypeOnlyEvaluation() {
+        ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder<>();
+        for (TermId diseaseId : diseaseMap.keySet()) {
+            HpoDisease disease = this.diseaseMap.get(diseaseId);
+            double pretest = pretestProbabilityMap.get(diseaseId);
+            List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
+            List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
+            TestResult result = new TestResult(observedLR,excludedLR, disease, pretest);
+            mapbuilder.put(diseaseId, result);
+        }
+        return mapbuilder.build();
+    }
+
+
     /** This method evaluates the likilihood ratio for each disease in
      * {@link #diseaseMap}. After this, it sorts the results (the best hit is then at index 0, etc).
      */
@@ -161,13 +204,15 @@ public class CaseEvaluator {
             List<TermId> inheritancemodes=ImmutableList.of();
             if (useGenotypeAnalysis) {
                 Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
+                if (!keepIfNoCandidateVariant && associatedGenes.isEmpty()) {
+                    continue; // this is a disease with no known disease gene -- we will skip it unless the user
+                    // indicates to keep it.
+                }
                 inheritancemodes = disease.getModesOfInheritance();
                 if (associatedGenes != null && associatedGenes.size() > 0) {
                     for (TermId entrezGeneId : associatedGenes) {
                         Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
-                        if (!keepIfNoCandidateVariant && (g2g==null || !g2g.hasPredictedPathogenicVar())) {
-                            continue;
-                        }
+
                         Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(g2g,
                                 inheritancemodes,
                                 entrezGeneId);
@@ -182,13 +227,19 @@ public class CaseEvaluator {
                         }
                     }
                 }
-            }
-
-            if (useGenotypeAnalysis && genotypeLR != null) {
-                result = new TestResult(builderObserved.build(), builderExcluded.build(),disease, genotypeLR, geneId, pretest);
+                if (genotypeLR != null) {
+                    result = new TestResult(builderObserved.build(), builderExcluded.build(),disease, genotypeLR, geneId, pretest);
+                } else if (keepIfNoCandidateVariant) {
+                    result = new TestResult(builderObserved.build(),builderExcluded.build(), disease, pretest);
+                } else {
+                    continue;
+                }
             } else {
+                // do not use genotypes, i.e., phenotype only analysis
                 result = new TestResult(builderObserved.build(),builderExcluded.build(), disease, pretest);
             }
+
+
             if (result.getPosttestProbability() > this.threshold) {
                 Gene2Genotype g2g = this.genotypeMap.get(geneId);
                 double observedWeightedPathogenicVariantCount=0.0;
