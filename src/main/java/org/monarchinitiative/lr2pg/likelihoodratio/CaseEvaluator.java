@@ -174,6 +174,52 @@ public class CaseEvaluator {
         return mapbuilder.build();
     }
 
+    private Map<TermId,TestResult> phenoGenoEvaluation() {
+        ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder<>();
+        for (TermId diseaseId : diseaseMap.keySet()) {
+            HpoDisease disease = this.diseaseMap.get(diseaseId);
+            double pretest = pretestProbabilityMap.get(diseaseId);
+            List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
+            List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
+            TestResult result;
+            // 2. get genotype LR if available
+            Double genotypeLR=null;
+            TermId geneId = null;
+            Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
+            if (!keepIfNoCandidateVariant && associatedGenes.isEmpty()) {
+                continue; // this is a disease with no known disease gene -- we will skip it unless the user
+                // indicates to keep it.
+            }
+            List<TermId> inheritancemodes= disease.getModesOfInheritance();
+            if (associatedGenes != null && associatedGenes.size() > 0) {
+                for (TermId entrezGeneId : associatedGenes) {
+                    Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
+                    Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(g2g,
+                            inheritancemodes,
+                            entrezGeneId);
+                    if (opt.isPresent()) {
+                        if (genotypeLR == null) {
+                            genotypeLR = opt.get();
+                            geneId = entrezGeneId;
+                        } else if (genotypeLR < opt.get()) { // if the new genotype LR is better, replace!
+                            genotypeLR = opt.get();
+                            geneId = entrezGeneId;
+                        }
+                    }
+                }
+            }
+            if (genotypeLR != null) {
+                result = new TestResult(observedLR, excludedLR,disease, genotypeLR, geneId, pretest);
+            } else if (keepIfNoCandidateVariant) {
+                result = new TestResult(observedLR, excludedLR, disease, pretest);
+            } else {
+                continue;
+            }
+
+        }
+        return mapbuilder.build();
+    }
+
 
     /** This method evaluates the likilihood ratio for each disease in
      * {@link #diseaseMap}. After this, it sorts the results (the best hit is then at index 0, etc).
