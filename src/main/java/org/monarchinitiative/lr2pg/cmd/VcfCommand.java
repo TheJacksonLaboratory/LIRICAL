@@ -73,6 +73,8 @@ public class VcfCommand extends PrioritizeCommand {
                 .disease2geneMultimap(disease2geneMultimap)
                 .genotypeMap(genotypeMap)
                 .phenotypeLr(phenoLr)
+                .keepCandidates(keepIfNoCandidateVariant)
+                .gene2idMap(geneId2symbol)
                 .genotypeLr(genoLr);
 
         CaseEvaluator evaluator = caseBuilder.build();
