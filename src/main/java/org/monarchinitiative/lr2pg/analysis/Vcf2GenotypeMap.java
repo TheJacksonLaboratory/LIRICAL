@@ -152,7 +152,6 @@ public class Vcf2GenotypeMap {
                 VariantContext vc = iter.next();
                 if (vc.isFiltered()) {
                     // this is a failing VariantContext
-                    logger.warn("Skipping low-quality variant: {}",vc.getFilters());
                     n_filtered_variants++;
                     continue;
                 } else {
