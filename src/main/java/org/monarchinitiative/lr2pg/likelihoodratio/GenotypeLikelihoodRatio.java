@@ -31,6 +31,25 @@ public class GenotypeLikelihoodRatio {
         this.gene2backgroundFrequency=g2background;
     }
 
+    /**
+     * If no variant at all was identified in the gene of interest, we use a heurstic score that
+     * intends to represent the probability of missing the variant for technical reasons. We will estimate
+     * this probability to be 5%. For autosomal recessive diseases, we will estimate the probability at
+     * 5% * 5%.
+     * @param inheritancemodes
+     * @return genotype likelihood ratio for situation where no variant at all was found in a gene
+     */
+    private double getLRifNoVariantAtAllWasIdentified(List<TermId> inheritancemodes) {
+        final TermId autosomalRecessiveInheritance = TermId.of("HP:0000007");
+        final double ESTIMATED_PROB = 0.05d;
+        for (TermId tid : inheritancemodes) {
+            if (tid.equals(autosomalRecessiveInheritance)) {
+                return ESTIMATED_PROB * ESTIMATED_PROB;
+            }
+        }
+        return ESTIMATED_PROB;
+    }
+
 
     /**
      * Calculate the genotype likelihood ratio using lambda_disease=1 for autosomal dominant and lambda_disease=2
@@ -47,8 +66,15 @@ public class GenotypeLikelihoodRatio {
             if (g2g.hasPathogenicClinvarVar()) {
                 return Optional.of(Math.pow(1000d, g2g.pathogenicClinVarCount()));
             }
+        } else {
+            double d = getLRifNoVariantAtAllWasIdentified(inheritancemodes);
+            return Optional.of(d);
         }
-
+        // if we get here then
+        // 1. g2g was not null
+        // 2. There was at least one observed variant
+        // 3. There was no pathogenic variant listed in ClinVar.
+        // Therefore, we apply the main algorithm for calculating the LR genotype score.
 
         double lambda_background = this.gene2backgroundFrequency.getOrDefault(geneId, DEFAULT_LAMBDA_BACKGROUND);
         if (inheritancemodes==null || inheritancemodes.isEmpty()) {

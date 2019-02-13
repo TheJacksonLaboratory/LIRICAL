@@ -43,6 +43,8 @@ public class CaseEvaluator {
     private final Ontology ontology;
     /** retain candidates even if no candidate variant is found */
     private boolean keepIfNoCandidateVariant;
+    /** Key: an EntrezGene id; value: corresponding gene symbol. */
+    private Map<TermId,String> geneId2symbol;
 
     private static final double DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD=0.01;
 
@@ -107,7 +109,8 @@ public class CaseEvaluator {
                           GenotypeLikelihoodRatio genotypeLrEvalutator,
                           Map<TermId,Gene2Genotype> genotypeMap,
                           double thres,
-                          boolean keep) {
+                          boolean keep,
+                          Map<TermId,String> geneId2symbol) {
         this.phenotypicAbnormalities=hpoTerms;
         this.negatedPhenotypicAbnormalities=negatedHpoTerms;
         this.diseaseMap=diseaseMap;
@@ -117,6 +120,7 @@ public class CaseEvaluator {
         this.ontology=ontology;
         this.threshold=thres;
         this.keepIfNoCandidateVariant=keep;
+        this.geneId2symbol=geneId2symbol;
 
         // For now, assume equal pretest probabilities
         this.pretestProbabilityMap =new HashMap<>();
@@ -160,7 +164,10 @@ public class CaseEvaluator {
     }
 
 
-
+    /**
+     * Perform the evaluation of the current case based only on phenotype evidence
+     * @return map with key=disease idea and value=corresponding {@link TestResult}
+     */
     private  Map<TermId,TestResult>  phenotypeOnlyEvaluation() {
         ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder<>();
         for (TermId diseaseId : diseaseMap.keySet()) {
@@ -174,6 +181,14 @@ public class CaseEvaluator {
         return mapbuilder.build();
     }
 
+    /**
+     * Perform the evaluation of the current case based on phenotype and genotype evidence
+     * If {@link #keepIfNoCandidateVariant} is true, then we also rank differential diagnoses even
+     * if (i) no disease gene is known or (ii) the disease gene is known but we did not find a
+     * pathogenic variant. In the latter case, the candidate will be downranked, but can still score
+     * highly if the phenotype evidence is very strong.
+     * @return map with key=disease idea and value=corresponding {@link TestResult}
+     */
     private Map<TermId,TestResult> phenoGenoEvaluation() {
         ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder<>();
         for (TermId diseaseId : diseaseMap.keySet()) {
@@ -191,12 +206,20 @@ public class CaseEvaluator {
                 // indicates to keep it.
             }
             List<TermId> inheritancemodes= disease.getModesOfInheritance();
+            List<String> noVariantAtAllFoundInGeneList = new ArrayList<>();
+            boolean foundVariantInAtLeastOneGene=false;
             if (associatedGenes != null && associatedGenes.size() > 0) {
                 for (TermId entrezGeneId : associatedGenes) {
                     Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
                     Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(g2g,
                             inheritancemodes,
                             entrezGeneId);
+                    if (g2g==null) {
+                        String symbol = this.geneId2symbol.get(entrezGeneId);
+                        noVariantAtAllFoundInGeneList.add(symbol);
+                    } else {
+                        foundVariantInAtLeastOneGene=true;
+                    }
                     if (opt.isPresent()) {
                         if (genotypeLR == null) {
                             genotypeLR = opt.get();
@@ -207,85 +230,28 @@ public class CaseEvaluator {
                         }
                     }
                 }
+            }else if (keepIfNoCandidateVariant) {
+                System.out.println("BBBBBBBBBBBBBBB");
+                result = new TestResult(observedLR, excludedLR, disease, pretest);
             }
             if (genotypeLR != null) {
                 result = new TestResult(observedLR, excludedLR,disease, genotypeLR, geneId, pretest);
-            } else if (keepIfNoCandidateVariant) {
-                result = new TestResult(observedLR, excludedLR, disease, pretest);
-            } else {
-                continue;
-            }
-
-        }
-        return mapbuilder.build();
-    }
-
-
-    /** This method evaluates the likilihood ratio for each disease in
-     * {@link #diseaseMap}. After this, it sorts the results (the best hit is then at index 0, etc).
-     */
-    public HpoCase evaluate()  {
-        assert diseaseMap.size()== pretestProbabilityMap.size();
-        ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder<>();
-        for (TermId diseaseId : diseaseMap.keySet()) {
-            HpoDisease disease = this.diseaseMap.get(diseaseId);
-            double pretest = pretestProbabilityMap.get(diseaseId);
-            // 1. get phenotype LR for observed phenotypes
-            ImmutableList.Builder<Double> builderObserved = new ImmutableList.Builder<>();
-            for (TermId tid : this.phenotypicAbnormalities) {
-                double LR = phenotypeLRevaluator.getLikelihoodRatio(tid, diseaseId);
-                builderObserved.add(LR);
-            }
-            // 2. get phenotype LR for excluded phenotypes
-            ImmutableList.Builder<Double> builderExcluded = new ImmutableList.Builder<>();
-            for (TermId negated : this.negatedPhenotypicAbnormalities) {
-                double LR = phenotypeLRevaluator.getLikelihoodRatioForExcludedTerm(negated, diseaseId);
-                builderExcluded.add(LR);
-            }
-
-            TestResult result;
-            // 2. get genotype LR if available
-            Double genotypeLR=null;
-            TermId geneId = null;
-            List<TermId> inheritancemodes=ImmutableList.of();
-            if (useGenotypeAnalysis) {
-                Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
-                if (!keepIfNoCandidateVariant && associatedGenes.isEmpty()) {
-                    continue; // this is a disease with no known disease gene -- we will skip it unless the user
-                    // indicates to keep it.
-                }
-                inheritancemodes = disease.getModesOfInheritance();
-                if (associatedGenes != null && associatedGenes.size() > 0) {
-                    for (TermId entrezGeneId : associatedGenes) {
-                        Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
-
-                        Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(g2g,
-                                inheritancemodes,
-                                entrezGeneId);
-                        if (opt.isPresent()) {
-                            if (genotypeLR == null) {
-                                genotypeLR = opt.get();
-                                geneId = entrezGeneId;
-                            } else if (genotypeLR < opt.get()) { // if the new genotype LR is better, replace!
-                                genotypeLR = opt.get();
-                                geneId = entrezGeneId;
-                            }
-                        }
+                if (!foundVariantInAtLeastOneGene) {
+                    if (keepIfNoCandidateVariant) {
+                        String expl = String.format("No variants found in disease-associated gene: ",
+                                String.join("; ", noVariantAtAllFoundInGeneList));
+                        result.appendToExplanation(expl);
+                    } else {
+                        continue; // skip because no variants were found.
                     }
                 }
-                if (genotypeLR != null) {
-                    result = new TestResult(builderObserved.build(), builderExcluded.build(),disease, genotypeLR, geneId, pretest);
-                } else if (keepIfNoCandidateVariant) {
-                    result = new TestResult(builderObserved.build(),builderExcluded.build(), disease, pretest);
-                } else {
-                    continue;
-                }
+
             } else {
-                // do not use genotypes, i.e., phenotype only analysis
-                result = new TestResult(builderObserved.build(),builderExcluded.build(), disease, pretest);
+                System.out.println("BBBBBBBBBBBBBBB   SHOULD NEVER GET HERE");
+                System.out.println(String.join("; ",noVariantAtAllFoundInGeneList));
+                System.out.println(disease.getName());
+                continue;
             }
-
-
             if (result.getPosttestProbability() > this.threshold) {
                 Gene2Genotype g2g = this.genotypeMap.get(geneId);
                 double observedWeightedPathogenicVariantCount=0.0;
@@ -298,9 +264,23 @@ public class CaseEvaluator {
                 }
             }
             mapbuilder.put(diseaseId, result);
-
         }
-        Map<TermId,TestResult> results = evaluateRanks(mapbuilder.build());
+        return mapbuilder.build();
+    }
+
+
+    /** This method evaluates the likilihood ratio for each disease in
+     * {@link #diseaseMap}. After this, it sorts the results (the best hit is then at index 0, etc).
+     */
+    public HpoCase evaluate()  {
+        assert diseaseMap.size()== pretestProbabilityMap.size();
+        Map<TermId,TestResult> evaluationmap;
+        if (useGenotypeAnalysis) {
+            evaluationmap = phenoGenoEvaluation();
+        } else {
+            evaluationmap = phenotypeOnlyEvaluation();
+        }
+        Map<TermId,TestResult> results = evaluateRanks(evaluationmap);
         HpoCase.Builder casebuilder = new HpoCase.Builder(phenotypicAbnormalities)
                 .excluded(negatedPhenotypicAbnormalities)
                 .results(results);
@@ -350,6 +330,8 @@ public class CaseEvaluator {
         private Map<TermId,Gene2Genotype> genotypeMap;
         /** retain candidates even if no candidate variant is found (default: false)*/
         private boolean keepIfNoCandidateVariant=false;
+        /** Key: an EntrezGene id; value: corresponding gene symbol. */
+        private Map<TermId,String> geneId2symbol;
 
         private double threshold=DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD;
 
@@ -375,7 +357,11 @@ public class CaseEvaluator {
         }
         public Builder negated(List<TermId> negated) {
             this.negatedHpoTerms=negated;
+            return this;
+        }
 
+        public Builder gene2idMap( Map<TermId,String> geneId2symbol) {
+            this.geneId2symbol=geneId2symbol;
             return this;
         }
 
@@ -391,7 +377,17 @@ public class CaseEvaluator {
             if (negatedHpoTerms==null) {
                 negatedHpoTerms=ImmutableList.of();
             }
-            return new CaseEvaluator(hpoTerms,negatedHpoTerms,ontology,diseaseMap,disease2geneMultimap,phenotypeLR,genotypeLR,genotypeMap,threshold,keepIfNoCandidateVariant);
+            return new CaseEvaluator(hpoTerms,
+                    negatedHpoTerms,
+                    ontology,
+                    diseaseMap,
+                    disease2geneMultimap,
+                    phenotypeLR,
+                    genotypeLR,
+                    genotypeMap,
+                    threshold,
+                    keepIfNoCandidateVariant,
+                    this.geneId2symbol);
         }
 
 
