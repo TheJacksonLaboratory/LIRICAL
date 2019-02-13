@@ -1,5 +1,6 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
@@ -78,7 +79,10 @@ public class GenotypeLikelihoodRatio {
 
         double lambda_background = this.gene2backgroundFrequency.getOrDefault(geneId, DEFAULT_LAMBDA_BACKGROUND);
         if (inheritancemodes==null || inheritancemodes.isEmpty()) {
-            return Optional.empty();
+            // This is probably because the HPO annotation file is incomplete
+            logger.warn("No inheritance mode annotation found for geneId {}, reverting to default", geneId.getValue());
+            // Add a default dominant mode to avoid not ranking this gene at all
+            inheritancemodes = ImmutableList.of(AUTOSOMAL_DOMINANT);
         }
         Optional<Double> max = Optional.empty();
         for (TermId inheritanceId : inheritancemodes) {

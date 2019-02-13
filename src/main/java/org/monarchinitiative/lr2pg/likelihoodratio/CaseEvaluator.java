@@ -200,15 +200,19 @@ public class CaseEvaluator {
             // 2. get genotype LR if available
             Double genotypeLR=null;
             TermId geneId = null;
+            // Note that when containsKey(key) is false, get returns an empty collection, not null.
             Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
             if (!keepIfNoCandidateVariant && associatedGenes.isEmpty()) {
                 continue; // this is a disease with no known disease gene -- we will skip it unless the user
-                // indicates to keep it.
+                // indicates to keep differentials with no associated gene with the keep option.
             }
+            // If we get here, then the disease is associated with one or multiple genes
+            // unless keepIfNoCandidateVariant is true
+            // The disease may also be associated with multiple modes of inheritance (this happens rarely)
             List<TermId> inheritancemodes= disease.getModesOfInheritance();
-            List<String> noVariantAtAllFoundInGeneList = new ArrayList<>();
+            List<String> genesWithNoIdentifiedVariant = new ArrayList<>();
             boolean foundVariantInAtLeastOneGene=false;
-            if (associatedGenes != null && associatedGenes.size() > 0) {
+            if (associatedGenes.size() > 0) {
                 for (TermId entrezGeneId : associatedGenes) {
                     Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
                     Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(g2g,
@@ -216,7 +220,7 @@ public class CaseEvaluator {
                             entrezGeneId);
                     if (g2g==null) {
                         String symbol = this.geneId2symbol.get(entrezGeneId);
-                        noVariantAtAllFoundInGeneList.add(symbol);
+                        genesWithNoIdentifiedVariant.add(symbol);
                     } else {
                         foundVariantInAtLeastOneGene=true;
                     }
@@ -230,16 +234,19 @@ public class CaseEvaluator {
                         }
                     }
                 }
-            }else if (keepIfNoCandidateVariant) {
-                System.out.println("BBBBBBBBBBBBBBB");
+            } else if (keepIfNoCandidateVariant) {
+                // if we get here, then the disease has no associated gene
+                // We create a TestResult object that does not include genotype at all
                 result = new TestResult(observedLR, excludedLR, disease, pretest);
+                mapbuilder.put(diseaseId, result);
+                continue;
             }
             if (genotypeLR != null) {
                 result = new TestResult(observedLR, excludedLR,disease, genotypeLR, geneId, pretest);
                 if (!foundVariantInAtLeastOneGene) {
                     if (keepIfNoCandidateVariant) {
                         String expl = String.format("No variants found in disease-associated gene: ",
-                                String.join("; ", noVariantAtAllFoundInGeneList));
+                                String.join("; ", genesWithNoIdentifiedVariant));
                         result.appendToExplanation(expl);
                     } else {
                         continue; // skip because no variants were found.
@@ -248,7 +255,7 @@ public class CaseEvaluator {
 
             } else {
                 System.out.println("BBBBBBBBBBBBBBB   SHOULD NEVER GET HERE");
-                System.out.println(String.join("; ",noVariantAtAllFoundInGeneList));
+                System.out.println(String.join("; ",genesWithNoIdentifiedVariant));
                 System.out.println(disease.getName());
                 continue;
             }
@@ -258,10 +265,8 @@ public class CaseEvaluator {
                 if (g2g!=null) {
                     observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
                 }
-                if (useGenotypeAnalysis) {
-                    String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
-                    result.appendToExplanation(exp);
-                }
+                String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
+                result.appendToExplanation(exp);
             }
             mapbuilder.put(diseaseId, result);
         }
