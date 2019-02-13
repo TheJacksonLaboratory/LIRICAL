@@ -42,7 +42,7 @@ public class CaseEvaluator {
     /** Reference to the Human Phenotype Ontology object. */
     private final Ontology ontology;
     /** retain candidates even if no candidate variant is found */
-    private boolean keepIfNoCandidateVariant;
+    private final boolean keepIfNoCandidateVariant;
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
     private Map<TermId,String> geneId2symbol;
 
@@ -211,7 +211,7 @@ public class CaseEvaluator {
             // The disease may also be associated with multiple modes of inheritance (this happens rarely)
             List<TermId> inheritancemodes= disease.getModesOfInheritance();
             List<String> genesWithNoIdentifiedVariant = new ArrayList<>();
-            boolean foundVariantInAtLeastOneGene=false;
+            boolean foundPredictedPathogenicVariant=false;
             if (associatedGenes.size() > 0) {
                 for (TermId entrezGeneId : associatedGenes) {
                     Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
@@ -222,7 +222,10 @@ public class CaseEvaluator {
                         String symbol = this.geneId2symbol.get(entrezGeneId);
                         genesWithNoIdentifiedVariant.add(symbol);
                     } else {
-                        foundVariantInAtLeastOneGene=true;
+                        if (g2g.hasPathogenicClinvarVar() || g2g.hasPredictedPathogenicVar()) {
+                            foundPredictedPathogenicVariant = true;
+                        }
+
                     }
                     if (opt.isPresent()) {
                         if (genotypeLR == null) {
@@ -243,22 +246,29 @@ public class CaseEvaluator {
             }
             if (genotypeLR != null) {
                 result = new TestResult(observedLR, excludedLR,disease, genotypeLR, geneId, pretest);
-                if (!foundVariantInAtLeastOneGene) {
+                if (!foundPredictedPathogenicVariant) {
                     if (keepIfNoCandidateVariant) {
-                        String expl = String.format("No variants found in disease-associated gene: ",
+                        String expl = String.format("No variants found in disease-associated gene%s: %s",
+                                genesWithNoIdentifiedVariant.size()>1 ? "s":"",
                                 String.join("; ", genesWithNoIdentifiedVariant));
                         result.appendToExplanation(expl);
                     } else {
-                        continue; // skip because no variants were found.
+                        // finally, if there is not at least one pathogenic-bin variant, we skip the candidate
+                        // unless the user opts to keep genes without candidate variants
+                        continue;
                     }
                 }
-
             } else {
-                System.out.println("BBBBBBBBBBBBBBB   SHOULD NEVER GET HERE");
-                System.out.println(String.join("; ",genesWithNoIdentifiedVariant));
-                System.out.println(disease.getName());
-                continue;
+                // should never get here but if we do output an error message to the log
+                // i.e., the above code should always assign a genotype LR score
+                logger.error("Could not calculate genotype LR for "+disease.getName() +
+                " with associated genes " + String.join("; ",genesWithNoIdentifiedVariant));
+                continue; // some error occured, we will skip this one (should never happen)
             }
+
+
+
+
             if (result.getPosttestProbability() > this.threshold) {
                 Gene2Genotype g2g = this.genotypeMap.get(geneId);
                 double observedWeightedPathogenicVariantCount=0.0;
