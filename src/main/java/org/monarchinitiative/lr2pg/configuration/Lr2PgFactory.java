@@ -372,7 +372,7 @@ public class Lr2PgFactory {
             this.jannovarData=JannovarDataProtoSerialiser.load(p);
             return jannovarData;
         } catch (InvalidFileFormatException e) {
-            logger.error("Could not deserialize Jannovar file with Protobuf deserializer, trying legacy deserializer...");
+            logger.warn("Could not deserialize Jannovar file with Protobuf deserializer, trying legacy deserializer...");
         }
         try {
             this.jannovarData=new JannovarDataSerializer(fullpath).load();

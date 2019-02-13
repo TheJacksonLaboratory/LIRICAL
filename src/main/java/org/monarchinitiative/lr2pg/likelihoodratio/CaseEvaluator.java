@@ -47,7 +47,7 @@ public class CaseEvaluator {
     private Map<TermId,String> geneId2symbol;
 
     private static final double DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD=0.01;
-
+    /** Threshold post-test probability to show a differential diagnosis in the HTML output. */
     private final double threshold;
     /** If true, then genotype information is available for the analysis. Otherwise, skip it. */
     private final boolean useGenotypeAnalysis;
@@ -266,18 +266,13 @@ public class CaseEvaluator {
                 continue; // some error occured, we will skip this one (should never happen)
             }
 
-
-
-
-            if (result.getPosttestProbability() > this.threshold) {
-                Gene2Genotype g2g = this.genotypeMap.get(geneId);
-                double observedWeightedPathogenicVariantCount=0.0;
-                if (g2g!=null) {
-                    observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
-                }
-                String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
-                result.appendToExplanation(exp);
+            Gene2Genotype g2g = this.genotypeMap.get(geneId);
+            double observedWeightedPathogenicVariantCount = 0.0;
+            if (g2g != null) {
+                observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
             }
+            String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
+            result.appendToExplanation(exp);
             mapbuilder.put(diseaseId, result);
         }
         return mapbuilder.build();
