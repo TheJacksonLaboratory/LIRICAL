@@ -194,6 +194,8 @@ public class Lr2PgFactory {
         return sampleName;
     }
 
+    public String getExomiserPath() { return this.exomiserPath;}
+
     public String getVcfPath() {
         if (this.vcfPath==null) {
             throw new Lr2PgRuntimeException("VCF path not initialized");

@@ -59,8 +59,6 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
 
         this.frequency=freq;
         this.pathogenicityScore=(float)(path*frequencyScore());
-        if(Math.abs(frequency-0.442)<0.001)
-            logger.error("path {} pathscore {} frequency {}",path,pathogenicityScore,frequency);
         this.clinvar=clinv;
         switch (genotypeString) {
             case "0/1":
