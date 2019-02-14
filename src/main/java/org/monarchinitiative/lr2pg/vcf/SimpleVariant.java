@@ -2,6 +2,8 @@ package org.monarchinitiative.lr2pg.vcf;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
@@ -17,6 +19,7 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarDat
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class SimpleVariant implements Comparable<SimpleVariant> {
+    private static final Logger logger = LogManager.getLogger();
     /** A set of interpretation classes from ClinVar that we will regard as pathogenic. */
     private static final Set<ClinVarData.ClinSig> PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS =
             Sets.immutableEnumSet(ClinVarData.ClinSig.PATHOGENIC,
@@ -34,7 +37,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
     private final String ref;
     private final String alt;
     private final List<TranscriptAnnotation> annotationList;
-    private final float pathogenicity;
+
     private final float frequency;
     /** This is the exomiser-style pathogenicity score: the predicted pathogenicity multiplied by a frequency factor.*/
     private final float pathogenicityScore;
@@ -53,9 +56,9 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
         this.ref=ref;
         this.alt=alt;
         this.annotationList=ImmutableList.copyOf(annotlist);
-        this.pathogenicity=path;
+
         this.frequency=freq;
-        this.pathogenicityScore=(float)pathogenicityScore();
+        this.pathogenicityScore=(float)(path*frequencyScore());
         this.clinvar=clinv;
         switch (genotypeString) {
             case "0/1":
@@ -126,7 +129,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
     /** This function sorts variants in descending order of pathogenicity. */
     @Override
     public int compareTo(@SuppressWarnings("NullableProblems") SimpleVariant other){
-        return Float.compare(other.pathogenicity,pathogenicity);
+        return Float.compare(other.pathogenicityScore,pathogenicityScore);
 
     }
 
@@ -138,24 +141,22 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
 
     @Override
     public String toString() {
-        return String.format("%s:%d%s>%s %s pathogenicity:%.1f [%s]", chromosome,position,ref,alt,annotation2string(annotationList.get(0)),pathogenicity,gtype);
+        return String.format("%s:%d%s>%s %s pathogenicity:%.1f [%s]", chromosome,position,ref,alt,annotation2string(annotationList.get(0)),pathogenicityScore,gtype);
     }
 
     public float getPathogenicity() {
-        return pathogenicity;
+        return pathogenicityScore;
     }
 
     public float getFrequency() {
         return frequency;
     }
 
-    /** @return Exomiser like pathogenicity score that multiplies the predicted pathogenicity by the frequency factor. */
-    private double pathogenicityScore() {
-        //double freqScore = Math.max(0,1-0.13533*Math.exp(100*this.frequency));
-        //return this.pathogenicity * freqScore;
-        return pathogenicity * frequencyScore();
-    }
-
+    /**
+     * This is the frequency factor used for the Exomiser like pathogenicity score. It penalizes variants that have a higher
+     * population frequency, with anything above 2% getting a factor of zero.
+     * @return The Exomiser-style frequency factor
+     */
     private double frequencyScore() {
         if (frequency <= 0) {
             return 1f;

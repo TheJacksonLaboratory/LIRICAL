@@ -294,13 +294,14 @@ footer {
             <li><a href="#sample">Sample</a></li>
             <li><a href="#diff">Differential diagnosis</a></li>
             <li><a href="#othergenes">Remaining genes</a></li>
+            <li><a href="#settings">Settings</a></li>
             <li><a href="#about">About</a></li>
         </ul>
     </div>
 </nav>
 <main>
   <section>
-    <a name="sample"/>
+    <a name="sample"></a>
     <h2>Sample name: ${sample_name!"n/a"}</h2>
     <article>
       <div class="row">
@@ -345,7 +346,7 @@ footer {
 
   <section>
    <article>
-    <a name="diff"/>
+    <a name="diff"></a>
     <h2>Differential diagnosis: posterior probability above ${postprobthreshold}</h2>
 
     <p>Top differential diagnoses:
@@ -362,15 +363,14 @@ footer {
     <#list diff as dd>
     <section>
         <article>
-         <a name="${dd.anchor}"/>
+         <a name="${dd.anchor}"></a>
           <header>
             <h3>(${dd.rank}) ${dd.diseaseName} [<a href="${dd.url}" target="_blank">${dd.diseaseCurie}</a>]</h3>
           </header>
-           <a name="${dd.anchor}"/>
           <p>
            <table class="redTable">
              <tr><th>Pretest probability</th><th>Composite likelihood ratio</th><th>Posttest probability</th></tr>
-             <tr><td>${dd.pretestprob}</td><td>${dd.compositeLR}<td>${dd.posttestprob}</td></tr>
+             <tr><td>${dd.pretestprob}</td><td>${dd.compositeLR}</td><td>${dd.posttestprob}</td></tr>
            </table>
           </p>
           <br/>
@@ -415,7 +415,7 @@ footer {
           <p><table class="minimalistBlack">
                        <thead>
                        <tr>
-                       <th>${dd.noVariantsFound}</th>
+                       <th>${dd.explanation}</th>
                        </tr></table></p>
           </#if>
           <br/>
@@ -429,9 +429,10 @@ footer {
 
 
   <section>
-    <a name="othergenes"/>
-     <h3>Genes/Diseases with low posttest probability:</h3>
+    <a name="othergenes"></a>
+
     <article>
+      <h2>Genes/Diseases with low posttest probability:</h2>
       <!--<header>
         <h3>Genes/Diseases with low posttest probability:</h3>
       </header> -->
@@ -448,12 +449,50 @@ footer {
        </table>
     </article>
   </section>
+
+  <section>
+      <a name="settings"></a>
+
+      <article>
+         <h2>Settings</h2>
+        <p>LR2PG was run with the following settings.</p>
+        <p>
+        <ul>
+          <#if hpoVersion?has_content>
+            <li>Human Phenotype Ontology version: ${hpoVersion}</li>
+          </#if>
+          <#if transcriptDatabase?has_content>
+            <li>Transcript database: ${transcriptDatabase}</li>
+          </#if>
+          <#if n_good_quality_variants?has_content>
+            <li>High-quality variants: ${n_good_quality_variants}</li>
+          </#if>
+          <#if n_filtered_variants?has_content>
+             <li>Variants removed due to quality filter: ${n_filtered_variants}</li>
+           </#if>
+           <#if genesWithVar?has_content>
+               <li>Genes found to have at least one variant: ${genesWithVar}</li>
+           </#if>
+           <#if yaml?has_content>
+             <li>YAML configuration file: ${yaml}</li>
+           </#if>
+            <#if exomiserPath?has_content>
+             <li>Path to Exomiser database: ${exomiserPath}</li>
+           </#if>
+
+        </ul>
+        </p>
+
+      </article>
+    </section>
+
+
 </main>
 
   <section>
    <article>
-    <a name="about"/>
-    <h2>Explanation</h2>
+    <a name="about"></a>
+    <h2>About</h2>
 
     <p>LR2PG is a tool for exploring exome or genome sequencing data obtained for an individual with suspected rare genetic disease.
     LR2PG uses phenotypic features that describe the clinical manifestations observed in the individual and expressed
@@ -461,7 +500,6 @@ footer {
     sequence variants found in the exome or genome file to derive a list of candidate diagnoses with estimated posterior
     probabilities. LR2PG is intended as a resource to aide diagnosticians and does not make a diagnosis itself. The
     results of LR2PG should not be construed as medical advice and should always be reviewed by medical professionals.</p>
-    <p>Full documentation that explains how to use LR2PG can be found TODO.</p>
     </article>
     </section>
 <footer>

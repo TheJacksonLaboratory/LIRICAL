@@ -21,7 +21,7 @@ import java.util.Map;
 @Parameters(commandDescription = "Grid search for simulation of phenotype-only cases",hidden = true)
 public class GridSearchCommand extends Lr2PgCommand {
     private static final Logger logger = LogManager.getLogger();
-    /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
+     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
     @Parameter(names={"-d","--data"}, description ="directory to download data" )
     private String datadir="data";
     @Parameter(names={"-c","--n_cases"}, description="Number of cases to simulate")

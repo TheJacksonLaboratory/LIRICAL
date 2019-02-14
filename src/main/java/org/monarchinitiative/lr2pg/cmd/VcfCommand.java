@@ -3,30 +3,21 @@ package org.monarchinitiative.lr2pg.cmd;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.collect.Multimap;
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.h2.mvstore.MVStore;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
-import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
+import org.monarchinitiative.lr2pg.configuration.TranscriptDatabase;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.io.YamlParser;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.lr2pg.output.HtmlTemplate;
-import org.monarchinitiative.lr2pg.output.Lr2pgTemplate;
-import org.monarchinitiative.lr2pg.output.TsvTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,11 +64,31 @@ public class VcfCommand extends PrioritizeCommand {
                 .disease2geneMultimap(disease2geneMultimap)
                 .genotypeMap(genotypeMap)
                 .phenotypeLr(phenoLr)
+                .keepCandidates(keepIfNoCandidateVariant)
+                .gene2idMap(geneId2symbol)
                 .genotypeLr(genoLr);
 
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
         hcase.outputTopResults(5,ontology,genotypeMap);// TODO remove this outputs to the shell
+
+        Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
+        if (ontologyMetainfo.containsKey("data-version")) {
+            this.metadata.put("hpoVersion",ontologyMetainfo.get("data-version"));
+        }
+        TranscriptDatabase tdatabase = factory.transcriptdb();
+        if (tdatabase!=null) {
+            String tdb = transcriptDb;
+            this.metadata.put("transcriptDatabase", tdb);
+        }
+
+        this.metadata.put("yaml", this.yamlPath);
+
+        int n_genes_with_var=factory.getGene2GenotypeMap().size();
+        this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
+        this.metadata.put("exomiserPath",factory.getExomiserPath());
+
+
         if (outputTSV) {
             outputTSV(hcase,ontology,genotypeMap);
         } else {

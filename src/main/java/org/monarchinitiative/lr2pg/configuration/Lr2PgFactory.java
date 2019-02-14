@@ -75,6 +75,9 @@ public class Lr2PgFactory {
     private final Ontology ontology;
     /** The path to the Exomiser database file, e.g., {@code 1811_hg19_variants.mv.db}. */
     private String mvStorePath=null;
+
+    private String hpoVersion="n/a";
+
     /** An object representing the Exomiser database. */
     private MVStore mvstore = null;
     private Multimap<TermId,TermId> gene2diseaseMultiMap=null;
@@ -177,6 +180,11 @@ public class Lr2PgFactory {
         if (ontology==null) {
             throw new PhenolRuntimeException("Could not load ontology from \"" + this.hpoOboFilePath +"\"");
         } else {
+
+            Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
+            if (ontologyMetainfo.containsKey("data-version")) {
+                this.hpoVersion=ontologyMetainfo.get("data-version");
+            }
             return ontology;
         }
     }
@@ -193,6 +201,10 @@ public class Lr2PgFactory {
     public String getSampleName() {
         return sampleName;
     }
+
+    public String getExomiserPath() { return this.exomiserPath;}
+
+    public String getHpoVersion() { return hpoVersion; }
 
     public String getVcfPath() {
         if (this.vcfPath==null) {
@@ -372,7 +384,7 @@ public class Lr2PgFactory {
             this.jannovarData=JannovarDataProtoSerialiser.load(p);
             return jannovarData;
         } catch (InvalidFileFormatException e) {
-            logger.error("Could not deserialize Jannovar file with Protobuf deserializer, trying legacy deserializer...");
+            logger.warn("Could not deserialize Jannovar file with Protobuf deserializer, trying legacy deserializer...");
         }
         try {
             this.jannovarData=new JannovarDataSerializer(fullpath).load();

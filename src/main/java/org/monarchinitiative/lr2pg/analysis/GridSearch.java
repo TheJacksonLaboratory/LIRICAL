@@ -93,9 +93,11 @@ public class GridSearch  {
             String valuestring=values.stream().map(String::valueOf).collect(Collectors.joining(","));
             writer.write("c(" + valuestring +"),\n");
             writer.write("nrow=5,\nncol=10,\nbyrow=TRUE)\n");
-            writer.write("hist3D(z = mat, scale = FALSE, expand = 0.5, bty = \"g\", phi = 20,\n" +
-                    "      col = \"#0072B2\", border = \"black\", shade = 0.2, ltheta = 99,\n" +
-                    "      space = 0.3, ticktype = \"detailed\", d = 2)");
+            //writer.write("hist3D(z = mat, scale = FALSE, expand = 0.5, bty = \"g\", phi = 20,\n" +
+            //        "      col = \"#0072B2\", border = \"black\", shade = 0.2, ltheta = 99,\n" +
+            //       "      space = 0.3, ticktype = \"detailed\", d = 2)");
+            writer.write("hist3D(x=seq(0,4),y=seq(1,10),z = mat, scale = FALSE, expand = 3, bty = \"g\", phi = 15, border = \"black\", shade = 0.2,\n"+
+                    "ltheta = 50, theta = 40, space = 0.3, ticktype = \"detailed\", d = 50)");
         } catch (IOException e) {
             throw new Lr2pgException("I/O error: " + e.getMessage());
         }

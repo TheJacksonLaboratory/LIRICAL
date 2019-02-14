@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class Gene2Genotype {
     /** The NCBI Entrez Gene ID of this gene. */
     private final TermId geneId;
-    /** THe symbol, of this gene. */
+    /** The symbol, of this gene. */
     private final String symbol;
     /** List of all of the variants found in this gene. */
     private final List<SimpleVariant> varList;

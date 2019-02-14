@@ -13,6 +13,7 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
+import org.monarchinitiative.lr2pg.configuration.TranscriptDatabase;
 import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
@@ -133,7 +134,18 @@ public class PhenopacketCommand extends PrioritizeCommand {
 
                 CaseEvaluator evaluator = caseBuilder.build();
                 HpoCase hcase = evaluator.evaluate();
-                hcase.outputTopResults(5, ontology, genotypemap);// TODO remove this outputs to the shell
+
+
+                TranscriptDatabase tdatabase = factory.transcriptdb();
+                if (tdatabase!=null) {
+                    String tdb = transcriptDb;
+                    this.metadata.put("transcriptDatabase", tdb);
+                }
+                int n_genes_with_var=factory.getGene2GenotypeMap().size();
+                this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
+                this.metadata.put("exomiserPath",factory.getExomiserPath());
+                this.metadata.put("hpoVersion",factory.getHpoVersion());
+
                 if (outputTSV) {
                     outputTSV(hcase,ontology,genotypemap);
                 } else {
@@ -160,7 +172,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
                         .phenotypeLr(phenoLr);
                 CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
                 HpoCase hcase = evaluator.evaluate();
-                //hcase.outputTopResults(5,ontology);// TODO remove this outputs to the shell
+                this.metadata.put("hpoVersion",factory.getHpoVersion());
                 if (outputTSV) {
                     outputTSV(hcase,ontology);
                 } else {

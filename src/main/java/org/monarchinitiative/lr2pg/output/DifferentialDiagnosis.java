@@ -33,9 +33,9 @@ public class DifferentialDiagnosis {
 
     private String geneSymbol=EMPTY_STRING;
 
-    private String noVariantsFound=EMPTY_STRING;
+    //private String noVariantsFound=EMPTY_STRING;
 
-    private String genotypeScoreExplanation=null;
+    private String explanation =null;
 
 
 
@@ -126,9 +126,9 @@ public class DifferentialDiagnosis {
 
     /** This is used to provide an appropriate message for the HTML template in case we have found no variants in the
      * gene that corresponds to the differential diagnosis. */
-    public void setNoVariantsFoundString(String s) {
-        noVariantsFound=s;
-    }
+    //public void setNoVariantsFoundString(String s) {
+      //  noVariantsFound=s;
+    //}
 
     /**
      * We are getting the disease names from OMIM (actually from our small files), and so some of them are long and
@@ -153,19 +153,19 @@ public class DifferentialDiagnosis {
     }
 
     /** @return a message for the HTML template in case no variant was found in the gene that corresponds to this differential diagnosis.*/
-    public String getNoVariantsFound() {
-        return noVariantsFound;
-    }
+//    public String getNoVariantsFound() {
+//        return noVariantsFound;
+//    }
     /** @param a An HTML anchor that is used for the HTML template. */
     public void setAnchor(String a) { this.anchor=a;}
     /** @return An HTML anchor that is used for the HTML template. */
     public String getAnchor(){ return anchor;}
     /** @return An explanation of how the genotype score was calculated (for the HTML template). */
-    public String getExplanation() { return genotypeScoreExplanation; }
-    /** @param genotypeScoreExplanation An explanation of how the genotype score was calculated (for the HTML template). */
-    public void setGenotypeScoreExplanation(String genotypeScoreExplanation) {
-        this.genotypeScoreExplanation = genotypeScoreExplanation;
+    public String getExplanation() { return explanation; }
+    /** @param explanation An explanation of how the genotype score was calculated (for the HTML template). */
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
     }
     /** @return true iff this differential diagnosis has an explanation about the genotype score. */
-    public boolean hasExplanation() { return this.genotypeScoreExplanation != null;}
+    public boolean hasExplanation() { return this.explanation != null;}
 }
