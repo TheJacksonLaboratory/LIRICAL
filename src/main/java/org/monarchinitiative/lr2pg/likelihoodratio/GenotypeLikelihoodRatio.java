@@ -37,7 +37,7 @@ public class GenotypeLikelihoodRatio {
      * intends to represent the probability of missing the variant for technical reasons. We will estimate
      * this probability to be 5%. For autosomal recessive diseases, we will estimate the probability at
      * 5% * 5%.
-     * @param inheritancemodes
+     * @param inheritancemodes List of all inheritance modes associated with this disease (usually a single one)
      * @return genotype likelihood ratio for situation where no variant at all was found in a gene
      */
     private double getLRifNoVariantAtAllWasIdentified(List<TermId> inheritancemodes) {
