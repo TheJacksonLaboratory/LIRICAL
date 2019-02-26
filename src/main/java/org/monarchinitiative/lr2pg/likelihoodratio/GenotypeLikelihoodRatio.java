@@ -33,7 +33,7 @@ public class GenotypeLikelihoodRatio {
     }
 
     /**
-     * If no variant at all was identified in the gene of interest, we use a heurstic score that
+     * If no pathogenic variant at all was identified in the gene of interest, we use a heuristic score that
      * intends to represent the probability of missing the variant for technical reasons. We will estimate
      * this probability to be 5%. For autosomal recessive diseases, we will estimate the probability at
      * 5% * 5%.
@@ -70,6 +70,9 @@ public class GenotypeLikelihoodRatio {
         } else {
             double d = getLRifNoVariantAtAllWasIdentified(inheritancemodes);
             return Optional.of(d);
+        }
+        if (! g2g.hasPredictedPathogenicVar()) {
+            return Optional.of(getLRifNoVariantAtAllWasIdentified(inheritancemodes));
         }
         // if we get here then
         // 1. g2g was not null

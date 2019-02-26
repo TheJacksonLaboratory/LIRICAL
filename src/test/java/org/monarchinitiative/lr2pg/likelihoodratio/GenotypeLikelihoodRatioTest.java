@@ -8,9 +8,7 @@ import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -21,6 +19,8 @@ import static org.mockito.Mockito.when;
 class GenotypeLikelihoodRatioTest {
 
     private static final double EPSILON=0.0001;
+
+    private static final TermId autosomalDominant = TermId.of("HP:0000006");
 
 
     /**
@@ -64,5 +64,31 @@ class GenotypeLikelihoodRatioTest {
         double result = lrOption.get();
         double expected = (double)1000*1000;
         assertEquals(expected,result,EPSILON);
+    }
+
+
+    /**
+     * We want to test what happens with a gene that has lots of variants but a pathogenic variant count sum of zero,
+     * a lambda-disease of 1, and a lambda-background of 8.7. This numbers are taken from the HLA-B gene.
+     */
+    @Test
+    void testHLA_Bsituation() {
+        // create a background map with just one gene for testing
+        Map <TermId,Double> g2background = new HashMap<>();
+        TermId HLAB = TermId.of("NCBIGene:3106");
+        g2background.put(HLAB,8.7418); // very high lambda-background for TTN
+        GenotypeLikelihoodRatio glr = new GenotypeLikelihoodRatio(g2background);
+        List<TermId> inheritanceModes = new ArrayList<>();
+        inheritanceModes.add(autosomalDominant);
+        Gene2Genotype g2g = mock(Gene2Genotype.class);
+        when(g2g.getSumOfPathBinScores()).thenReturn(0.00); // mock that we find no pathogenic variant
+        Optional<Double> opt = glr.evaluateGenotype(g2g,inheritanceModes,HLAB);
+        assertTrue(opt.isPresent());
+        double expected = 0.05; // heuristic score
+        assertEquals(expected,opt.get(),EPSILON);
+
+        //
+        // Optional<Double> evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
+
     }
 }
