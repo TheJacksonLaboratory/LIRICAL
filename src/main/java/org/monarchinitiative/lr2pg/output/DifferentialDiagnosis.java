@@ -124,11 +124,6 @@ public class DifferentialDiagnosis {
         return geneSymbol;
     }
 
-    /** This is used to provide an appropriate message for the HTML template in case we have found no variants in the
-     * gene that corresponds to the differential diagnosis. */
-    //public void setNoVariantsFoundString(String s) {
-      //  noVariantsFound=s;
-    //}
 
     /**
      * We are getting the disease names from OMIM (actually from our small files), and so some of them are long and
@@ -152,10 +147,6 @@ public class DifferentialDiagnosis {
         return originalName.substring(i);
     }
 
-    /** @return a message for the HTML template in case no variant was found in the gene that corresponds to this differential diagnosis.*/
-//    public String getNoVariantsFound() {
-//        return noVariantsFound;
-//    }
     /** @param a An HTML anchor that is used for the HTML template. */
     public void setAnchor(String a) { this.anchor=a;}
     /** @return An HTML anchor that is used for the HTML template. */

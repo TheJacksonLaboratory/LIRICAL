@@ -17,6 +17,7 @@
         <Logger name="org.openrdf.rio.RDFParserRegistry" level="error" />
         <logger name="uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryInternalsImpl" level="error"/>
         <logger name="org.obolibrary.oboformat.parser.OBOFormatParser" level="error"/>
+        <logger name="org.semanticweb.owlapi.io.OWLParserFactory" level="error" />
         <logger name="org.monarchinitiative.phenol.io.obo.hpo.HpOboParser" level="error"/>
         <Root level="trace">
             <AppenderRef ref="Console" />

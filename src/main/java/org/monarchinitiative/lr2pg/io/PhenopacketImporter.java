@@ -37,7 +37,8 @@ public class PhenopacketImporter {
     /** Genome assembly of the VCF file in {@link #vcfPath}. */
     private String genomeAssembly;
     /** Name of the proband of the Phenopacket (corresponds to the {@code id} element of the phenopacket). */
-    private String samplename;
+    private final String samplename;
+
 
     /**
      * Factory method to obtain a PhenopacketImporter object starting from a phenopacket in Json format
@@ -86,6 +87,8 @@ public class PhenopacketImporter {
         return samplename;
     }
 
+
+
     /**
      * This method extracts a list of
      * all of the non-negated HPO terms that are annotated to the proband of this
@@ -124,9 +127,11 @@ public class PhenopacketImporter {
      * the phenopacket contains a single VCF file and that this file is for a single person. */
     private void extractVcfData() {
         List<HtsFile> htsFileList = phenoPacket.getHtsFilesList();
-        if (htsFileList.size() != 1 ) {
-            System.err.println("Warning: multiple HTsFiles associated with this phenopacket");
-            System.err.println("Warning: we will return the path to the first VCF file we find");
+        if (htsFileList.size() > 1 ) {
+            logger.error("Warning: multiple HTsFiles associated with this phenopacket");
+            logger.error("Warning: we will return the path to the first VCF file we find");
+        } else if (htsFileList.isEmpty()) {
+            return;
         }
         for (HtsFile htsFile : htsFileList) {
             if (htsFile.getHtsFormat().equals(HtsFile.HtsFormat.VCF)) {
