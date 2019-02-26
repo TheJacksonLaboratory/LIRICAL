@@ -24,7 +24,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <junit.version>5.1.0</junit.version>
         <phenol.version>1.3.2</phenol.version>
-        <exomiser.version>11.0.0</exomiser.version>
+        <exomiser.version>12.0.0-SNAPSHOT</exomiser.version>
         <slf4j.version>1.7.24</slf4j.version>
     </properties>
 
@@ -86,12 +86,12 @@
 
         <dependency>
             <groupId>org.monarchinitiative.phenol</groupId>
-            <artifactId>phenol-core</artifactId>
+            <artifactId>phenol-io</artifactId>
             <version>${phenol.version}</version>
         </dependency>
         <dependency>
             <groupId>org.monarchinitiative.phenol</groupId>
-            <artifactId>phenol-io</artifactId>
+            <artifactId>phenol-core</artifactId>
             <version>${phenol.version}</version>
         </dependency>
 
