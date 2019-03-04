@@ -5,7 +5,7 @@
 
     <groupId>org.monarchinitiative</groupId>
     <artifactId>lr2pg</artifactId>
-    <version>0.9.11</version>
+    <version>0.9.12</version>
     <packaging>jar</packaging>
 
     <name>lr2pg</name>
@@ -18,7 +18,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jannovar.version>0.27</jannovar.version>
+        <jannovar.version>0.28</jannovar.version>
         <java.version>8</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>

@@ -54,6 +54,8 @@ public class CaseEvaluator {
 
     private boolean verbose=true;
 
+    private final static String EMPTY_STRING="";
+
     /**
      * This constructor is used for phenotype-only cases.
      * @param hpoTerms List of phenotypic abnormalityes observed in the patient
@@ -197,6 +199,7 @@ public class CaseEvaluator {
             List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
             List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
             TestResult result;
+            String genotypeExplanation=EMPTY_STRING;
             // 2. get genotype LR if available
             Double genotypeLR=null;
             TermId geneId = null;
