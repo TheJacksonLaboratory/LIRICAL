@@ -226,7 +226,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
 
     /** @return a non-root random parent of term tid. It could be empty. */
     private Optional<TermId> getNonRootRandomParentTerm(TermId tid) {
-        Set<TermId> parents = getParentTerms(ontology.subOntology(PHENOTYPIC_ABNORMALITY),tid,false);
+        Set<TermId> parents = new HashSet<>(getParentTerms(ontology.subOntology(PHENOTYPIC_ABNORMALITY),tid,false));
         if (parents.contains(PHENOTYPIC_ABNORMALITY)){
             parents.remove(PHENOTYPIC_ABNORMALITY);
         }
