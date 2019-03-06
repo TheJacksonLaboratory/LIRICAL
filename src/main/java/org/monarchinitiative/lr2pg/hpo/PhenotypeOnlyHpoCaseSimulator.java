@@ -224,6 +224,19 @@ public class PhenotypeOnlyHpoCaseSimulator {
     }
 
 
+    /** @return a non-root random parent of term tid. It could be empty. */
+    private Optional<TermId> getNonRootRandomParentTerm(TermId tid) {
+        Set<TermId> parents = getParentTerms(ontology.subOntology(PHENOTYPIC_ABNORMALITY),tid,false);
+        if (parents.contains(PHENOTYPIC_ABNORMALITY)){
+            parents.remove(PHENOTYPIC_ABNORMALITY);
+        }
+        if (parents.isEmpty()) { //no parents could be found
+            return Optional.empty();
+        }
+        int r = (int)Math.floor(parents.size()*Math.random());
+        return Optional.of((TermId) parents.toArray()[r]);
+    }
+
 
     public Ontology getOntology() {
         return ontology;
@@ -235,27 +248,34 @@ public class PhenotypeOnlyHpoCaseSimulator {
      * @return HpoCase object with a randomized selection of phenotypes from the disease
      */
     private List<TermId> getRandomTermsFromDisease(HpoDisease disease) {
-        int n_terms = Math.min(disease.getNumberOfPhenotypeAnnotations(), n_terms_per_case);
+        //We already checked to make sure disease have at least n_terms_per_case, so the following line is unnecessary and confusing to read--Aaron
+        //int n_terms = Math.min(disease.getNumberOfPhenotypeAnnotations(), n_terms_per_case);
         //int n_random=Math.min(n_terms, n_noise_terms);
-        logger.trace("Creating simulated case with n_terms="+n_terms + ", n_random="+n_noise_terms);
+        logger.trace("Creating simulated case with n_terms="+n_terms_per_case + ", n_random=" + n_noise_terms);
         // the creation of a new ArrayList is needed because disease returns an immutable list.
         List<HpoAnnotation> abnormalities = new ArrayList<>(disease.getPhenotypicAbnormalities());
         ImmutableList.Builder<TermId> termIdBuilder = new ImmutableList.Builder<>();
         Collections.shuffle(abnormalities); // randomize order of phenotypes
         // take the first n_random terms of the randomized list
-        abnormalities.stream().limit(n_terms).forEach(a-> termIdBuilder.add(a.getTermId()));
+        if (addTermImprecision) {
+            abnormalities.stream().limit(n_terms_per_case).forEach( a -> {
+                Optional<TermId> randomParent = getNonRootRandomParentTerm(a.getTermId());
+                if (randomParent.isPresent()) {
+                    termIdBuilder.add(randomParent.get());
+                } else { //cannot find non-root parent
+                    termIdBuilder.add(a.getTermId());
+                }
+            });
+        } else {
+            abnormalities.stream().limit(n_terms_per_case).forEach(a-> termIdBuilder.add(a.getTermId()));
+        }
         // now add n_random "noise" terms to the list of abnormalities of our case.
         for(int i=0;i<n_noise_terms;i++){
             TermId t = getRandomPhenotypeTerm();
-            if (addTermImprecision) {
-                t = getRandomParentTerm(t);
-            }
             termIdBuilder.add(t);
         }
         return termIdBuilder.build();
     }
-
-
 
 
 
