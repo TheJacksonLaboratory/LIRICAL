@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class Gene2Genotype {
+
+
     /** The NCBI Entrez Gene ID of this gene. */
     private final TermId geneId;
     /** The symbol of this gene. */
@@ -25,6 +27,13 @@ public class Gene2Genotype {
     private final List<SimpleVariant> varList;
     /** Sum of variants in the pathogenic bin, weighted by their predicted pathogenicity. */
     private double sumOfPathBinScores;
+    /** It simplifies the use of this class to have an object that indicates that NO gene is associated with
+     * the disease in question. We
+     */
+    public static final Gene2Genotype NO_ASSOCIATED_GENE = new Gene2Genotype(TermId.of("n/a:n/a"),"n/a");
+
+
+
 
     /**
      *

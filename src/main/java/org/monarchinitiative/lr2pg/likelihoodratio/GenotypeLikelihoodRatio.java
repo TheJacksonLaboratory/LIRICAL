@@ -62,14 +62,14 @@ public class GenotypeLikelihoodRatio {
      */
     Optional<Double> evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
         double observedWeightedPathogenicVariantCount=0;
-        if (g2g!=null) {
+        if (g2g.equals(Gene2Genotype.NO_ASSOCIATED_GENE)) {
+            double d = getLRifNoVariantAtAllWasIdentified(inheritancemodes);
+            return Optional.of(d);
+        } else {
             observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
             if (g2g.hasPathogenicClinvarVar()) {
                 return Optional.of(Math.pow(1000d, g2g.pathogenicClinVarCount()));
             }
-        } else {
-            double d = getLRifNoVariantAtAllWasIdentified(inheritancemodes);
-            return Optional.of(d);
         }
         if (! g2g.hasPredictedPathogenicVar()) {
             return Optional.of(getLRifNoVariantAtAllWasIdentified(inheritancemodes));

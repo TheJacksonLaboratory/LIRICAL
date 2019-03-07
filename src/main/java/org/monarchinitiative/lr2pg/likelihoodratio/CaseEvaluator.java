@@ -183,6 +183,102 @@ public class CaseEvaluator {
         return mapbuilder.build();
     }
 
+
+    private Optional<TestResult> evaluateDisease(TermId diseaseId) {
+        HpoDisease disease = this.diseaseMap.get(diseaseId);
+        double pretest = pretestProbabilityMap.get(diseaseId);
+        List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
+        List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
+        TestResult result;
+        String genotypeExplanation=EMPTY_STRING;
+        // 2. get genotype LR if available
+        Double genotypeLR=null;
+        TermId geneId = null;
+        // Note that when containsKey(key) is false, get returns an empty collection, not null.
+        Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
+        if ( associatedGenes.isEmpty()) {
+            // this is a disease with no known disease gene
+            if (keepIfNoCandidateVariant) {
+                // if keepIfNoCandidateVariant is true then the user wants to
+                // keep differentials with no associated gene
+                // we create the TestResult based solely on the Phenotype data.
+                result = new TestResult(observedLR, excludedLR, disease, pretest);
+                return Optional.of(result);
+            } else {
+                // we skip this differential because there is no associated gene
+                return Optional.empty();
+            }
+        }
+        // If we get here, then the disease is associated with one or multiple genes
+        // The disease may also be associated with multiple modes of inheritance (this happens rarely)
+        List<TermId> inheritancemodes= disease.getModesOfInheritance();
+        List<String> genesWithNoIdentifiedVariant = new ArrayList<>(); // we keep track of this for the HTML output
+        boolean foundPredictedPathogenicVariant=false;
+        if (associatedGenes.size() > 0) {
+            for (TermId entrezGeneId : associatedGenes) {
+                Gene2Genotype g2g = this.genotypeMap.getOrDefault(entrezGeneId,Gene2Genotype.NO_ASSOCIATED_GENE);
+                Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(g2g,
+                        inheritancemodes,
+                        entrezGeneId);
+                if (g2g==null) {
+                    String symbol = this.geneId2symbol.get(entrezGeneId);
+                    genesWithNoIdentifiedVariant.add(symbol);
+                } else {
+                    if (g2g.hasPathogenicClinvarVar() || g2g.hasPredictedPathogenicVar()) {
+                        foundPredictedPathogenicVariant = true;
+                    }
+
+                }
+                if (opt.isPresent()) {
+                    if (genotypeLR == null) { // this is the first iteration
+                        genotypeLR = opt.get();
+                        geneId = entrezGeneId;
+                    } else if (genotypeLR < opt.get()) { // if the new genotype LR is better, replace!
+                        genotypeLR = opt.get();
+                        geneId = entrezGeneId;
+                    }
+                }
+            }
+        }
+        if (genotypeLR != null) {
+            result = new TestResult(observedLR, excludedLR,disease, genotypeLR, geneId, pretest);
+            if (!foundPredictedPathogenicVariant) {
+                if (keepIfNoCandidateVariant) {
+                    String expl = String.format("No variants found in disease-associated gene%s: %s",
+                            genesWithNoIdentifiedVariant.size()>1 ? "s":"",
+                            String.join("; ", genesWithNoIdentifiedVariant));
+                    result.appendToExplanation(expl);
+                } else {
+                    // finally, if there is not at least one pathogenic-bin variant, we skip the candidate
+                    // unless the user opts to keep genes without candidate variants
+                    //continue;
+                }
+            }
+        } else {
+            // should never get here but if we do output an error message to the log
+            // i.e., the above code should always assign a genotype LR score
+            logger.error("Could not calculate genotype LR for "+disease.getName() +
+                    " with associated genes " + String.join("; ",genesWithNoIdentifiedVariant));
+            // some error occured, we will skip this one (should never happen)
+            return Optional.empty();
+        }
+
+        Gene2Genotype g2g = this.genotypeMap.get(geneId);
+        double observedWeightedPathogenicVariantCount = 0.0;
+        if (g2g != null) {
+            observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
+        }
+        String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
+        result.appendToExplanation(exp);
+        return Optional.of(result);
+    }
+
+
+
+
+
+
+
     /**
      * Perform the evaluation of the current case based on phenotype and genotype evidence
      * If {@link #keepIfNoCandidateVariant} is true, then we also rank differential diagnoses even
@@ -194,89 +290,13 @@ public class CaseEvaluator {
     private Map<TermId,TestResult> phenoGenoEvaluation() {
         ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder<>();
         for (TermId diseaseId : diseaseMap.keySet()) {
-            HpoDisease disease = this.diseaseMap.get(diseaseId);
-            double pretest = pretestProbabilityMap.get(diseaseId);
-            List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
-            List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
-            TestResult result;
-            String genotypeExplanation=EMPTY_STRING;
-            // 2. get genotype LR if available
-            Double genotypeLR=null;
-            TermId geneId = null;
-            // Note that when containsKey(key) is false, get returns an empty collection, not null.
-            Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
-            if (!keepIfNoCandidateVariant && associatedGenes.isEmpty()) {
-                continue; // this is a disease with no known disease gene -- we will skip it unless the user
-                // indicates to keep differentials with no associated gene with the keep option.
+            Optional<TestResult> optionalTestResult = evaluateDisease (diseaseId);
+            if (optionalTestResult.isPresent()) {
+                // some differentials will be completely skipped depending on user settings
+                // for instance, we might skip differentials if there is no associated gene
+                // in this case, evaluateDisease returns an empty Optional and we just skip it here.
+                mapbuilder.put(diseaseId, optionalTestResult.get());
             }
-            // If we get here, then the disease is associated with one or multiple genes
-            // unless keepIfNoCandidateVariant is true
-            // The disease may also be associated with multiple modes of inheritance (this happens rarely)
-            List<TermId> inheritancemodes= disease.getModesOfInheritance();
-            List<String> genesWithNoIdentifiedVariant = new ArrayList<>();
-            boolean foundPredictedPathogenicVariant=false;
-            if (associatedGenes.size() > 0) {
-                for (TermId entrezGeneId : associatedGenes) {
-                    Gene2Genotype g2g = this.genotypeMap.get(entrezGeneId);
-                    Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(g2g,
-                            inheritancemodes,
-                            entrezGeneId);
-                    if (g2g==null) {
-                        String symbol = this.geneId2symbol.get(entrezGeneId);
-                        genesWithNoIdentifiedVariant.add(symbol);
-                    } else {
-                        if (g2g.hasPathogenicClinvarVar() || g2g.hasPredictedPathogenicVar()) {
-                            foundPredictedPathogenicVariant = true;
-                        }
-
-                    }
-                    if (opt.isPresent()) {
-                        if (genotypeLR == null) {
-                            genotypeLR = opt.get();
-                            geneId = entrezGeneId;
-                        } else if (genotypeLR < opt.get()) { // if the new genotype LR is better, replace!
-                            genotypeLR = opt.get();
-                            geneId = entrezGeneId;
-                        }
-                    }
-                }
-            } else if (keepIfNoCandidateVariant) {
-                // if we get here, then the disease has no associated gene
-                // We create a TestResult object that does not include genotype at all
-                result = new TestResult(observedLR, excludedLR, disease, pretest);
-                mapbuilder.put(diseaseId, result);
-                continue;
-            }
-            if (genotypeLR != null) {
-                result = new TestResult(observedLR, excludedLR,disease, genotypeLR, geneId, pretest);
-                if (!foundPredictedPathogenicVariant) {
-                    if (keepIfNoCandidateVariant) {
-                        String expl = String.format("No variants found in disease-associated gene%s: %s",
-                                genesWithNoIdentifiedVariant.size()>1 ? "s":"",
-                                String.join("; ", genesWithNoIdentifiedVariant));
-                        result.appendToExplanation(expl);
-                    } else {
-                        // finally, if there is not at least one pathogenic-bin variant, we skip the candidate
-                        // unless the user opts to keep genes without candidate variants
-                        continue;
-                    }
-                }
-            } else {
-                // should never get here but if we do output an error message to the log
-                // i.e., the above code should always assign a genotype LR score
-                logger.error("Could not calculate genotype LR for "+disease.getName() +
-                " with associated genes " + String.join("; ",genesWithNoIdentifiedVariant));
-                continue; // some error occured, we will skip this one (should never happen)
-            }
-
-            Gene2Genotype g2g = this.genotypeMap.get(geneId);
-            double observedWeightedPathogenicVariantCount = 0.0;
-            if (g2g != null) {
-                observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
-            }
-            String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
-            result.appendToExplanation(exp);
-            mapbuilder.put(diseaseId, result);
         }
         return mapbuilder.build();
     }
