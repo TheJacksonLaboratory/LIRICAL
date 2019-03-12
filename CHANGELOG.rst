@@ -1,6 +1,16 @@
 =========
 Changelog
 =========
+
+-------
+v0.9.13
+-------
+- Streamlining some of the likelihood ratio code without changing logic
+- Adding routine for genotypes with more than 2 called pathogenic variants
+- tweaking HTML output
+- update to phenol 1.3.3
+- adding enforcer plugin
+
 -------
 v0.9.11
 -------

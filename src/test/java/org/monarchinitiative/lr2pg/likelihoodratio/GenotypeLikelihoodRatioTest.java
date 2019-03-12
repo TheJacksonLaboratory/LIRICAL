@@ -21,6 +21,8 @@ class GenotypeLikelihoodRatioTest {
     private static final double EPSILON=0.0001;
 
     private static final TermId autosomalDominant = TermId.of("HP:0000006");
+    private static final TermId autosomalRecessive = TermId.of("HP:0000007");
+
 
 
     /**
@@ -76,7 +78,7 @@ class GenotypeLikelihoodRatioTest {
         // create a background map with just one gene for testing
         Map <TermId,Double> g2background = new HashMap<>();
         TermId HLAB = TermId.of("NCBIGene:3106");
-        g2background.put(HLAB,8.7418); // very high lambda-background for TTN
+        g2background.put(HLAB,8.7418); // very high lambda-background for HLAB
         GenotypeLikelihoodRatio glr = new GenotypeLikelihoodRatio(g2background);
         List<TermId> inheritanceModes = new ArrayList<>();
         inheritanceModes.add(autosomalDominant);
@@ -86,9 +88,26 @@ class GenotypeLikelihoodRatioTest {
         assertTrue(opt.isPresent());
         double expected = 0.05; // heuristic score
         assertEquals(expected,opt.get(),EPSILON);
+    }
 
-        //
-        // Optional<Double> evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
-
+    /**
+     * We want to test what happens with a gene that has lots of variants but a pathogenic variant count sum of zero,
+     * a lambda-disease of 2, and a lambda-background of 8.7. This numbers are taken from a made-up  gene.
+     */
+    @Test
+    void testRecessiveManyCalledPathVariants() {
+        // create a background map with just one gene for testing
+        Map <TermId,Double> g2background = new HashMap<>();
+        TermId madeUpGene = TermId.of("NCBIGene:42");
+        g2background.put(madeUpGene,8.7418); // very high lambda-background for TTN
+        GenotypeLikelihoodRatio glr = new GenotypeLikelihoodRatio(g2background);
+        List<TermId> inheritanceModes = new ArrayList<>();
+        inheritanceModes.add(autosomalRecessive);
+        Gene2Genotype g2g = mock(Gene2Genotype.class);
+        when(g2g.getSumOfPathBinScores()).thenReturn(0.00); // mock that we find no pathogenic variant
+        Optional<Double> opt = glr.evaluateGenotype(g2g,inheritanceModes,madeUpGene);
+        assertTrue(opt.isPresent());
+        double expected = 0.05*0.05; // heuristic score for AR
+        assertEquals(expected,opt.get(),EPSILON);
     }
 }

@@ -33,7 +33,7 @@ class TestResultTest {
         TermId glaucomaId = TermId.of("MONDO:123");
         List<TermId> emptyList = ImmutableList.of();
         List<HpoAnnotation> emptyAnnot = ImmutableList.of();
-        glaucoma = new HpoDisease("Glaucoma",glaucomaId,emptyAnnot,emptyList,emptyList);
+        glaucoma = new HpoDisease("Glaucoma",glaucomaId,emptyAnnot,emptyList,emptyList,emptyList,emptyList);
     }
 
     @Test
@@ -134,9 +134,9 @@ class TestResultTest {
         TermId testId3 = TermId.of("MONDO:3");
         List<TermId> emptyList = ImmutableList.of();
         List<HpoAnnotation> emptyAnnot = ImmutableList.of();
-        HpoDisease d1 = new HpoDisease("d1",testId1,emptyAnnot,emptyList,emptyList);
-        HpoDisease d2 = new HpoDisease("d2",testId2,emptyAnnot,emptyList,emptyList);
-        HpoDisease d3 = new HpoDisease("d3",testId3,emptyAnnot,emptyList,emptyList);
+        HpoDisease d1 = new HpoDisease("d1",testId1,emptyAnnot,emptyList,emptyList,emptyList,emptyList);
+        HpoDisease d2 = new HpoDisease("d2",testId2,emptyAnnot,emptyList,emptyList,emptyList,emptyList);
+        HpoDisease d3 = new HpoDisease("d3",testId3,emptyAnnot,emptyList,emptyList,emptyList,emptyList);
         List<Double> list1 = ImmutableList.of(2.0,3.0,4.0);
         List<Double> list2 = ImmutableList.of(20.0,3.0,4.0);
         List<Double> list3 = ImmutableList.of(20.0,30.0,4.0);

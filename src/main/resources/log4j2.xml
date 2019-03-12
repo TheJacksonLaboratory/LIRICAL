@@ -2,7 +2,7 @@
 <Configuration status="WARN">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT" follow="true">
-            <PatternLayout pattern="[%-5p] %c{1} - %m%n" />
+            <PatternLayout pattern="[%-5p] %c{1} - %F%l - %m%n" />
         </Console>
         <RollingFile name="File" fileName="lr2pg.log" filePattern="${sys:LOG_PATH}/$${date:yyyy-MM}/app-%d{yyyy-MM-dd-HH}-%i.log.gz">
             <PatternLayout pattern="[%-5p] %c{1} - %m%n" />
@@ -19,7 +19,15 @@
         <logger name="org.obolibrary.oboformat.parser.OBOFormatParser" level="error"/>
         <logger name="org.semanticweb.owlapi.io.OWLParserFactory" level="error" />
         <logger name="org.monarchinitiative.phenol.io.obo.hpo.HpOboParser" level="error"/>
-        <Root level="trace">
+        <logger name="de.charite.compbio.jannovar.annotation.builders.AnnotationBuilderDispatcher" level="error"/>
+        <logger name="de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator" level="error" />
+        <logger name="org.semanticweb.owlapi.utilities.Injector" level="error" />
+        <logger name="org.monarchinitiative.exomiser.core.*" level="error"/>
+        <logger name="info.aduna.lang.service.ServiceRegistry" level="error" />
+        <logger name="org.monarchinitiative.phenol.io.obo.OboGraphDocumentAdaptor" level="error"/>
+        <logger name="org.monarchinitiative.phenol.io.OntologyLoader" level="error" />
+        <logger name="org.monarchinitiative.phenol.graph.util.CompatibilityChecker" level="error"/>
+        <Root level="warn">
             <AppenderRef ref="Console" />
             <AppenderRef ref="File" />
         </Root>

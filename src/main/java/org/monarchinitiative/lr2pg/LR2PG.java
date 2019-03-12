@@ -54,24 +54,35 @@ public class LR2PG  {
             // Note that by default, JCommand is OK with -h download but
             // not with download -h
             // The following hack makes things work with either option.
-            String commandString=null;
+            String mycommand=null;
+            String commandstring = String.join(" ",args);
             for (String a:args) {
                 if (commandnames.contains(a)) {
-                    commandString=a;
+                    mycommand=a;
                 }
-                if (a.contains("h")) {
-                    if (commandString!=null) {
-                        jc.usage(commandString);
+                if (a.equals("h")) {
+                    if (mycommand!=null) {
+                        jc.usage(mycommand);
                     } else {
                         jc.usage();
                     }
                     System.exit(1);
                 }
             }
-            jc.usage();
+            System.err.println("[ERROR] "+e.getMessage());
+            System.err.println("[ERROR] your command: "+commandstring);
+            System.err.println("[ERROR] enter java -jar Lr2pg -h for more information.");
             System.exit(1);
         }
         String parsedCommand = jc.getParsedCommand();
+        if (! commandnames.contains(parsedCommand)) {
+            System.err.println("[ERROR] did not recognize command \"" + parsedCommand +"\"");
+            System.err.println("[ERROR] available commands are " + String.join(", ",commandnames));
+            System.err.println("[ERROR] enter java -jar Lr2pg -h for more information.");
+            System.exit(1);
+        } else {
+            System.err.println("GOT BLA " + parsedCommand);
+        }
 
         if ( lr2pg.usageHelpRequested) {
             if (parsedCommand==null) {
