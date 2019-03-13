@@ -69,19 +69,25 @@ public class LR2PG  {
                     System.exit(1);
                 }
             }
+            if (commandstring==null) { // user ran without any command
+                jc.usage();
+                System.exit(0);
+            }
             System.err.println("[ERROR] "+e.getMessage());
             System.err.println("[ERROR] your command: "+commandstring);
             System.err.println("[ERROR] enter java -jar Lr2pg -h for more information.");
             System.exit(1);
         }
         String parsedCommand = jc.getParsedCommand();
+        if (parsedCommand==null) {
+            jc.usage(); // user ran program with no arguments, probably help is want is wanted.
+            System.exit(0);
+        }
         if (! commandnames.contains(parsedCommand)) {
             System.err.println("[ERROR] did not recognize command \"" + parsedCommand +"\"");
             System.err.println("[ERROR] available commands are " + String.join(", ",commandnames));
             System.err.println("[ERROR] enter java -jar Lr2pg -h for more information.");
             System.exit(1);
-        } else {
-            System.err.println("GOT BLA " + parsedCommand);
         }
 
         if ( lr2pg.usageHelpRequested) {
