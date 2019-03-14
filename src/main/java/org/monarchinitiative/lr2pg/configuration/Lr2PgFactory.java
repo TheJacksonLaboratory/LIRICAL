@@ -189,9 +189,9 @@ public class Lr2PgFactory {
         }
     }
 
-
-    public TranscriptDatabase transcriptdb() {
-            return this.transcriptdatabase;
+    /** returns "n/a if {@link #transcriptdatabase} was not initialized (should not happen). */
+    public String transcriptdb() {
+            return this.transcriptdatabase!=null?this.transcriptdatabase.toString():"n/a";
     }
 
     public String getBackgroundFrequencyPath() {
@@ -357,9 +357,8 @@ public class Lr2PgFactory {
         // Remove the trailing directory slash if any
         this.exomiserPath= getPathWithoutTrailingSeparatorIfPresent(this.exomiserPath);
         String basename=FilenameUtils.getBaseName(this.exomiserPath);
-        TranscriptDatabase tdb = transcriptdb();
         String fullpath;
-        switch (tdb) {
+        switch (this.transcriptdatabase) {
             case REFSEQ:
                 String refseqfilename=String.format("%s_transcripts_refseq.ser", basename);
                 fullpath=String.format("%s%s%s", exomiserPath,File.separator,refseqfilename);

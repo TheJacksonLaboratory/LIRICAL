@@ -27,10 +27,9 @@ public class Gene2Genotype {
     private final List<SimpleVariant> varList;
     /** Sum of variants in the pathogenic bin, weighted by their predicted pathogenicity. */
     private double sumOfPathBinScores;
-    /** It simplifies the use of this class to have an object that indicates that NO gene is associated with
-     * the disease in question. We
-     */
-    public static final Gene2Genotype NO_ASSOCIATED_GENE = new Gene2Genotype(TermId.of("n/a:n/a"),"n/a");
+    /** It simplifies the use of this class to have an object that indicates that NO VARIANT
+     * was found in the gene (no variant in the gene was present in teh VCF file).    */
+    public static final Gene2Genotype NO_IDENTIFIED_VARIANT = new Gene2Genotype(TermId.of("n/a:n/a"),"n/a");
 
 
 

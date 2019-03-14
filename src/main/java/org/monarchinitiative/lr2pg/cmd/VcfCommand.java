@@ -76,14 +76,8 @@ public class VcfCommand extends PrioritizeCommand {
         if (ontologyMetainfo.containsKey("data-version")) {
             this.metadata.put("hpoVersion",ontologyMetainfo.get("data-version"));
         }
-        TranscriptDatabase tdatabase = factory.transcriptdb();
-        if (tdatabase!=null) {
-            String tdb = transcriptDb;
-            this.metadata.put("transcriptDatabase", tdb);
-        }
-
+        this.metadata.put("transcriptDatabase", factory.transcriptdb());
         this.metadata.put("yaml", this.yamlPath);
-
         int n_genes_with_var=factory.getGene2GenotypeMap().size();
         this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
         this.metadata.put("exomiserPath",factory.getExomiserPath());

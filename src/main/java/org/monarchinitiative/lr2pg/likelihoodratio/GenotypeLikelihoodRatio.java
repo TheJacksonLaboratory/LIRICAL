@@ -26,10 +26,20 @@ public class GenotypeLikelihoodRatio {
 
     /** Entrez gene Curie, e.g., NCBIGene:2200; value--corresponding background frequency sum of pathogenic bin variants. */
     private final Map<TermId,Double> gene2backgroundFrequency;
+    /** This is a Poisson distribution object that is used to help calculate the genotype likelihood ratio for cases
+     * with autosomal recessive inheritance. We can construct this object once and reuse it.*/
+    private final PoissonDistribution recessivePoissonDistribution;
+    /** This is a Poisson distribution object that is used to help calculate the genotype likelihood ratio for cases
+     * with autosomal dominant inheritance. We can construct this object once and reuse it.*/
+    private final PoissonDistribution dominantPoissonDistribution;
 
-
+    /**
+     * @param g2background background frequencies of called pathogenic variants in genes.
+     */
     public GenotypeLikelihoodRatio(Map <TermId,Double> g2background) {
         this.gene2backgroundFrequency=g2background;
+        this.recessivePoissonDistribution =  new PoissonDistribution(2.0);
+        this.dominantPoissonDistribution = new PoissonDistribution((1.0));
     }
 
     /**
@@ -54,25 +64,29 @@ public class GenotypeLikelihoodRatio {
 
     /**
      * Calculate the genotype likelihood ratio using lambda_disease=1 for autosomal dominant and lambda_disease=2
-     * for autosomal recessive. TODO figure out other MOIs TODO do not allow g2g to be null, refactor
+     * for autosomal recessive.
      * @param g2g  {@link Gene2Genotype} object with list of variants in current gene. Can be null if no variants were found in the gene
      * @param inheritancemodes list of modes of inheritance associated with disease being investigated (usually with just one entry).
      * @param geneId EntrezGene id of the gene we are investigating.
      * @return likelihood ratio of the genotype given the disease/geniId combination
      */
-    Optional<Double> evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
+    Double evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
         double observedWeightedPathogenicVariantCount=0;
-        if (g2g.equals(Gene2Genotype.NO_ASSOCIATED_GENE)) {
+        if (g2g.equals(Gene2Genotype.NO_IDENTIFIED_VARIANT)) {
             double d = getLRifNoVariantAtAllWasIdentified(inheritancemodes);
-            return Optional.of(d);
-        } else {
-            observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
-            if (g2g.hasPathogenicClinvarVar()) {
-                return Optional.of(Math.pow(1000d, g2g.pathogenicClinVarCount()));
-            }
+            return d;
         }
+        observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
+        if (observedWeightedPathogenicVariantCount<EPSILON) {
+            // essentially sam as no identified variant, this should happen rarely if ever.
+            return getLRifNoVariantAtAllWasIdentified(inheritancemodes);
+        }
+        if (g2g.hasPathogenicClinvarVar()) {
+            return Math.pow(1000d, g2g.pathogenicClinVarCount());
+        }
+
         if (! g2g.hasPredictedPathogenicVar()) {
-            return Optional.of(getLRifNoVariantAtAllWasIdentified(inheritancemodes));
+            return getLRifNoVariantAtAllWasIdentified(inheritancemodes);
         }
         // if we get here then
         // 1. g2g was not null
@@ -87,31 +101,26 @@ public class GenotypeLikelihoodRatio {
             // Add a default dominant mode to avoid not ranking this gene at all
             inheritancemodes = ImmutableList.of(AUTOSOMAL_DOMINANT);
         }
-        Optional<Double> max = Optional.empty();
+        Optional<Double> max = null;
         for (TermId inheritanceId : inheritancemodes) {
             double lambda_disease=1.0;
+            PoissonDistribution pdDisease;
             if (inheritanceId.equals(AUTOSOMAL_RECESSIVE) || inheritanceId.equals(X_LINKED_RECESSIVE)) {
                 lambda_disease=2.0;
+                pdDisease = recessivePoissonDistribution;
+            } else {
+                pdDisease = dominantPoissonDistribution;
             }
             // Heuristic for the case where we have more called pathogenic variants than we should have
             // for instance, we have an autosomal recessive disease but there are 5 called pathogenic
             // variants
             if (observedWeightedPathogenicVariantCount>lambda_disease) {
-                PoissonDistribution pdDisease = new PoissonDistribution(lambda_disease);
                 double D = pdDisease.probability(observedWeightedPathogenicVariantCount);
                 PoissonDistribution pdBackground = new PoissonDistribution(observedWeightedPathogenicVariantCount);
                 double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
-                return Optional.of(D/B);
+                return D/B;
             }
-
-
-            double D;
-            if (observedWeightedPathogenicVariantCount<EPSILON) {
-                D=0.05; // heuristic--chance of zero variants given this is disease is 5%
-            } else {
-                PoissonDistribution pdDisease = new PoissonDistribution(lambda_disease);
-                D = pdDisease.probability(observedWeightedPathogenicVariantCount);
-            }
+            double D = pdDisease.probability(observedWeightedPathogenicVariantCount);
             PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
             double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
             if (B>0 && D>0) {
@@ -123,7 +132,7 @@ public class GenotypeLikelihoodRatio {
                 }
             }
         }
-       return max;
+       return max.orElse(0.05*0.05);
     }
 
 

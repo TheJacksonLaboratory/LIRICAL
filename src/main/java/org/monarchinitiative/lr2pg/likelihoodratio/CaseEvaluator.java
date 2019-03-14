@@ -190,11 +190,6 @@ public class CaseEvaluator {
         List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
         List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
         TestResult result;
-        String genotypeExplanation=EMPTY_STRING;
-        // 2. get genotype LR if available
-        Double genotypeLR=null;
-        TermId geneId = null;
-        // Note that when containsKey(key) is false, get returns an empty collection, not null.
         Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
         if ( associatedGenes.isEmpty()) {
             // this is a disease with no known disease gene
@@ -214,62 +209,64 @@ public class CaseEvaluator {
         List<TermId> inheritancemodes= disease.getModesOfInheritance();
         List<String> genesWithNoIdentifiedVariant = new ArrayList<>(); // we keep track of this for the HTML output
         boolean foundPredictedPathogenicVariant=false;
+        Double genotypeLR=null;
+        TermId geneId = null;
         if (associatedGenes.size() > 0) {
             for (TermId entrezGeneId : associatedGenes) {
-                Gene2Genotype g2g = this.genotypeMap.getOrDefault(entrezGeneId,Gene2Genotype.NO_ASSOCIATED_GENE);
-                Optional<Double> opt = this.genotypeLrEvalutator.evaluateGenotype(g2g,
-                        inheritancemodes,
-                        entrezGeneId);
-                if (g2g==null) {
+                // if there is no Gene2Genotype object in the map, then no variant in the gene was found in the VCF
+                Gene2Genotype g2g = this.genotypeMap.getOrDefault(entrezGeneId,Gene2Genotype.NO_IDENTIFIED_VARIANT);
+                // The following two special cases are if no variant was found or if a ClinVar-pathogenic variant was found.
+                if (g2g.equals(Gene2Genotype.NO_IDENTIFIED_VARIANT)) {
                     String symbol = this.geneId2symbol.get(entrezGeneId);
                     genesWithNoIdentifiedVariant.add(symbol);
                 } else {
                     if (g2g.hasPathogenicClinvarVar() || g2g.hasPredictedPathogenicVar()) {
                         foundPredictedPathogenicVariant = true;
                     }
-
                 }
-                if (opt.isPresent()) {
-                    if (genotypeLR == null) { // this is the first iteration
-                        genotypeLR = opt.get();
-                        geneId = entrezGeneId;
-                    } else if (genotypeLR < opt.get()) { // if the new genotype LR is better, replace!
-                        genotypeLR = opt.get();
-                        geneId = entrezGeneId;
-                    }
+                Double score = this.genotypeLrEvalutator.evaluateGenotype(g2g,
+                        inheritancemodes,
+                        entrezGeneId);
+                if (genotypeLR == null) { // this is the first iteration
+                    genotypeLR = score;
+                    geneId = entrezGeneId;
+                } else if (genotypeLR < score) { // if the new genotype LR is better, replace!
+                    genotypeLR = score;
+                    geneId = entrezGeneId;
                 }
             }
         }
+        // when we get here, we have checked for variants in all genes associated with the disease.
+        // genotypeLR has the most pathogenic genotype score for all associated genes, or is null if
+        // no variants in any associated gene were found.
         if (genotypeLR != null) {
             result = new TestResult(observedLR, excludedLR,disease, genotypeLR, geneId, pretest);
             if (!foundPredictedPathogenicVariant) {
                 if (keepIfNoCandidateVariant) {
                     String expl = String.format("No variants found in disease-associated gene%s: %s",
-                            genesWithNoIdentifiedVariant.size()>1 ? "s":"",
+                            genesWithNoIdentifiedVariant.size() > 1 ? "s" : "",
                             String.join("; ", genesWithNoIdentifiedVariant));
                     result.appendToExplanation(expl);
                 } else {
-                    // finally, if there is not at least one pathogenic-bin variant, we skip the candidate
-                    // unless the user opts to keep genes without candidate variants
-                    //continue;
+                    return Optional.empty(); // do not keep this result since there was no pathogenic variant.
                 }
+            } else {
+                // if we get here, then foundPredictedPathogenicVariant is true.
+                Gene2Genotype g2g = this.genotypeMap.get(geneId);
+                double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
+                String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
+                result.appendToExplanation(exp);
             }
         } else {
             // should never get here but if we do output an error message to the log
             // i.e., the above code should always assign a genotype LR score
             logger.error("Could not calculate genotype LR for "+disease.getName() +
                     " with associated genes " + String.join("; ",genesWithNoIdentifiedVariant));
-            // some error occured, we will skip this one (should never happen)
+            // some error occurred, we will skip this one (should never happen)
             return Optional.empty();
         }
 
-        Gene2Genotype g2g = this.genotypeMap.get(geneId);
-        double observedWeightedPathogenicVariantCount = 0.0;
-        if (g2g != null) {
-            observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
-        }
-        String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
-        result.appendToExplanation(exp);
+
         return Optional.of(result);
     }
 
@@ -302,7 +299,7 @@ public class CaseEvaluator {
     }
 
 
-    /** This method evaluates the likilihood ratio for each disease in
+    /** This method evaluates the likelihood ratio for each disease in
      * {@link #diseaseMap}. After this, it sorts the results (the best hit is then at index 0, etc).
      */
     public HpoCase evaluate()  {

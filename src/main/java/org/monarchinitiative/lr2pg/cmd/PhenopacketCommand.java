@@ -136,10 +136,8 @@ public class PhenopacketCommand extends PrioritizeCommand {
                 HpoCase hcase = evaluator.evaluate();
 
 
-                TranscriptDatabase tdatabase = factory.transcriptdb();
-                if (tdatabase!=null) {
-                    String tdb = transcriptDb;
-                    this.metadata.put("transcriptDatabase", tdb);
+                if (! factory.transcriptdb().equals("n/a")) {
+                    this.metadata.put("transcriptDatabase", factory.transcriptdb());
                 }
                 int n_genes_with_var=factory.getGene2GenotypeMap().size();
                 this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
