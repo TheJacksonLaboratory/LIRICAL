@@ -72,18 +72,21 @@ public class GenotypeLikelihoodRatio {
      */
     Double evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
         double observedWeightedPathogenicVariantCount=0;
+        // special case 1: No variant found in this gene
         if (g2g.equals(Gene2Genotype.NO_IDENTIFIED_VARIANT)) {
             double d = getLRifNoVariantAtAllWasIdentified(inheritancemodes);
             return d;
+        }
+        // special case 2: Clinvar-pathogenic variant(2) found in this gene.
+        if (g2g.hasPathogenicClinvarVar()) {
+            return Math.pow(1000d, g2g.pathogenicClinVarCount());
         }
         observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
         if (observedWeightedPathogenicVariantCount<EPSILON) {
             // essentially sam as no identified variant, this should happen rarely if ever.
             return getLRifNoVariantAtAllWasIdentified(inheritancemodes);
         }
-        if (g2g.hasPathogenicClinvarVar()) {
-            return Math.pow(1000d, g2g.pathogenicClinVarCount());
-        }
+
 
         if (! g2g.hasPredictedPathogenicVar()) {
             return getLRifNoVariantAtAllWasIdentified(inheritancemodes);
