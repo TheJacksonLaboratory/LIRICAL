@@ -184,7 +184,31 @@ public class CaseEvaluator {
     }
 
 
-    private Optional<TestResult> evaluateDisease(TermId diseaseId) {
+    /**
+     * This method calculates the likelihood ratio based only on phenotype. It is inteded to be used
+     * for analyses where we do not have an exome or genome.
+     * @param diseaseId The disease being tested
+     * @return The corresponding TestResult.
+     */
+    private Optional<TestResult> evaluateDiseasePhenotypeOnly(TermId diseaseId) {
+        HpoDisease disease = this.diseaseMap.get(diseaseId);
+        double pretest = pretestProbabilityMap.get(diseaseId);
+        List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
+        List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
+        TestResult result= new TestResult(observedLR, excludedLR, disease, pretest);
+        return Optional.of(result);
+    }
+
+    /**
+     * This method is used to calculate the likelihood ratio based on both phenotype and genotype
+     * It should be used for analyses where we have an exome or genome. This method is used if
+     * the user has indicated that they want to see all differential diagnoses, including those
+     * that do not have a known disease gene and those where no pathogenic variant was found
+     * in the exome/genome VCF file.
+     * @param diseaseId The disease being tested
+     * @return The corresponding TestResult.
+     */
+    private Optional<TestResult> evaluateDiseaseKeepingAllCandidates(TermId diseaseId) {
         HpoDisease disease = this.diseaseMap.get(diseaseId);
         double pretest = pretestProbabilityMap.get(diseaseId);
         List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
@@ -193,16 +217,8 @@ public class CaseEvaluator {
         Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
         if ( associatedGenes.isEmpty()) {
             // this is a disease with no known disease gene
-            if (keepIfNoCandidateVariant) {
-                // if keepIfNoCandidateVariant is true then the user wants to
-                // keep differentials with no associated gene
-                // we create the TestResult based solely on the Phenotype data.
-                result = new TestResult(observedLR, excludedLR, disease, pretest);
-                return Optional.of(result);
-            } else {
-                // we skip this differential because there is no associated gene
-                return Optional.empty();
-            }
+            result = new TestResult(observedLR, excludedLR, disease, pretest);
+            return Optional.of(result);
         }
         // If we get here, then the disease is associated with one or multiple genes
         // The disease may also be associated with multiple modes of inheritance (this happens rarely)
@@ -242,14 +258,11 @@ public class CaseEvaluator {
         if (genotypeLR != null) {
             result = new TestResult(observedLR, excludedLR,disease, genotypeLR, geneId, pretest);
             if (!foundPredictedPathogenicVariant) {
-                if (keepIfNoCandidateVariant) {
                     String expl = String.format("No variants found in disease-associated gene%s: %s",
                             genesWithNoIdentifiedVariant.size() > 1 ? "s" : "",
                             String.join("; ", genesWithNoIdentifiedVariant));
                     result.appendToExplanation(expl);
-                } else {
-                    return Optional.empty(); // do not keep this result since there was no pathogenic variant.
-                }
+
             } else {
                 // if we get here, then foundPredictedPathogenicVariant is true.
                 Gene2Genotype g2g = this.genotypeMap.get(geneId);
@@ -258,22 +271,94 @@ public class CaseEvaluator {
                 result.appendToExplanation(exp);
             }
         } else {
-            // should never get here but if we do output an error message to the log
+            // should never get here if the algorithm works correctly (and we seem not to),
             // i.e., the above code should always assign a genotype LR score
+            // We need to have this here to keep the compiler happy, and if there is an error, log it.
             logger.error("Could not calculate genotype LR for "+disease.getName() +
                     " with associated genes " + String.join("; ",genesWithNoIdentifiedVariant));
             // some error occurred, we will skip this one (should never happen)
             return Optional.empty();
         }
-
-
         return Optional.of(result);
     }
 
-
-
-
-
+    /**
+     * Calculate the likelihood ratio for diseaseId. If there is no predicted pathogenic variant in the exome/genome file,
+     * then we will return Optional.empty(), which will cause this diseases to be skipped in the differential diagnosis.
+     * @param diseaseId
+     * @return A TestResult for diseaseId, or Optional.empty() if no pathogenic variant was found in the associated gene(s).
+     */
+    private Optional<TestResult> evaluateDisease(TermId diseaseId) {
+        HpoDisease disease = this.diseaseMap.get(diseaseId);
+        double pretest = pretestProbabilityMap.get(diseaseId);
+        List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
+        List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
+        TestResult result;
+        Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
+        if (associatedGenes.isEmpty()) {
+            // this is a disease with no known disease gene
+            if (keepIfNoCandidateVariant) {
+                // if keepIfNoCandidateVariant is true then the user wants to
+                // keep differentials with no associated gene
+                // we create the TestResult based solely on the Phenotype data.
+                result = new TestResult(observedLR, excludedLR, disease, pretest);
+                return Optional.of(result);
+            } else {
+                // we skip this differential because there is no associated gene
+                return Optional.empty();
+            }
+        }
+        // If we get here, then the disease is associated with one or multiple genes
+        // The disease may also be associated with multiple modes of inheritance (this happens rarely)
+        List<TermId> inheritancemodes = disease.getModesOfInheritance();
+        List<String> genesWithNoIdentifiedVariant = new ArrayList<>(); // we keep track of this for the HTML output
+        boolean foundPredictedPathogenicVariant = false;
+        Double genotypeLR = null;
+        TermId geneId = null;
+        if (associatedGenes.size() > 0) {
+            for (TermId entrezGeneId : associatedGenes) {
+                // if there is no Gene2Genotype object in the map, then no variant in the gene was found in the VCF
+                Gene2Genotype g2g = this.genotypeMap.getOrDefault(entrezGeneId, Gene2Genotype.NO_IDENTIFIED_VARIANT);
+                // Set foundPredictedVariant to true if we found a variant in this gene and it was either a
+                // known ClinVar-pathogenic variant or we predicted it to be pathogenic.
+                if (! g2g.equals(Gene2Genotype.NO_IDENTIFIED_VARIANT) &&
+                     (g2g.hasPathogenicClinvarVar() || g2g.hasPredictedPathogenicVar())) {
+                        foundPredictedPathogenicVariant = true;
+                }
+                double score = this.genotypeLrEvalutator.evaluateGenotype(g2g,
+                        inheritancemodes,
+                        entrezGeneId);
+                if (genotypeLR == null) { // this is the first iteration
+                    genotypeLR = score;
+                    geneId = entrezGeneId;
+                } else if (genotypeLR < score) { // if the new genotype LR is better, replace!
+                    genotypeLR = score;
+                    geneId = entrezGeneId;
+                }
+            }
+        } else {
+            // skip this disease since we did not find and disease associated variants.
+            return Optional.empty();
+        }
+        // when we get here, we have checked for variants in all genes associated with the disease.
+        // genotypeLR has the most pathogenic genotype score for all associated genes, or is null if
+        // no variants in any associated gene were found.
+        if (genotypeLR == null) {
+            // no variants found, skip this disease
+            return Optional.empty();
+        }
+        if (!foundPredictedPathogenicVariant) {
+            return Optional.empty(); // Skip this disease since there was no pathogenic variant.
+        } else {
+            // if we get here, then foundPredictedPathogenicVariant is true.
+            result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
+            Gene2Genotype g2g = this.genotypeMap.get(geneId);
+            double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
+            String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
+            result.appendToExplanation(exp);
+            return Optional.of(result);
+        }
+    }
 
 
     /**
@@ -287,7 +372,16 @@ public class CaseEvaluator {
     private Map<TermId,TestResult> phenoGenoEvaluation() {
         ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder<>();
         for (TermId diseaseId : diseaseMap.keySet()) {
-            Optional<TestResult> optionalTestResult = evaluateDisease (diseaseId);
+            Optional<TestResult> optionalTestResult;
+            if (useGenotypeAnalysis) {
+                if (keepIfNoCandidateVariant) {
+                    optionalTestResult = evaluateDiseaseKeepingAllCandidates(diseaseId);
+                } else {
+                    optionalTestResult = evaluateDisease(diseaseId);
+                }
+            } else {
+                optionalTestResult=evaluateDiseasePhenotypeOnly(diseaseId);
+            }
             if (optionalTestResult.isPresent()) {
                 // some differentials will be completely skipped depending on user settings
                 // for instance, we might skip differentials if there is no associated gene

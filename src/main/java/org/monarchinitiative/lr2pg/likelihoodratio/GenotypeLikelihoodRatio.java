@@ -70,7 +70,7 @@ public class GenotypeLikelihoodRatio {
      * @param geneId EntrezGene id of the gene we are investigating.
      * @return likelihood ratio of the genotype given the disease/geniId combination
      */
-    Double evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
+    double evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
         double observedWeightedPathogenicVariantCount=0;
         // special case 1: No variant found in this gene
         if (g2g.equals(Gene2Genotype.NO_IDENTIFIED_VARIANT)) {
@@ -104,7 +104,7 @@ public class GenotypeLikelihoodRatio {
             // Add a default dominant mode to avoid not ranking this gene at all
             inheritancemodes = ImmutableList.of(AUTOSOMAL_DOMINANT);
         }
-        Optional<Double> max = null;
+        Optional<Double> max = Optional.empty();
         for (TermId inheritanceId : inheritancemodes) {
             double lambda_disease=1.0;
             PoissonDistribution pdDisease;
@@ -135,6 +135,8 @@ public class GenotypeLikelihoodRatio {
                 }
             }
         }
+        // We should always have some value for max once we get here but
+        // there is a default value of 0.05^2 to avoid null errors just in case
        return max.orElse(0.05*0.05);
     }
 
