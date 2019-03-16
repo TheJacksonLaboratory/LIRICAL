@@ -74,8 +74,7 @@ public class GenotypeLikelihoodRatio {
         double observedWeightedPathogenicVariantCount=0;
         // special case 1: No variant found in this gene
         if (g2g.equals(Gene2Genotype.NO_IDENTIFIED_VARIANT)) {
-            double d = getLRifNoVariantAtAllWasIdentified(inheritancemodes);
-            return d;
+            return getLRifNoVariantAtAllWasIdentified(inheritancemodes);
         }
         // special case 2: Clinvar-pathogenic variant(2) found in this gene.
         if (g2g.hasPathogenicClinvarVar()) {

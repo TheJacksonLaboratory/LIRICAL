@@ -6,11 +6,13 @@ import freemarker.template.Version;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
+import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,8 +65,12 @@ public abstract class Lr2pgTemplate {
         initTemplateData(hcase,ontology,metadat);
     }
 
-
-    abstract public void outputFile(String prefix);
+    /**
+     * output a file (HTML or TSV)
+     * @param prefix -- prefix for the file, (e.g., sample would become sample.html or sample.tsv)
+     * @param directory -- directory to which to write the output file. Created automatically if it does not exist
+     */
+    abstract public void outputFile(String prefix, String directory);
 
     private void initTemplateData(HpoCase hcase, Ontology ontology, Map<String,String> metadat) {
         for(Map.Entry<String,String> entry : metadat.entrySet()) {
@@ -104,5 +110,23 @@ public abstract class Lr2pgTemplate {
             return name;
     }
 
+
+    protected File mkdirIfNotExist(String dir) {
+        File f = new File(dir);
+        if (f.exists()) {
+            if (f.isDirectory()) {
+                return f;
+            } else {
+                throw new Lr2PgRuntimeException("Cannot create directory since file of same name exists already: " + dir);
+            }
+        }
+        // if we get here, we need to make the directory
+        boolean success = f.mkdir();
+        if (!success) {
+            throw new Lr2PgRuntimeException("Unable to make directory: " + dir);
+        } else {
+            return f;
+        }
+    }
 
 }

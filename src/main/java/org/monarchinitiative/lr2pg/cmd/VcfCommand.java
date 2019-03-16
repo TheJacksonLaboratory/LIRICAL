@@ -101,7 +101,6 @@ public class VcfCommand extends PrioritizeCommand {
         Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().
                 yaml(yparser).
                 filter(filterOnFILTER);
-        Lr2PgFactory  factory = builder.buildForGenomicDiagnostics();
-        return factory;
+        return builder.buildForGenomicDiagnostics();
     }
 }

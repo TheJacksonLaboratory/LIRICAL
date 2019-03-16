@@ -116,7 +116,6 @@ public class PhenotypeLikelihoodRatio {
      * @param ontology Reference to the HPO ontology
      * @return frequency of the term in the disease (including annotation propagation)
      */
-    @Deprecated
     private double getFrequencyOfTermInDiseaseWithAnnotationPropagation(TermId tid, HpoDisease disease, Ontology ontology) {
         double freq=0.0;
         for (TermId diseaseTermId :  disease.getPhenotypicAbnormalityTermIdList() ) {

@@ -11,8 +11,10 @@ import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -92,12 +94,13 @@ public class TsvTemplate extends Lr2pgTemplate {
     }
 
 
-
-
-
     @Override
-    public void outputFile(String prefix){
-        String outname=String.format("%s.tsv",prefix );
+    public void outputFile(String prefix, String outdir){
+        String outname=String.format("%s.html",prefix );
+        if (outdir != null) {
+            File dir = mkdirIfNotExist(outdir);
+            outname = Paths.get(dir.getAbsolutePath(),outname).toString();
+        }
         logger.trace("Writing TSV file to {}",outname);
         try (BufferedWriter out = new BufferedWriter(new FileWriter(outname))) {
             Template template = cfg.getTemplate("lr2pgTSV.ftl");

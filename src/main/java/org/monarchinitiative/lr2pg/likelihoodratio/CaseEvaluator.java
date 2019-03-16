@@ -227,57 +227,47 @@ public class CaseEvaluator {
         boolean foundPredictedPathogenicVariant=false;
         Double genotypeLR=null;
         TermId geneId = null;
-        if (associatedGenes.size() > 0) {
-            for (TermId entrezGeneId : associatedGenes) {
-                // if there is no Gene2Genotype object in the map, then no variant in the gene was found in the VCF
-                Gene2Genotype g2g = this.genotypeMap.getOrDefault(entrezGeneId,Gene2Genotype.NO_IDENTIFIED_VARIANT);
-                // The following two special cases are if no variant was found or if a ClinVar-pathogenic variant was found.
-                if (g2g.equals(Gene2Genotype.NO_IDENTIFIED_VARIANT)) {
-                    String symbol = this.geneId2symbol.get(entrezGeneId);
-                    genesWithNoIdentifiedVariant.add(symbol);
-                } else {
-                    if (g2g.hasPathogenicClinvarVar() || g2g.hasPredictedPathogenicVar()) {
-                        foundPredictedPathogenicVariant = true;
-                    }
+        // if we get here, then associatedGenes is not empty
+        for (TermId entrezGeneId : associatedGenes) {
+            // if there is no Gene2Genotype object in the map, then no variant in the gene was found in the VCF
+            Gene2Genotype g2g = this.genotypeMap.getOrDefault(entrezGeneId, Gene2Genotype.NO_IDENTIFIED_VARIANT);
+            // The following two special cases are if no variant was found or if a ClinVar-pathogenic variant was found.
+            if (g2g.equals(Gene2Genotype.NO_IDENTIFIED_VARIANT)) {
+                String symbol = this.geneId2symbol.get(entrezGeneId);
+                genesWithNoIdentifiedVariant.add(symbol);
+            } else {
+                if (g2g.hasPathogenicClinvarVar() || g2g.hasPredictedPathogenicVar()) {
+                    foundPredictedPathogenicVariant = true;
                 }
-                Double score = this.genotypeLrEvalutator.evaluateGenotype(g2g,
-                        inheritancemodes,
-                        entrezGeneId);
-                if (genotypeLR == null) { // this is the first iteration
-                    genotypeLR = score;
-                    geneId = entrezGeneId;
-                } else if (genotypeLR < score) { // if the new genotype LR is better, replace!
-                    genotypeLR = score;
-                    geneId = entrezGeneId;
-                }
+            }
+            Double score = this.genotypeLrEvalutator.evaluateGenotype(g2g,
+                    inheritancemodes,
+                    entrezGeneId);
+            if (genotypeLR == null) { // this is the first iteration
+                genotypeLR = score;
+                geneId = entrezGeneId;
+            } else if (genotypeLR < score) { // if the new genotype LR is better, replace!
+                genotypeLR = score;
+                geneId = entrezGeneId;
             }
         }
         // when we get here, we have checked for variants in all genes associated with the disease.
         // genotypeLR has the most pathogenic genotype score for all associated genes, or is null if
         // no variants in any associated gene were found.
-        if (genotypeLR != null) {
-            result = new TestResult(observedLR, excludedLR,disease, genotypeLR, geneId, pretest);
-            if (!foundPredictedPathogenicVariant) {
-                    String expl = String.format("No variants found in disease-associated gene%s: %s",
-                            genesWithNoIdentifiedVariant.size() > 1 ? "s" : "",
-                            String.join("; ", genesWithNoIdentifiedVariant));
-                    result.appendToExplanation(expl);
+        //when we get here, genotypeLR is not null
+        result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
+        if (!foundPredictedPathogenicVariant) {
+            String expl = String.format("No variants found in disease-associated gene%s: %s",
+                    genesWithNoIdentifiedVariant.size() > 1 ? "s" : "",
+                    String.join("; ", genesWithNoIdentifiedVariant));
+            result.appendToExplanation(expl);
 
-            } else {
-                // if we get here, then foundPredictedPathogenicVariant is true.
-                Gene2Genotype g2g = this.genotypeMap.get(geneId);
-                double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
-                String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
-                result.appendToExplanation(exp);
-            }
         } else {
-            // should never get here if the algorithm works correctly (and we seem not to),
-            // i.e., the above code should always assign a genotype LR score
-            // We need to have this here to keep the compiler happy, and if there is an error, log it.
-            logger.error("Could not calculate genotype LR for "+disease.getName() +
-                    " with associated genes " + String.join("; ",genesWithNoIdentifiedVariant));
-            // some error occurred, we will skip this one (should never happen)
-            return Optional.empty();
+            // if we get here, then foundPredictedPathogenicVariant is true.
+            Gene2Genotype g2g = this.genotypeMap.get(geneId);
+            double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
+            String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
+            result.appendToExplanation(exp);
         }
         return Optional.of(result);
     }
@@ -285,7 +275,7 @@ public class CaseEvaluator {
     /**
      * Calculate the likelihood ratio for diseaseId. If there is no predicted pathogenic variant in the exome/genome file,
      * then we will return Optional.empty(), which will cause this diseases to be skipped in the differential diagnosis.
-     * @param diseaseId
+     * @param diseaseId an Id for a disease entry, e.g., OMIM:157000.
      * @return A TestResult for diseaseId, or Optional.empty() if no pathogenic variant was found in the associated gene(s).
      */
     private Optional<TestResult> evaluateDisease(TermId diseaseId) {
@@ -382,12 +372,10 @@ public class CaseEvaluator {
             } else {
                 optionalTestResult=evaluateDiseasePhenotypeOnly(diseaseId);
             }
-            if (optionalTestResult.isPresent()) {
-                // some differentials will be completely skipped depending on user settings
-                // for instance, we might skip differentials if there is no associated gene
-                // in this case, evaluateDisease returns an empty Optional and we just skip it here.
-                mapbuilder.put(diseaseId, optionalTestResult.get());
-            }
+            // some differentials will be completely skipped depending on user settings
+            // for instance, we might skip differentials if there is no associated gene
+            // in this case, evaluateDisease returns an empty Optional and we just skip it here.
+            optionalTestResult.ifPresent(testResult -> mapbuilder.put(diseaseId, testResult));
         }
         return mapbuilder.build();
     }

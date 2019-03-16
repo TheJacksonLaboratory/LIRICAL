@@ -18,7 +18,7 @@ public class DownloadCommand extends Lr2PgCommand {
 
     @Parameter(names={"-d","--data"}, description ="directory to download data (default: data)" )
     private String datadir="data";
-    @Parameter(names={"-o","--overwrite"}, description = "overwrite prevously downloaded files, if any")
+    @Parameter(names={"-w","--overwrite"}, description = "overwrite prevously downloaded files, if any")
     private boolean overwrite;
 
     public DownloadCommand() {

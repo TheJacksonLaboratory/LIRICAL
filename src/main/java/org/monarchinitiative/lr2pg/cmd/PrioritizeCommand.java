@@ -33,6 +33,8 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
      * can be turned off by entering {@code -q false} or {@code --quality} false. */
     @Parameter(names={"-f","--filter"},description = "filter on VCF FILTER quality",arity = 1)
     protected boolean filterOnFILTER=true;
+    @Parameter(names={"-o","--output-directory"}, description = "directory into which to write output file(s).")
+    private String outdir=null;
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
     @Parameter(names= {"-t","--threshold"}, description = "minimum post-test prob. to show diagnosis in HTML output")
     protected double LR_THRESHOLD=0.01;
@@ -68,7 +70,7 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
                 this.metadata,
                 this.LR_THRESHOLD,
                 minDifferentialsToShow);
-        caseoutput.outputFile(this.outfilePrefix);
+        caseoutput.outputFile(this.outfilePrefix,this.outdir);
     }
 
     /**
@@ -82,7 +84,7 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
                 this.metadata,
                 this.LR_THRESHOLD,
                 this.minDifferentialsToShow);
-        caseoutput.outputFile(this.outfilePrefix);
+        caseoutput.outputFile(this.outfilePrefix, this.outdir);
     }
 
 
@@ -95,7 +97,7 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
      */
     protected void outputTSV(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
         Lr2pgTemplate template = new TsvTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata);
-        template.outputFile(this.outfilePrefix);
+        template.outputFile(this.outfilePrefix,this.outdir);
     }
 
     /**
@@ -107,7 +109,7 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
      */
     protected void outputTSV(HpoCase hcase,Ontology ontology) {
         Lr2pgTemplate template = new TsvTemplate(hcase, ontology, this.metadata);
-        template.outputFile(this.outfilePrefix);
+        template.outputFile(this.outfilePrefix,this.outdir);
     }
 
 

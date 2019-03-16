@@ -173,6 +173,15 @@
             <version>3.7.0</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.tukaani/xz
+          XZ data compression in pure Java. We just use this (indirectly) in some test cases.
+         -->
+        <dependency>
+            <groupId>org.tukaani</groupId>
+            <artifactId>xz</artifactId>
+            <version>1.8</version>
+        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/org.phenopackets/phenopacket-schema -->
         <dependency>
