@@ -107,7 +107,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
         return proportionAtRank1;
     }
 
-    public TermId getNextRandomDisease(Random r) {
+    private TermId getNextRandomDisease(Random r) {
         int i = r.nextInt(diseaseMap.size());
         TermId tid = termIndices[i];
         HpoDisease disease = diseaseMap.get(tid);
@@ -243,13 +243,20 @@ public class PhenotypeOnlyHpoCaseSimulator {
         ImmutableList.Builder<TermId> termIdBuilder = new ImmutableList.Builder<>();
         Collections.shuffle(abnormalities); // randomize order of phenotypes
         // take the first n_random terms of the randomized list
+        for (int i=0; i<n_terms; i++) {
+            HpoAnnotation annot = abnormalities.get(i);
+            if (addTermImprecision) {
+                termIdBuilder.add(getRandomParentTerm(annot.getTermId()));
+            } else {
+                termIdBuilder.add(annot.getTermId());
+            }
+
+        }
+
         abnormalities.stream().limit(n_terms).forEach(a-> termIdBuilder.add(a.getTermId()));
         // now add n_random "noise" terms to the list of abnormalities of our case.
         for(int i=0;i<n_noise_terms;i++){
             TermId t = getRandomPhenotypeTerm();
-            if (addTermImprecision) {
-                t = getRandomParentTerm(t);
-            }
             termIdBuilder.add(t);
         }
         return termIdBuilder.build();
