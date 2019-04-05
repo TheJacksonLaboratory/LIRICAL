@@ -181,7 +181,7 @@ public class HtmlTemplate extends Lr2pgTemplate {
             File dir = mkdirIfNotExist(outdir);
             outname = Paths.get(dir.getAbsolutePath(),outname).toString();
         }
-        logger.trace("Writing HTML file to {}",outname);
+        logger.info("Writing HTML file to {}",outname);
         try (BufferedWriter out = new BufferedWriter(new FileWriter(outname))) {
             Template template = cfg.getTemplate("lrhtml.ftl");
             template.process(templateData, out);

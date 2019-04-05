@@ -87,9 +87,12 @@ public class PhenopacketCommand extends PrioritizeCommand {
             this.genomeAssembly = importer.getGenomeAssembly();
             this.hpoIdList = importer.getHpoTerms();
             this.negatedHpoIdList = importer.getNegatedHpoTerms();
-            metadata.put("sample_name",importer.getSamplename());
-        } catch (ParseException | IOException e) {
-            logger.fatal("Could not read phenopacket");
+            metadata.put("sample_name", importer.getSamplename());
+        }   catch (ParseException pe) {
+            logger.fatal("Could not parse phenopacket: {}", pe.getMessage());
+            throw new Lr2PgRuntimeException("Could not parse Phenopacket at " + phenopacketPath +": "+pe.getMessage());
+        } catch (IOException e) {
+            logger.fatal("Could not read phenopacket: {}", e.getMessage());
             throw new Lr2PgRuntimeException("Could not find Phenopacket at " + phenopacketPath +": "+e.getMessage());
         }
 
@@ -100,20 +103,14 @@ public class PhenopacketCommand extends PrioritizeCommand {
                         .datadir(this.datadir)
                         .genomeAssembly(this.genomeAssembly)
                         .exomiser(this.exomiserDataDirectory)
+                        .vcf(this.vcfPath)
                         .backgroundFrequency(this.backgroundFrequencyFile)
                         .build();
                 factory.qcHumanPhenotypeOntologyFiles();
                 factory.qcExternalFilesInDataDir();
                 factory.qcExomiserFiles();
                 factory.qcGenomeBuild();
-
-                /*MVStore mvstore = factory.mvStore();
-                JannovarData jannovarData = factory.jannovarData();
-                GenomeAssembly assembly = factory.getAssembly();
-                SimpleVariant.setGenomeBuildForUrl(assembly);
-
-                Map<TermId, Gene2Genotype> genotypemap = getVcf2GenotypeMap(jannovarData, mvstore, assembly);
-                */
+                factory.qcVcfFile();
 
                 Map<TermId, Gene2Genotype> genotypemap = factory.getGene2GenotypeMap();
 

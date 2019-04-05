@@ -554,6 +554,16 @@ public class Lr2PgFactory {
         }
     }
 
+    public void qcVcfFile() {
+        if (this.vcfPath==null) {
+            throw new Lr2PgRuntimeException("VCF file was not initialzed");
+        }
+        if (! (new File(vcfPath)).exists()) {
+            throw new Lr2PgRuntimeException("We did not find a VCF file at \"" + vcfPath +"\"");
+        }
+        logger.trace("VCF File: {}",this.vcfPath);
+    }
+
 
     /**
      * A convenience Builder class for creating {@link Lr2PgFactory} objects
