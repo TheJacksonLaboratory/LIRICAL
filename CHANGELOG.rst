@@ -3,6 +3,13 @@ Changelog
 =========
 
 -------
+v0.9.14
+-------
+- update to phenopacket-schema version 0.4.0
+- update to Exomiser version 12.0.0
+- tweaking code for negative findings
+
+-------
 v0.9.13
 -------
 - Streamlining some of the likelihood ratio code without changing logic

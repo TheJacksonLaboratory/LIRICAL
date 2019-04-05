@@ -32,8 +32,16 @@ public class PhenotypeLikelihoodRatio {
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
 
     private final static TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
-
-    private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.000_005; // 1:20,000
+    /**
+     * This is the probability of a finding if it the disease is not annotated to it and there
+     * is no common ancestor except the root. There are many possible causes of findings called
+     * to be "false-positive". The annotations of the disease can be incomplete. A finding such
+     * as renal insufficiency can manifest with proteinuria etc, but the disease annotation might
+     * be renal insufficiency and the patient might just be reported to have proteinuria. Currently,
+     * our software is not smart enough to make possibile connections such as this. Finally, it
+     * may be truly false positive because there is a secondary etiology.
+     */
+    private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.01; // 1:100
 
 
     /**
@@ -98,9 +106,8 @@ public class PhenotypeLikelihoodRatio {
      * @param tid TermId of an HPO term
      * @param disease the disease being studied
      * @param ontology reference to HPO Ontology
-     * @return true if the disease has a direct (explicit) annotation to tid
+     * @return true if the disease has a direct (explicit) or indirect (implicit) annotation to tid
      */
-    @Deprecated
     private boolean isIndirectlyAnnotatedTo(TermId tid, HpoDisease disease, Ontology ontology) {
         List<TermId> direct = disease.getPhenotypicAbnormalityTermIdList();
         Set<TermId> ancs = ontology.getAllAncestorTermIds(direct,true);
@@ -184,7 +191,13 @@ public class PhenotypeLikelihoodRatio {
             }
         }
         // If we get here, then there is no common ancestor between the query and any of the disease phenotype annotations.
-       return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+
+        // We model this as a default probability of 1 to 100 of a "false-positive finding"
+        //
+
+
+
+        return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
     }
 
 

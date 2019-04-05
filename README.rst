@@ -1,17 +1,43 @@
-# LR2PG
+#####
+LR2PG
+#####
+
 Likelihood ratio analysis of phenotypes and genotypes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-## Likelihood Ratio Analysis of Phenotype/Genotype Data for Genomic Diagnostics
 
 Detailed documentation is available in the ``docs`` subdirectory and will be put onto the public read-the docs site
 as soon as we make this repository public. See below for how to make the read-the-docs locally.
 
 
-## Running LR2PG for the impatient
+Building LR2PG from source
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+LR2PG relies on some classes from the
+`Exomiser <https://monarch-exomiser-web-dev.monarchinitiative.org/exomiser/>`_.
+To build LR2PG, we need to install the Exomiser code base locally. To do so, we cone the code and install
+using the maven system. ::
 
-Please see the read-the-docs page for detailed instructions. For those who just can't wait, the following
-steps are sufficient to get LR2PG running on your system and to perform an initial analysis.
+    $ git clone https://github.com/exomiser/Exomiser.git
+    $ cd Exomiser
+    $ mvn install
+
+This will install the Exomiser into your local maven repository and make it available for the maven build of LR2PG.
+Following this step, we clone the LR2PG repository and build it with maven. ::
+
+    $ git clone https://github.com/TheJacksonLaboratory/LR2PG.git
+    $ cd LR2PG
+    $ mvn package
+
+This will create an executable jar file in the ``target`` subdirectory. In the following, we move this file to the
+current working directory and check the build.
+
+Obtaining Exomiser data files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LR2PG makes use of the Exomiser database. We need to download the relevant files and tell LR2PG where to find them.
+LR2PG currently uses version 12.0.0 of Exomiser. You will need to clone this version to build LR2PG. If necessary,
+adjust the version number with the pull down menu of the Exomiser GitHub page.
+
+The Exomiser data files are only required for VCF analysis.
 
 1. Download the Exomiser database from https://monarch-exomiser-web-dev.monarchinitiative.org/exomiser/download.
 Make sure to go to the subdirectory called 'latest' (you may need to scroll the bar on the right to find this
@@ -19,31 +45,31 @@ directory). Download either 1811_hg19.zip (for the hg19, i.e., GRC_37 human geno
 hg38, and unzip the file. You do not need the 1811_phenotype.zip file for LR2PG. The ``README.md`` file in the Exomiser
 download directory has some additional information.
 
-2. Build the LR2PG app from source
+Java version
+~~~~~~~~~~~~
+LR2PG currently is built and runs with Java 8. We have been able to build and run the code under Java 11,
+but do not currently provide a build file for this.
 
-```
-# clone the source code
-$ git clone https://github.com/TheJacksonLaboratory/LR2PG.git
-$ mvn clean package
-```
-This will create an executable jar file in the ``target`` subdirectory. In the following, we move this file to the
-current working directory and check the build.
 
-Note that we are in the process of updating the LR2PG code to Java 11.
 This is a useful website for Ubuntu users: http://ubuntuhandbook.org/index.php/2018/11/how-to-install-oracle-java-11-in-ubuntu-18-04-18-10/
 
 
-```
-$ mv target/Lr2pg.jar .
-$ java -jar Lr2pg.jar -h
-Usage: java -jar Lr2pg.jar [options] [command] [command options]
-  Options:
-    -h, --help
-      display this help message
-(...)
-```
+Running LR2PG
+~~~~~~~~~~~~~
+After build LR2PG as above, try the following commands to confirm that the build process worked. ::
 
-3. Download files with LR2PG
+
+    $ mv target/Lr2pg.jar .
+    $ java -jar Lr2pg.jar -h
+        Usage: java -jar Lr2pg.jar [options] [command] [command options]
+        Options:
+            -h, --help
+        display this help message
+    (...)
+
+
+Download files with LR2PG
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 LR2PG needs to download files from the HPO database and other sources. It does so automatically if your computer is connected to the internet.
 

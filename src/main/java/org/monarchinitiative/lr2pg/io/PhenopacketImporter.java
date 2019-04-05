@@ -1,18 +1,19 @@
 package org.monarchinitiative.lr2pg.io;
 
 import com.google.common.collect.ImmutableList;
+import com.google.protobuf.util.JsonFormat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.phenopackets.schema.v1.PhenoPacket;
+
+import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.HtsFile;
-import org.phenopackets.schema.v1.core.Individual;
 import org.phenopackets.schema.v1.core.OntologyClass;
 import org.phenopackets.schema.v1.core.Phenotype;
-import org.phenopackets.schema.v1.io.PhenoPacketFormat;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -27,7 +28,7 @@ import java.util.function.Predicate;
 public class PhenopacketImporter {
     private static final Logger logger = LogManager.getLogger();
     /** The Phenopacket that represents the individual being sequenced in the current run. */
-    private final PhenoPacket phenoPacket;
+    private final Phenopacket phenoPacket;
     /** A list of non-negated HPO terms observed in the subject of this Phenopacket. */
     private ImmutableList<TermId> hpoTerms;
     /** A list of negated HPO terms observed in the subject of this Phenopacket. */
@@ -53,11 +54,19 @@ public class PhenopacketImporter {
         Object obj = parser.parse(new FileReader(pathToJsonPhenopacketFile));
         JSONObject jsonObject = (JSONObject) obj;
         String phenopacketJsonString = jsonObject.toJSONString();
-        PhenoPacket ppack = PhenoPacketFormat.fromJson(phenopacketJsonString);
-        return new PhenopacketImporter(ppack);
+        Phenopacket phenopacket;
+        try {
+            Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
+            JsonFormat.parser().merge(phenopacketJsonString, phenoPacketBuilder);
+            phenopacket = phenoPacketBuilder.build();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            throw new Lr2PgRuntimeException("Could not load phenopacket at " + pathToJsonPhenopacketFile);
+        }
+        return new PhenopacketImporter(phenopacket);
     }
 
-    public PhenopacketImporter(PhenoPacket ppack){
+    public PhenopacketImporter(Phenopacket ppack){
         this.phenoPacket=ppack;
         this.samplename = this.phenoPacket.getSubject().getId();
         extractProbandHpoTerms();
@@ -96,8 +105,7 @@ public class PhenopacketImporter {
      * even though a valid phenopacket should not have duplicates.
      */
     private void extractProbandHpoTerms() {
-        Individual subject =phenoPacket.getSubject();
-        this.hpoTerms= subject
+        this.hpoTerms= phenoPacket
                 .getPhenotypesList()
                 .stream()
                 .distinct()
@@ -112,8 +120,7 @@ public class PhenopacketImporter {
      * This function gets a list of all negated HPO terms associated with the proband.
      */
     private void extractNegatedProbandHpoTerms() {
-        Individual subject =phenoPacket.getSubject();
-        this.negatedHpoTerms = subject
+        this.negatedHpoTerms = phenoPacket
                 .getPhenotypesList()
                 .stream()
                 .filter(Phenotype::getNegated) // i.e., just take negated phenotypes
@@ -136,7 +143,7 @@ public class PhenopacketImporter {
         for (HtsFile htsFile : htsFileList) {
             if (htsFile.getHtsFormat().equals(HtsFile.HtsFormat.VCF)) {
                 this.vcfPath=htsFile.getFile().getPath();
-                this.genomeAssembly=htsFile.getGenomeAssembly().name();
+                this.genomeAssembly=htsFile.getGenomeAssembly();
             }
         }
     }
