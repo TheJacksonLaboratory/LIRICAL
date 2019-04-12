@@ -2,8 +2,6 @@ package org.monarchinitiative.lr2pg.hpo;
 
 
 import com.google.common.collect.ImmutableList;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
@@ -11,6 +9,8 @@ import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.util.*;
@@ -24,7 +24,7 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getPa
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class PhenotypeOnlyHpoCaseSimulator {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(PhenotypeOnlyHpoCaseSimulator.class);
     /** An object representing the Human Phenotype Ontology */
     private Ontology ontology;
     /** An object that calculates the foreground frequency of an HPO term in a disease as well as the background frequency */

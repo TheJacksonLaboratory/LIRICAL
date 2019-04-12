@@ -5,10 +5,10 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.google.common.collect.ImmutableSet;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.monarchinitiative.lr2pg.cmd.*;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -19,7 +19,7 @@ import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 
 
 public class LR2PG  {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(LR2PG.class);
 
 
     @Parameter(names = {"-h", "--help"}, help = true, arity = 0,description = "display this help message")

@@ -5,7 +5,6 @@ import com.beust.jcommander.Parameters;
 import com.google.common.collect.Multimap;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
-import org.monarchinitiative.lr2pg.configuration.TranscriptDatabase;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.lr2pg.io.YamlParser;

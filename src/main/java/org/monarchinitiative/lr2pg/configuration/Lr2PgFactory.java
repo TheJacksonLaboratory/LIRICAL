@@ -6,8 +6,6 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.jannovar.InvalidFileFormatException;
@@ -27,6 +25,8 @@ import org.monarchinitiative.phenol.io.assoc.HpoAssociationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URL;
@@ -42,7 +42,7 @@ import java.util.*;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class Lr2PgFactory {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(Lr2PgFactory.class);
     /** Path to the {@code hp.obo} file. */
     private final String hpoOboFilePath;
     /** Path to the {@code phenotype.hpoa} file. */
@@ -120,11 +120,11 @@ public class Lr2PgFactory {
             } else if (assembly.equals(GenomeAssembly.HG38)) {
                 resource = classLoader.getResource("background/background-hg38.txt");
             } else {
-                logger.fatal("Did not recognize genome assembly: {}",assembly);
+                logger.error("Did not recognize genome assembly: {}",assembly);
                 throw new Lr2PgRuntimeException("Did not recognize genome assembly: "+assembly);
             }
             if (resource==null) {
-                logger.fatal("Could not find resource for background file");
+                logger.error("Could not find resource for background file");
                 throw new Lr2PgRuntimeException("Could not find resource for background file");
             }
             this.backgroundFrequencyPath=resource.getFile();
@@ -453,25 +453,25 @@ public class Lr2PgFactory {
     public void qcHumanPhenotypeOntologyFiles() {
         File datadirfile = new File(datadir);
         if (!datadirfile.exists()) {
-            logger.fatal("Could not find LR2PG data directory at {}",datadir);
-            logger.fatal("Consider running download command.");
+            logger.error("Could not find LR2PG data directory at {}",datadir);
+            logger.error("Consider running download command.");
             throw new Lr2PgRuntimeException(String.format("Could not find LR2PG data directory at %s",datadir));
         } else if (!datadirfile.isDirectory()) {
-            logger.fatal("LR2PG datadir path ({}) is not a directory.",datadir);
+            logger.error("LR2PG datadir path ({}) is not a directory.",datadir);
             throw new Lr2PgRuntimeException(String.format("LR2PG datadir path (%s) is not a directory.",datadir));
         } else {
             logger.trace("LR2PG datadirectory: {}", datadir);
         }
         File f1 = new File(this.hpoOboFilePath);
         if (!f1.exists() && f1.isFile()) {
-            logger.fatal("Could not find valid hp.obo file at {}",hpoOboFilePath);
+            logger.error("Could not find valid hp.obo file at {}",hpoOboFilePath);
             throw new Lr2PgRuntimeException(String.format("Could not find valid hp.obo file at %s",hpoOboFilePath));
         } else {
             logger.trace("hp.obo: {}",hpoOboFilePath);
         }
         File f2 = new File(this.phenotypeAnnotationPath);
         if (!f2.exists() && f2.isFile()) {
-            logger.fatal("Could not find valid phenotype.hpoa file at {}",phenotypeAnnotationPath);
+            logger.error("Could not find valid phenotype.hpoa file at {}",phenotypeAnnotationPath);
             throw new Lr2PgRuntimeException(String.format("Could not find valid phenotype.hpoa file at %s",phenotypeAnnotationPath));
         } else {
             logger.trace("phenotype.hpoa: {}",phenotypeAnnotationPath);
@@ -483,14 +483,14 @@ public class Lr2PgFactory {
     public void qcExternalFilesInDataDir() {
         File f1 = new File(this.mim2genemedgenPath);
         if (!f1.exists() && f1.isFile()) {
-            logger.fatal("Could not find valid mim2gene_medgen file at {}",mim2genemedgenPath);
+            logger.error("Could not find valid mim2gene_medgen file at {}",mim2genemedgenPath);
             throw new Lr2PgRuntimeException(String.format("Could not find valid mim2gene_medgen file at %s",mim2genemedgenPath));
         } else {
             logger.trace("mim2gene_medgen: {}",mim2genemedgenPath);
         }
         File f2 = new File(this.geneInfoPath);
         if (!f2.exists() && f2.isFile()) {
-            logger.fatal("Could not find valid Homo_sapiens_gene_info.gz file at {}",geneInfoPath);
+            logger.error("Could not find valid Homo_sapiens_gene_info.gz file at {}",geneInfoPath);
             throw new Lr2PgRuntimeException(String.format("Could not find valid Homo_sapiens_gene_info.gz file at %s",geneInfoPath));
         } else {
             logger.trace("Homo_sapiens_gene_info.gz: {}",geneInfoPath);
@@ -500,17 +500,17 @@ public class Lr2PgFactory {
     public void qcExomiserFiles() {
         File exomiserDir = new File(exomiserPath);
         if (!exomiserDir.exists()) {
-            logger.fatal("Could not find Exomiser data directory at {}",exomiserPath);
+            logger.error("Could not find Exomiser data directory at {}",exomiserPath);
             throw new Lr2PgRuntimeException(String.format("Could not find Exomiser data directory at %s",exomiserPath));
         } else if (!exomiserDir.isDirectory()) {
-            logger.fatal("Exomiser data path ({}) is not a directory.",exomiserPath);
+            logger.error("Exomiser data path ({}) is not a directory.",exomiserPath);
             throw new Lr2PgRuntimeException(String.format("Exomiser data path (%s) is not a directory.",exomiserPath));
         } else {
             logger.trace("Exomiser data: {}", exomiserPath);
         }
         File mvStoreFile=new File(this.mvStorePath);
         if (!mvStoreFile.exists()) {
-            logger.fatal("Could not find Exomiser database file at {}",this.mvStorePath);
+            logger.error("Could not find Exomiser database file at {}",this.mvStorePath);
             throw new Lr2PgRuntimeException(String.format("Could not find Exomiser database file at %s",mvStorePath));
         }
     }
@@ -521,7 +521,7 @@ public class Lr2PgFactory {
     private void qcBackgroundFreqFile() {
         File bgf = new File(this.backgroundFrequencyPath);
         if (! bgf.exists()) {
-            logger.fatal("Could not find background frequency file at {}",this.backgroundFrequencyPath);
+            logger.error("Could not find background frequency file at {}",this.backgroundFrequencyPath);
             throw new Lr2PgRuntimeException(String.format("Could not find background frequency file at %s",this.backgroundFrequencyPath));
         } else {
             logger.trace("Background frequency file: {}", this.backgroundFrequencyPath);

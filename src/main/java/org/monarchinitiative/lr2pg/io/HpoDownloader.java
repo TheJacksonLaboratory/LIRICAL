@@ -1,9 +1,10 @@
 package org.monarchinitiative.lr2pg.io;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import org.monarchinitiative.lr2pg.io.FileDownloadException;
 import org.monarchinitiative.lr2pg.io.FileDownloader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -14,7 +15,7 @@ import java.net.URL;
  * we will need to run the LR2PG approach.
  */
 public class HpoDownloader {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(HpoDownloader.class);
     /** Directory to which we will download the files. */
     private final String downloadDirectory;
     /** If true, download new version whether or not the file is already present. */
@@ -79,10 +80,10 @@ public class HpoDownloader {
             downloader.copyURLToFile(url, new File(f.getAbsolutePath()));
         } catch (MalformedURLException e) {
             logger.error(String.format("Malformed URL for %s [%s]",filename, webAddress));
-            logger.error(e,e);
+            logger.error(e.getMessage());
         } catch (FileDownloadException e) {
             logger.error(String.format("Error downloading %s from %s" ,filename, webAddress));
-            logger.error(e,e);
+            logger.error(e.getMessage());
         }
     }
 

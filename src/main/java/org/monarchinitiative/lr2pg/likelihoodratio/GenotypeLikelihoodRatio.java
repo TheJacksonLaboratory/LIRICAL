@@ -1,11 +1,12 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.poisson.PoissonDistribution;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermI
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class GenotypeLikelihoodRatio {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(GenotypeLikelihoodRatio.class);
 
     private static final double DEFAULT_LAMBDA_BACKGROUND=0.1;
 
@@ -71,7 +72,6 @@ public class GenotypeLikelihoodRatio {
      * @return likelihood ratio of the genotype given the disease/geniId combination
      */
     double evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
-        double observedWeightedPathogenicVariantCount=0;
         // special case 1: No variant found in this gene
         if (g2g.equals(Gene2Genotype.NO_IDENTIFIED_VARIANT)) {
             return getLRifNoVariantAtAllWasIdentified(inheritancemodes);
@@ -80,7 +80,7 @@ public class GenotypeLikelihoodRatio {
         if (g2g.hasPathogenicClinvarVar()) {
             return Math.pow(1000d, g2g.pathogenicClinVarCount());
         }
-        observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
+        double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
         if (observedWeightedPathogenicVariantCount<EPSILON) {
             // essentially sam as no identified variant, this should happen rarely if ever.
             return getLRifNoVariantAtAllWasIdentified(inheritancemodes);

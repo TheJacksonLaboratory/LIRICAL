@@ -1,10 +1,11 @@
 package org.monarchinitiative.lr2pg.likelihoodratio;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
  * @version 0.4.5 (2019-10-28)
  */
 public class TestResult implements Comparable<TestResult> {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(TestResult.class);
     private static final String EMPTY_STRING="";
     /**A list of results for the tests performed on observed phenotypes for {@link #hpoDisease}.*/
     private final List<Double> results;

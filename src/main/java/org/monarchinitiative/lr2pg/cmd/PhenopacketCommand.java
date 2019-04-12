@@ -4,16 +4,10 @@ package org.monarchinitiative.lr2pg.cmd;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.collect.Multimap;
-import de.charite.compbio.jannovar.data.JannovarData;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.h2.mvstore.MVStore;
+
 import org.json.simple.parser.ParseException;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
-import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
-import org.monarchinitiative.lr2pg.configuration.TranscriptDatabase;
 import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
@@ -21,13 +15,11 @@ import org.monarchinitiative.lr2pg.io.PhenopacketImporter;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.lr2pg.output.HtmlTemplate;
-import org.monarchinitiative.lr2pg.output.Lr2pgTemplate;
-import org.monarchinitiative.lr2pg.output.TsvTemplate;
-import org.monarchinitiative.lr2pg.vcf.SimpleVariant;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -43,7 +35,7 @@ import java.util.Map;
  */
 @Parameters(commandDescription = "Run LR2PG from a Phenopacket")
 public class PhenopacketCommand extends PrioritizeCommand {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(PhenopacketCommand.class);
     @Parameter(names={"-b","--background"}, description = "path to non-default background frequency file")
     private String backgroundFrequencyFile;
     @Parameter(names = {"-p","--phenopacket"}, description = "path to phenopacket file", required = true)
@@ -89,10 +81,10 @@ public class PhenopacketCommand extends PrioritizeCommand {
             this.negatedHpoIdList = importer.getNegatedHpoTerms();
             metadata.put("sample_name", importer.getSamplename());
         }   catch (ParseException pe) {
-            logger.fatal("Could not parse phenopacket: {}", pe.getMessage());
+            logger.error("Could not parse phenopacket: {}", pe.getMessage());
             throw new Lr2PgRuntimeException("Could not parse Phenopacket at " + phenopacketPath +": "+pe.getMessage());
         } catch (IOException e) {
-            logger.fatal("Could not read phenopacket: {}", e.getMessage());
+            logger.error("Could not read phenopacket: {}", e.getMessage());
             throw new Lr2PgRuntimeException("Could not find Phenopacket at " + phenopacketPath +": "+e.getMessage());
         }
 

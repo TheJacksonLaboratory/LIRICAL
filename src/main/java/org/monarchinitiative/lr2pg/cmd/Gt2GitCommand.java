@@ -6,8 +6,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.data.JannovarData;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.JannovarVariantAnnotator;
@@ -16,6 +14,8 @@ import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.gt2git.GenicIntoleranceCalculator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ import java.util.List;
  */
 @Parameters(commandDescription = "Calculation of background variant frequency", hidden = true)
 public class Gt2GitCommand extends Lr2PgCommand {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(Gt2GitCommand.class);
 //    @Parameter(names={"-d","--data"}, description ="directory to download data (default: data)" )
 //    private String datadir="data";
     /** One of HG38 (default) or HG19. */

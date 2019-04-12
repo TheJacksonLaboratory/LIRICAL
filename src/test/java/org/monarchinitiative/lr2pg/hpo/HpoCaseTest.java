@@ -3,8 +3,7 @@ package org.monarchinitiative.lr2pg.hpo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 
 
 import org.junit.jupiter.api.BeforeAll;
@@ -32,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * Test whether we can successfully create HpoCaseOld objects.
  */
 class HpoCaseTest {
-    private static final Logger logger = LogManager.getLogger();
     /** Name of the disease we are simulating in this test, i.e., OMIM:108500. */
     private static String diseasename="108500";
     private static HpoCase hpocase;

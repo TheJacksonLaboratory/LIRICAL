@@ -2,12 +2,13 @@ package org.monarchinitiative.lr2pg.hpo;
 
 
 import com.google.common.collect.ImmutableList;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
 import org.monarchinitiative.lr2pg.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.text.DecimalFormat;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
  * @version 0.0.2 (2018-04-04)
  */
 public final class HpoCase {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(HpoCase.class);
     /** List of Hpo terms for our case. */
     private final List<TermId> observedAbnormalities;
     /** List of excluded Hpo terms for our case. */

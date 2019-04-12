@@ -3,8 +3,8 @@ package org.monarchinitiative.lr2pg.io;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
@@ -20,8 +20,7 @@ import java.net.URLConnection;
  * @author <a href="mailto:manuel.holtgrewe@charite.de">Manuel Holtgrewe</a>
  */
 public class FileDownloader {
-    private static final Logger logger = LogManager.getLogger();
-
+    private static final Logger logger = LoggerFactory.getLogger(FileDownloader.class);
     static class ProxyOptions {
         String host = null;
         int port = -1;
@@ -136,7 +135,7 @@ public class FileDownloader {
                 throw new FileNotFoundException("Could not open connection for file " + fileName);
             out = new FileOutputStream(dest);
             BufferedInputStream inBf = new BufferedInputStream(in);
-            byte buffer[] = new byte[128 * 1024];
+            byte [] buffer = new byte[128 * 1024];
             int readCount;
             long pos = 0;
             if (pb != null)
@@ -221,7 +220,7 @@ public class FileDownloader {
                 logger.info("(server did not tell us the file size, no progress bar)");
 
             // Download file.
-            byte buffer[] = new byte[128 * 1024];
+            byte [] buffer = new byte[128 * 1024];
             int readCount;
             long pos = 0;
             if (pb != null)

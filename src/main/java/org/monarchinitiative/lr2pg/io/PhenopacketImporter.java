@@ -2,8 +2,7 @@ package org.monarchinitiative.lr2pg.io;
 
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.util.JsonFormat;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -14,6 +13,8 @@ import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.HtsFile;
 import org.phenopackets.schema.v1.core.OntologyClass;
 import org.phenopackets.schema.v1.core.Phenotype;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -26,7 +27,7 @@ import java.util.function.Predicate;
  * @author Peter Robinson
  */
 public class PhenopacketImporter {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LoggerFactory.getLogger(PhenopacketImporter.class);
     /** The Phenopacket that represents the individual being sequenced in the current run. */
     private final Phenopacket phenoPacket;
     /** A list of non-negated HPO terms observed in the subject of this Phenopacket. */
