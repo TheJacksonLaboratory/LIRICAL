@@ -51,7 +51,7 @@ public class PhenopacketImporter {
      */
     public static PhenopacketImporter fromJson(String pathToJsonPhenopacketFile) throws ParseException,IOException {
         JSONParser parser = new JSONParser();
-        logger.error("Importing Phenopacket: " + pathToJsonPhenopacketFile);
+        logger.trace("Importing Phenopacket: " + pathToJsonPhenopacketFile);
         Object obj = parser.parse(new FileReader(pathToJsonPhenopacketFile));
         JSONObject jsonObject = (JSONObject) obj;
         String phenopacketJsonString = jsonObject.toJSONString();
