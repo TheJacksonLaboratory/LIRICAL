@@ -187,8 +187,6 @@ public class Vcf2GenotypeMap {
                         AlleleProto.AlleleProperties alleleProp = alleleMap.get(alleleKey);
                         int chrom = veval.getChromosome();
                         int pos = veval.getPosition();
-                        //String ref = veval.getRef();
-                        //String alt = veval.getAlt();
                         List<TranscriptAnnotation> transcriptAnnotationList = veval.getTranscriptAnnotations();
                         String genotypeString = veval.getGenotypeString();
                         float freq;

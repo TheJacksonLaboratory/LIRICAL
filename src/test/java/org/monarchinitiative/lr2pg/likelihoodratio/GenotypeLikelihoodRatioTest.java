@@ -14,6 +14,8 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_DOMINANT;
+import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE;
 
 
 class GenotypeLikelihoodRatioTest {
@@ -38,9 +40,8 @@ class GenotypeLikelihoodRatioTest {
         Map<TermId,Double> emptyMap = ImmutableMap.of();
         GenotypeLikelihoodRatio genoLRmap = new GenotypeLikelihoodRatio(emptyMap);
         TermId fakeGeneId = TermId.of("Fake:123");
-        List<TermId> emptyList= ImmutableList.of();
-        Double lrOption = genoLRmap.evaluateGenotype( g2g, emptyList, fakeGeneId);
-        double result = lrOption;
+        List<TermId> emptyList= ImmutableList.of(AUTOSOMAL_DOMINANT);
+        double result = genoLRmap.evaluateGenotype( g2g, emptyList, fakeGeneId);
         double expected = (double)1000;
         assertEquals(expected,result,EPSILON);
     }
@@ -58,9 +59,8 @@ class GenotypeLikelihoodRatioTest {
         Map<TermId,Double> emptyMap = ImmutableMap.of();
         GenotypeLikelihoodRatio genoLRmap = new GenotypeLikelihoodRatio(emptyMap);
         TermId fakeGeneId = TermId.of("Fake:123");
-        List<TermId> emptyList= ImmutableList.of();
-        Double score = genoLRmap.evaluateGenotype( g2g, emptyList, fakeGeneId);
-        double result = score;
+        List<TermId> emptyList= ImmutableList.of(AUTOSOMAL_RECESSIVE);
+        double result = genoLRmap.evaluateGenotype( g2g, emptyList, fakeGeneId);
         double expected = (double)1000*1000;
         assertEquals(expected,result,EPSILON);
     }
