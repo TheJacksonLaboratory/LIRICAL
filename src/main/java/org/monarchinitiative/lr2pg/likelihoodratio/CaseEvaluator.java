@@ -265,11 +265,28 @@ public class CaseEvaluator {
         } else {
             // if we get here, then foundPredictedPathogenicVariant is true.
             Gene2Genotype g2g = this.genotypeMap.get(geneId);
-            double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
-            String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
+            String exp = getGenotypeScoreExplanation(g2g, inheritancemodes,geneId);
             result.appendToExplanation(exp);
         }
         return Optional.of(result);
+    }
+
+    /**
+     * Convenience function to create an explanation for the genotype score that we show in the HTML output
+     * @param g2g The gene in question
+     * @param inheritancemodes Modes of inheritance of diseases associated with this gene
+     * @param geneId The NCBI Gene id
+     * @return the explanation for the score.
+     */
+    private String getGenotypeScoreExplanation(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
+        if (g2g.hasPathogenicClinvarVar()) {
+            int clinvarPathCount = g2g.pathogenicClinVarCount();
+            double score = g2g.getSumOfPathBinScores();
+            return String.format("Genotype score: %.4f because of %d pathogenic ClinVar variants",score,clinvarPathCount);
+        } else {
+            double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
+            return this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
+        }
     }
 
     /**
@@ -343,8 +360,7 @@ public class CaseEvaluator {
             // if we get here, then foundPredictedPathogenicVariant is true.
             result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
             Gene2Genotype g2g = this.genotypeMap.get(geneId);
-            double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
-            String exp = this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
+            String exp  = getGenotypeScoreExplanation(g2g, inheritancemodes,geneId);
             result.appendToExplanation(exp);
             return Optional.of(result);
         }

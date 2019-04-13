@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class creates an SVG file representing the results of likelihood ratio analysis of an HPO case.
@@ -56,25 +58,43 @@ public class Lr2Svg {
      * Constructor to draw an SVG representation of the phenotype and genotype likelihood ratios
      * @param hcase The proband (case) we are analyzing
      * @param diseaseId The current differential diagnosis id (e.g., OMIM:600123)
-     * @param diseaseName  The current differential diagnosis name
+     * @param originalDiseaseName  The current differential diagnosis name
      * @param ont Reference to HPO ontology
      * @param symbol Gene symbol (if any, can be null)
      */
-    public Lr2Svg(HpoCase hcase, TermId diseaseId, String diseaseName, Ontology ont, String symbol) {
+    public Lr2Svg(HpoCase hcase, TermId diseaseId, String originalDiseaseName, Ontology ont, String symbol) {
         this.hpocase=hcase;
         this.diseaseCURIE=diseaseId;
-        // shorten the name to everything up to the first ;
-        int i = diseaseName.indexOf(";");
-        if (i>0) {
-            this.diseaseName = diseaseName.substring(0,i);
-        } else {
-            this.diseaseName=diseaseName;
-        }
+        this.diseaseName=prettifyDiseaseName(originalDiseaseName);
         this.result = hpocase.getResult(diseaseId);
         this.geneSymbol = symbol;
         this.ontology=ont;
         determineTotalHeightOfSvg();
     }
+
+    /**
+     * This method shortens items such as #101200 APERT SYNDROME;;ACROCEPHALOSYNDACTYLY, TYPE I; ACS1;;ACS IAPERT-CROUZON DISEASE, INCLUDED;;
+     * to simply APERT SYNDROME
+     * @param originalDiseaseName original String from HPO database, derived from OMIM and potentially historic
+     * @return simplified and prettified name
+     */
+    private String prettifyDiseaseName(String originalDiseaseName) {
+        // shorten the name to everything up to the first semicolon
+        int i = originalDiseaseName.indexOf(";");
+        if (i>0) {
+            originalDiseaseName = originalDiseaseName.substring(0,i);
+        }
+        originalDiseaseName=originalDiseaseName.trim();
+        final Pattern omimid = Pattern.compile("#?\\d{6}");
+        Matcher m = omimid.matcher(originalDiseaseName);
+        if (m.find(0)) {
+            // last position of match
+            i = m.end() + 1;
+            originalDiseaseName = originalDiseaseName.substring(i).trim();
+        }
+        return originalDiseaseName;
+    }
+
 
     /**
      * This function determines the vertical dimension of the SVG that we will org.monarchinitiative.lr2pg.output.
@@ -306,7 +326,6 @@ public class Lr2Svg {
 
             double ratio = result.getGenotypeLR();
             double lgratio = Math.log10(ratio);
-            String color = lgratio<0? RED : BLUE;
             double boxwidth=lgratio*scaling;
             double xstart = midline;
             if (lgratio<0) {
@@ -318,7 +337,7 @@ public class Lr2Svg {
                 writeDiamond(writer,X,currentY);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
-                color = xstart<midline ? RED : BLUE;
+                String color = xstart<midline ? RED : BLUE;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
                                 "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
                         BOX_HEIGHT,
