@@ -38,6 +38,7 @@ public class LR2PG  {
         Gt2GitCommand gt2git = new Gt2GitCommand();
         VcfCommand vcf = new VcfCommand();
         PhenopacketCommand phenopacket = new PhenopacketCommand();
+        SimulateVcfCommand simvcf = new SimulateVcfCommand();
         JCommander jc = JCommander.newBuilder()
                 .addObject(lr2pg)
                 .addCommand("download", download)
@@ -45,6 +46,7 @@ public class LR2PG  {
                 .addCommand("grid", grid)
                 .addCommand("gt2git",gt2git)
                 .addCommand("vcf",vcf)
+                .addCommand("simulate-vcf",vcf)
                 .addCommand("phenopacket",phenopacket)
                 .build();
         jc.setProgramName("java -jar Lr2pg.jar");
@@ -128,6 +130,9 @@ public class LR2PG  {
                break;
            case "vcf":
                lr2pgcommand =vcf;
+               break;
+           case "simulate-vcf":
+               lr2pgcommand=simvcf;
                break;
            case "phenopacket":
                 lr2pgcommand =phenopacket;
