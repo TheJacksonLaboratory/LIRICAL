@@ -220,15 +220,20 @@ public class Lr2PgFactory {
     private void initializeExomiserPaths() {
         // Remove the trailing directory slash if any
         this.exomiserPath=getPathWithoutTrailingSeparatorIfPresent(this.exomiserPath);
-        String basename=FilenameUtils.getBaseName(this.exomiserPath);
+//        String basename=FilenameUtils.getBaseName(this.exomiserPath);
+        String basename = "1811_hg19";
         String filename=String.format("%s_variants.mv.db", basename);
-        this.mvStorePath=String.format("%s%s%s", exomiserPath,File.separator,filename);
+//        this.mvStorePath=String.format("%s%s%s", exomiserPath,File.separator,filename);
+        this.mvStorePath = new File(exomiserPath, String.format("%s_variants.mv.db", basename)).getAbsolutePath();
         filename=String.format("%s_transcripts_ucsc.ser", basename);
-        this.jannovarUcscPath=filename;
+//        this.jannovarUcscPath=filename;
+        this.jannovarUcscPath=new File(exomiserPath, String.format("%s_transcripts_ucsc.ser", basename)).getAbsolutePath();
         filename=String.format("%s_transcripts_ensembl.ser", basename);
-        this.jannovarEnsemblPath=filename;
+//        this.jannovarEnsemblPath=filename;
+        this.jannovarEnsemblPath = new File(exomiserPath, String.format("%s_transcripts_ensembl.ser", basename)).getAbsolutePath();
         filename=String.format("%s_transcripts_refseq.ser", basename);
-        this.jannovarRefSeqPath=filename;
+//        this.jannovarRefSeqPath=filename;
+        this.jannovarRefSeqPath=new File(exomiserPath, String.format("%s_transcripts_refseq.ser", basename)).getAbsolutePath();
 
     }
 

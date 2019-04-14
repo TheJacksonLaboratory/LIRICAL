@@ -3,17 +3,14 @@ package org.monarchinitiative.lr2pg.cmd;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
-import de.charite.compbio.jannovar.data.JannovarData;
+import com.google.protobuf.util.JsonFormat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.h2.mvstore.MVStore;
 import org.json.simple.parser.ParseException;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lr2pg.analysis.Gene2Genotype;
-import org.monarchinitiative.lr2pg.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lr2pg.configuration.Lr2PgFactory;
-import org.monarchinitiative.lr2pg.configuration.TranscriptDatabase;
 import org.monarchinitiative.lr2pg.exception.Lr2PgRuntimeException;
 import org.monarchinitiative.lr2pg.exception.Lr2pgException;
 import org.monarchinitiative.lr2pg.hpo.HpoCase;
@@ -21,21 +18,26 @@ import org.monarchinitiative.lr2pg.io.PhenopacketImporter;
 import org.monarchinitiative.lr2pg.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lr2pg.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lr2pg.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.lr2pg.output.HtmlTemplate;
-import org.monarchinitiative.lr2pg.output.Lr2pgTemplate;
-import org.monarchinitiative.lr2pg.output.TsvTemplate;
-import org.monarchinitiative.lr2pg.vcf.SimpleVariant;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.phenopackets.schema.v1.Phenopacket;
+import org.phenopackets.schema.v1.core.HtsFile;
+import org.phenopackets.schema.v1.core.OntologyClass;
+import org.phenopackets.schema.v1.core.Phenotype;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * Download a number of files needed for the analysis
@@ -50,7 +52,8 @@ public class PhenopacketCommand extends PrioritizeCommand {
     private String phenopacketPath;
     @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory")
     private String exomiserDataDirectory;
-
+    @Parameter(names = {"-v", "--template-vcf"}, description = "path to template VCF file", required = true)
+    private String templateVcfPath;
 
     /** If true, the phenopacket contains the path of a VCF file. */
     private boolean hasVcf;
@@ -77,6 +80,22 @@ public class PhenopacketCommand extends PrioritizeCommand {
         Date date = new Date();
         this.metadata.put("analysis_date", dateFormat.format(date));
         this.metadata.put("phenopacket_file", this.phenopacketPath);
+
+        // read phenopacket
+        Phenopacket pp  = readPhenopacket(phenopacketPath);
+
+        // simulate VCF file
+        // this file is deleted upon JVM exit
+        String genomeAssembly = "GRCh37";
+        SingleVcfSimulator vcfSimulator = new SingleVcfSimulator(Paths.get(templateVcfPath));
+        try {
+            HtsFile htsFile = vcfSimulator.simulateVcf(pp.getSubject().getId(), pp.getVariantsList(), genomeAssembly);
+            pp = pp.toBuilder().clearHtsFiles().addHtsFiles(htsFile).build();
+        } catch (IOException e) {
+            throw new Lr2PgRuntimeException("Could not simulate VCF for phenopacket");
+        }
+
+        /*
         try {
             PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
             this.vcfPath = importer.getVcfPath();
@@ -95,9 +114,40 @@ public class PhenopacketCommand extends PrioritizeCommand {
             logger.fatal("Could not read phenopacket: {}", e.getMessage());
             throw new Lr2PgRuntimeException("Could not find Phenopacket at " + phenopacketPath +": "+e.getMessage());
         }
+        */
 
-
+        // This code replaces the functionality from above
+        // at least one HtsFile has VCF format
+        hasVcf = pp.getHtsFilesList().stream().anyMatch(hf -> hf.getHtsFormat().equals(HtsFile.HtsFormat.VCF));
         if (hasVcf) {
+            HtsFile htsFile = pp.getHtsFilesList().stream()
+                    .filter(hf -> hf.getHtsFormat().equals(HtsFile.HtsFormat.VCF))
+                    .findFirst()
+                    .orElseThrow(() -> new Lr2PgRuntimeException("Phenopacket has and has not VCF file in the same time... \uD83D\uDE15"));
+            this.vcfPath = htsFile.getFile().getPath();
+            this.metadata.put("vcf_file", this.vcfPath);
+        }
+
+        this.genomeAssembly = genomeAssembly; // hardcoded for now, TODO - revise
+        this.hpoIdList = pp.getPhenotypesList() // copied from PhenopacketImporter
+                .stream()
+                .distinct()
+                .filter(((Predicate<Phenotype>) Phenotype::getNegated).negate()) // i.e., just take non-negated phenotypes
+                .map(Phenotype::getType)
+                .map(OntologyClass::getId)
+                .map(TermId::of)
+                .collect(ImmutableList.toImmutableList());
+        this.negatedHpoIdList = pp.getPhenotypesList() // copied from PhenopacketImporter
+                .stream()
+                .filter(Phenotype::getNegated) // i.e., just take negated phenotypes
+                .map(Phenotype::getType)
+                .map(OntologyClass::getId)
+                .map(TermId::of)
+                .collect(ImmutableList.toImmutableList());
+
+        metadata.put("sample_name", pp.getSubject().getId());
+        if (hasVcf) {
+
             try {
                 Lr2PgFactory factory = new Lr2PgFactory.Builder()
                         .datadir(this.datadir)
@@ -177,5 +227,17 @@ public class PhenopacketCommand extends PrioritizeCommand {
                 e.printStackTrace();
             }
         }
+    }
+
+    private static Phenopacket readPhenopacket(String phenopacketPath) {
+        Path ppPath = Paths.get(phenopacketPath);
+        Phenopacket.Builder ppBuilder = Phenopacket.newBuilder();
+        try (BufferedReader reader = Files.newBufferedReader(ppPath)) {
+            JsonFormat.parser().merge(reader, ppBuilder);
+        } catch (IOException e) {
+            logger.warn("Unable to read/decode file '{}'", ppPath);
+            throw new Lr2PgRuntimeException(String.format("Unable to read/decode file '%s'", ppPath));
+        }
+        return ppBuilder.build();
     }
 }
