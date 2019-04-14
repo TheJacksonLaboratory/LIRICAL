@@ -41,7 +41,7 @@ public class YamlParser {
         }
     }
 
-    public String getMvStorePath()  {
+    String getMvStorePath()  {
         if (yconfig.getAnalysis().containsKey("exomiser")) {
             String exomiserPath = yconfig.getAnalysis().get("exomiser");
             // Remove the trailing directory slash if any
@@ -87,7 +87,7 @@ public class YamlParser {
      * @return path to the approprioate Jannovar transcript file (UCSC, Ensembl, or RefSeq).
      * @throws Lr2pgException if there is an error retrieving the Jannovar data object
      */
-    public String jannovarFile() throws Lr2pgException {
+    String jannovarFile() throws Lr2pgException {
         String tdb = transcriptdb();
         switch (tdb) {
             case "UCSC": return jannovarFileUCSC();
@@ -179,7 +179,7 @@ public class YamlParser {
 
 
 
-    public String getHpOboPath() throws Lr2pgException {
+    String getHpOboPath() throws Lr2pgException {
         if (yconfig.getAnalysis().containsKey("datadir")) {
             String datadir=yconfig.getAnalysis().get("datadir");
             return String.format("%s%s%s",datadir,File.separator,"hp.obo");
@@ -188,7 +188,7 @@ public class YamlParser {
         }
     }
 
-    public String getMedgen() throws Lr2pgException {
+    String getMedgen() throws Lr2pgException {
         if (yconfig.getAnalysis().containsKey("datadir")) {
             String datadir=yconfig.getAnalysis().get("datadir");
             return String.format("%s%s%s",datadir,File.separator,"mim2gene_medgen");
@@ -207,7 +207,7 @@ public class YamlParser {
     }
 
 
-    public String getGeneInfo() throws Lr2pgException {
+     String getGeneInfo() throws Lr2pgException {
         if (yconfig.getAnalysis().containsKey("datadir")) {
             String datadir=yconfig.getAnalysis().get("datadir");
             return String.format("%s%s%s",datadir,File.separator,"Homo_sapiens_gene_info.gz");
@@ -231,13 +231,17 @@ public class YamlParser {
 
 
 
-    public String phenotypeAnnotation() throws Lr2pgException {
+    String phenotypeAnnotation() throws Lr2pgException {
         if (yconfig.getAnalysis().containsKey("datadir")) {
             String datadir=yconfig.getAnalysis().get("datadir");
             return String.format("%s%s%s",datadir,File.separator,"phenotype.hpoa");
         }  else {
             throw new Lr2pgException("No phenotype.hpoa path found in YAML configuration file");
         }
+    }
+
+    public String getPrefix() {
+        return yconfig.getPrefix();
     }
 
     /**

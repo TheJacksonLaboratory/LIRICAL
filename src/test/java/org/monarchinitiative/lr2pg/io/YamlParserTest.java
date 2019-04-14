@@ -106,5 +106,23 @@ class YamlParserTest {
         assertFalse(backgroundOpt.isPresent());
     }
 
+    @Test
+    void testGetPrexif() {
+        YamlParser yparser = new YamlParser(demo3path); // prefix is pfeiffer1 for this YAML file
+        assertEquals("pfeiffer1",yparser.getPrefix());
+    }
+
+    @Test
+    void testGetHpoIds() {
+        YamlParser yparser = new YamlParser(demo3path); // [ 'HP:0001363', 'HP:0011304', 'HP:0010055']
+        String [] expected = {"HP:0001363", "HP:0011304", "HP:0010055"};
+        String [] hpos =yparser.getHpoTermList();
+        assertEquals(expected.length,hpos.length);
+        assertEquals(3,hpos.length);
+        assertEquals(expected[0],hpos[0]);
+        assertEquals(expected[1],hpos[1]);
+        assertEquals(expected[2],hpos[2]);
+    }
+
 
 }
