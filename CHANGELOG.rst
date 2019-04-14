@@ -3,6 +3,12 @@ Changelog
 =========
 
 -------
+v0.9.15
+-------
+- Changing name of ap to LIRICAL: LIkelihood Ratio Interpretation of Clinical AbnormaLities.
+- adding more unit tests
+
+-------
 v0.9.14
 -------
 - update to phenopacket-schema version 0.4.0
@@ -83,7 +89,7 @@ v0.5.2
 ------
 - adding functionality from previous G2GIT project
 - removing SpringBoot code
-- adding FreeMarker org.monarchinitiative.lr2pg.output for analysis of VCF+phenotype data
+- adding FreeMarker org.monarchinitiative.lirical.output for analysis of VCF+phenotype data
 
 
 ------
