@@ -2,6 +2,7 @@ package org.monarchinitiative.lr2pg.likelihoodratio;
 
 import com.google.common.collect.ImmutableList;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
@@ -13,11 +14,13 @@ import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
  * Some of this test class is based on the data and cases presented in
- * https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2683447/
+ * https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2683447/ (Likelihood ratio calculations)
  * Note -- the authors of that paper rounded results and this class does not!
  */
 class TestResultTest {
@@ -28,12 +31,31 @@ class TestResultTest {
     }
     private HpoDisease glaucoma;
 
+    private TestResult tresultNoGenotype;
+    private TestResult tresultWithGenotype;
+
     @BeforeEach
     void init() {
         TermId glaucomaId = TermId.of("MONDO:123");
         List<TermId> emptyList = ImmutableList.of();
         List<HpoAnnotation> emptyAnnot = ImmutableList.of();
         glaucoma = new HpoDisease("Glaucoma",glaucomaId,emptyAnnot,emptyList,emptyList,emptyList,emptyList);
+
+        TermId testId1 = TermId.of("MONDO:1");
+        TermId testId2 = TermId.of("MONDO:2");
+        TermId testId3 = TermId.of("MONDO:3");
+        HpoDisease d1 = new HpoDisease("d1",testId1,emptyAnnot,emptyList,emptyList,emptyList,emptyList);
+        HpoDisease d2 = new HpoDisease("d2",testId2,emptyAnnot,emptyList,emptyList,emptyList,emptyList);
+        HpoDisease d3 = new HpoDisease("d3",testId3,emptyAnnot,emptyList,emptyList,emptyList,emptyList);
+        List<Double> list1 = ImmutableList.of(2.0,3.0,4.0);
+        List<Double> list2 = ImmutableList.of(20.0,3.0,4.0);
+        List<Double> list3 = ImmutableList.of(20.0,30.0,4.0);
+        ImmutableList<Double> excluded = ImmutableList.of();
+        double prevalence = 0.025;
+        TermId geneId =  TermId.of("FAKE:123");
+        double genotypeLR=2.0;
+        tresultWithGenotype = new TestResult(list1,excluded,d1,genotypeLR,geneId,prevalence);
+        tresultNoGenotype = new TestResult(list1,excluded,d1,prevalence);
     }
 
     @Test
@@ -128,7 +150,7 @@ class TestResultTest {
 
     @Test
     void testTestResultSorting() {
-        double EPSILON=0.0001;
+
         TermId testId1 = TermId.of("MONDO:1");
         TermId testId2 = TermId.of("MONDO:2");
         TermId testId3 = TermId.of("MONDO:3");
@@ -157,6 +179,8 @@ class TestResultTest {
         assertEquals(lst.get(0),result3);
         assertEquals(lst.get(1),result2);
         assertEquals(lst.get(2),result1);
+        // equivalently  //Map<TermId,TestResult> evaluateRanks(Map<TermId,TestResult> resultMap)
+        // The ranks of the objects get set in the evaluate method of HpoCase so cannot be tested here.
         // now add another test result, same as result3 but with additional genotype evidence
         // result4 should now be the top hit
         double genotypeLR=2.0;
@@ -166,6 +190,69 @@ class TestResultTest {
         assertEquals(lst.get(3),result4);
         lst.sort(Comparator.reverseOrder());
         assertEquals(lst.get(0),result4);
+    }
+
+
+    @Test
+    void testHasGenotype() {
+        assertTrue(tresultWithGenotype.hasGenotype());
+        assertFalse(tresultNoGenotype.hasGenotype());
+    }
+
+
+    @Test
+    void testGetGenotypeLR() {
+        double expected=2.0;
+        assertEquals(expected,tresultWithGenotype.getGenotypeLR(),EPSILON);
+    }
+
+    @Test
+    void testNoGenotypeThrows() {
+        // We should never try to access the genotype LR if no genotype was tested
+        // and so the method throws an exception
+        Assertions.assertThrows(NullPointerException.class, () ->
+            assertEquals(1.0,tresultNoGenotype.getGenotypeLR(),EPSILON)
+        );
+    }
+
+    @Test
+    void testHasExplanation() {
+        assertFalse(tresultNoGenotype.hasExplanation());
+        tresultNoGenotype.appendToExplanation("nonsense");
+        assertTrue(tresultNoGenotype.hasExplanation());
+        assertEquals("nonsense",tresultNoGenotype.getExplanation());
+    }
+
+    @Test
+    void testGetDiseaseCurie() {
+        TermId diseaseCurie = TermId.of("MONDO:1"); // we used this in the init function to create tresultNoGenotype
+        assertEquals(diseaseCurie,tresultNoGenotype.getDiseaseCurie());
+    }
+
+    @Test
+    void testGetDiseaseName() {
+        String name="d1"; // set in init() function
+        assertEquals(name,tresultNoGenotype.getDiseaseName());
+    }
+
+    @Test
+    void testObservedPhenotypeRatio() {
+        // we used  List<Double> list1 = ImmutableList.of(2.0,3.0,4.0); in the init function
+        assertEquals(2.0,tresultNoGenotype.getObservedPhenotypeRatio(0),EPSILON);
+        assertEquals(3.0,tresultNoGenotype.getObservedPhenotypeRatio(1),EPSILON);
+        assertEquals(4.0,tresultNoGenotype.getObservedPhenotypeRatio(2),EPSILON);
+    }
+
+    @Test
+    void testGetPretestProb() {
+        double expected = 0.025;  // in init() we have  double prevalence = 0.025;
+        assertEquals(expected,tresultNoGenotype.getPretestProbability(),EPSILON);
+    }
+
+    @Test
+    void testGetEntrezGeneId() {
+        TermId expected=TermId.of("FAKE:123");
+        assertEquals(expected,tresultWithGenotype.getEntrezGeneId());
     }
 
 

@@ -416,7 +416,11 @@ public class CaseEvaluator {
     }
 
 
-
+    /**
+     * This function sets the rank of the {@link TestResult} objects.
+     * @param resultMap The objects of the resultMap are not not set wrt rank before thie function is called
+     * @return same resultMap, but the TestResult objects have their ranks set.
+     */
     private Map<TermId,TestResult> evaluateRanks(Map<TermId,TestResult> resultMap) {
         List<TestResult> results = new ArrayList<>(resultMap.values());
        results.sort(Collections.reverseOrder());

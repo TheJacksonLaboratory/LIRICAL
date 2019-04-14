@@ -34,7 +34,7 @@ public class TestResult implements Comparable<TestResult> {
     /** Result of the likelhood ratio test for the genotype. */
     private final Double genotypeLR;
     /** The id of the gene associated with ths disease being tested here. */
-    private TermId entrezGeneId;
+    private final TermId entrezGeneId;
     /** This is the product of the individual test results. */
     private final double compositeLR;
     /** Reference to the the disease that we are testing (e.g., OMIM:600100).*/
@@ -197,5 +197,5 @@ public class TestResult implements Comparable<TestResult> {
 
     public void appendToExplanation(String text) { this.explanation = this.explanation + text; }
     public String getExplanation() { return this.explanation; }
-    public boolean hasExplanation() { return this.explanation != null;}
+    public boolean hasExplanation() { return ! this.explanation.isEmpty();}
 }
