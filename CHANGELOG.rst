@@ -1,6 +1,29 @@
 =========
 Changelog
 =========
+
+-------
+v0.9.15
+-------
+- Changing name of ap to LIRICAL: LIkelihood Ratio Interpretation of Clinical AbnormaLities.
+- adding more unit tests
+
+-------
+v0.9.14
+-------
+- update to phenopacket-schema version 0.4.0
+- update to Exomiser version 12.0.0
+- tweaking code for negative findings
+
+-------
+v0.9.13
+-------
+- Streamlining some of the likelihood ratio code without changing logic
+- Adding routine for genotypes with more than 2 called pathogenic variants
+- tweaking HTML output
+- update to phenol 1.3.3
+- adding enforcer plugin
+
 -------
 v0.9.11
 -------
@@ -66,7 +89,7 @@ v0.5.2
 ------
 - adding functionality from previous G2GIT project
 - removing SpringBoot code
-- adding FreeMarker org.monarchinitiative.lr2pg.output for analysis of VCF+phenotype data
+- adding FreeMarker org.monarchinitiative.lirical.output for analysis of VCF+phenotype data
 
 
 ------
