@@ -141,10 +141,10 @@ public class VcfSimulator {
 
     /**
      *
-     * @param subjectId
-     * @param variants
-     * @return
-     * @throws IOException
+     * @param subjectId identifier of the proband in the VCF file
+     * @param variants List of variants we will add to the VCF file
+     * @return HtsFile object
+     * @throws IOException if the template VCF file cannot be read
      */
     public HtsFile simulateVcf(String subjectId, List<Variant> variants, String genomeAssembly) throws IOException {
         Objects.requireNonNull(subjectId, "Subject ID must not be null");

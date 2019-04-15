@@ -94,7 +94,7 @@ public class SimulateVcfCommand  extends Lr2PgCommand {
                      .map(OntologyClass::getId)
                      .map(TermId::of)
                      .collect(ImmutableList.toImmutableList());
-            /** List of excluded HPO terms in the subject. */
+            // List of excluded HPO terms in the subject.
              List<TermId> negatedHpoIdList= pp.getPhenotypesList() // copied from PhenopacketImporter
                      .stream()
                      .filter(Phenotype::getNegated) // i.e., just take negated phenotypes

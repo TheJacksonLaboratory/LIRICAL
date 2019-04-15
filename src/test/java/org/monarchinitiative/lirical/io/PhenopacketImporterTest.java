@@ -26,7 +26,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class PhenopacketImporterTest {
 
     @TempDir
-    static Path tempDir;
+    private static Path tempDir;
+
+    private static final String fakeVcfPath="/home/user/example.vcf";
+    private static final String fakeGenomeAssembly = "GRCH_37";
 
     private static Phenopacket ppacket;
 
@@ -76,14 +79,16 @@ class PhenopacketImporterTest {
                 build();
 
         VcfAllele allele = VcfAllele.newBuilder().
-                setGenomeAssembly("GRCH_37").
+                setGenomeAssembly(fakeGenomeAssembly).
                 setChr("17").
                 setPos(29665775).
                 setRef("T").
                 setAlt("A").
                 build();
         HtsFile vcfFile = HtsFile.newBuilder().
-                setFile(File.newBuilder().setPath("/home/user/example.vcf").build())
+                setFile(File.newBuilder().setPath(fakeVcfPath).build())
+                .setHtsFormat(HtsFile.HtsFormat.VCF)
+                .setGenomeAssembly(fakeGenomeAssembly)
                 .build();
         OntologyClass heterozygous = ontologyClass( "GENO:0000135", "heterozygous");
         Variant var = Variant.newBuilder().setVcfAllele(allele).setZygosity(heterozygous).build();
@@ -131,7 +136,7 @@ class PhenopacketImporterTest {
     }
 
     @Test
-    void testNumberOfHpoTermsImported() throws IOException {
+    void testNumberOfHpoTermsImported() {
         int expected =5;  // we have 4 non-negated (observed) HPO terms and one negated term
         assertEquals(expected,ppacket.getPhenotypesCount());
     }
@@ -170,36 +175,8 @@ class PhenopacketImporterTest {
     void testGetVcfFile() {
         PhenopacketImporter importer = new PhenopacketImporter(ppacket);
         assertTrue(importer.hasVcf());
+        assertEquals(fakeVcfPath, importer.getVcfPath());
+        assertEquals(fakeGenomeAssembly,importer.getGenomeAssembly());
     }
-
-
-   /*
-
-
-    }
-
-
-
-
-    @Test
-    void testGetPathToVcfFile() throws IOException {
-        PhenopacketImporter importer = new PhenopacketImporter(spherocytosisPhenopacket);
-        String expectedVcfPath="/home/user/example.vcf"; // as in the Json phenopacket file
-        assertTrue(importer.hasVcf());
-        assertEquals(expectedVcfPath,importer.getVcfPath());
-        String expectedGenomeBuild="GRCH_38"; // as in the Json phenopacket file
-        assertEquals(expectedGenomeBuild,importer.getGenomeAssembly());
-    }
-
-
-    @Test
-    void testGetPathToVcfFileWhenNotPresent() throws IOException {
-        PhenopacketImporter importer = new PhenopacketImporter(phenopacketPfeifferNoVcf);
-        assertFalse(importer.hasVcf());
-    }
-
-
-    */
-
 
 }

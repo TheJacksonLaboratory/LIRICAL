@@ -25,7 +25,7 @@ public class Lirical {
     @Parameter(names = {"-h", "--help"}, help = true, arity = 0,description = "display this help message")
     private boolean usageHelpRequested;
 
-    private static final ImmutableSet commandnames=ImmutableSet.of("download","simulate","grid","gt2git","vcf","phenopacket");
+    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","simulate","grid","gt2git","vcf","phenopacket");
 
 
     static public void main(String [] args) {
