@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class PhenopacketImporterTest {
 
     @TempDir
-    private static Path tempDir;
+    static Path tempDir;
 
     private static final String fakeVcfPath="/home/user/example.vcf";
     private static final String fakeGenomeAssembly = "GRCH_37";
