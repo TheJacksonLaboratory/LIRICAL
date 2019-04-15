@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.hpo;
 
 
+import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.lirical.exception.Lr2pgException;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
