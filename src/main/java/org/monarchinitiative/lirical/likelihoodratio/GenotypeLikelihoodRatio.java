@@ -77,7 +77,7 @@ public class GenotypeLikelihoodRatio {
             return getLRifNoVariantAtAllWasIdentified(inheritancemodes);
         }
         // special case 2: Clinvar-pathogenic variant(2) found in this gene.
-        // The likelhood ratio is defined as 1000**count, where 1 for autosomal dominant and
+        // The likelihood ratio is defined as 1000**count, where 1 for autosomal dominant and
         // min(2,clinVarcount) for autosomal recessive.
         if (g2g.hasPathogenicClinvarVar()) {
             int count = g2g.pathogenicClinVarCount();
@@ -111,6 +111,11 @@ public class GenotypeLikelihoodRatio {
             // Add a default dominant mode to avoid not ranking this gene at all
             inheritancemodes = ImmutableList.of(AUTOSOMAL_DOMINANT);
         }
+
+        if (lambda_background>1.0) {
+            lambda_background=Math.min(lambda_background,g2g.pathogenicVariantCount());
+        }
+
         Optional<Double> max = Optional.empty();
         for (TermId inheritanceId : inheritancemodes) {
             double lambda_disease=1.0;
