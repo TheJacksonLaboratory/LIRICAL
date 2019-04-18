@@ -41,7 +41,7 @@ public class PhenotypeLikelihoodRatio {
      * our software is not smart enough to make possibile connections such as this. Finally, it
      * may be truly false positive because there is a secondary etiology.
      */
-    private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.01; // 1:100
+    private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.001; // 1:100
 
 
     /**
@@ -154,6 +154,13 @@ public class PhenotypeLikelihoodRatio {
     }
 
 
+    private double noCommonOrganProbability(TermId tid) {
+        double f = this.hpoTerm2OverallFrequency.get(tid);
+        double max_no_organ = 0.10; // maximum probability of a "false positive finding
+        return Math.min(10.0*f,max_no_organ);
+    }
+
+
     /**
      * If we get here, we are trying to find a frequency for a term in a disease but there is not
      * direct match. This function tries several ways of finding a fuzzy match
@@ -187,7 +194,7 @@ public class PhenotypeLikelihoodRatio {
                 double proportionalFrequency = getProportionalFrequencyInAncestors(query,annot.getTermId());
                 double queryFrequency = annot.getFrequency();
                 double f = proportionalFrequency*queryFrequency;
-                return Math.max(f,DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY);
+                return Math.max(f,noCommonOrganProbability(query));
             }
         }
         // If we get here, then there is no common ancestor between the query and any of the disease phenotype annotations.
@@ -197,7 +204,7 @@ public class PhenotypeLikelihoodRatio {
 
 
 
-        return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+        return noCommonOrganProbability(query);// DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
     }
 
 

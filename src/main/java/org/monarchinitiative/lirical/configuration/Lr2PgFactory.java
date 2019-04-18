@@ -631,9 +631,12 @@ public class Lr2PgFactory {
             switch (tdb.toUpperCase()) {
                 case "ENSEMBL" :
                     this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
+                    break;
                 case "REFSEQ":
                     this.transcriptdatabase=TranscriptDatabase.REFSEQ;
+                    break;
                 case "UCSC":
+                    break;
                 default:
                     this.transcriptdatabase=TranscriptDatabase.UCSC;
             }

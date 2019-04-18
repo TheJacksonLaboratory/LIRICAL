@@ -15,6 +15,7 @@ import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
+import org.monarchinitiative.lirical.output.HtmlTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -30,16 +31,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
 @Parameters(commandDescription = "Simulate VCF analysis from phenopacket",hidden = false)
-public class SimulateVcfCommand  extends Lr2PgCommand {
+public class SimulateVcfCommand  extends PrioritizeCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulateVcfCommand.class);
-    /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files (default: data). */
-    @Parameter(names={"-d","--data"}, description ="directory to download data" )
-    private String datadir="data";
+
+
     @Parameter(names = {"-p","--phenopacket"}, description = "path to phenopacket file", required = true)
     private String phenopacketPath;
     @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory")
@@ -60,10 +64,7 @@ public class SimulateVcfCommand  extends Lr2PgCommand {
 
     @Override
     public void run() throws Lr2pgException {
-        // where does this go? Currently in output classes but we could refactor
-//        Date date = new Date();
-//        this.metadata.put("analysis_date", dateFormat.format(date));
-//        this.metadata.put("phenopacket_file", this.phenopacketPath);
+        this.metadata=new HashMap<>();
         Phenopacket pp  = readPhenopacket(phenopacketPath);
         //TODO -- Get this from the VCF file or from the Phenopacket or from command line
         String genomeAssembly = "GRCh37";
@@ -75,7 +76,11 @@ public class SimulateVcfCommand  extends Lr2PgCommand {
         } catch (IOException e) {
             throw new Lr2PgRuntimeException("Could not simulate VCF for phenopacket");
         }
-
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+        Date date = new Date();
+        this.metadata.put("analysis_date", dateFormat.format(date));
+        this.metadata.put("phenopacket_file", this.phenopacketPath);
+        metadata.put("sample_name", pp.getSubject().getId());
         hasVcf = pp.getHtsFilesList().stream().anyMatch(hf -> hf.getHtsFormat().equals(HtsFile.HtsFormat.VCF));
         if (hasVcf) {
             HtsFile htsFile = pp.getHtsFilesList().stream()
@@ -107,6 +112,7 @@ public class SimulateVcfCommand  extends Lr2PgCommand {
                     .genomeAssembly(genomeAssembly)
                     .exomiser(this.exomiserDataDirectory)
                     .vcf(vcfPath)
+                    .transcriptdatabase(this.transcriptDb)
                     .backgroundFrequency(this.backgroundFrequencyFile)
                     .build();
             factory.qcHumanPhenotypeOntologyFiles();
@@ -134,6 +140,23 @@ public class SimulateVcfCommand  extends Lr2PgCommand {
 
             CaseEvaluator evaluator = caseBuilder.build();
             HpoCase hcase = evaluator.evaluate();
+
+            String outdir=".";
+            int n_genes_with_var=factory.getGene2GenotypeMap().size();
+            this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
+            this.metadata.put("exomiserPath",factory.getExomiserPath());
+            this.metadata.put("hpoVersion",factory.getHpoVersion());
+
+
+            HtmlTemplate caseoutput = new HtmlTemplate(hcase,
+                    ontology,
+                    genotypemap,
+                    this.geneId2symbol,
+                    this.metadata,
+                    this.LR_THRESHOLD,
+                    minDifferentialsToShow);
+            caseoutput.outputFile(this.outfilePrefix,outdir);
+
         }
 
 
