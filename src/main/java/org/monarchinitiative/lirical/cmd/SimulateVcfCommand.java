@@ -16,10 +16,13 @@ import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.output.HtmlTemplate;
+import org.monarchinitiative.lirical.output.Lr2pgTemplate;
+import org.monarchinitiative.lirical.output.TsvTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.Phenopacket;
+import org.phenopackets.schema.v1.core.Disease;
 import org.phenopackets.schema.v1.core.HtsFile;
 import org.phenopackets.schema.v1.core.OntologyClass;
 import org.phenopackets.schema.v1.core.Phenotype;
@@ -27,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,6 +60,8 @@ public class SimulateVcfCommand  extends PrioritizeCommand {
     /** If true, the phenopacket contains the path of a VCF file. */
     private boolean hasVcf;
 
+    private String simulatedDisease=null;
+
     /** No-op constructor meant to demo the phenotype LR2PG algorithm by simulating some case based on
      * a phenopacket and a "normal" VCF file.
      */
@@ -82,6 +88,16 @@ public class SimulateVcfCommand  extends PrioritizeCommand {
         this.metadata.put("phenopacket_file", this.phenopacketPath);
         metadata.put("sample_name", pp.getSubject().getId());
         hasVcf = pp.getHtsFilesList().stream().anyMatch(hf -> hf.getHtsFormat().equals(HtsFile.HtsFormat.VCF));
+        if (pp.getDiseasesCount()!=1) {
+            System.err.println("[ERROR] to run this simulation a phenoopacket must have exactly one disease diagnosis");
+            System.err.println("[ERROR] terminating program because " + pp.getSubject().getId() + " had " + pp.getDiseasesCount());
+            System.exit(1);
+        }
+        Disease diagnosis = pp.getDiseases(0);
+        simulatedDisease = diagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
+        this.metadata.put("phenopacket.diagnosisId",simulatedDisease);
+        this.metadata.put("phenopacket.diagnosisLabel",diagnosis.getTerm().getLabel());
+
         if (hasVcf) {
             HtsFile htsFile = pp.getHtsFilesList().stream()
                     .filter(hf -> hf.getHtsFormat().equals(HtsFile.HtsFormat.VCF))
@@ -148,20 +164,22 @@ public class SimulateVcfCommand  extends PrioritizeCommand {
             this.metadata.put("hpoVersion",factory.getHpoVersion());
 
 
-            HtmlTemplate caseoutput = new HtmlTemplate(hcase,
-                    ontology,
-                    genotypemap,
-                    this.geneId2symbol,
-                    this.metadata,
-                    this.LR_THRESHOLD,
-                    minDifferentialsToShow);
-            caseoutput.outputFile(this.outfilePrefix,outdir);
-
+            if (outputTSV) {
+                Lr2pgTemplate template = new TsvTemplate(hcase,ontology,genotypemap,this.geneId2symbol,this.metadata);
+                template.outputFile(this.outfilePrefix,outdir);
+                String outname=String.format("%s.tsv",outfilePrefix );
+                int rank = extractRank(outname);
+            } else {
+                HtmlTemplate caseoutput = new HtmlTemplate(hcase,
+                        ontology,
+                        genotypemap,
+                        this.geneId2symbol,
+                        this.metadata,
+                        this.LR_THRESHOLD,
+                        minDifferentialsToShow);
+                caseoutput.outputFile(this.outfilePrefix, outdir);
+            }
         }
-
-
-
-
     }
 
 
@@ -176,5 +194,31 @@ public class SimulateVcfCommand  extends PrioritizeCommand {
         }
         return ppBuilder.build();
     }
+
+
+    private int extractRank(String path) {
+        int rank=-1;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(path));
+            String line;
+            while ((line=br.readLine())!= null) {
+                if (line.startsWith("!")) continue;
+                if (line.startsWith("rank")) continue;
+                String []fields = line.split("\t");
+                rank = Integer.parseInt(fields[0]);
+                String diseaseName = fields[1];
+                String diseaseCurie = fields[2];
+                if (diseaseCurie.equals(this.simulatedDisease)) {
+                    logger.info("Got rank of {} for simulated disease {}", rank,simulatedDisease);
+                }
+                return rank;
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return rank;
+    }
+
 
 }
