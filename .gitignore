@@ -11,7 +11,7 @@ hs_err_pid*
 
 .idea
 target/
-/lr2pg.iml
+*.iml
 lr2pg.log.1
 lr2pg.log.2
 data/
@@ -19,6 +19,3 @@ dependency-reduced-pom.xml
 .settings
 .project
 .classpath
-/src/main/main.iml
-src/main/main.iml
-src/test/test.iml
