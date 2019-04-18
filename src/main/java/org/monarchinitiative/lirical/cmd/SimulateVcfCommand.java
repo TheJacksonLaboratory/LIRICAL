@@ -48,7 +48,7 @@ public class SimulateVcfCommand  extends PrioritizeCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulateVcfCommand.class);
 
 
-    @Parameter(names = {"-p","--phenopacket"}, description = "path to phenopacket file", required = true)
+    @Parameter(names = {"-p","--phenopacket"}, description = "path to phenopacket file")
     private String phenopacketPath;
     @Parameter(names={"-e","--exomiser"}, description = "path to the Exomiser data directory")
     private String exomiserDataDirectory;
@@ -56,6 +56,8 @@ public class SimulateVcfCommand  extends PrioritizeCommand {
     private String templateVcfPath;
     @Parameter(names={"-b","--background"}, description = "path to non-default background frequency file")
     private String backgroundFrequencyFile;
+    @Parameter(names={"--phenopacket-dir"}, description = "path to directory with multiple phenopackets")
+    private String phenopacketDir;
 
     /** If true, the phenopacket contains the path of a VCF file. */
     private boolean hasVcf;
@@ -68,6 +70,18 @@ public class SimulateVcfCommand  extends PrioritizeCommand {
     public SimulateVcfCommand(){
     }
 
+
+    private void runOneVcfAnalysis() {
+
+
+    }
+
+
+    /**
+     * This can be run in a single phenopacket mode (in which case phenopacketPath needs to be defined) or in
+     * multi-phenopacket mode (in which case phenopacketDir needs to be defined).
+     * @throws Lr2pgException
+     */
     @Override
     public void run() throws Lr2pgException {
         this.metadata=new HashMap<>();
