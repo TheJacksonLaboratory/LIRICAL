@@ -252,20 +252,20 @@ public class Lr2PgFactory {
 
 
 
-    private void parseHpoAnnotations() throws Lr2pgException {
+    private void parseHpoAnnotations()  {
         if (this.ontology==null) {
             hpoOntology();
         }
         if (this.geneInfoPath==null) {
-            throw new Lr2pgException("Path to Homo_sapiens_gene_info.gz file not found");
+            throw new Lr2PgRuntimeException("Path to Homo_sapiens_gene_info.gz file not found");
         }
         if (this.mim2genemedgenPath==null) {
-            throw new Lr2pgException("Path to mim2genemedgen file not found");
+            throw new Lr2PgRuntimeException("Path to mim2genemedgen file not found");
         }
 
         File geneInfoFile = new File(geneInfoPath);
         if (!geneInfoFile.exists()) {
-            throw new Lr2pgException("Could not find gene info file at " + geneInfoPath + ". Run download!");
+            throw new Lr2PgRuntimeException("Could not find gene info file at " + geneInfoPath + ". Run download!");
         }
         File mim2genemedgenFile = new File(this.mim2genemedgenPath);
         if (!mim2genemedgenFile.exists()) {
@@ -286,7 +286,7 @@ public class Lr2PgFactory {
 
 
     /** @return a multimap with key: a gene CURIE such as NCBIGene:123; value: a collection of disease CURIEs such as OMIM:600123. */
-    public Multimap<TermId,TermId> gene2diseaseMultimap() throws Lr2pgException {
+    public Multimap<TermId,TermId> gene2diseaseMultimap()  {
         if (this.gene2diseaseMultiMap==null) {
             parseHpoAnnotations();
         }
@@ -294,14 +294,14 @@ public class Lr2PgFactory {
     }
 
     /** @return multimap with key:disease CURIEs such as OMIM:600123; value: a collection of gene CURIEs such as NCBIGene:123.  */
-    public Multimap<TermId,TermId> disease2geneMultimap() throws Lr2pgException {
+    public Multimap<TermId,TermId> disease2geneMultimap()  {
         if (this.disease2geneIdMultiMap==null) {
             parseHpoAnnotations();
         }
         return this.disease2geneIdMultiMap;
     }
     /** @return a map with key:a gene id, e.g., NCBIGene:2020; value: the corresponding gene symbol. */
-    public Map<TermId,String> geneId2symbolMap() throws Lr2pgException{
+    public Map<TermId,String> geneId2symbolMap() {
         if (this.geneId2SymbolMap==null) {
             parseHpoAnnotations();
         }
@@ -309,9 +309,9 @@ public class Lr2PgFactory {
     }
 
     /** @return Map with key: geneId, value: corresponding background frequency of bin P variants. */
-    public Map<TermId, Double> gene2backgroundFrequency() throws Lr2pgException{
+    public Map<TermId, Double> gene2backgroundFrequency() {
         if (this.backgroundFrequencyPath==null) {
-            throw new Lr2pgException("Path to background-freq.txt file not found");
+            throw new Lr2PgRuntimeException("Path to background-freq.txt file not found");
         }
         GenotypeDataIngestor gdingestor = new GenotypeDataIngestor(this.backgroundFrequencyPath);
         return gdingestor.parse();
@@ -396,9 +396,9 @@ public class Lr2PgFactory {
     }
 
     /** @return a map with key: a disease id (e.g., OMIM:654321) and key the corresponding {@link HpoDisease} object.*/
-    public Map<TermId, HpoDisease> diseaseMap(Ontology ontology) throws Lr2pgException {
+    public Map<TermId, HpoDisease> diseaseMap(Ontology ontology)  {
         if (this.phenotypeAnnotationPath==null) {
-            throw new Lr2pgException("Path to phenotype.hpoa file not found");
+            throw new Lr2PgRuntimeException("Path to phenotype.hpoa file not found");
         }
         // phenol 1.3.2
         List<String> desiredDatabasePrefixes=ImmutableList.of("OMIM","DECIPHER");
@@ -413,12 +413,16 @@ public class Lr2PgFactory {
             }
             return diseaseMap;
         } catch (PhenolException pe) {
-            throw new Lr2pgException("Could not parse annotation file: " + pe.getMessage());
+            throw new Lr2PgRuntimeException("Could not parse annotation file: " + pe.getMessage());
         }
     }
 
     public  Map<TermId, Gene2Genotype> getGene2GenotypeMap() {
-        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(getVcfPath(),
+        return getGene2GenotypeMap(getVcfPath());
+    }
+
+    public  Map<TermId, Gene2Genotype> getGene2GenotypeMap(String vcfPath) {
+        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath,
                 jannovarData(),
                 mvStore(),
                 getAssembly(),

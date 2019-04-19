@@ -89,6 +89,8 @@ public class VcfSimulator {
 
             final VcfAllele vcfAllele = variant.getVcfAllele();
 
+            System.out.println(vcfAllele.getChr() + ":"+ vcfAllele.getPos() + vcfAllele.getRef() +"-"+vcfAllele.getAlt() +" subject" + subjectId);
+
             // here the ref allele is always at 0, alt is at idx 1
             List<Allele> allAlleles = new ArrayList<>(2);
             allAlleles.add(Allele.create(vcfAllele.getRef(), true));
@@ -149,7 +151,9 @@ public class VcfSimulator {
     public HtsFile simulateVcf(String subjectId, List<Variant> variants, String genomeAssembly) throws IOException {
         Objects.requireNonNull(subjectId, "Subject ID must not be null");
         if (subjectId.isEmpty()) {
-            throw new Lr2PgRuntimeException("Subject ID must not be empty");
+            //throw new Lr2PgRuntimeException("Subject ID must not be empty");
+            System.err.println("[WARNING] Subject ID not found for ");
+            subjectId = "n/a";
         }
 
         // we create a temporary VCF file for LIRICAL analysis
