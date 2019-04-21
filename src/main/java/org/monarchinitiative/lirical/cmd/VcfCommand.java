@@ -4,8 +4,8 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.collect.Multimap;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
-import org.monarchinitiative.lirical.configuration.Lr2PgFactory;
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.io.YamlParser;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
@@ -39,7 +39,7 @@ public class VcfCommand extends PrioritizeCommand {
 
 
     @Override
-    public void run() throws Lr2pgException {
+    public void run() throws LiricalException {
         this.factory = deYamylate(this.yamlPath);
         factory.qcYaml();
         this.metadata=new HashMap<>();
@@ -90,14 +90,14 @@ public class VcfCommand extends PrioritizeCommand {
     }
 
     /**
-     * Parse the YAML file and put the results into an {@link Lr2PgFactory} object.
+     * Parse the YAML file and put the results into an {@link LiricalFactory} object.
      *
      * @param yamlPath Path to the YAML file for the VCF analysis
-     * @return An {@link Lr2PgFactory} object with various settings.
+     * @return An {@link LiricalFactory} object with various settings.
      */
-    private Lr2PgFactory deYamylate(String yamlPath) {
+    private LiricalFactory deYamylate(String yamlPath) {
         YamlParser yparser = new YamlParser(yamlPath);
-        Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder().
+        LiricalFactory.Builder builder = new LiricalFactory.Builder().
                 yaml(yparser).
                 filter(filterOnFILTER);
         return builder.buildForGenomicDiagnostics();

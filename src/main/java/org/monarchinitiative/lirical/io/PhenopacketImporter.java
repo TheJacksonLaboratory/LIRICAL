@@ -6,7 +6,7 @@ import com.google.protobuf.util.JsonFormat;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.monarchinitiative.lirical.exception.Lr2PgRuntimeException;
+import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import org.phenopackets.schema.v1.Phenopacket;
@@ -62,7 +62,7 @@ public class PhenopacketImporter {
             phenopacket = phenoPacketBuilder.build();
         } catch (IOException e1) {
             e1.printStackTrace();
-            throw new Lr2PgRuntimeException("Could not load phenopacket at " + pathToJsonPhenopacketFile);
+            throw new LiricalRuntimeException("Could not load phenopacket at " + pathToJsonPhenopacketFile);
         }
         return new PhenopacketImporter(phenopacket);
     }

@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
-import org.monarchinitiative.lirical.exception.Lr2PgRuntimeException;
+import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -500,7 +500,7 @@ public class CaseEvaluator {
 
         public CaseEvaluator build() {
             if (hpoTerms==null) {
-                throw new Lr2PgRuntimeException("[ERROR] No HPO terms found. At least one HPO term required to run LR2PG");
+                throw new LiricalRuntimeException("[ERROR] No HPO terms found. At least one HPO term required to run LR2PG");
             }
             Objects.requireNonNull(hpoTerms);
             Objects.requireNonNull(ontology);

@@ -1,7 +1,8 @@
 package org.monarchinitiative.lirical.hpo;
 
 
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import com.google.common.collect.ImmutableList;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
@@ -122,9 +123,9 @@ public class PhenotypeOnlyHpoCaseSimulator {
 
     /** This will run simulations according to the parameters {@link #n_cases_to_simulate},
      * {@link #n_terms_per_case} and {@link #n_noise_terms}.
-     * @throws Lr2pgException if there is an issue running the simulation
+     * @throws LiricalException if there is an issue running the simulation
      */
-    public void simulateCases() throws Lr2pgException {
+    public void simulateCases() throws LiricalException {
         int c=0;
         Map<Integer,Integer> ranks=new HashMap<>();
         logger.trace(String.format("Simulating n=%d HPO cases with %d random terms and %d noise terms per case.",n_cases_to_simulate,n_terms_per_case,n_noise_terms));
@@ -278,10 +279,10 @@ public class PhenotypeOnlyHpoCaseSimulator {
 
 
 
-    public int simulateCase(HpoDisease disease) throws Lr2pgException {
+    public int simulateCase(HpoDisease disease) throws LiricalException {
         if (disease == null) {
             // should never happen!
-            throw new Lr2pgException("Attempt to create case from Null-value for disease");
+            throw new LiricalException("Attempt to create case from Null-value for disease");
         }
         List<TermId> randomizedTerms = getRandomTermsFromDisease(disease);
 

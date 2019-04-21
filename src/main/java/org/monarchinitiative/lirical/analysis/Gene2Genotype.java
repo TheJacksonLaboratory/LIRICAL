@@ -92,6 +92,10 @@ public class Gene2Genotype {
        return (int)this.varList.stream().filter(SimpleVariant::isClinVarPathogenic).count();
    }
 
+   public int pathogenicVariantCount() {
+       return (int)this.varList.stream().filter((SimpleVariant::isInPathogenicBin)).count();
+   }
+
     @Override
     public String toString() {
         String varString = varList.stream().filter(SimpleVariant::isInPathogenicBin).map(SimpleVariant::toString).collect(Collectors.joining("; "));

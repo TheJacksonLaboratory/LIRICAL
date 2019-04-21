@@ -6,7 +6,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.lirical.cmd.*;
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +25,7 @@ public class Lirical {
     @Parameter(names = {"-h", "--help"}, help = true, arity = 0,description = "display this help message")
     private boolean usageHelpRequested;
 
-    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","simulate","grid","gt2git","vcf","phenopacket");
+    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","simulate","grid","gt2git","vcf","simulate-vcf","phenopacket");
 
 
     static public void main(String [] args) {
@@ -46,7 +46,7 @@ public class Lirical {
                 .addCommand("grid", grid)
                 .addCommand("gt2git",gt2git)
                 .addCommand("vcf",vcf)
-                .addCommand("simulate-vcf",vcf)
+                .addCommand("simulate-vcf",simvcf)
                 .addCommand("phenopacket",phenopacket)
                 .build();
         jc.setProgramName("java -jar Lr2pg.jar");
@@ -145,7 +145,7 @@ public class Lirical {
         }
         try {
             lr2pgcommand.run();
-        } catch (Lr2pgException e) {
+        } catch (LiricalException e) {
             e.printStackTrace();
         }
         long stopTime = System.currentTimeMillis();

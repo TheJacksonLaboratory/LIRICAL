@@ -2,6 +2,7 @@ package org.monarchinitiative.lirical.likelihoodratio;
 
 
 import com.google.common.collect.ImmutableMap;
+import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
@@ -32,6 +33,8 @@ public class PhenotypeLikelihoodRatio {
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
 
     private final static TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
+    private final static TermId CLINICAL_COURSE = TermId.of("HP:0031797");
+    private final static TermId PAST_MEDICAL_HISTORY = TermId.of("HP:0032443");
     /**
      * This is the probability of a finding if it the disease is not annotated to it and there
      * is no common ancestor except the root. There are many possible causes of findings called
@@ -41,7 +44,7 @@ public class PhenotypeLikelihoodRatio {
      * our software is not smart enough to make possibile connections such as this. Finally, it
      * may be truly false positive because there is a secondary etiology.
      */
-    private final static double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 0.01; // 1:100
+    private final double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
 
 
     /**
@@ -51,6 +54,7 @@ public class PhenotypeLikelihoodRatio {
     public PhenotypeLikelihoodRatio(Ontology onto, Map<TermId, HpoDisease> diseases) {
         this.ontology=onto;
         this.diseaseMap = diseases;
+        DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY = 1.0/diseases.size();
         initializeFrequencyMap();
     }
 
@@ -154,6 +158,13 @@ public class PhenotypeLikelihoodRatio {
     }
 
 
+    private double noCommonOrganProbability(TermId tid) {
+        double f = this.hpoTerm2OverallFrequency.getOrDefault(tid, DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY);
+        double max_no_organ = 0.10; // maximum probability of a "false positive finding
+        return Math.min(10.0*f,max_no_organ);
+    }
+
+
     /**
      * If we get here, we are trying to find a frequency for a term in a disease but there is not
      * direct match. This function tries several ways of finding a fuzzy match
@@ -187,7 +198,7 @@ public class PhenotypeLikelihoodRatio {
                 double proportionalFrequency = getProportionalFrequencyInAncestors(query,annot.getTermId());
                 double queryFrequency = annot.getFrequency();
                 double f = proportionalFrequency*queryFrequency;
-                return Math.max(f,DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY);
+                return Math.max(f,noCommonOrganProbability(query));
             }
         }
         // If we get here, then there is no common ancestor between the query and any of the disease phenotype annotations.
@@ -197,7 +208,7 @@ public class PhenotypeLikelihoodRatio {
 
 
 
-        return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+        return noCommonOrganProbability(query);// DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
     }
 
 
@@ -233,8 +244,10 @@ public class PhenotypeLikelihoodRatio {
     double getBackgroundFrequency(TermId termId) {
         if (! hpoTerm2OverallFrequency.containsKey(termId)) {
             logger.error(String.format("Map did not contain data for term %s",termId.getValue() ));
-            // todo throw error
-            System.exit(1);
+            logger.error(String.format("hpoTerm2OverallFrequency has total of %d entries",hpoTerm2OverallFrequency.size()));
+            // Should never happen!
+            return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+
         }
         return Math.max(DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY,hpoTerm2OverallFrequency.get(termId));
     }
@@ -244,7 +257,7 @@ public class PhenotypeLikelihoodRatio {
      * HPO terms in the ontology. */
     private void initializeFrequencyMap() {
         Map<TermId, Double> mp = new HashMap<>();
-        for (TermId tid : getDescendents(ontology, PHENOTYPIC_ABNORMALITY)) {
+        for (TermId tid : ontology.getNonObsoleteTermIds()) {
             mp.put(tid, 0.0D);
         }
         ImmutableMap.Builder<TermId, Double> mapbuilder = new ImmutableMap.Builder<>();

@@ -3,8 +3,8 @@ package org.monarchinitiative.lirical.cmd;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-import org.monarchinitiative.lirical.configuration.Lr2PgFactory;
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -42,8 +42,8 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
 
 
     @Override
-    public void run() throws Lr2pgException {
-        Lr2PgFactory factory = new Lr2PgFactory.Builder()
+    public void run() throws LiricalException {
+        LiricalFactory factory = new LiricalFactory.Builder()
                 .datadir(this.datadir)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();

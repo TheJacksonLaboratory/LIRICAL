@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.monarchinitiative.lirical.configuration.YamlConfig;
-import org.monarchinitiative.lirical.exception.Lr2PgRuntimeException;
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 
 import java.io.File;
@@ -31,13 +31,13 @@ public class YamlParser {
         try {
             yconfig = mapper.readValue(new File(yamlPath), YamlConfig.class);
         } catch (JsonMappingException e) {
-            throw new Lr2PgRuntimeException(String.format("[FATAL] Malformed YAML file: Unrecognized field name in YAML file %s.\n %s" ,
+            throw new LiricalRuntimeException(String.format("[FATAL] Malformed YAML file: Unrecognized field name in YAML file %s.\n %s" ,
                     yamlPath ,e.getMessage()));
         } catch (JsonParseException e ) {
             System.err.println("[FATAL] YAML file parse error " + e.getMessage());
         } catch (IOException e) {
             yconfig=null;
-            throw new Lr2PgRuntimeException("Could not find YAML file: "+ e.getMessage());
+            throw new LiricalRuntimeException("Could not find YAML file: "+ e.getMessage());
         }
     }
 
@@ -50,7 +50,7 @@ public class YamlParser {
             String filename=String.format("%s_variants.mv.db", basename);
             return String.format("%s%s%s", exomiserPath,File.separator,filename);
         } else {
-            throw new Lr2PgRuntimeException("No MvStore path found in YAML configuration file");
+            throw new LiricalRuntimeException("No MvStore path found in YAML configuration file");
         }
     }
 
@@ -85,9 +85,9 @@ public class YamlParser {
 
     /**
      * @return path to the approprioate Jannovar transcript file (UCSC, Ensembl, or RefSeq).
-     * @throws Lr2pgException if there is an error retrieving the Jannovar data object
+     * @throws LiricalException if there is an error retrieving the Jannovar data object
      */
-    String jannovarFile() throws Lr2pgException {
+    String jannovarFile() throws LiricalException {
         String tdb = transcriptdb();
         switch (tdb) {
             case "UCSC": return jannovarFileUCSC();
@@ -117,7 +117,7 @@ public class YamlParser {
             datadir=getPathWithoutTrailingSeparatorIfPresent(datadir);
             return datadir;
         }  else {
-            throw new Lr2PgRuntimeException("No exomiser path found in YAML configuration file");
+            throw new LiricalRuntimeException("No exomiser path found in YAML configuration file");
         }
     }
 
@@ -138,7 +138,7 @@ public class YamlParser {
 
 
 
-    private String jannovarFileUCSC() throws Lr2pgException {
+    private String jannovarFileUCSC() throws LiricalException {
         if (yconfig.getAnalysis().containsKey("exomiser")) {
             String exomiserPath = yconfig.getAnalysis().get("exomiser");
             // Remove the trailing directory slash if any
@@ -147,11 +147,11 @@ public class YamlParser {
             String filename=String.format("%s_transcripts_ucsc.ser", basename);
             return String.format("%s%s%s", exomiserPath,File.separator,filename);
         }  else {
-            throw new Lr2pgException("No jannovar UCSC transcript file path found in YAML configuration file");
+            throw new LiricalException("No jannovar UCSC transcript file path found in YAML configuration file");
         }
     }
 
-    private String jannovarFileEnsembl() throws Lr2pgException {
+    private String jannovarFileEnsembl() throws LiricalException {
         if (yconfig.getAnalysis().containsKey("exomiser")) {
             String exomiserPath = yconfig.getAnalysis().get("exomiser");
             // Remove the trailing directory slash if any
@@ -160,11 +160,11 @@ public class YamlParser {
             String filename=String.format("%s_transcripts_ensembl.ser", basename);
             return String.format("%s%s%s", exomiserPath,File.separator,filename);
         }  else {
-            throw new Lr2pgException("No jannovar UCSC transcript file path found in YAML configuration file");
+            throw new LiricalException("No jannovar UCSC transcript file path found in YAML configuration file");
         }
     }
 
-    private String jannovarFileRefSeq() throws Lr2pgException {
+    private String jannovarFileRefSeq() throws LiricalException {
         if (yconfig.getAnalysis().containsKey("exomiser")) {
             String exomiserPath = yconfig.getAnalysis().get("exomiser");
             // Remove the trailing directory slash if any
@@ -173,27 +173,27 @@ public class YamlParser {
             String filename=String.format("%s_transcripts_refseq.ser", basename);
             return String.format("%s%s%s", exomiserPath,File.separator,filename);
         }  else {
-            throw new Lr2pgException("No jannovar UCSC transcript file path found in YAML configuration file");
+            throw new LiricalException("No jannovar UCSC transcript file path found in YAML configuration file");
         }
     }
 
 
 
-    String getHpOboPath() throws Lr2pgException {
+    String getHpOboPath() throws LiricalException {
         if (yconfig.getAnalysis().containsKey("datadir")) {
             String datadir=yconfig.getAnalysis().get("datadir");
             return String.format("%s%s%s",datadir,File.separator,"hp.obo");
         } else {
-            throw new Lr2pgException("No data/hp.obo path found in YAML configuration file");
+            throw new LiricalException("No data/hp.obo path found in YAML configuration file");
         }
     }
 
-    String getMedgen() throws Lr2pgException {
+    String getMedgen() throws LiricalException {
         if (yconfig.getAnalysis().containsKey("datadir")) {
             String datadir=yconfig.getAnalysis().get("datadir");
             return String.format("%s%s%s",datadir,File.separator,"mim2gene_medgen");
         }  else {
-            throw new Lr2pgException("No data/mim2gene_medgen path found in YAML configuration file");
+            throw new LiricalException("No data/mim2gene_medgen path found in YAML configuration file");
         }
     }
 
@@ -202,17 +202,17 @@ public class YamlParser {
         if (yconfig.getAnalysis().containsKey("genomeAssembly")) {
             return yconfig.getAnalysis().get("genomeAssembly");
         }  else {
-            throw new Lr2PgRuntimeException("genomeAssembly not found in YAML configuration file");
+            throw new LiricalRuntimeException("genomeAssembly not found in YAML configuration file");
         }
     }
 
 
-     String getGeneInfo() throws Lr2pgException {
+     String getGeneInfo() throws LiricalException {
         if (yconfig.getAnalysis().containsKey("datadir")) {
             String datadir=yconfig.getAnalysis().get("datadir");
             return String.format("%s%s%s",datadir,File.separator,"Homo_sapiens_gene_info.gz");
         }  else {
-            throw new Lr2pgException("No Homo_sapiens_gene_info.gz path found in YAML configuration file");
+            throw new LiricalException("No Homo_sapiens_gene_info.gz path found in YAML configuration file");
         }
     }
 
@@ -231,12 +231,12 @@ public class YamlParser {
 
 
 
-    String phenotypeAnnotation() throws Lr2pgException {
+    String phenotypeAnnotation() throws LiricalException {
         if (yconfig.getAnalysis().containsKey("datadir")) {
             String datadir=yconfig.getAnalysis().get("datadir");
             return String.format("%s%s%s",datadir,File.separator,"phenotype.hpoa");
         }  else {
-            throw new Lr2pgException("No phenotype.hpoa path found in YAML configuration file");
+            throw new LiricalException("No phenotype.hpoa path found in YAML configuration file");
         }
     }
 

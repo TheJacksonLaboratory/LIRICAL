@@ -21,7 +21,7 @@ import java.util.*;
  * This class coordinates the output of a TSV file that contains a suymmary of the analysis results.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class TsvTemplate extends Lr2pgTemplate {
+public class TsvTemplate extends LiricalTemplate {
     private static final Logger logger = LoggerFactory.getLogger(TsvTemplate.class);
 
     private static final String[] tsvHeader={"rank","diseaseName","diseaseCurie","pretestprob","posttestprob",
@@ -45,7 +45,6 @@ public class TsvTemplate extends Lr2pgTemplate {
         for (TestResult result : hcase.getResults()) {
             String symbol = EMPTY_STRING;
             TsvDifferential tsvdiff = new TsvDifferential(result);
-            logger.trace("Diff diag for " + result.getDiseaseName());
             if (result.hasGenotype()) {
                 TermId geneId = result.getEntrezGeneId();
                 Gene2Genotype g2g = genotypeMap.get(geneId);
@@ -96,12 +95,12 @@ public class TsvTemplate extends Lr2pgTemplate {
 
     @Override
     public void outputFile(String prefix, String outdir){
-        String outname=String.format("%s.html",prefix );
+        String outname=String.format("%s.tsv",prefix );
         if (outdir != null) {
             File dir = mkdirIfNotExist(outdir);
             outname = Paths.get(dir.getAbsolutePath(),outname).toString();
         }
-        logger.trace("Writing TSV file to {}",outname);
+        logger.info("Writing TSV file to {}",outname);
         try (BufferedWriter out = new BufferedWriter(new FileWriter(outname))) {
             Template template = cfg.getTemplate("lr2pgTSV.ftl");
             template.process(templateData, out);
