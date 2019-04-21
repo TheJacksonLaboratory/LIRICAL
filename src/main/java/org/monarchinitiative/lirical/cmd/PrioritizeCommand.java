@@ -2,10 +2,10 @@ package org.monarchinitiative.lirical.cmd;
 
 import com.beust.jcommander.Parameter;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
-import org.monarchinitiative.lirical.configuration.Lr2PgFactory;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.output.HtmlTemplate;
-import org.monarchinitiative.lirical.output.Lr2pgTemplate;
+import org.monarchinitiative.lirical.output.LiricalTemplate;
 import org.monarchinitiative.lirical.output.TsvTemplate;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -49,7 +49,7 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
     @Parameter(names={"-x", "--prefix"},description = "prefix of outfile")
     protected String outfilePrefix="lirical";
     /** An object that contains parameters from the YAML file for configuration. */
-    protected Lr2PgFactory factory;
+    protected LiricalFactory factory;
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
     protected Map<TermId,String> geneId2symbol;
     /** Various metadata that will be used for the HTML org.monarchinitiative.lirical.output. */
@@ -96,7 +96,7 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
      * @param genotypeMap Map with results of genotype analysis for each gene
      */
     protected void outputTSV(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
-        Lr2pgTemplate template = new TsvTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata);
+        LiricalTemplate template = new TsvTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata);
         template.outputFile(this.outfilePrefix,this.outdir);
     }
 
@@ -108,7 +108,7 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
 
      */
     protected void outputTSV(HpoCase hcase,Ontology ontology) {
-        Lr2pgTemplate template = new TsvTemplate(hcase, ontology, this.metadata);
+        LiricalTemplate template = new TsvTemplate(hcase, ontology, this.metadata);
         template.outputFile(this.outfilePrefix,this.outdir);
     }
 

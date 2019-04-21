@@ -25,7 +25,7 @@ import java.util.Map;
  * This class coordinates getting the data from the analysis into the FreeMark org.monarchinitiative.lirical.output templates.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class HtmlTemplate extends Lr2pgTemplate {
+public class HtmlTemplate extends LiricalTemplate {
     private static final Logger logger = LoggerFactory.getLogger(HtmlTemplate.class);
 
     /** Threshold posterior probability to show a differential diagnosis in detail. */

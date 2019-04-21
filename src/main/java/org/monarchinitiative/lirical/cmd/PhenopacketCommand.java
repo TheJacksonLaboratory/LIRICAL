@@ -7,9 +7,8 @@ import com.google.common.collect.Multimap;
 
 import org.json.simple.parser.ParseException;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
-import org.monarchinitiative.lirical.configuration.Lr2PgFactory;
-import org.monarchinitiative.lirical.exception.Lr2PgRuntimeException;
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.io.PhenopacketImporter;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
@@ -93,15 +92,15 @@ public class PhenopacketCommand extends PrioritizeCommand {
             metadata.put("sample_name", importer.getSamplename());
         } catch (ParseException pe) {
             logger.error("Could not parse phenopacket: {}", pe.getMessage());
-            throw new Lr2PgRuntimeException("Could not parse Phenopacket at " + phenopacketPath + ": " + pe.getMessage());
+            throw new LiricalRuntimeException("Could not parse Phenopacket at " + phenopacketPath + ": " + pe.getMessage());
         } catch (IOException e) {
             logger.error("Could not read phenopacket: {}", e.getMessage());
-            throw new Lr2PgRuntimeException("Could not find Phenopacket at " + phenopacketPath + ": " + e.getMessage());
+            throw new LiricalRuntimeException("Could not find Phenopacket at " + phenopacketPath + ": " + e.getMessage());
         }
 
 
         if (hasVcf) {
-            Lr2PgFactory factory = new Lr2PgFactory.Builder()
+            LiricalFactory factory = new LiricalFactory.Builder()
                     .datadir(this.datadir)
                     .genomeAssembly(this.genomeAssembly)
                     .exomiser(this.exomiserDataDirectory)
@@ -151,7 +150,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
 
         } else {
             // i.e., the Phenopacket has no VCF reference -- LR2PG will work on just phenotypes!
-            Lr2PgFactory factory = new Lr2PgFactory.Builder()
+            LiricalFactory factory = new LiricalFactory.Builder()
                     .datadir(this.datadir)
                     .build();
             factory.qcHumanPhenotypeOntologyFiles();

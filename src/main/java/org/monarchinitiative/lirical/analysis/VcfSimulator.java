@@ -6,7 +6,6 @@ import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
-import org.monarchinitiative.lirical.exception.Lr2PgRuntimeException;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.HtsFile;
 import org.phenopackets.schema.v1.core.OntologyClass;
@@ -31,11 +30,11 @@ import java.util.stream.Stream;
  */
 public class VcfSimulator {
 
-    public static final OntologyClass HET = OntologyClass.newBuilder().setId("GENO:0000135").setLabel("heterozygous").build();
+    private static final OntologyClass HET = OntologyClass.newBuilder().setId("GENO:0000135").setLabel("heterozygous").build();
 
-    public static final OntologyClass HOM_ALT = OntologyClass.newBuilder().setId("GENO:0000136").setLabel("homozygous").build();
+    private static final OntologyClass HOM_ALT = OntologyClass.newBuilder().setId("GENO:0000136").setLabel("homozygous").build();
 
-    public static final OntologyClass HEMIZYGOUS = OntologyClass.newBuilder().setId("GENO:0000134").setLabel("hemizygous").build();
+    private static final OntologyClass HEMIZYGOUS = OntologyClass.newBuilder().setId("GENO:0000134").setLabel("hemizygous").build();
 
     private static final Pattern INFO_BIFIELD = Pattern.compile("(\\w+)=(-?[\\w.]+)");
 
@@ -151,7 +150,7 @@ public class VcfSimulator {
     public HtsFile simulateVcf(String subjectId, List<Variant> variants, String genomeAssembly) throws IOException {
         Objects.requireNonNull(subjectId, "Subject ID must not be null");
         if (subjectId.isEmpty()) {
-            //throw new Lr2PgRuntimeException("Subject ID must not be empty");
+            //throw new LiricalRuntimeException("Subject ID must not be empty");
             System.err.println("[WARNING] Subject ID not found for ");
             subjectId = "n/a";
         }

@@ -8,16 +8,16 @@ import com.google.common.collect.Multimap;
 import com.google.protobuf.util.JsonFormat;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.analysis.VcfSimulator;
-import org.monarchinitiative.lirical.configuration.Lr2PgFactory;
-import org.monarchinitiative.lirical.exception.Lr2PgRuntimeException;
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.output.HtmlTemplate;
 import org.monarchinitiative.lirical.output.LiricalRanking;
-import org.monarchinitiative.lirical.output.Lr2pgTemplate;
+import org.monarchinitiative.lirical.output.LiricalTemplate;
 import org.monarchinitiative.lirical.output.TsvTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -71,7 +71,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
     private Map<TermId, String> geneId2symbol;
     private Map<TermId, Gene2Genotype> genotypemap;
 
-    private Lr2PgFactory factory;
+    private LiricalFactory factory;
 
     /**
      * No-op constructor meant to demo the phenotype LR2PG algorithm by simulating some case based on
@@ -87,7 +87,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
             JsonFormat.parser().merge(reader, ppBuilder);
         } catch (IOException e) {
             logger.warn("Unable to read/decode file '{}'", ppPath);
-            throw new Lr2PgRuntimeException(String.format("Unable to read/decode file '%s'", ppPath));
+            throw new LiricalRuntimeException(String.format("Unable to read/decode file '%s'", ppPath));
         }
         return ppBuilder.build();
     }
@@ -101,7 +101,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
             HtsFile htsFile = vcfSimulator.simulateVcf(pp.getSubject().getId(), pp.getVariantsList(), genomeAssembly);
             pp = pp.toBuilder().clearHtsFiles().addHtsFiles(htsFile).build();
         } catch (IOException e) {
-            throw new Lr2PgRuntimeException("Could not simulate VCF for phenopacket");
+            throw new LiricalRuntimeException("Could not simulate VCF for phenopacket");
         }
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
@@ -129,13 +129,15 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         HtsFile htsFile = pp.getHtsFilesList().stream()
                 .filter(hf -> hf.getHtsFormat().equals(HtsFile.HtsFormat.VCF))
                 .findFirst()
-                .orElseThrow(() -> new Lr2PgRuntimeException("Phenopacket has and has not VCF file in the same time... \uD83D\uDE15"));
+                .orElseThrow(() -> new LiricalRuntimeException("Phenopacket has and has not VCF file in the same time... \uD83D\uDE15"));
         String vcfPath = htsFile.getFile().getPath();
         this.genotypemap = factory.getGene2GenotypeMap(vcfPath);
         this.genoLr = factory.getGenotypeLR();
         // this.metadata.put("vcf_file", this.vcfPath);
 
-        logger.trace("Running simulation from phenopacket {} with template VCF {}");
+        logger.trace("Running simulation from phenopacket {} with template VCF {}",
+                phenopacketAbsolutePath,
+                vcfPath);
         List<TermId> hpoIdList = pp.getPhenotypesList() // copied from PhenopacketImporter
                 .stream()
                 .distinct()
@@ -174,7 +176,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
 
 
         if (outputTSV) {
-            Lr2pgTemplate template = new TsvTemplate(hcase, ontology, genotypemap, this.geneId2symbol, this.metadata);
+            LiricalTemplate template = new TsvTemplate(hcase, ontology, genotypemap, this.geneId2symbol, this.metadata);
             template.outputFile(this.outfilePrefix, outdir);
             String outname = String.format("%s.tsv", outfilePrefix);
             int rank = extractRank(outname);
@@ -194,13 +196,13 @@ public class SimulateVcfCommand extends PrioritizeCommand {
      * This can be run in a single phenopacket mode (in which case phenopacketPath needs to be defined) or in
      * multi-phenopacket mode (in which case phenopacketDir needs to be defined).
      *
-     * @throws Lr2pgException
+     * @throws LiricalException
      */
     @Override
     public void run() {
         rankingsList = new ArrayList<>();
         this.metadata = new HashMap<>();
-        this.factory = new Lr2PgFactory.Builder()
+        this.factory = new LiricalFactory.Builder()
                 .datadir(this.datadir)
                 .genomeAssembly(genomeAssembly)
                 .exomiser(this.exomiserDataDirectory)
@@ -234,7 +236,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
             }
         } else {
             System.err.println("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");
-            throw new Lr2PgRuntimeException("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");
+            throw new LiricalRuntimeException("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");
         }
 
         int total_rank = 0;
@@ -266,10 +268,17 @@ public class SimulateVcfCommand extends PrioritizeCommand {
                 LiricalRanking lr = new LiricalRanking(rank, line);
                 rankingsList.add(lr);
                 return rank;
-
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        // We should never get here. If we do, then probably the OMIM id used in the Phenopacket
+        // is incorrect or outdated.
+        // This command is not intended for general consumption. Therefore, it is better
+        // to terminate the program and correct the error rather than just continuing.
+        if (rank==-1) {
+            System.err.println("[ERROR] Could not find rank of simulated disease \"" +simulatedDisease + "\"");
+            System.exit(1);
         }
         return rank;
     }

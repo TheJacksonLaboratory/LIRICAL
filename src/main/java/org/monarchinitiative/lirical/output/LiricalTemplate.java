@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import freemarker.template.Configuration;
 import freemarker.template.Version;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
-import org.monarchinitiative.lirical.configuration.Lr2PgFactory;
-import org.monarchinitiative.lirical.exception.Lr2PgRuntimeException;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.Term;
@@ -24,8 +24,8 @@ import java.util.Map;
  * setting up the data prior to output as either tab-separated values (TSV) or HTML.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public abstract class Lr2pgTemplate {
-    private static final Logger logger = LoggerFactory.getLogger(Lr2PgFactory.class);
+public abstract class LiricalTemplate {
+    private static final Logger logger = LoggerFactory.getLogger(LiricalFactory.class);
 
     /** Map of data that will be used for the FreeMark template. */
     protected final Map<String, Object> templateData= new HashMap<>();
@@ -43,11 +43,11 @@ public abstract class Lr2pgTemplate {
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
     protected final Map<TermId,String> geneId2symbol;
 
-    public Lr2pgTemplate(HpoCase hcase,
-                         Ontology ontology,
-                         Map<TermId, Gene2Genotype> genotypeMap,
-                         Map<TermId,String> geneid2sym,
-                         Map<String,String> metadat){
+    public LiricalTemplate(HpoCase hcase,
+                           Ontology ontology,
+                           Map<TermId, Gene2Genotype> genotypeMap,
+                           Map<TermId,String> geneid2sym,
+                           Map<String,String> metadat){
 
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
@@ -56,9 +56,9 @@ public abstract class Lr2pgTemplate {
         initTemplateData(hcase,ontology,metadat);
     }
 
-    public Lr2pgTemplate(HpoCase hcase,
-                         Ontology ontology,
-                         Map<String,String> metadat){
+    public LiricalTemplate(HpoCase hcase,
+                           Ontology ontology,
+                           Map<String,String> metadat){
 
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
@@ -118,13 +118,13 @@ public abstract class Lr2pgTemplate {
             if (f.isDirectory()) {
                 return f;
             } else {
-                throw new Lr2PgRuntimeException("Cannot create directory since file of same name exists already: " + dir);
+                throw new LiricalRuntimeException("Cannot create directory since file of same name exists already: " + dir);
             }
         }
         // if we get here, we need to make the directory
         boolean success = f.mkdir();
         if (!success) {
-            throw new Lr2PgRuntimeException("Unable to make directory: " + dir);
+            throw new LiricalRuntimeException("Unable to make directory: " + dir);
         } else {
             return f;
         }

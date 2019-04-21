@@ -6,7 +6,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.lirical.cmd.*;
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,7 +145,7 @@ public class Lirical {
         }
         try {
             lr2pgcommand.run();
-        } catch (Lr2pgException e) {
+        } catch (LiricalException e) {
             e.printStackTrace();
         }
         long stopTime = System.currentTimeMillis();

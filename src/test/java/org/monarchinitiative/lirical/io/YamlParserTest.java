@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatioTest;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 
@@ -40,7 +40,7 @@ class YamlParserTest {
     }
 
     @Test
-    void testDemo1YamlFile() throws Lr2pgException {
+    void testDemo1YamlFile() throws LiricalException {
         YamlParser parser = new YamlParser(demo1path);
         String expected = String.format("%s%s%s","data", File.separator,"hp.obo");
         assertEquals(expected,parser.getHpOboPath());
@@ -77,7 +77,7 @@ class YamlParserTest {
      * This test is disabled on windows because it depends on the File separator (/ vs \).
      */
     @Test @DisabledOnOs(WINDOWS)
-    void testExomiserData()throws Lr2pgException  {
+    void testExomiserData()throws LiricalException {
         YamlParser parser = new YamlParser(demo1path);
         String expectedMvStore = "/home/robinp/data/exomiserdata/1802_hg19/1802_hg19_variants.mv.db";
         assertEquals(expectedMvStore,parser.getMvStorePath());
