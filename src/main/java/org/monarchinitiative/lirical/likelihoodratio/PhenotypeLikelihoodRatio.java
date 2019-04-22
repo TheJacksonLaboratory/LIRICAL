@@ -2,7 +2,6 @@ package org.monarchinitiative.lirical.likelihoodratio;
 
 
 import com.google.common.collect.ImmutableMap;
-import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
@@ -162,16 +161,23 @@ public class PhenotypeLikelihoodRatio {
      * the entire corpus of diseases. If the feature is maximally rare, i.e., 1/diseases.size(), then
      * we will estimate this frequency as being 1:500. If the feature is very common (at least 10%),
      * then we will estimate it as being 1:10.
-     * @param tid
-     * @return
+     * @param tid TermId of a term for which the disease has no annotations (nothing in common except root)
+     * @return Estimate probability of this ("false-positive") finding
      */
     private double noCommonOrganProbability(TermId tid) {
         double f = this.hpoTerm2OverallFrequency.getOrDefault(tid, DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY);
-        double max_no_organ = 0.10; // maximum probability of a "false positive finding
-        // range of false positive probability from 1:1000 for the rarest to 1:5 for the most common
-        //return Math.min(f,max_no_organ);
-        double ret = 0.002 + (f - DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY) * (0.1-0.002)/(0.1-DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY);
-        return ret*f;
+        final double MIN_PROB = 0.002; // lowest prob of 1:500
+        final double MAX_PROB = 0.10; // highest prob of 1:10
+        final double MAX_MINUS_MIN = MAX_PROB - MIN_PROB;
+        final double DENOMINATOR = MAX_PROB - DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+        final double FACTOR = MAX_MINUS_MIN/DENOMINATOR;
+        // falsePositivePenalty represents the range of penalty for a completely false positive finding -- from 0.1 to 1:500
+        // the more common the finding, the closer the penalty is to 0.1; the rarer it is, the closer we
+        // get to 1:500
+        double falsePositivePenalty = MIN_PROB + (f - DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY) * FACTOR;
+        // We multiple the overall feature frequency in our cohort by the penalty factor
+        // this will give us a likelihood ratio that varies from 0.1 to 0.002
+        return falsePositivePenalty*f;
     }
 
 
