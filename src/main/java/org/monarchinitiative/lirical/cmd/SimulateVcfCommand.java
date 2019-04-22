@@ -224,7 +224,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         this.geneId2symbol = factory.geneId2symbolMap();
         if (this.phenopacketPath != null) {
             logger.info("Running single file Phenopacket/VCF simulation at {}", phenopacketPath);
-            runOneVcfAnalysis(this.templateVcfPath);
+            runOneVcfAnalysis(this.phenopacketPath);
         } else if (this.phenopacketDir != null) {
             logger.info("Running Phenopacket/VCF simulations at {}", phenopacketDir);
             final File folder = new File(phenopacketDir);

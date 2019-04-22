@@ -157,11 +157,21 @@ public class PhenotypeLikelihoodRatio {
         }
     }
 
-
+    /** The intuition is that a patient has been observed to have a phenotype to which the disease
+     * is not annotated. We will model this as being more likely if the phenotype is common amongst
+     * the entire corpus of diseases. If the feature is maximally rare, i.e., 1/diseases.size(), then
+     * we will estimate this frequency as being 1:500. If the feature is very common (at least 10%),
+     * then we will estimate it as being 1:10.
+     * @param tid
+     * @return
+     */
     private double noCommonOrganProbability(TermId tid) {
         double f = this.hpoTerm2OverallFrequency.getOrDefault(tid, DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY);
         double max_no_organ = 0.10; // maximum probability of a "false positive finding
-        return Math.min(10.0*f,max_no_organ);
+        // range of false positive probability from 1:1000 for the rarest to 1:5 for the most common
+        //return Math.min(f,max_no_organ);
+        double ret = 0.002 + (f - DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY) * (0.1-0.002)/(0.1-DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY);
+        return ret*f;
     }
 
 
