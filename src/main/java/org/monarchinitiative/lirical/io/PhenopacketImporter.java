@@ -7,6 +7,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import org.phenopackets.schema.v1.Phenopacket;
@@ -95,6 +97,38 @@ public class PhenopacketImporter {
 
     public String getSamplename() {
         return samplename;
+    }
+
+    public boolean checkForObsoleteTerms(Ontology ontology) {
+        boolean clean=true;
+        for (TermId tid : hpoTerms) {
+            if (ontology.getObsoleteTermIds().contains(tid)) {
+                clean=false;
+                logger.error("Use of obsolete term id: {}",tid);
+                Term term = ontology.getTermMap().get(tid);
+                if (term==null) {
+                    logger.error("Could not find TermObject.");
+                    continue;
+                }
+                logger.error("The corresponding term label is {}",term.getName());
+                logger.error("We recommend replacing the term id with the current id: {}", term.getId().getValue());
+            }
+        }
+        for (TermId tid : negatedHpoTerms) {
+            if (ontology.getObsoleteTermIds().contains(tid)) {
+                clean=false;
+                logger.error("Use of obsolete term id: {}",tid);
+                Term term = ontology.getTermMap().get(tid);
+                if (term==null) {
+                    logger.error("Could not find TermObject.");
+                    continue;
+                }
+                logger.error("The corresponding term label is {}",term.getName());
+                logger.error("We recommend replacing the term id with the current id: {}", term.getId().getValue());
+            }
+        }
+
+        return clean;
     }
 
 
