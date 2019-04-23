@@ -6,6 +6,7 @@ import com.beust.jcommander.Parameters;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.protobuf.util.JsonFormat;
+import org.h2.mvstore.WriteBuffer;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.analysis.VcfSimulator;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
@@ -30,10 +31,7 @@ import org.phenopackets.schema.v1.core.Phenotype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -57,6 +55,10 @@ public class SimulateVcfCommand extends PrioritizeCommand {
     private String backgroundFrequencyFile;
     @Parameter(names = {"--phenopacket-dir"}, description = "path to directory with multiple phenopackets")
     private String phenopacketDir;
+    @Parameter(names = {}, description = "name of the output file with simulation results")
+    private String simulationOutFile="vcf_simulation_results.txt";
+
+    private BufferedWriter simulationOutBuffer;
     /**
      * If true, the phenopacket contains the path of a VCF file.
      */
@@ -177,9 +179,9 @@ public class SimulateVcfCommand extends PrioritizeCommand {
 
         if (outputTSV) {
             LiricalTemplate template = new TsvTemplate(hcase, ontology, genotypemap, this.geneId2symbol, this.metadata);
-            template.outputFile(this.outfilePrefix, outdir);
-            String outname = String.format("%s.tsv", outfilePrefix);
-            int rank = extractRank(outname);
+            String outname=String.format("%s.tsv","temp");
+            template.outputFile(outname);
+            extractRank(outname);
         } else {
             HtmlTemplate caseoutput = new HtmlTemplate(hcase,
                     ontology,
@@ -199,9 +201,14 @@ public class SimulateVcfCommand extends PrioritizeCommand {
      * @throws LiricalException
      */
     @Override
-    public void run() {
+    public void run()  {
         rankingsList = new ArrayList<>();
         this.metadata = new HashMap<>();
+        try {
+            simulationOutBuffer = new BufferedWriter(new FileWriter(this.simulationOutFile));
+        } catch (IOException e) {
+            throw new LiricalRuntimeException("Could not open " + simulationOutFile + " for writing");
+        }
         this.factory = new LiricalFactory.Builder()
                 .datadir(this.datadir)
                 .genomeAssembly(genomeAssembly)
@@ -247,11 +254,14 @@ public class SimulateVcfCommand extends PrioritizeCommand {
             System.out.println(lrank.toString());
         }
         double avgrank = (double) total_rank / N;
-        System.out.println("Average rank from " + N + " simulations was " + avgrank);
+        logger.info("Average rank from " + N + " simulations was " + avgrank);
     }
 
     private int extractRank(String path) {
         int rank = -1;
+        int n_over_50=0; // number of differentials with post prob over 50%
+        int n_total=0; // total number of differentials
+        LiricalRanking lr=null;
         try {
             BufferedReader br = new BufferedReader(new FileReader(path));
             String line;
@@ -262,16 +272,24 @@ public class SimulateVcfCommand extends PrioritizeCommand {
                 rank = Integer.parseInt(fields[0]);
                 String diseaseName = fields[1];
                 String diseaseCurie = fields[2];
+                String posttest = fields[4].replace("%","");// remove the percent sign
                 if (diseaseCurie.equals(this.simulatedDisease)) {
                     logger.info("Got rank of {} for simulated disease {}", rank, simulatedDisease);
+                    lr = new LiricalRanking(rank, line);
+                    rankingsList.add(lr);
                 }
-                LiricalRanking lr = new LiricalRanking(rank, line);
-                rankingsList.add(lr);
-                return rank;
+                Double posttestprob = Double.parseDouble(posttest);
+                if (posttestprob>50.0) n_over_50++;
+                n_total++;
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        String res = String.format("%s: posttest prob > 50%%: %d/%d",this.simulatedDisease,n_over_50,n_total);
+        if (lr!=null) {
+            lr.addExplanation(res);
+        }
+        logger.info(res);
         // We should never get here. If we do, then probably the OMIM id used in the Phenopacket
         // is incorrect or outdated.
         // This command is not intended for general consumption. Therefore, it is better

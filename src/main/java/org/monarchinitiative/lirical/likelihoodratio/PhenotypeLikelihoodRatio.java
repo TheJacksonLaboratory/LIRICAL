@@ -84,10 +84,12 @@ public class PhenotypeLikelihoodRatio {
         // probability a feature is present but not recorded or not noticed.
         final double FALSE_NEGATIVE_OBSERVATION_OF_PHENOTYPE_PROB=0.01;
         if (backgroundFrequency>0.99) {
-            logger.error("Warning, unusually high bachground freuqency calculated for {} of {} (should never happen)",
+            logger.error("Warning, unusually high bachground frequency calculated for {} of {} (should never happen)",
                     backgroundFrequency,tid.getValue());
             return 1.0; // should never happen, but protect against divide by zero if there is some error
         }
+        // The phenotype was excluded in the proband and also the disease
+        // is not annotated to the term. This should result in a slight improvement of the LR score.
         if (! isIndirectlyAnnotatedTo(tid,disease,ontology)) {
             return 1.0/(1.0-backgroundFrequency); // this is the negative LR if the disease does not have the term
         }

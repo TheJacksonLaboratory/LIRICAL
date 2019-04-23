@@ -72,6 +72,7 @@ public abstract class LiricalTemplate {
      * @param directory -- directory to which to write the output file. Created automatically if it does not exist
      */
     abstract public void outputFile(String prefix, String directory);
+    abstract public void outputFile(String absolutePath);
 
     private void initTemplateData(HpoCase hcase, Ontology ontology, Map<String,String> metadat) {
         for(Map.Entry<String,String> entry : metadat.entrySet()) {
