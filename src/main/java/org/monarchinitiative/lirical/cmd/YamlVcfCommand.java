@@ -22,18 +22,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class coordinates the main analysis of a VCF file plus list of observed HPO terms.
+ * This class coordinates the main analysis of a VCF file plus list of observed HPO terms. This
+ * analysis is driven by a YAML file.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Phenotype-driven analysis of VCF (Exome/Genome) data")
-public class VcfCommand extends PrioritizeCommand {
-    private static final Logger logger = LoggerFactory.getLogger(VcfCommand.class);
+public class YamlVcfCommand extends PrioritizeCommand {
+    private static final Logger logger = LoggerFactory.getLogger(YamlVcfCommand.class);
     @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
     private String yamlPath;
+
     /**
-     * Command pattern to coordinate analysis of a VCF file with LR2PG.
+     * Command pattern to coordinate analysis of a VCF file with LIRICAL.
      */
-    public VcfCommand() {
+    public YamlVcfCommand() {
     }
 
 
@@ -100,6 +102,7 @@ public class VcfCommand extends PrioritizeCommand {
         LiricalFactory.Builder builder = new LiricalFactory.Builder().
                 yaml(yparser).
                 filter(filterOnFILTER);
+        this.outfilePrefix = yparser.getPrefix();
         return builder.buildForGenomicDiagnostics();
     }
 }

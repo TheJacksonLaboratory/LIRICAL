@@ -3,6 +3,12 @@ Changelog
 =========
 
 -------
+v0.9.16
+-------
+- Added code to simulate cases with template VCF and phenopackets
+- Fixed bug by which YAML file was not correctly setting prefix
+
+-------
 v0.9.15
 -------
 - Changing name of ap to LIRICAL: LIkelihood Ratio Interpretation of Clinical AbnormaLities.

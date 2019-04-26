@@ -155,7 +155,7 @@ public class LiricalFactory {
 
 
     /**
-     * @return a list of observed HPO terms (from the YAML file)
+     * @return a list of observed HPO terms (from the YAML/Phenopacket file)
      * @throws LiricalException if one of the terms is not in the HPO Ontology
      */
     public List<TermId> observedHpoTerms() throws LiricalException {

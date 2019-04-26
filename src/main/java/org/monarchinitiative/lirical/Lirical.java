@@ -36,7 +36,7 @@ public class Lirical {
         SimulatePhenotypesCommand simulate = new SimulatePhenotypesCommand();
         GridSearchCommand grid = new GridSearchCommand();
         Gt2GitCommand gt2git = new Gt2GitCommand();
-        VcfCommand vcf = new VcfCommand();
+        YamlVcfCommand vcf = new YamlVcfCommand();
         PhenopacketCommand phenopacket = new PhenopacketCommand();
         SimulateVcfCommand simvcf = new SimulateVcfCommand();
         JCommander jc = JCommander.newBuilder()
