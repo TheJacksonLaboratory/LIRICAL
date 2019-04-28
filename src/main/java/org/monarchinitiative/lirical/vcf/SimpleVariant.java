@@ -14,8 +14,8 @@ import java.util.Set;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData.ClinSig.NOT_PROVIDED;
 
 /**
- * This class encapsulates only as much data about a variant as we need to run the algoroithm and
- * display the result
+ * This class encapsulates data about a variant and its classification as ClinVar pathogenic or likely
+ * pathogenic.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class SimpleVariant implements Comparable<SimpleVariant> {
@@ -58,7 +58,13 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
         this.annotationList=ImmutableList.copyOf(annotlist);
 
         this.frequency=freq;
-        this.pathogenicityScore=(float)(path*frequencyScore());
+        // heuristic -- count ClinVar pathogenic or likjely pathogenic as 1.0 (maximum pathogenicity score)
+        // irregardless of the Exomiser pathogenicity score
+        if (clinv.equals(ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC)) {
+            this.pathogenicityScore = 1.0f;
+        } else {
+            this.pathogenicityScore = (float) (path * frequencyScore());
+        }
         this.clinvar=clinv;
         switch (genotypeString) {
             case "0/1":

@@ -76,17 +76,23 @@ public class GenotypeLikelihoodRatio {
         if (g2g.equals(Gene2Genotype.NO_IDENTIFIED_VARIANT)) {
             return getLRifNoVariantAtAllWasIdentified(inheritancemodes);
         }
-        // special case 2: Clinvar-pathogenic variant(2) found in this gene.
+        // special case 2: Clinvar-pathogenic variant(s) found in this gene.
         // The likelihood ratio is defined as 1000**count, where 1 for autosomal dominant and
         // min(2,clinVarcount) for autosomal recessive.
+        // if the count of ClinVar variants matches the expected number of variants according
+        // to the mode of inheritance, then return a heuristic upweighting. Otherwise,
+        // set the pathogenicity of the variant to 1.0 and continue with the score.
         if (g2g.hasPathogenicClinvarVar()) {
             int count = g2g.pathogenicClinVarCount();
             if (inheritancemodes.contains(AUTOSOMAL_RECESSIVE)) {
-                count = count>2?2:count; // max of two variants for autosomal recessive
+                if (count == 2) {
+                    return Math.pow(1000d,2);
+                }
             } else {
-                count = count>1?1:count; // max of one for autosomal dominant
+                if (count == 1) {
+                    return Math.pow(1000d, 1d);
+                }
             }
-            return Math.pow(1000d, count);
         }
         double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
         if (observedWeightedPathogenicVariantCount<EPSILON) {
