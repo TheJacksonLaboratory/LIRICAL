@@ -117,7 +117,9 @@ public class GenotypeLikelihoodRatio {
             // Add a default dominant mode to avoid not ranking this gene at all
             inheritancemodes = ImmutableList.of(AUTOSOMAL_DOMINANT);
         }
-
+        // The following is a heuristic to avoid giving genes with a high background count
+        // a better score for pathogenic than background -- the best explanation for
+        // a gene with high background is that a variant is background (unless variant is ClinVar-path, see above).
         if (lambda_background>1.0) {
             lambda_background=Math.min(lambda_background,g2g.pathogenicVariantCount());
         }
@@ -133,11 +135,14 @@ public class GenotypeLikelihoodRatio {
                 pdDisease = dominantPoissonDistribution;
             }
             // Heuristic for the case where we have more called pathogenic variants than we should have
-            // for instance, we have an autosomal recessive disease but there are 5 called pathogenic
-            // variants
-            if (observedWeightedPathogenicVariantCount>lambda_disease) {
-                double D = pdDisease.probability(observedWeightedPathogenicVariantCount);
-                PoissonDistribution pdBackground = new PoissonDistribution(observedWeightedPathogenicVariantCount);
+            // in a gene without a high background count -- we will model this as technical error and
+            // will take the observed path weighted count to not be more than lambda_disease.
+            // this will have the effect of not downweighting these genes
+            // the user will have to judge whether one of the variants is truly pathogenic.
+            if (observedWeightedPathogenicVariantCount>lambda_disease && lambda_background < lambda_disease) {
+                double pathogenicVariantCount = Math.max(observedWeightedPathogenicVariantCount,lambda_disease);
+                double D = pdDisease.probability(pathogenicVariantCount);
+                PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
                 double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
                 return D/B;
             }
