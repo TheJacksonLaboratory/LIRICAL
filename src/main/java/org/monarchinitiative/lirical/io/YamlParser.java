@@ -221,7 +221,7 @@ public class YamlParser {
      * In this case, we return an empty Optional object.
      * @return Path to VCF file, if present.
      */
-    public Optional<String> vcfPath()  {
+    public Optional<String> getOptionalVcfPath()  {
         if (yconfig.getAnalysis().containsKey("vcf")) {
             return Optional.of(yconfig.getAnalysis().get("vcf"));
         }  else {
@@ -249,6 +249,16 @@ public class YamlParser {
      */
     public String[] getHpoTermList() {
         return yconfig.getHpoIds();
+    }
+
+    public String[] getNegatedHpoTermList() { return yconfig.getNegatedHpoIds(); }
+
+
+    public String getSampleId() {
+        if (yconfig==null || yconfig.getSampleId() == null) {
+            throw new LiricalRuntimeException("YAML file does not contain required sampleId element");
+        }
+        return yconfig.getSampleId();
     }
 
 }

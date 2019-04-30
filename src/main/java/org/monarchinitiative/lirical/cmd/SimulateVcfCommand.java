@@ -44,7 +44,7 @@ import java.util.function.Predicate;
 public class SimulateVcfCommand extends PrioritizeCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulateVcfCommand.class);
     //TODO -- Get this from the VCF file or from the Phenopacket or from command line
-    String genomeAssembly = "GRCh37";
+    private String genomeAssembly = "GRCh37";
     @Parameter(names = {"-p", "--phenopacket"}, description = "path to phenopacket file")
     private String phenopacketPath;
     @Parameter(names = {"-e", "--exomiser"}, description = "path to the Exomiser data directory")
@@ -135,7 +135,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         String vcfPath = htsFile.getFile().getPath();
         this.genotypemap = factory.getGene2GenotypeMap(vcfPath);
         this.genoLr = factory.getGenotypeLR();
-        // this.metadata.put("vcf_file", this.vcfPath);
+        // this.metadata.put("vcf_file", this.getOptionalVcfPath);
 
         logger.trace("Running simulation from phenopacket {} with template VCF {}",
                 phenopacketAbsolutePath,
@@ -197,8 +197,6 @@ public class SimulateVcfCommand extends PrioritizeCommand {
     /**
      * This can be run in a single phenopacket mode (in which case phenopacketPath needs to be defined) or in
      * multi-phenopacket mode (in which case phenopacketDir needs to be defined).
-     *
-     * @throws LiricalException
      */
     @Override
     public void run()  {
@@ -213,7 +211,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
                 .datadir(this.datadir)
                 .genomeAssembly(genomeAssembly)
                 .exomiser(this.exomiserDataDirectory)
-                // .vcf(vcfPath)
+                // .vcf(getOptionalVcfPath)
                 .transcriptdatabase(this.transcriptDb)
                 .backgroundFrequency(this.backgroundFrequencyFile)
                 .build();

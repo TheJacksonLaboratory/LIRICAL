@@ -132,7 +132,7 @@ public class Vcf2GenotypeMap {
         final boolean useInterval = false;
         this.gene2genotypeMap = new HashMap<>();
         try (VCFFileReader vcfReader = new VCFFileReader(new File(vcfPath), useInterval)) {
-            //final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(vcfPath));
+            //final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(getOptionalVcfPath));
             VCFHeader vcfHeader = vcfReader.getFileHeader();
             this.samplenames = vcfHeader.getSampleNamesInOrder();
             this.n_samples=samplenames.size();

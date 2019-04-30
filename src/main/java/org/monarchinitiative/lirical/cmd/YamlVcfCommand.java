@@ -52,14 +52,14 @@ public class YamlVcfCommand extends PrioritizeCommand {
         this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
         this.metadata.put("analysis_date", factory.getTodaysDate());
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
-        List<TermId> observedHpoTerms = factory.observedHpoTerms();
         Ontology ontology = factory.hpoOntology();
         Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
 
         PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
         Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
         this.geneId2symbol = factory.geneId2symbolMap();
-        CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(observedHpoTerms)
+        CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
+                .negated(factory.negatedHpoTerms())
                 .ontology(ontology)
                 .diseaseMap(diseaseMap)
                 .disease2geneMultimap(disease2geneMultimap)

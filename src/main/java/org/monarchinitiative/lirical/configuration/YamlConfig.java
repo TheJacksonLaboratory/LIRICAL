@@ -12,7 +12,9 @@ public class YamlConfig {
 
     private Map<String,String> analysis;
     private String prefix;
+    private String sampleId;
     private String[] hpoIds;
+    private String[] negatedHpoIds;
 
     public void setAnalysis(Map<String,String> an) {
         this.analysis=an;
@@ -30,20 +32,22 @@ public class YamlConfig {
     public Map<String,String> getAnalysis(){
         return analysis;
     }
-    //public void setPrefix(String out) {
-   //     this.prefix=out;
-    //}
+
     /** @return name (prefix) of the output file */
     public String getPrefix() {
         return prefix;
     }
-    public void setHpoIds(String[] ids) {
-        this.hpoIds=ids;
+
+    public String getSampleId() {
+        return sampleId;
     }
+
     /** @return list of HPO ids observed in the proband. */
     public String[] getHpoIds() {
         return hpoIds;
     }
+
+    public String[] getNegatedHpoIds() { return negatedHpoIds; }
 
 
 

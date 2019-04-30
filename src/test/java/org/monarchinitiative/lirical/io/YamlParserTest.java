@@ -26,7 +26,7 @@ class YamlParserTest {
 
     @BeforeAll
     static void init() throws FileNotFoundException{
-        ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
+        ClassLoader classLoader = YamlParserTest.class.getClassLoader();
         URL resource = classLoader.getResource("yaml/demo1.yml");
         if (resource==null){
             throw new FileNotFoundException("Could not find demo1.yml file");

@@ -35,6 +35,7 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Not a full implementation of the factory pattern but rather a convenience class to create objects of various
@@ -59,6 +60,8 @@ public class LiricalFactory {
     private final String vcfPath;
     /** List of HPO terms (phenotypic abnormalities) observed in the person being evaluated. */
     private final List<TermId> hpoIdList;
+    /** List of HPO terms that were excluded in the person being evaluated. */
+    private final List<TermId> negatedHpoIdList;
     /** The directory in which several files are stored. */
     private final String datadir;
     /** THe default data directory */
@@ -144,6 +147,12 @@ public class LiricalFactory {
             listbuilder.add(hpoId);
         }
         this.hpoIdList=listbuilder.build();
+        listbuilder = new ImmutableList.Builder<>();
+        for (String id : builder.negatedHpoTerms){
+            TermId negatedId = TermId.of(id);
+            listbuilder.add(negatedId);
+        }
+        this.negatedHpoIdList = listbuilder.build();
         if (builder.hpOboPath!=null) {
             this.ontology=hpoOntology();
         } else {
@@ -166,6 +175,20 @@ public class LiricalFactory {
         }
         return hpoIdList;
     }
+    /**
+     * @return a list of observed HPO terms (from the YAML/Phenopacket file)
+     * @throws LiricalException if one of the terms is not in the HPO Ontology
+     */
+    public List<TermId> negatedHpoTerms() throws LiricalException {
+        for (TermId hpoId : negatedHpoIdList) {
+            if (! this.ontology.getTermMap().containsKey(hpoId)) {
+                throw new LiricalException("Could not find HPO term " + hpoId.getValue() + " in ontology");
+            }
+        }
+        return negatedHpoIdList;
+    }
+
+
 
     /** @return the genome assembly corresponding to the VCF file. Can be null. */
     public GenomeAssembly getAssembly() {
@@ -587,6 +610,7 @@ public class LiricalFactory {
         /** The default transcript database is UCSC> */
         private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
         private List<String> observedHpoTerms=ImmutableList.of();
+        private List<String> negatedHpoTerms=ImmutableList.of();
 
         public Builder(){
         }
@@ -602,7 +626,9 @@ public class LiricalFactory {
             this.exomiserDataDir=yp.getExomiserDataDir();
             this.genomeAssembly=yp.getGenomeAssembly();
             this.observedHpoTerms=new ArrayList<>();
+            this.negatedHpoTerms=new ArrayList<>();
             Collections.addAll(this.observedHpoTerms, yp.getHpoTermList());
+            Collections.addAll(this.negatedHpoTerms,yp.getNegatedHpoTermList());
             switch (yp.transcriptdb().toUpperCase()) {
                 case "ENSEMBL" :
                     this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
@@ -612,7 +638,7 @@ public class LiricalFactory {
                 default:
                     this.transcriptdatabase=TranscriptDatabase.UCSC;
             }
-            Optional<String> vcfOpt=yp.vcfPath();
+            Optional<String> vcfOpt=yp.getOptionalVcfPath();
             if (vcfOpt.isPresent()) {
                 this.vcfPath=vcfOpt.get();
             } else {
