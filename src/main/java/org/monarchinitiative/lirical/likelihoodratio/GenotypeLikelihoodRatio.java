@@ -144,15 +144,15 @@ public class GenotypeLikelihoodRatio {
             // this will have the effect of not downweighting these genes
             // the user will have to judge whether one of the variants is truly pathogenic.
             if (observedWeightedPathogenicVariantCount > lambda_disease ) {
-                if ( lambda_background < lambda_disease) {
-                    double pathogenicVariantCount = Math.max(observedWeightedPathogenicVariantCount, lambda_disease);
-                    double D = pdDisease.probability(pathogenicVariantCount);
-                    PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
-                    double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
-                    return D / B;
-                } else {
+//                if ( lambda_background < lambda_disease) {
+//                    double pathogenicVariantCount = Math.max(observedWeightedPathogenicVariantCount, lambda_disease);
+//                    double D = pdDisease.probability(pathogenicVariantCount);
+//                    PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
+//                    double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
+//                    return D / B;
+//                } else {
                     return 1.0;// high lambda background -- probably not interesting so just don't weight it.
-                }
+//                }
             }
             double D = pdDisease.probability(observedWeightedPathogenicVariantCount);
             PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
