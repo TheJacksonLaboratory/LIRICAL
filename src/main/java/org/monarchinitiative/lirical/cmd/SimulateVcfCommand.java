@@ -94,7 +94,10 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         return ppBuilder.build();
     }
 
-
+    /**
+     * This method coordinates
+     * @param phenopacketAbsolutePath
+     */
     private void runOneVcfAnalysis(String phenopacketAbsolutePath) {
 
         Phenopacket pp = readPhenopacket(phenopacketAbsolutePath);
