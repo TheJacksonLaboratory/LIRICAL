@@ -223,6 +223,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         this.metadata = new HashMap<>();
         try {
             simulationOutBuffer = new BufferedWriter(new FileWriter(this.simulationOutFile));
+            simulationOutBuffer.write(LiricalRanking.header()+"\n");
         } catch (IOException e) {
             throw new LiricalRuntimeException("Could not open " + simulationOutFile + " for writing");
         }
@@ -291,16 +292,21 @@ public class SimulateVcfCommand extends PrioritizeCommand {
                 if (line.startsWith("!")) continue;
                 if (line.startsWith("rank")) continue;
                 String[] fields = line.split("\t");
+              // see the TSV template for fields
                 rank = Integer.parseInt(fields[0]);
                 String diseaseName = fields[1];
                 String diseaseCurie = fields[2];
-                String posttest = fields[4].replace("%","");// remove the percent sign
+                String pretest = fields[3];
+                String posttest = fields[4];
+                String compositeLR = fields[5];
+                String entrezID = fields[6];
+                String var = fields[7];
                 if (diseaseCurie.equals(this.simulatedDisease)) {
                     logger.info("Got rank of {} for simulated disease {}", rank, simulatedDisease);
-                    lr = new LiricalRanking(rank, line);
+                    lr = new LiricalRanking(rank, diseaseName,diseaseCurie,pretest,posttest,compositeLR,entrezID,var);
                     rankingsList.add(lr);
                 }
-                Double posttestprob = Double.parseDouble(posttest);
+                Double posttestprob = Double.parseDouble(posttest.replace("%",""));// remove the percent sign
                 if (posttestprob>50.0) n_over_50++;
                 n_total++;
             }
@@ -313,7 +319,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         }
         logger.info(res);
         try {
-            this.simulationOutBuffer.write(lr.toString());
+            this.simulationOutBuffer.write(lr.toString() + "\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
