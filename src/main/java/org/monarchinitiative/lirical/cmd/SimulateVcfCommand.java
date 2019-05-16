@@ -40,6 +40,22 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Predicate;
 
+
+/**
+ * Simulate one or multiple VCFs from a Phenopacket that has HPO terms and a gene mutation. The mutation will
+ * be "injected" into a template VCF file (this should be a "normal" VCF file), and LIRICAL will be run, and
+ * the rank of the original diagnosis from the Phenopacket will be recorded. To run a single case,
+ * <pre>
+ *     java -jar LIRICAL.jar -p sample-phenopacket.json -e path/to/exomiser-datadir -v template.vcf
+ * </pre>
+ * Use the -m 25 option to show at least 25 differential diagnosis (by default, only diseases with posterior
+ * probability above 1% are displayed).
+ * <p></p>
+ * In order to perform simulation on an entire directory of phenopackets, replace the -p option with
+ * the --phenopacket-dir option.
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ */
+
 @Parameters(commandDescription = "Simulate VCF analysis from phenopacket", hidden = false)
 public class SimulateVcfCommand extends PrioritizeCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulateVcfCommand.class);
@@ -252,10 +268,15 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         for (LiricalRanking lrank : this.rankingsList) {
             total_rank += lrank.getRank();
             N++;
-            System.out.println(lrank.toString());
+
         }
         double avgrank = (double) total_rank / N;
         logger.info("Average rank from " + N + " simulations was " + avgrank);
+        try {
+            this.simulationOutBuffer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private int extractRank(String path) {
@@ -291,6 +312,11 @@ public class SimulateVcfCommand extends PrioritizeCommand {
             lr.addExplanation(res);
         }
         logger.info(res);
+        try {
+            this.simulationOutBuffer.write(lr.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // We should never get here. If we do, then probably the OMIM id used in the Phenopacket
         // is incorrect or outdated.
         // This command is not intended for general consumption. Therefore, it is better
