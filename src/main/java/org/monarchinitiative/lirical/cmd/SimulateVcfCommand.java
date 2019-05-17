@@ -313,15 +313,15 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        String res = String.format("%s: posttest prob > 50%%: %d/%d",this.simulatedDisease,n_over_50,n_total);
+        String over50 = String.format("%d/%d",n_over_50,n_total);
         if (lr!=null) {
-            lr.addExplanation(res);
-        }
-        logger.info(res);
-        try {
-            this.simulationOutBuffer.write(lr.toString() + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                lr.addNumberOfDiseasesOver50(over50);
+                this.simulationOutBuffer.write(lr.toString() + "\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+                logger.error("[Exception encountered writing LR to file for {}",this.simulatedDisease);
+            }
         }
         // We should never get here. If we do, then probably the OMIM id used in the Phenopacket
         // is incorrect or outdated.

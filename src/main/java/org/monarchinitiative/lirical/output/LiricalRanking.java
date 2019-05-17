@@ -17,7 +17,8 @@ public class LiricalRanking {
     private final String compositeLR;
     private final String entrezID ;
     private final  String var;
-    private String additionalExplanation;
+    /** Numerator: Number of diseases with posterior probability over 50%; denominator: total number of diseases tested. */
+    private String over50;
 
     //(rank, diseaseName,diseaseCurie,pretest,posttest,compositeLR,entrezID,var);
 
@@ -32,20 +33,20 @@ public class LiricalRanking {
         this.var=var;
     }
 
-    public void addExplanation(String e) {
-        this.additionalExplanation = e;
+    public void addNumberOfDiseasesOver50(String e) {
+        this.over50 = e;
     }
 
 
     @Override
     public String toString() {
-        additionalExplanation=additionalExplanation==null?"-":additionalExplanation;
-        return String.join("\t",String.valueOf(rank),diseaseName,diseaseCurie,pretest,posttest, compositeLR,entrezID,additionalExplanation,var);
+        over50=over50==null?"-":over50;
+        return String.join("\t",String.valueOf(rank),diseaseName,diseaseCurie,pretest,posttest, compositeLR,entrezID,over50,var);
     }
 
     public static String header() {
         return "#"+String.join("\t","rank","name","curie","pretest-prob",
-            "posttest-prob", "compositeLR","entrezID","explanation","var");
+            "posttest-prob", "compositeLR","entrezID","n_diseases_over50","var");
     }
 
 
