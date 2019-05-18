@@ -9,6 +9,7 @@ package org.monarchinitiative.lirical.output;
 public class LiricalRanking {
 
     private final int rank;
+    private final String phenopacketBaseName;
 
     private final String diseaseName;
     private final String diseaseCurie;
@@ -22,8 +23,9 @@ public class LiricalRanking {
 
     //(rank, diseaseName,diseaseCurie,pretest,posttest,compositeLR,entrezID,var);
 
-    public LiricalRanking(int r,String name, String curie, String pretest, String posttest, String lr, String entrez, String var) {
+    public LiricalRanking(String basename,int r,String name, String curie, String pretest, String posttest, String lr, String entrez, String var) {
         rank=r;
+        this.phenopacketBaseName=basename;
         this.diseaseName=name;
         this.diseaseCurie=curie;
         this.pretest=pretest;
@@ -41,12 +43,13 @@ public class LiricalRanking {
     @Override
     public String toString() {
         over50=over50==null?"-":over50;
-        return String.join("\t",String.valueOf(rank),diseaseName,diseaseCurie,pretest,posttest, compositeLR,entrezID,over50,var);
+        return String.join("\t",String.valueOf(rank),diseaseName,diseaseCurie,pretest,posttest,
+                compositeLR,entrezID,over50,var,phenopacketBaseName);
     }
 
     public static String header() {
         return "#"+String.join("\t","rank","name","curie","pretest-prob",
-            "posttest-prob", "compositeLR","entrezID","n_diseases_over50","var");
+            "posttest-prob", "compositeLR","entrezID","n_diseases_over50","var","phenopacket");
     }
 
 

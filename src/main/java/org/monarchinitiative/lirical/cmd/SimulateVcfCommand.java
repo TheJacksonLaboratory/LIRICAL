@@ -112,10 +112,10 @@ public class SimulateVcfCommand extends PrioritizeCommand {
 
     /**
      * This method coordinates
-     * @param phenopacketAbsolutePath
+     * @param phenopacketFile File with the Phenopacket we are currently analyzing
      */
-    private void runOneVcfAnalysis(String phenopacketAbsolutePath) {
-
+    private void runOneVcfAnalysis(File phenopacketFile) {
+        String phenopacketAbsolutePath = phenopacketFile.getAbsolutePath();
         Phenopacket pp = readPhenopacket(phenopacketAbsolutePath);
         VcfSimulator vcfSimulator = new VcfSimulator(Paths.get(this.templateVcfPath));
         try {
@@ -200,7 +200,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
             LiricalTemplate template = new TsvTemplate(hcase, ontology, genotypemap, this.geneId2symbol, this.metadata);
             String outname=String.format("%s.tsv","temp");
             template.outputFile(outname);
-            extractRank(outname);
+            extractRank(outname,phenopacketFile.getName());
         } else {
             HtmlTemplate caseoutput = new HtmlTemplate(hcase,
                     ontology,
@@ -249,14 +249,14 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         this.geneId2symbol = factory.geneId2symbolMap();
         if (this.phenopacketPath != null) {
             logger.info("Running single file Phenopacket/VCF simulation at {}", phenopacketPath);
-            runOneVcfAnalysis(this.phenopacketPath);
+            runOneVcfAnalysis(new File(this.phenopacketPath));
         } else if (this.phenopacketDir != null) {
             logger.info("Running Phenopacket/VCF simulations at {}", phenopacketDir);
             final File folder = new File(phenopacketDir);
             for (final File fileEntry : folder.listFiles()) {
                 if (fileEntry.isFile() && fileEntry.getAbsolutePath().endsWith(".json")) {
                     logger.info("\tPhenopacket: \"{}\"", fileEntry.getAbsolutePath());
-                    runOneVcfAnalysis(fileEntry.getAbsolutePath());
+                    runOneVcfAnalysis(fileEntry);
                 }
             }
         } else {
@@ -280,7 +280,14 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         }
     }
 
-    private int extractRank(String path) {
+
+    /**
+     * Extract data from the output TSV file including the rank of the correct disease
+     * @param path Path to the TSV file created by LIRICAL
+     * @param phenopacketBaseName Name of the phenopacket we are currently analyzing.
+     * @return rank of the correct disease.
+     */
+    private int extractRank(String path, String phenopacketBaseName) {
         int rank = -1;
         int n_over_50=0; // number of differentials with post prob over 50%
         int n_total=0; // total number of differentials
@@ -303,7 +310,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
                 String var = fields[7];
                 if (diseaseCurie.equals(this.simulatedDisease)) {
                     logger.info("Got rank of {} for simulated disease {}", rank, simulatedDisease);
-                    lr = new LiricalRanking(rank, diseaseName,diseaseCurie,pretest,posttest,compositeLR,entrezID,var);
+                    lr = new LiricalRanking(phenopacketBaseName,rank, diseaseName,diseaseCurie,pretest,posttest,compositeLR,entrezID,var);
                     rankingsList.add(lr);
                 }
                 Double posttestprob = Double.parseDouble(posttest.replace("%",""));// remove the percent sign
