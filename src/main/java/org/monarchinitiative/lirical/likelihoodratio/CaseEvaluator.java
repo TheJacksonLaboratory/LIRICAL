@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import org.monarchinitiative.lirical.analysis.Evolution;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
@@ -23,9 +24,9 @@ import java.util.*;
 public class CaseEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(CaseEvaluator.class);
     /** List of abnormalities seen in the person being evaluated. */
-    private final List<TermId> phenotypicAbnormalities;
+    private List<TermId> phenotypicAbnormalities;
     /** List of abnormalities excluded in the person being evaluated. */
-    private final List<TermId> negatedPhenotypicAbnormalities;
+    private List<TermId> negatedPhenotypicAbnormalities;
     /** Map of the observed genotypes in the VCF file. Key is an EntrezGene is, and the value is the average pathogenicity score times the
      * count of all variants in the pathogenic bin.*/
     private final Map<TermId,Gene2Genotype> genotypeMap;
@@ -138,13 +139,27 @@ public class CaseEvaluator {
     public void setVerbosity(boolean v) { this.verbose=v;}
 
 
-    private TestResult getResultNoDiseaseGene(HpoDisease disease,double pretest, List<Double> observed, List<Double> excluded) {
-        return new TestResult(observed,excluded,disease,pretest);
+
+    public HpoCase optimizeByEvolution() {
+        Evolution evolution = new Evolution(phenotypicAbnormalities,negatedPhenotypicAbnormalities);
+        int Nchroms = evolution.getNumberOfChromosomes();
+        while (evolution.nextGeneration()) {
+            for (int c=0;c<Nchroms;c++) {
+                phenotypicAbnormalities = evolution.getObservedTermsForChromosomeN(c);
+                negatedPhenotypicAbnormalities = evolution.getNegatedTermsForChromosomeN(c);
+                HpoCase newcase = evaluate();
+                double maxscore = newcase.getBestPosteriorProbability();
+                evolution.setScoreForChromosomeN(c,maxscore);
+            }
+            evolution.createNextGeneration();
+        }
+        phenotypicAbnormalities = evolution.getBestChromosomeObserved();
+        negatedPhenotypicAbnormalities = evolution.getBestChromosomeNegated();
+        return evaluate();
     }
 
-    private TestResult getResultDiseaseGeneNoVariantsFound(HpoDisease disease,double pretest, List<Double> observed, List<Double> excluded) {
-        return new TestResult(observed,excluded,disease,pretest);
-    }
+
+
 
 
     private List<Double> observedPhenotypesLikelihoodRatios(TermId diseaseId) {

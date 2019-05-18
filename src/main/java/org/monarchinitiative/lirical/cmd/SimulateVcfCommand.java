@@ -188,6 +188,9 @@ public class SimulateVcfCommand extends PrioritizeCommand {
 
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
+        if (hcase.getBestPosteriorProbability()<0.5) {
+            hcase = evaluator.optimizeByEvolution();
+        }
 
         String outdir = ".";
         int n_genes_with_var = this.genotypemap.size();

@@ -3,6 +3,12 @@ Changelog
 =========
 
 -------
+v0.9.18
+-------
+- Added evolutionary algorithm optimization
+- Bug fixes
+
+-------
 v0.9.16
 -------
 - Added code to simulate cases with template VCF and phenopackets

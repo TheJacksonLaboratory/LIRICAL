@@ -162,6 +162,13 @@ public final class HpoCase {
     }
 
 
+    public double getBestPosteriorProbability() {
+        return disease2resultMap.values().stream().
+                max(Comparator.comparing(TestResult::getPosttestProbability)).
+                get().getPosttestProbability();
+    }
+
+
     /** Convenience class to construct an {@link HpoCase} object. */
     public static class Builder {
         /** List of Hpo terms for our case. */
