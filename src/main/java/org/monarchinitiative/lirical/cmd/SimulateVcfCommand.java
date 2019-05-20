@@ -71,8 +71,8 @@ public class SimulateVcfCommand extends PrioritizeCommand {
     private String backgroundFrequencyFile;
     @Parameter(names = {"--phenopacket-dir"}, description = "path to directory with multiple phenopackets")
     private String phenopacketDir;
-    @Parameter(names = {}, description = "name of the output file with simulation results")
-    private String simulationOutFile="vcf_simulation_results.txt";
+    @Parameter(names = {"-outputfile"}, description = "name of the output file with simulation results")
+    private String simulationOutFile="vcf_simulation_results.tsv";
 
     private BufferedWriter simulationOutBuffer;
     /**
@@ -188,7 +188,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
 
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
-        if (hcase.getBestPosteriorProbability()<0.5) {
+        if (evolve && hcase.getBestPosteriorProbability()<0.5) {
             hcase = evaluator.optimizeByEvolution();
         }
 
@@ -316,7 +316,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
                     lr = new LiricalRanking(phenopacketBaseName,rank, diseaseName,diseaseCurie,pretest,posttest,compositeLR,entrezID,var);
                     rankingsList.add(lr);
                 }
-                Double posttestprob = Double.parseDouble(posttest.replace("%",""));// remove the percent sign
+                double posttestprob = Double.parseDouble(posttest.replace("%",""));// remove the percent sign
                 if (posttestprob>50.0) n_over_50++;
                 n_total++;
             }

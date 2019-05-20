@@ -65,7 +65,7 @@ public class DifferentialDiagnosis {
         } else {
             this.entrezGeneId=null;
         }
-        url=String.format("https://omim.org/%s",result.getDiseaseCurie().getId());
+        url=String.format("https://hpo.jax.org/app/browse/disease/%s",result.getDiseaseCurie().getValue());
     }
 
     void addG2G(Gene2Genotype g2g) {

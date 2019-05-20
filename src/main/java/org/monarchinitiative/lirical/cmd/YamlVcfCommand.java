@@ -71,7 +71,7 @@ public class YamlVcfCommand extends PrioritizeCommand {
 
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
-        hcase.outputTopResults(5,ontology,genotypeMap);// TODO remove this outputs to the shell
+
 
         Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
         if (ontologyMetainfo.containsKey("data-version")) {

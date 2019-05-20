@@ -443,11 +443,11 @@ public class CaseEvaluator {
         for (TestResult res : results) {
             rank++;
             res.setRank(rank);
-            if (verbose && rank<11) {
-                TermId diseaseCurie = res.getDiseaseCurie();
-                String name = diseaseMap.get(diseaseCurie).getName();
-                System.err.println(String.format("Rank #%d: %s [%s]",rank,name,diseaseCurie.getValue()));
-            }
+//            if (verbose && rank<11) {
+//                TermId diseaseCurie = res.getDiseaseCurie();
+//                String name = diseaseMap.get(diseaseCurie).getName();
+//                //System.err.println(String.format("Rank #%d: %s [%s]",rank,name,diseaseCurie.getValue()));
+//            }
         }
         return resultMap;
     }

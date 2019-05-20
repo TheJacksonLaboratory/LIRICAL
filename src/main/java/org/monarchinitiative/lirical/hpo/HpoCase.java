@@ -76,65 +76,6 @@ public final class HpoCase {
         return result==null?Integer.MAX_VALUE : result.getRank();
     }
 
-    /** Output the results for a specific HPO disease.
-     * This is ugly and just for development. */
-    @Deprecated
-    public void outputLrToShell(TermId diseaseId, Ontology ontology, Map<TermId, Gene2Genotype> g2gmap) {
-        int rank = getRank(diseaseId);
-
-        TestResult r = getResult(diseaseId);
-        String diseaseName=r.getDiseaseName();
-        int idx = diseaseName.indexOf(';');
-        if (idx>0)
-            diseaseName=diseaseName.substring(0,idx);
-        System.err.println(String.format("%s[%s]: rank=%d",diseaseName,diseaseId.getValue(), rank));
-        DecimalFormat df = new DecimalFormat("0.000E0");
-        System.err.println(String.format("Pretest probability: %s; Composite LR: %.2f; Posttest probability: %s ",
-                niceFormat(r.getPretestProbability()),
-                r.getCompositeLR(),
-                niceFormat(r.getPosttestProbability())));
-        for (int i = 0; i < r.getNumberOfTests(); i++) {
-            double ratio = r.getObservedPhenotypeRatio(i);
-            TermId tid = getObservedAbnormalities().get(i);
-            String term = String.format("%s [%s]", ontology.getTermMap().get(tid).getName(), tid.getValue());
-            System.err.println(String.format("%s: ratio=%s", term, niceFormat(ratio)));
-        }
-        if (r.hasGenotype()) {
-            Gene2Genotype g2g= g2gmap.get(r.getEntrezGeneId());
-            if (g2g==null) {
-                // TODO check this--why do we have a genotype result if there is no genotype?
-                // is this for diseases with a gene but we found no variant?
-                System.err.println(String.format("Genotype LR for %s: %f",r.getEntrezGeneId().getValue(), r.getGenotypeLR()));
-                System.err.println("No variants found in VCF");
-                return;
-            }
-            System.err.println(String.format("Genotype LR for %s[%s]: %f",g2g.getSymbol(), r.getEntrezGeneId().getValue(), r.getGenotypeLR()));
-            System.err.println(g2g);
-        } else {
-            System.err.println("No genotype used to calculated");
-        }
-        System.err.println();
-    }
-
-    /**
-     * Ootputs the top n results to the shell
-     * @param n number of top results to org.monarchinitiative.lirical.output.
-     */
-    public void outputTopResults(int n, Ontology ontology, Map<TermId, Gene2Genotype> g2gmap) {
-        List<TestResult> resultlist = new ArrayList<>(this.disease2resultMap.values());
-        resultlist.sort(Collections.reverseOrder());
-        int i=0;
-        while (i<n && i<resultlist.size()) {
-            TestResult tres = resultlist.get(i);
-            TermId diseaseId = tres.getDiseaseCurie();
-            outputLrToShell(diseaseId,ontology,g2gmap);
-            i++;
-        }
-    }
-
-
-
-
 
     private String niceFormat(double d) {
         DecimalFormat df = new DecimalFormat("0.000E0");
