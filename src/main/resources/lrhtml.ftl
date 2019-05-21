@@ -407,15 +407,18 @@ footer {
                 </td>
                  </tr>
                </#list>
-               <#if dd.hasExplanation() >
-               <tr><td>Genotype score LR:</td><td colspan="5">${dd.explanation}</td></tr>
+               <#if dd.hasGenotypeExplanation() >
+               <tr><td>Genotype score LR:</td><td colspan="5">${dd.genotypeExplanation}</td></tr>
                </#if>
+                <#if dd.hasPhenotypeExplanation() >
+                 <tr><td>Phenotype analysis:</td><td colspan="5">${dd.phenotypeExplanation}</td></tr>
+                </#if>
                </table>
           <#else>
           <p><table class="minimalistBlack">
                        <thead>
                        <tr>
-                       <th>${dd.explanation}</th>
+                       <th>${dd.genotypeExplanation}</th>
                        </tr></table></p>
           </#if>
           <br/>

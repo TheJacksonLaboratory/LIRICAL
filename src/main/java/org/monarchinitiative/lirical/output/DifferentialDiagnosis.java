@@ -33,9 +33,9 @@ public class DifferentialDiagnosis {
 
     private String geneSymbol=EMPTY_STRING;
 
-    //private String noVariantsFound=EMPTY_STRING;
+    private String genotypeExplanation =EMPTY_STRING;
 
-    private String explanation =null;
+    private String phenotypeExplanation=EMPTY_STRING;
 
 
 
@@ -151,12 +151,17 @@ public class DifferentialDiagnosis {
     public void setAnchor(String a) { this.anchor=a;}
     /** @return An HTML anchor that is used for the HTML template. */
     public String getAnchor(){ return anchor;}
-    /** @return An explanation of how the genotype score was calculated (for the HTML template). */
-    public String getExplanation() { return explanation; }
-    /** @param explanation An explanation of how the genotype score was calculated (for the HTML template). */
-    public void setExplanation(String explanation) {
-        this.explanation = explanation;
+    /** @return An genotypeExplanation of how the genotype score was calculated (for the HTML template). */
+    public String getGenotypeExplanation() { return genotypeExplanation; }
+    /** @param genotypeExplanation An genotypeExplanation of how the genotype score was calculated (for the HTML template). */
+    public void setGenotypeExplanation(String genotypeExplanation) {
+        this.genotypeExplanation = genotypeExplanation;
     }
-    /** @return true iff this differential diagnosis has an explanation about the genotype score. */
-    public boolean hasExplanation() { return this.explanation != null;}
+    /** @return true iff this differential diagnosis has an genotypeExplanation about the genotype score. */
+    public boolean hasGenotypeExplanation() { return this.genotypeExplanation != null;}
+
+
+    public void setPhenotypeExplanation(String text){ this.phenotypeExplanation=text; }
+    public String getPhenotypeExplanation(){ return this.phenotypeExplanation; }
+    public boolean hasPhenotypeExplanation() { return this.phenotypeExplanation != null;}
 }

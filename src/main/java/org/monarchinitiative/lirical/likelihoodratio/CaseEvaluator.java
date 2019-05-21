@@ -55,6 +55,8 @@ public class CaseEvaluator {
 
     private boolean verbose=true;
 
+    private List<String> currentPhenotypeExplanation;
+
     private final static String EMPTY_STRING="";
 
     /**
@@ -164,9 +166,12 @@ public class CaseEvaluator {
 
     private List<Double> observedPhenotypesLikelihoodRatios(TermId diseaseId) {
         ImmutableList.Builder<Double> builderObserved = new ImmutableList.Builder<>();
+        HpoDisease disease = this.diseaseMap.get(diseaseId);
+        InducedDiseaseGraph idg = new InducedDiseaseGraph(disease,ontology);
         for (TermId tid : this.phenotypicAbnormalities) {
-            double LR = phenotypeLRevaluator.getLikelihoodRatio(tid, diseaseId);
-            builderObserved.add(LR);
+            LrWithExplanation lrwe = phenotypeLRevaluator.getLikelihoodRatio(tid, idg);
+            builderObserved.add(lrwe.getLR());
+            this.currentPhenotypeExplanation.add(lrwe.getExplanation(ontology));
         }
         return builderObserved.build();
     }
@@ -275,13 +280,13 @@ public class CaseEvaluator {
             String expl = String.format("No variants found in disease-associated gene%s: %s",
                     genesWithNoIdentifiedVariant.size() > 1 ? "s" : "",
                     String.join("; ", genesWithNoIdentifiedVariant));
-            result.appendToExplanation(expl);
+            result.setGenotypeExplanation(expl);
 
         } else {
             // if we get here, then foundPredictedPathogenicVariant is true.
             Gene2Genotype g2g = this.genotypeMap.get(geneId);
             String exp = getGenotypeScoreExplanation(g2g, inheritancemodes,geneId);
-            result.appendToExplanation(exp);
+            result.setGenotypeExplanation(exp);
         }
         return Optional.of(result);
     }
@@ -312,9 +317,11 @@ public class CaseEvaluator {
      */
     private Optional<TestResult> evaluateDisease(TermId diseaseId) {
         HpoDisease disease = this.diseaseMap.get(diseaseId);
+        this.currentPhenotypeExplanation=new ArrayList<>();
         double pretest = pretestProbabilityMap.get(diseaseId);
         List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
         List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
+        String phenoExp = String.join("; ",this.currentPhenotypeExplanation);
         TestResult result;
         Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
         if (associatedGenes.isEmpty()) {
@@ -324,6 +331,7 @@ public class CaseEvaluator {
                 // keep differentials with no associated gene
                 // we create the TestResult based solely on the Phenotype data.
                 result = new TestResult(observedLR, excludedLR, disease, pretest);
+                result.setPhenotypeExplanation(phenoExp);
                 return Optional.of(result);
             } else {
                 // we skip this differential because there is no associated gene
@@ -376,7 +384,8 @@ public class CaseEvaluator {
             result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
             Gene2Genotype g2g = this.genotypeMap.get(geneId);
             String exp  = getGenotypeScoreExplanation(g2g, inheritancemodes,geneId);
-            result.appendToExplanation(exp);
+            result.setGenotypeExplanation(exp);
+            result.setPhenotypeExplanation(phenoExp);
             return Optional.of(result);
         }
     }

@@ -45,8 +45,10 @@ public class TestResult implements Comparable<TestResult> {
     private final double posttestProbability;
     /** The overall rank of the the result withint the differential diagnosis. */
     private int rank;
-    /** An optional explanation of the result, intended for display */
-    private String explanation=EMPTY_STRING;
+    /** An optional setGenotypeExplanation of the genotype result, intended for display */
+    private String genotypeExplanation =EMPTY_STRING;
+    /** An setGenotypeExplanation of the phenotype score. */
+    private String phenotypeExplanation=EMPTY_STRING;
 
     /**
      * The constructor initializes the variables and calculates {@link #compositeLR}
@@ -195,7 +197,12 @@ public class TestResult implements Comparable<TestResult> {
         return entrezGeneId;
     }
 
-    public void appendToExplanation(String text) { this.explanation = this.explanation + text; }
-    public String getExplanation() { return this.explanation; }
-    public boolean hasExplanation() { return ! this.explanation.isEmpty();}
+    public void setGenotypeExplanation(String text) { this.genotypeExplanation = this.genotypeExplanation + text; }
+    public String getGenotypeExplanation() { return this.genotypeExplanation; }
+    public void setPhenotypeExplanation(String text) { this.phenotypeExplanation=text;}
+    public String getPhenotypeExplanation() { return phenotypeExplanation;}
+
+
+    public boolean hasGenotypeExplanation() { return ! this.genotypeExplanation.isEmpty();}
+    public boolean hasPhenotypeExplanation() { return  ! this.phenotypeExplanation.isEmpty();}
 }

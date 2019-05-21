@@ -88,7 +88,7 @@ v0.9.1
 v0.9.0
 ------
 - First pre-release version
-- Adding explanation for genotype LR score
+- Adding genotypeExplanation for genotype LR score
 
 ------
 v0.5.4
