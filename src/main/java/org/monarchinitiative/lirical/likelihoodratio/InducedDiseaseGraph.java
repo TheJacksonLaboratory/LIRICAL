@@ -51,7 +51,13 @@ public class InducedDiseaseGraph {
 
     }
 
-
+    /**
+     * Create the induced graph of the HPO terms used to annotate the disease. We weight the frequency downwards
+     * according to the number of links (path length). That is, if the path length from a direct annotation to
+     * an ancestor is k, then we multiple the frequency of the annotation by (1/k).
+     * @param hpoDisease The disease we are currently investigating.
+     * @param ontology Reference to HPO ontology object
+     */
     public InducedDiseaseGraph(HpoDisease hpoDisease, Ontology ontology) {
         this.disease=hpoDisease;
         this.ontology = ontology;
@@ -61,11 +67,24 @@ public class InducedDiseaseGraph {
         for (HpoAnnotation annot: hpoDisease.getPhenotypicAbnormalities()) {
             double f = annot.getFrequency();
             TermId tid = annot.getTermId();
-            Set<TermId> ancs = OntologyAlgorithm.getAncestorTerms(ontology,tid,true);
-            for (TermId anc : ancs) {
-                term2frequencyMap.putIfAbsent(anc,f);
-                double oldfreq = term2frequencyMap.get(anc);
-                if (f>oldfreq) { term2frequencyMap.put(anc,f); }
+            CandidateMatch cmatch = new CandidateMatch(tid); // distance is zero
+            Stack<CandidateMatch> stack = new Stack<>();
+            stack.push(cmatch);
+            while (! stack.empty()) {
+                CandidateMatch cm = stack.pop();
+                Set<TermId> parents = OntologyAlgorithm.getParentTerms(ontology,cm.termId,false);
+                for (TermId p : parents) {
+                    if (p.equals(PHENOTYPIC_ABNORMALITY)) {
+                        continue;
+                    }
+                    int distance = cm.distance+1;
+                    CandidateMatch parentCm = new CandidateMatch(p,distance);
+                    double adjustedFrequency = f/(1.0+distance);
+                    term2frequencyMap.putIfAbsent(p,adjustedFrequency);
+                    double oldfreq = term2frequencyMap.get(p);
+                    if (adjustedFrequency>oldfreq) { term2frequencyMap.put(p,adjustedFrequency); }
+                    stack.push(parentCm);
+                }
             }
         }
     }
@@ -75,7 +94,11 @@ public class InducedDiseaseGraph {
     }
 
 
-
+//    private Term2Freq getByLevel(TermId t, int level) {
+//        if (this.term2frequencyMap.containsKey(t)) {
+//            double rawfrequency = this.term2frequencyMap.get(t);
+//            double f = rawfrequency/Math.pow(2, level);
+//    }
 
     /**
      * Get the terms that annotates disease (or is an ancestor of one of the terms) that are
