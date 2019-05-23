@@ -411,7 +411,7 @@ footer {
                <tr><td>Genotype score LR:</td><td colspan="5">${dd.genotypeExplanation}</td></tr>
                </#if>
                 <#if dd.hasPhenotypeExplanation() >
-                 <tr><td>Phenotype analysis:</td><td colspan="5">${dd.phenotypeExplanation}</td></tr>
+                 <tr><td>Phenotype analysis:</td><td colspan="5">${dd.phenotypeExplanation!"n/a"}</td></tr>
                 </#if>
                </table>
           <#else>

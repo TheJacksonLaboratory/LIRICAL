@@ -66,6 +66,7 @@ public class DifferentialDiagnosis {
             this.entrezGeneId=null;
         }
         url=String.format("https://hpo.jax.org/app/browse/disease/%s",result.getDiseaseCurie().getValue());
+        setPhenotypeExplanation(result.getPhenotypeExplanation());
     }
 
     void addG2G(Gene2Genotype g2g) {
@@ -158,10 +159,10 @@ public class DifferentialDiagnosis {
         this.genotypeExplanation = genotypeExplanation;
     }
     /** @return true iff this differential diagnosis has an genotypeExplanation about the genotype score. */
-    public boolean hasGenotypeExplanation() { return this.genotypeExplanation != null;}
+    public boolean hasGenotypeExplanation() { return !this.genotypeExplanation.isEmpty();}
 
 
     public void setPhenotypeExplanation(String text){ this.phenotypeExplanation=text; }
-    public String getPhenotypeExplanation(){ return this.phenotypeExplanation; }
-    public boolean hasPhenotypeExplanation() { return this.phenotypeExplanation != null;}
+    //public String getPhenotypeExplanation(){ return this.phenotypeExplanation; }
+    public boolean hasPhenotypeExplanation() { return !this.phenotypeExplanation.isEmpty();}
 }
