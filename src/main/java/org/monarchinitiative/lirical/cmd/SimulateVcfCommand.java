@@ -237,6 +237,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
                 // .vcf(getOptionalVcfPath)
                 .transcriptdatabase(this.transcriptDb)
                 .backgroundFrequency(this.backgroundFrequencyFile)
+                .strict(this.strict)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
         factory.qcExternalFilesInDataDir();

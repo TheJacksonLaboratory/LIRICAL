@@ -27,6 +27,8 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
     protected boolean keepIfNoCandidateVariant=false;
     @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
     protected int minDifferentialsToShow=10;
+    @Parameter(names={"--strict"},description="use strict genotype matching for likelihood ratio calculation")
+    boolean strict=false;
     /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
      * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
      * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering

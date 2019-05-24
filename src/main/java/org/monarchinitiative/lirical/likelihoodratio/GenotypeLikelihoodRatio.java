@@ -26,6 +26,11 @@ public class GenotypeLikelihoodRatio {
 
     private static final double EPSILON = 1e-5;
 
+    /** Use strict penalities if the genotype does not match the disease model in terms of number of called
+     * pathogenic alleles.
+     */
+    private final boolean strict;
+
     /**
      * Entrez gene Curie, e.g., NCBIGene:2200; value--corresponding background frequency sum of pathogenic bin variants.
      */
@@ -48,6 +53,18 @@ public class GenotypeLikelihoodRatio {
         this.gene2backgroundFrequency = g2background;
         this.recessivePoissonDistribution = new PoissonDistribution(2.0);
         this.dominantPoissonDistribution = new PoissonDistribution((1.0));
+        this.strict=false;
+    }
+
+    /**
+     * @param g2background background frequencies of called pathogenic variants in genes.
+     * @param str strictness of genotype likelihood ratio
+     */
+    public GenotypeLikelihoodRatio(Map<TermId, Double> g2background, boolean str) {
+        this.gene2backgroundFrequency = g2background;
+        this.recessivePoissonDistribution = new PoissonDistribution(2.0);
+        this.dominantPoissonDistribution = new PoissonDistribution((1.0));
+        this.strict=str;
     }
 
     /**
@@ -68,6 +85,17 @@ public class GenotypeLikelihoodRatio {
             }
         }
         return ESTIMATED_PROB;
+    }
+
+
+    Optional<Double> updateMax(double val, Optional<Double> opt) {
+        if (!opt.isPresent()) {
+            return Optional.of(val);
+        } else if (val > opt.get()){
+            return Optional.of(val);
+        } else {
+            return opt;
+        }
     }
 
 
@@ -143,7 +171,20 @@ public class GenotypeLikelihoodRatio {
             // will take the observed path weighted count to not be more than lambda_disease.
             // this will have the effect of not downweighting these genes
             // the user will have to judge whether one of the variants is truly pathogenic.
-            if (observedWeightedPathogenicVariantCount > lambda_disease ) {
+
+            if (strict ) {
+                if (inheritanceId.equals(AUTOSOMAL_RECESSIVE) && g2g.pathogenicVariantCount()<2) {
+                    final double HEURISTIC_ONE_ALLELE_FOR_AR_DISEASE = -0.5;
+                    max = updateMax(HEURISTIC_ONE_ALLELE_FOR_AR_DISEASE, max);
+                } else if (g2g.pathogenicVariantCount()>(lambda_disease+EPSILON)) {
+                    double HEURISTIC = -0.5*(g2g.pathogenicVariantCount()-lambda_disease);
+                    max = updateMax(HEURISTIC,max);
+                }
+                continue; // go to next inheritance mode
+            }
+
+
+            //if (observedWeightedPathogenicVariantCount > lambda_disease ) {
 //                if ( lambda_background < lambda_disease) {
 //                    double pathogenicVariantCount = Math.max(observedWeightedPathogenicVariantCount, lambda_disease);
 //                    double D = pdDisease.probability(pathogenicVariantCount);
@@ -151,9 +192,9 @@ public class GenotypeLikelihoodRatio {
 //                    double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
 //                    return D / B;
 //                } else {
-                    return 1.0;// high lambda background -- probably not interesting so just don't weight it.
+                 //   return 1.0;// high lambda background -- probably not interesting so just don't weight it.
 //                }
-            }
+           // }
             double D = pdDisease.probability(observedWeightedPathogenicVariantCount);
             PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
             double B = pdBackground.probability(observedWeightedPathogenicVariantCount);

@@ -33,8 +33,7 @@ public class GenotypeDataIngestor {
         Map<TermId, Double> gene2freq=new HashMap<>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(this.backgroundFrequencyPath));
-            String line = br.readLine(); // this is the header -- discard
-            // TODO put # on header line from G2GIT
+            String line = br.readLine(); // this is the header -- discardR
             while ((line=br.readLine())!=null) {
                 String a[] = line.split("\t");
                 if (a.length <10) {
