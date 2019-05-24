@@ -3,7 +3,7 @@ package org.monarchinitiative.lirical.likelihoodratio;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-public class LrWithExplanation {
+public class LrWithExplanation implements Comparable<LrWithExplanation> {
 
 
     enum MatchType {EXACT_MATCH,
@@ -74,6 +74,42 @@ public class LrWithExplanation {
         }
     }
 
+    /**
+     * Get versions of the string that will work in HTML
+     * @param ontology
+     * @return
+     */
+    public String getEscapedExplanation(Ontology ontology) {
+        String qtermlabel = String.format("%s[%s]",ontology.getTermMap().get(this.queryTerm).getName(),queryTerm.getValue() );
+        String mtermlabel = String.format("%s[%s]",ontology.getTermMap().get(this.matchingTerm).getName(),matchingTerm.getValue() );
+        switch (this.matchType) {
+            case EXACT_MATCH:
+                return String.format("<b>E</b>:%s[%.3f]",qtermlabel,LR);
+            case QUERY_TERM_SUBCLASS_OF_DISEASE_TERM:
+                return String.format("<b>Q&lt;D</b>:%s&lt;%s[%.3f]",qtermlabel,mtermlabel,LR );
+            case DISEASE_TERM_SUBCLASS_OF_QUERY:
+                return String.format("<b>D&lt;Q</b>:%s&lt;%s[%.3f]",mtermlabel,qtermlabel,LR );
+            case NON_ROOT_COMMON_ANCESTOR:
+                return String.format("<b>Q~D</b>:%s~%s[%.3f]",qtermlabel,mtermlabel,LR);
+            case NO_MATCH_BELOW_ROOT:
+                return String.format("<b>NM</b>:%s[%.3f]",qtermlabel,LR);
+            default:
+                return String.format("<b>NM</b>:%s[%.3f]",qtermlabel,LR); // should never happen but needed for compiler
+        }
+    }
+
+    /**
+     * Sort the {@link LrWithExplanation} objects in decreasing order according to likelihood ratio score.
+     * This will match the order of the bars in the SVG plot.
+     * @param that Other object
+     * @return integer indicating sort order
+     */
+    @Override
+    public int compareTo(LrWithExplanation that) {
+        if (LR>that.LR) return -1;
+        else if (LR<that.LR) return 1;
+        else return 0;
+    }
 
 
 

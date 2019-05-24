@@ -55,7 +55,7 @@ public class CaseEvaluator {
 
     private boolean verbose=true;
 
-    private List<String> currentPhenotypeExplanation;
+    private List<LrWithExplanation> currentPhenotypeExplanation;
 
     private final static String EMPTY_STRING="";
 
@@ -171,11 +171,7 @@ public class CaseEvaluator {
         for (TermId tid : this.phenotypicAbnormalities) {
             LrWithExplanation lrwe = phenotypeLRevaluator.getLikelihoodRatio(tid, idg);
             builderObserved.add(lrwe.getLR());
-            if  (lrwe.is_subclass()) {
-                System.out.println("SUBCLASSS FOR " + disease.getName() + " =" + tid.getValue());
-                System.out.println(lrwe.getExplanation(ontology));
-            }
-            this.currentPhenotypeExplanation.add(lrwe.getExplanation(ontology));
+            this.currentPhenotypeExplanation.add(lrwe);
             /*logger.error("{}: {} {} [{}]",
                     diseaseMap.get(diseaseId).getName(),
                     ontology.getTermMap().get(tid).getName(),
@@ -226,7 +222,7 @@ public class CaseEvaluator {
         List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
         List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
         TestResult result= new TestResult(observedLR, excludedLR, disease, pretest);
-        String phenoExp = String.join("; ",this.currentPhenotypeExplanation);
+        String phenoExp = getPhenotypeExplanation();
         result.setPhenotypeExplanation(phenoExp);
         return Optional.of(result);
     }
@@ -300,7 +296,7 @@ public class CaseEvaluator {
             String exp = getGenotypeScoreExplanation(g2g, inheritancemodes,geneId);
             result.setGenotypeExplanation(exp);
         }
-        String phenoExp = String.join("; ",this.currentPhenotypeExplanation);
+        String phenoExp = getPhenotypeExplanation();
         result.setPhenotypeExplanation(phenoExp);
         return Optional.of(result);
     }
@@ -323,6 +319,18 @@ public class CaseEvaluator {
         return expl;
     }
 
+
+    private String getPhenotypeExplanation() {
+        ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
+        Collections.sort(this.currentPhenotypeExplanation);
+        for (LrWithExplanation lrwe:this.currentPhenotypeExplanation) {
+            String e = lrwe.getEscapedExplanation(this.ontology);
+            builder.add(e);
+        }
+        List<String> l = builder.build();
+        return String.join(": ",l);
+    }
+
     /**
      * Calculate the likelihood ratio for diseaseId. If there is no predicted pathogenic variant in the exome/genome file,
      * then we will return Optional.empty(), which will cause this diseases to be skipped in the differential diagnosis.
@@ -334,7 +342,7 @@ public class CaseEvaluator {
         double pretest = pretestProbabilityMap.get(diseaseId);
         List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
         List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
-        String phenoExp = String.join("; ",this.currentPhenotypeExplanation);
+        String phenoExp = getPhenotypeExplanation();
         TestResult result;
         Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
         if (associatedGenes.isEmpty()) {
