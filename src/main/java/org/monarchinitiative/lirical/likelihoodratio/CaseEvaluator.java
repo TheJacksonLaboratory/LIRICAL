@@ -388,7 +388,7 @@ public class CaseEvaluator {
                 }
             }
         } else {
-            // skip this disease since we did not find and disease associated variants.
+            // skip this disease since we did not find any disease associated variants.
             return Optional.empty();
         }
         // when we get here, we have checked for variants in all genes associated with the disease.
@@ -404,6 +404,18 @@ public class CaseEvaluator {
             // if we get here, then foundPredictedPathogenicVariant is true.
             result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
             Gene2Genotype g2g = this.genotypeMap.get(geneId);
+            if (g2g==null) {
+                System.err.println("g2g null");
+                System.err.println("geneId =\"" + geneId +"\"");
+                System.err.println("disease " + disease.getName());
+                System.exit(1);
+            }
+            if (inheritancemodes == null) {
+                System.err.println("inheritancemodes null");
+            }
+            if (geneId == null) {
+                System.err.println("geneId null");
+            }
             String exp  = getGenotypeScoreExplanation(g2g, inheritancemodes,geneId);
             result.setGenotypeExplanation(exp);
             result.setPhenotypeExplanation(phenoExp);

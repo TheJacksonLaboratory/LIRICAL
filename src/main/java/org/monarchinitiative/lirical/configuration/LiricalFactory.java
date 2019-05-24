@@ -78,6 +78,8 @@ public class LiricalFactory {
     private final Ontology ontology;
     /** The path to the Exomiser database file, e.g., {@code 1811_hg19_variants.mv.db}. */
     private String mvStorePath=null;
+    /** genotype matching for likelihood ratio calculation". */
+    private boolean strict;
 
     private String hpoVersion="n/a";
 
@@ -140,6 +142,7 @@ public class LiricalFactory {
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
         this.datadir=builder.lr2pgDataDir;
+        this.strict = builder.strict;
 
         ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
         for (String id : builder.observedHpoTerms) {
@@ -363,7 +366,7 @@ public class LiricalFactory {
         }
         GenotypeDataIngestor ingestor = new GenotypeDataIngestor(this.backgroundFrequencyPath);
         Map<TermId,Double> gene2back = ingestor.parse();
-        return new GenotypeLikelihoodRatio(gene2back);
+        return new GenotypeLikelihoodRatio(gene2back,this.strict);
     }
 
 
@@ -607,6 +610,7 @@ public class LiricalFactory {
         private String vcfPath=null;
         private String genomeAssembly=null;
         private boolean filterFILTER=true;
+        private boolean strict=false;
         /** The default transcript database is UCSC> */
         private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
         private List<String> observedHpoTerms=ImmutableList.of();
@@ -648,6 +652,12 @@ public class LiricalFactory {
             backgroundOpt.ifPresent(s -> this.backgroundFrequencyPath = s);
 
 
+            return this;
+        }
+
+
+        public Builder strict(boolean b) {
+            this.strict = b;
             return this;
         }
 
