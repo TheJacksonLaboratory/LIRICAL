@@ -26,7 +26,7 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
     @Parameter(names={"-k","--keep"}, description = "retain candidates even if no candidate variant is found")
     protected boolean keepIfNoCandidateVariant=false;
     @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
-    protected int minDifferentialsToShow=5;
+    protected int minDifferentialsToShow=10;
     /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
      * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
      * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
@@ -54,6 +54,8 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
     protected Map<TermId,String> geneId2symbol;
     /** Various metadata that will be used for the HTML org.monarchinitiative.lirical.output. */
     protected Map<String,String> metadata;
+    @Parameter(names={"--evolve"},description = "Use evolutionary algorithm to optimize result")
+    boolean evolve=false;
 
     /**
      * Output a summary of results as an HTML file. This function should be used for cases

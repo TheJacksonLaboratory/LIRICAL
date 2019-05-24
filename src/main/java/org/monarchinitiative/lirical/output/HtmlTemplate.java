@@ -73,14 +73,15 @@ public class HtmlTemplate extends LiricalTemplate {
                         symbol = g2g.getSymbol();
                         ddx.addG2G(g2g);
                     } else {
-                        ddx.setExplanation("no variants found in " + this.geneId2symbol.get(geneId));
+                        ddx.setGenotypeExplanation("no variants found in " + this.geneId2symbol.get(geneId));
                         symbol="no variants found in " + this.geneId2symbol.get(geneId);// will be used by SVG
                     }
-                    String expl=result.getExplanation();
-                    ddx.setExplanation(expl);
+                    String expl=result.getGenotypeExplanation();
+                    ddx.setGenotypeExplanation(expl);
                 } else {
-                    ddx.setExplanation("No known disease gene");
+                    ddx.setGenotypeExplanation("No known disease gene");
                 }
+                ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
                 // now get SVG
                 Lr2Svg lr2svg = new Lr2Svg(hcase, result.getDiseaseCurie(), result.getDiseaseName(), ontology, symbol);
                 String svg = lr2svg.getSvgString();
@@ -145,7 +146,7 @@ public class HtmlTemplate extends LiricalTemplate {
             if (result.getPosttestProbability() > THRESHOLD || counter < MIN_DIAGNOSES_TO_SHOW) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.trace("Diff diag for " + result.getDiseaseName());
-                ddx.setExplanation("Genetic data not available");
+                ddx.setGenotypeExplanation("Genetic data not available");
                 // now get SVG
                 Lr2Svg lr2svg = new Lr2Svg(hcase, result.getDiseaseCurie(), result.getDiseaseName(), ontology, symbol);
                 String svg = lr2svg.getSvgString();
@@ -155,6 +156,7 @@ public class HtmlTemplate extends LiricalTemplate {
                 String counterString=String.format("diagnosis%d",counter);
                 this.topDiagnosisAnchors.add(counterString);
                 ddx.setAnchor(counterString);
+                ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
                 this.topDiagnosisMap.put(counterString,ddx.getDiseaseName());
             } else {
                 TermId geneId = result.getEntrezGeneId();

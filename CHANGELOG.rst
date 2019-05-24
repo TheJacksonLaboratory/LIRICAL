@@ -3,6 +3,12 @@ Changelog
 =========
 
 -------
+v0.9.18
+-------
+- Added evolutionary algorithm optimization
+- Bug fixes
+
+-------
 v0.9.16
 -------
 - Added code to simulate cases with template VCF and phenopackets
@@ -82,7 +88,7 @@ v0.9.1
 v0.9.0
 ------
 - First pre-release version
-- Adding explanation for genotype LR score
+- Adding genotypeExplanation for genotype LR score
 
 ------
 v0.5.4
