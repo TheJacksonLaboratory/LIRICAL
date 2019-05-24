@@ -81,6 +81,7 @@ public class HtmlTemplate extends LiricalTemplate {
                 } else {
                     ddx.setGenotypeExplanation("No known disease gene");
                 }
+                ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
                 // now get SVG
                 Lr2Svg lr2svg = new Lr2Svg(hcase, result.getDiseaseCurie(), result.getDiseaseName(), ontology, symbol);
                 String svg = lr2svg.getSvgString();
@@ -155,6 +156,7 @@ public class HtmlTemplate extends LiricalTemplate {
                 String counterString=String.format("diagnosis%d",counter);
                 this.topDiagnosisAnchors.add(counterString);
                 ddx.setAnchor(counterString);
+                ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
                 this.topDiagnosisMap.put(counterString,ddx.getDiseaseName());
             } else {
                 TermId geneId = result.getEntrezGeneId();

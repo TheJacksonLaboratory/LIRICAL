@@ -16,7 +16,8 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getPa
 /**
  * For some calculations of the phenotype likelihood ratio, we need to traverse the graph induced by the HPO terms to
  * which a disease is annotated. It is cheaper to create this graph once and reuse it for each of the query terms. This
- * class organizes that calculation.
+ * class organizes that calculation. Note that this class is only used if there are no direct matches, so there is
+ * no need to store the directly annotated diseases here.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class InducedDiseaseGraph {
@@ -36,9 +37,10 @@ public class InducedDiseaseGraph {
         public double frequency;
         public TermId termId;
 
-        public CandidateMatch(TermId tid) {
+        public CandidateMatch(TermId tid, double f) {
             this.termId=tid;
             distance=0;
+            this.frequency=f;
         }
 
         public CandidateMatch(TermId tid, int level) {
@@ -67,7 +69,10 @@ public class InducedDiseaseGraph {
         for (HpoAnnotation annot: hpoDisease.getPhenotypicAbnormalities()) {
             double f = annot.getFrequency();
             TermId tid = annot.getTermId();
-            CandidateMatch cmatch = new CandidateMatch(tid); // distance is zero
+            CandidateMatch cmatch = new CandidateMatch(tid,f); // distance is zero
+//            term2frequencyMap.putIfAbsent(tid,f);
+//            double oldfreq = term2frequencyMap.get(tid);
+//            if (f>oldfreq) { term2frequencyMap.put(tid,f); }
             Stack<CandidateMatch> stack = new Stack<>();
             stack.push(cmatch);
             while (! stack.empty()) {
@@ -114,7 +119,7 @@ public class InducedDiseaseGraph {
         while (!queue.isEmpty()) {
             TermId t = queue.remove();
             if (this.term2frequencyMap.containsKey(t)) {
-                return new Term2Freq(tid,this.term2frequencyMap.get(t));
+                return new Term2Freq(t,this.term2frequencyMap.get(t));
             } else {
                 Set<TermId> parents = OntologyAlgorithm.getParentTerms(ontology,t,false);
                 for (TermId p : parents) {

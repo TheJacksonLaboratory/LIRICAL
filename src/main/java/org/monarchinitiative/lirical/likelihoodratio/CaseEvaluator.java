@@ -171,7 +171,16 @@ public class CaseEvaluator {
         for (TermId tid : this.phenotypicAbnormalities) {
             LrWithExplanation lrwe = phenotypeLRevaluator.getLikelihoodRatio(tid, idg);
             builderObserved.add(lrwe.getLR());
+            if  (lrwe.is_subclass()) {
+                System.out.println("SUBCLASSS FOR " + disease.getName() + " =" + tid.getValue());
+                System.out.println(lrwe.getExplanation(ontology));
+            }
             this.currentPhenotypeExplanation.add(lrwe.getExplanation(ontology));
+            /*logger.error("{}: {} {} [{}]",
+                    diseaseMap.get(diseaseId).getName(),
+                    ontology.getTermMap().get(tid).getName(),
+                    lrwe.getLR(),
+                    lrwe.getExplanation(ontology));*/
         }
         return builderObserved.build();
     }
@@ -193,6 +202,7 @@ public class CaseEvaluator {
     private  Map<TermId,TestResult>  phenotypeOnlyEvaluation() {
         ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder<>();
         for (TermId diseaseId : diseaseMap.keySet()) {
+            this.currentPhenotypeExplanation=new ArrayList<>();
             HpoDisease disease = this.diseaseMap.get(diseaseId);
             double pretest = pretestProbabilityMap.get(diseaseId);
             List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
@@ -216,6 +226,8 @@ public class CaseEvaluator {
         List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
         List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
         TestResult result= new TestResult(observedLR, excludedLR, disease, pretest);
+        String phenoExp = String.join("; ",this.currentPhenotypeExplanation);
+        result.setPhenotypeExplanation(phenoExp);
         return Optional.of(result);
     }
 
@@ -288,6 +300,8 @@ public class CaseEvaluator {
             String exp = getGenotypeScoreExplanation(g2g, inheritancemodes,geneId);
             result.setGenotypeExplanation(exp);
         }
+        String phenoExp = String.join("; ",this.currentPhenotypeExplanation);
+        result.setPhenotypeExplanation(phenoExp);
         return Optional.of(result);
     }
 
@@ -317,7 +331,6 @@ public class CaseEvaluator {
      */
     private Optional<TestResult> evaluateDisease(TermId diseaseId) {
         HpoDisease disease = this.diseaseMap.get(diseaseId);
-        this.currentPhenotypeExplanation=new ArrayList<>();
         double pretest = pretestProbabilityMap.get(diseaseId);
         List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
         List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
@@ -403,6 +416,7 @@ public class CaseEvaluator {
         ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder<>();
         for (TermId diseaseId : diseaseMap.keySet()) {
             Optional<TestResult> optionalTestResult;
+            this.currentPhenotypeExplanation=new ArrayList<>();
             if (useGenotypeAnalysis) {
                 if (keepIfNoCandidateVariant) {
                     optionalTestResult = evaluateDiseaseKeepingAllCandidates(diseaseId);

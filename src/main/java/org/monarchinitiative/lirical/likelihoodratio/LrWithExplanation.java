@@ -49,6 +49,9 @@ public class LrWithExplanation {
         return new LrWithExplanation(q,q,MatchType.NO_MATCH_BELOW_ROOT,ratio);
     }
 
+    public boolean is_subclass() { return this.matchType.equals(MatchType.DISEASE_TERM_SUBCLASS_OF_QUERY) ||
+    this.matchType.equals(MatchType.QUERY_TERM_SUBCLASS_OF_DISEASE_TERM);}
+
 
     public double getLR(){ return LR; }
 

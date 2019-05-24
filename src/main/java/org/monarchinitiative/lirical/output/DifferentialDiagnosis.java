@@ -163,6 +163,6 @@ public class DifferentialDiagnosis {
 
 
     public void setPhenotypeExplanation(String text){ this.phenotypeExplanation=text; }
-    //public String getPhenotypeExplanation(){ return this.phenotypeExplanation; }
+    public String getPhenotypeExplanation(){ return this.phenotypeExplanation; }
     public boolean hasPhenotypeExplanation() { return !this.phenotypeExplanation.isEmpty();}
 }
