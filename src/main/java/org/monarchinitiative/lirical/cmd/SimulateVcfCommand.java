@@ -243,7 +243,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         factory.qcExternalFilesInDataDir();
         factory.qcExomiserFiles();
         factory.qcGenomeBuild();
-      //  factory.qcVcfFile();
+       // factory.qcVcfFile();
 
 
         this.ontology = factory.hpoOntology();

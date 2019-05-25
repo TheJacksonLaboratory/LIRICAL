@@ -88,7 +88,7 @@ public class VcfSimulator {
 
             final VcfAllele vcfAllele = variant.getVcfAllele();
 
-            System.out.println(vcfAllele.getChr() + ":"+ vcfAllele.getPos() + vcfAllele.getRef() +"-"+vcfAllele.getAlt() +" subject" + subjectId);
+
 
             // here the ref allele is always at 0, alt is at idx 1
             List<Allele> allAlleles = new ArrayList<>(2);
@@ -96,6 +96,12 @@ public class VcfSimulator {
             allAlleles.add(Allele.create(vcfAllele.getAlt()));
 
             OntologyClass zygosity = variant.getZygosity();
+
+            LOGGER.error(vcfAllele.getChr() + ":"+ vcfAllele.getPos() + vcfAllele.getRef() +"-"+vcfAllele.getAlt()
+                    +"["+ zygosity.getLabel() +"]" +" subject" + subjectId +" todo -- make this INFO");
+
+
+
             GenotypeBuilder genotypeBuilder = new GenotypeBuilder()
                     .name(subjectId);
 
