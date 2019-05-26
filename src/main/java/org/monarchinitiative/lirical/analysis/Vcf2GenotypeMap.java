@@ -145,7 +145,7 @@ public class Vcf2GenotypeMap {
             VariantContextAnnotator variantEffectAnnotator =
                     new VariantContextAnnotator(this.referenceDictionary, this.chromosomeMap,
                             new VariantContextAnnotator.Options());
-            // Note that we do not use Genomiser data in this version of LR2PG
+            // Note that we do not use Genomiser data in this version of LIRICAL
             // Therefore, just pass in an empty list to satisfy the API
             List<RegulatoryFeature> emtpylist = ImmutableList.of();
             ChromosomalRegionIndex<RegulatoryFeature> emptyRegionIndex = ChromosomalRegionIndex.of(emtpylist);

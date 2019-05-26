@@ -44,6 +44,10 @@ public class PhenotypeLikelihoodRatio {
      * may be truly false positive because there is a secondary etiology.
      */
     private final double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY=0.01;
+    /**
+     * The default probability for features that we cannot find in the dataset.
+     */
+    private final double DEFAULT_BACKGROUND_PROBQABILITY=1.0/10000;
 
 
     /**
@@ -399,10 +403,10 @@ public class PhenotypeLikelihoodRatio {
             logger.error(String.format("Map did not contain data for term %s",termId.getValue() ));
             logger.error(String.format("hpoTerm2OverallFrequency has total of %d entries",hpoTerm2OverallFrequency.size()));
             // Should never happen!
-            return DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+            return DEFAULT_BACKGROUND_PROBQABILITY;
 
         }
-        return Math.max(DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY,hpoTerm2OverallFrequency.get(termId));
+        return Math.max(DEFAULT_BACKGROUND_PROBQABILITY,hpoTerm2OverallFrequency.get(termId));
     }
 
     /**

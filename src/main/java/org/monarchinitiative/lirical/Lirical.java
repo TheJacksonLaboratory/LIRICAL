@@ -114,7 +114,7 @@ public class Lirical {
         }
 
         String command = jc.getParsedCommand();
-        Lr2PgCommand lr2pgcommand=null;
+        LiricalCommand lr2pgcommand=null;
         switch (command) {
             case "download":
                 lr2pgcommand= download;

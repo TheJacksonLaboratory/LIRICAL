@@ -1,11 +1,11 @@
-Running LR2PG VCF analysis with a YAML file
-===========================================
+Running LIRICAL VCF analysis with a YAML file
+=============================================
 
-.. _yaml:
+.. _rstyaml:
 
 
 LR2PG can be run using a `YAML <https://en.wikipedia.org/wiki/YAML>`_ configuration file (which is described on this page)
-or from a :ref:`phenopacket`. YAML is a simple, human readable format that is commonly used for configuration files.
+or from a :ref:`rstphenopacket`. YAML is a simple, human readable format that is commonly used for configuration files.
 
 
 
@@ -14,7 +14,7 @@ YAML
 
 Here is an example YAML configuration file. ::
 
-    ## LR2PG Analysis Template.
+    ## LIRICAL Analysis Template.
     # These are all the possible options for running LR2PG. Use this as a template for
     # your own set-up.
     ---

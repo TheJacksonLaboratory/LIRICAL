@@ -93,7 +93,7 @@ public class CaseEvaluator {
 
 
     /**
-     * Constructor for LR2PG anaysis with a VCF file.
+     * Constructor for LIRICAL anaysis with a VCF file.
      * @param hpoTerms list of observed abnormalities
      * @param negatedHpoTerms list of excluded abnormalities
      * @param ontology reference to HPO ontology
@@ -404,11 +404,11 @@ public class CaseEvaluator {
             // if we get here, then foundPredictedPathogenicVariant is true.
             result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
             Gene2Genotype g2g = this.genotypeMap.get(geneId);
-            if (g2g==null) {
+            if (g2g==null) { // in this case, there was no variant in the gene
                 System.err.println("g2g null");
                 System.err.println("geneId =\"" + geneId +"\"");
                 System.err.println("disease " + disease.getName());
-                System.exit(1);
+                g2g=Gene2Genotype.NO_IDENTIFIED_VARIANT;
             }
             if (inheritancemodes == null) {
                 System.err.println("inheritancemodes null");
@@ -558,7 +558,7 @@ public class CaseEvaluator {
 
         public CaseEvaluator build() {
             if (hpoTerms==null) {
-                throw new LiricalRuntimeException("[ERROR] No HPO terms found. At least one HPO term required to run LR2PG");
+                throw new LiricalRuntimeException("[ERROR] No HPO terms found. At least one HPO term required to run LIRICAL");
             }
             Objects.requireNonNull(hpoTerms);
             Objects.requireNonNull(ontology);

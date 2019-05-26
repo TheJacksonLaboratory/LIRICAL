@@ -23,7 +23,7 @@ import java.util.List;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Calculation of background variant frequency", hidden = true)
-public class Gt2GitCommand extends Lr2PgCommand {
+public class Gt2GitCommand extends LiricalCommand {
     private static final Logger logger = LoggerFactory.getLogger(Gt2GitCommand.class);
 //    @Parameter(names={"-d","--data"}, description ="directory to download data (default: data)" )
 //    private String datadir="data";

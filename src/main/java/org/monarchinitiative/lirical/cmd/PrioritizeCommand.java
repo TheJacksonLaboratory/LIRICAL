@@ -17,7 +17,7 @@ import java.util.Map;
  * Its purpose is to provide command line parameters and variables that are used
  * in the same way by both of the subclasses.
  */
-public abstract class PrioritizeCommand extends Lr2PgCommand {
+public abstract class PrioritizeCommand extends LiricalCommand {
     /** Directory where various files are downloaded/created. */
     @Parameter(names={"-d","--data"}, description ="directory to download data" )
     protected String datadir="data";

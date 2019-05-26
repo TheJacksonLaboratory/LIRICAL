@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Download files for LR2PG")
-public class DownloadCommand extends Lr2PgCommand {
+public class DownloadCommand extends LiricalCommand {
     private static final Logger logger = LoggerFactory.getLogger(DownloadCommand.class);
 
     @Parameter(names={"-d","--data"}, description ="directory to download data (default: data)" )

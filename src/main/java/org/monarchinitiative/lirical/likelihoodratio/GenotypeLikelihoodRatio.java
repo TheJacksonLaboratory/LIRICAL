@@ -172,45 +172,32 @@ public class GenotypeLikelihoodRatio {
             // this will have the effect of not downweighting these genes
             // the user will have to judge whether one of the variants is truly pathogenic.
 
-            if (strict ) {
-                if (inheritanceId.equals(AUTOSOMAL_RECESSIVE) && g2g.pathogenicVariantCount()<2) {
-                    final double HEURISTIC_ONE_ALLELE_FOR_AR_DISEASE = -0.5;
-                    max = updateMax(HEURISTIC_ONE_ALLELE_FOR_AR_DISEASE, max);
-                } else if (g2g.pathogenicVariantCount()>(lambda_disease+EPSILON)) {
-                    double HEURISTIC = -0.5*(g2g.pathogenicVariantCount()-lambda_disease);
-                    max = updateMax(HEURISTIC,max);
-                }
-                continue; // go to next inheritance mode
-            }
 
-
-            //if (observedWeightedPathogenicVariantCount > lambda_disease ) {
-//                if ( lambda_background < lambda_disease) {
-//                    double pathogenicVariantCount = Math.max(observedWeightedPathogenicVariantCount, lambda_disease);
-//                    double D = pdDisease.probability(pathogenicVariantCount);
-//                    PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
-//                    double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
-//                    return D / B;
-//                } else {
-                 //   return 1.0;// high lambda background -- probably not interesting so just don't weight it.
-//                }
-           // }
-            double D = pdDisease.probability(observedWeightedPathogenicVariantCount);
-            PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
-            double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
-            if (B > 0 && D > 0) {
-                double ratio = D / B;
-                if (max.isPresent() && ratio > max.get()) {
-                    max = Optional.of(ratio);
-                } else if (!max.isPresent()) {
-                    max = Optional.of(ratio);
+            if (strict && inheritanceId.equals(AUTOSOMAL_RECESSIVE) && g2g.pathogenicVariantCount() < 2) {
+                final double HEURISTIC_ONE_ALLELE_FOR_AR_DISEASE = -0.5;
+                max = updateMax(HEURISTIC_ONE_ALLELE_FOR_AR_DISEASE, max);
+            } else if (strict && g2g.pathogenicVariantCount() > (lambda_disease + EPSILON)) {
+                double HEURISTIC = -0.5 * (g2g.pathogenicVariantCount() - lambda_disease);
+                max = updateMax(HEURISTIC, max);
+            } else { // the following is the general case, where either the variant count
+                // matches or we are not using the strict option.
+                double D = pdDisease.probability(observedWeightedPathogenicVariantCount);
+                PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
+                double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
+                if (B > 0 && D > 0) {
+                    double ratio = D / B;
+                    if (max.isPresent() && ratio > max.get()) {
+                        max = Optional.of(ratio);
+                    } else if (!max.isPresent()) {
+                        max = Optional.of(ratio);
+                    }
                 }
             }
         }
         // We should always have some value for max once we get here but
-        // there is a default value of 0.05^2 to avoid null errors so that
-        // we do not crash if something unexpected occurs.
-        final double DEFAULTVAL = 0.05 * 0.05;
+        // there is a default value of 0.05 to avoid null errors so that
+        // we do not crash if something unexpected occurs. (Should actually never be used)
+        final double DEFAULTVAL = 0.05;
         return max.orElse(DEFAULTVAL);
     }
 

@@ -19,7 +19,7 @@ import java.util.Map;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Grid search for simulation of phenotype-only cases",hidden = true)
-public class GridSearchCommand extends Lr2PgCommand {
+public class GridSearchCommand extends LiricalCommand {
     private static final Logger logger = LoggerFactory.getLogger(GridSearchCommand.class);
      /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
     @Parameter(names={"-d","--data"}, description ="directory to download data" )
