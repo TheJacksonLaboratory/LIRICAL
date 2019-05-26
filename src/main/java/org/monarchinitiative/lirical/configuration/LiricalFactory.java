@@ -35,7 +35,6 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Not a full implementation of the factory pattern but rather a convenience class to create objects of various
@@ -141,7 +140,7 @@ public class LiricalFactory {
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
-        this.datadir=builder.lr2pgDataDir;
+        this.datadir=builder.liricalDataDir;
         this.strict = builder.strict;
 
         ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
@@ -483,14 +482,14 @@ public class LiricalFactory {
     public void qcHumanPhenotypeOntologyFiles() {
         File datadirfile = new File(datadir);
         if (!datadirfile.exists()) {
-            logger.error("Could not find LR2PG data directory at {}",datadir);
+            logger.error("Could not find LIRICAL data directory at {}",datadir);
             logger.error("Consider running download command.");
-            throw new LiricalRuntimeException(String.format("Could not find LR2PG data directory at %s",datadir));
+            throw new LiricalRuntimeException(String.format("Could not find LIRICAL data directory at %s",datadir));
         } else if (!datadirfile.isDirectory()) {
-            logger.error("LR2PG datadir path ({}) is not a directory.",datadir);
-            throw new LiricalRuntimeException(String.format("LR2PG datadir path (%s) is not a directory.",datadir));
+            logger.error("LIRICAL datadir path ({}) is not a directory.",datadir);
+            throw new LiricalRuntimeException(String.format("LIRICAL datadir path (%s) is not a directory.",datadir));
         } else {
-            logger.trace("LR2PG datadirectory: {}", datadir);
+            logger.trace("LIRICAL datadirectory: {}", datadir);
         }
         File f1 = new File(this.hpoOboFilePath);
         if (!f1.exists() && f1.isFile()) {
@@ -602,7 +601,7 @@ public class LiricalFactory {
         /** path to hp.obo file.*/
         private String hpOboPath=null;
         private String phenotypeAnnotationPath=null;
-        private String lr2pgDataDir=null;
+        private String liricalDataDir =null;
         private String exomiserDataDir=null;
         private String geneInfoPath=null;
         private String mim2genemedgenPath=null;
@@ -622,9 +621,9 @@ public class LiricalFactory {
         public Builder yaml(YamlParser yp) {
             Optional<String> datadirOpt=yp.getDataDir();
             if (datadirOpt.isPresent()) {
-                this.lr2pgDataDir = getPathWithoutTrailingSeparatorIfPresent(datadirOpt.get());
+                this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(datadirOpt.get());
             } else {
-                this.lr2pgDataDir=DEFAULT_DATA_DIRECTORY;
+                this.liricalDataDir =DEFAULT_DATA_DIRECTORY;
             }
             initDatadirFiles();
             this.exomiserDataDir=yp.getExomiserDataDir();
@@ -733,19 +732,19 @@ public class LiricalFactory {
         }
 
         /** Initializes the paths to the four files that should be in the data directory. This method
-         * should be called only after {@link #lr2pgDataDir} has been set.
+         * should be called only after {@link #liricalDataDir} has been set.
          */
         private void initDatadirFiles() {
-            this.hpOboPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"hp.obo");
-            this.geneInfoPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"Homo_sapiens_gene_info.gz");
-            this.phenotypeAnnotationPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"phenotype.hpoa");
-            this.mim2genemedgenPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"mim2gene_medgen");
+            this.hpOboPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"hp.obo");
+            this.geneInfoPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"Homo_sapiens_gene_info.gz");
+            this.phenotypeAnnotationPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"phenotype.hpoa");
+            this.mim2genemedgenPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"mim2gene_medgen");
         }
 
 
 
         public Builder datadir(String datadir) {
-            this.lr2pgDataDir=getPathWithoutTrailingSeparatorIfPresent(datadir);
+            this.liricalDataDir =getPathWithoutTrailingSeparatorIfPresent(datadir);
            initDatadirFiles();
             return this;
         }

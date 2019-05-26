@@ -122,7 +122,7 @@ public class YamlParser {
     }
 
     /**
-     * In most cases, users should use the default data directory ("data") that is created by the LR2PG download
+     * In most cases, users should use the default data directory ("data") that is created by the LIRICAL download
      * command by default. If users choose another path, they should enter a datadir element in the YAML file.
      * An empty Optional object is return if nothing is present in the YAML file, indicating that the default
      * should be used
@@ -217,7 +217,7 @@ public class YamlParser {
     }
 
     /**
-     * The user can choose to run LR2PG without a VCF file. Then, a phenotype only analysis is performed.
+     * The user can choose to run LIRICAL without a VCF file. Then, a phenotype only analysis is performed.
      * In this case, we return an empty Optional object.
      * @return Path to VCF file, if present.
      */

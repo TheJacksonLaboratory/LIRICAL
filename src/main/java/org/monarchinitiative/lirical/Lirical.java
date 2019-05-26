@@ -31,7 +31,7 @@ public class Lirical {
     static public void main(String [] args) {
         long startTime = System.currentTimeMillis();
 
-        Lirical lr2pg = new Lirical();
+        Lirical lirical = new Lirical();
         DownloadCommand download = new DownloadCommand();
         SimulatePhenotypesCommand simulate = new SimulatePhenotypesCommand();
         GridSearchCommand grid = new GridSearchCommand();
@@ -40,7 +40,7 @@ public class Lirical {
         PhenopacketCommand phenopacket = new PhenopacketCommand();
         SimulateVcfCommand simvcf = new SimulateVcfCommand();
         JCommander jc = JCommander.newBuilder()
-                .addObject(lr2pg)
+                .addObject(lirical)
                 .addCommand("download", download)
                 .addCommand("simulate", simulate)
                 .addCommand("grid", grid)
@@ -49,7 +49,7 @@ public class Lirical {
                 .addCommand("simulate-vcf",simvcf)
                 .addCommand("phenopacket",phenopacket)
                 .build();
-        jc.setProgramName("java -jar Lr2pg.jar");
+        jc.setProgramName("java -jar LIRICAL.jar");
         try {
             jc.parse(args);
         } catch (ParameterException e) {
@@ -77,7 +77,7 @@ public class Lirical {
             }
             System.err.println("[ERROR] "+e.getMessage());
             System.err.println("[ERROR] your command: "+commandstring);
-            System.err.println("[ERROR] enter java -jar Lr2pg -h for more information.");
+            System.err.println("[ERROR] enter java -jar LIRICAL.jar -h for more information.");
             System.exit(1);
         }
         String parsedCommand = jc.getParsedCommand();
@@ -88,11 +88,11 @@ public class Lirical {
         if (! commandnames.contains(parsedCommand)) {
             System.err.println("[ERROR] did not recognize command \"" + parsedCommand +"\"");
             System.err.println("[ERROR] available commands are " + String.join(", ",commandnames));
-            System.err.println("[ERROR] enter java -jar Lr2pg -h for more information.");
+            System.err.println("[ERROR] enter java -jar LIRICAL.jar -h for more information.");
             System.exit(1);
         }
 
-        if ( lr2pg.usageHelpRequested) {
+        if ( lirical.usageHelpRequested) {
             if (parsedCommand==null) {
                 jc.usage();
             } else {
@@ -107,35 +107,35 @@ public class Lirical {
            System.exit(1);
        }
 
-        if ( lr2pg.usageHelpRequested) {
+        if ( lirical.usageHelpRequested) {
 
             jc.usage();
             System.exit(1);
         }
 
         String command = jc.getParsedCommand();
-        LiricalCommand lr2pgcommand=null;
+        LiricalCommand liricalCommand=null;
         switch (command) {
             case "download":
-                lr2pgcommand= download;
+                liricalCommand= download;
                 break;
             case "simulate":
-                lr2pgcommand = simulate;
+                liricalCommand = simulate;
                break;
            case "grid":
-               lr2pgcommand = grid;
+               liricalCommand = grid;
                break;
            case "gt2git":
-               lr2pgcommand = gt2git;
+               liricalCommand = gt2git;
                break;
            case "vcf":
-               lr2pgcommand =vcf;
+               liricalCommand =vcf;
                break;
            case "simulate-vcf":
-               lr2pgcommand=simvcf;
+               liricalCommand=simvcf;
                break;
            case "phenopacket":
-                lr2pgcommand =phenopacket;
+                liricalCommand =phenopacket;
                 break;
            default:
                System.err.println(String.format("[ERROR] command \"%s\" not recognized",command));
@@ -144,7 +144,7 @@ public class Lirical {
 
         }
         try {
-            lr2pgcommand.run();
+            liricalCommand.run();
         } catch (LiricalException e) {
             e.printStackTrace();
         }

@@ -97,7 +97,7 @@ public class TsvTemplate extends LiricalTemplate {
     public void outputFile(String absolutePath) {
         logger.info("Writing TSV file to {}",absolutePath);
         try (BufferedWriter out = new BufferedWriter(new FileWriter(absolutePath))) {
-            Template template = cfg.getTemplate("lr2pgTSV.ftl");
+            Template template = cfg.getTemplate("liricalTSV.ftl");
             template.process(templateData, out);
         } catch (TemplateException | IOException te) {
             te.printStackTrace();

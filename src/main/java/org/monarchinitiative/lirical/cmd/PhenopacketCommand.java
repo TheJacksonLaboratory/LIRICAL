@@ -29,11 +29,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Download a number of files needed for the analysis
+ * Download a number of files needed for LIRICAL analysis
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-@Parameters(commandDescription = "Run LR2PG from a Phenopacket")
+@Parameters(commandDescription = "Run LIRICAL from a Phenopacket")
 public class PhenopacketCommand extends PrioritizeCommand {
     private static final Logger logger = LoggerFactory.getLogger(PhenopacketCommand.class);
     @Parameter(names = {"-b", "--background"}, description = "path to non-default background frequency file")
@@ -149,7 +149,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
             }
 
         } else {
-            // i.e., the Phenopacket has no VCF reference -- LR2PG will work on just phenotypes!
+            // i.e., the Phenopacket has no VCF reference -- LIRICAL will work on just phenotypes!
             LiricalFactory factory = new LiricalFactory.Builder()
                     .datadir(this.datadir)
                     .build();

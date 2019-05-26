@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * Run a grid search over number of terms and number of noise terms for
- * phenotype-only LR2PG. Can be run with or with imprecision.
+ * phenotype-only LIRICAL. Can be run with or with imprecision.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Grid search for simulation of phenotype-only cases",hidden = true)

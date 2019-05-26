@@ -34,7 +34,7 @@ public class SimulatePhenotypesCommand extends LiricalCommand {
     private boolean imprecise_phenotype = false;
 
 
-    /** No-op constructor meant to demo the phenotype LR2PG algorithm by similating some case based on
+    /** No-op constructor meant to demo the phenotype LIRICAL algorithm by simulating some case based on
      * randomly chosen diseases and HPO terms.
      */
     public SimulatePhenotypesCommand(){
