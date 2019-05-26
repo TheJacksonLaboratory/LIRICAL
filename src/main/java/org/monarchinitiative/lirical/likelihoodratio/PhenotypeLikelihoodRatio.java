@@ -306,67 +306,67 @@ public class PhenotypeLikelihoodRatio {
      * @param disease the disease for which we want to calculate the frequency
      * @return estimated frequency of the feature given the disease
      */
-    private double getLrForTermThatDoesNotDirectlyAnnotateDisease(TermId query, HpoDisease disease) {
-        //Try to find a matching child term.
-
-        // 1. the query term is a superclass of the disease term. Therefore,
-        // our query satisfies the criteria for the disease and we can take the
-        // frequency of the disease term. Since there may be multiple parents
-        // take the maximum frequency (since the parent term will have at least this frequency)
-        double cumfreq=0.0;
-        boolean isAncestor=false;
-        for (HpoAnnotation hpoTermId : disease.getPhenotypicAbnormalities()) {
-            // is query an ancestor of a term that annotates the disease?
-            if (isSubclass(ontology,hpoTermId.getTermId(),query)) {
-                cumfreq=Math.max(cumfreq,hpoTermId.getFrequency());
-                isAncestor=true;
-            }
-        }
-        if (isAncestor) {
-            double denominator = getBackgroundFrequency(query);
-            return cumfreq/denominator;
-        }
-
-        //2. If the query term is a subclass of one or more disease terms, then
-        // we weight the frequency in the disease--- because not everybody with the disease will have the
-        // subterm in question--they could have another one of the subclasses.
-
-        for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
-            if (isSubclass(ontology, query, annot.getTermId())){
-                double proportionalFrequency = getProportionalFrequencyInAncestors(query,annot.getTermId());
-                double queryFrequency = annot.getFrequency();
-                double f = proportionalFrequency*queryFrequency;
-                double denominator = getBackgroundFrequency(query);
-                return Math.max(f,noCommonOrganProbability(query))/denominator;
-            }
-        }
-
-
-        List<TermId> commonAncs = getClosestAncestor(query,disease);
-        OptionalDouble max = OptionalDouble.empty();
-        for (TermId tid : commonAncs) {
-            HpoAnnotation hpoTid = disease.getAnnotation(tid);
-            double numerator = hpoTid.getFrequency();
-            double denominator = getBackgroundFrequency(tid);
-            double lr = numerator / denominator;
-            if (max.isPresent()) {
-                double m = max.getAsDouble();
-                if (lr>m) max = OptionalDouble.of(lr);
-            }
-        }
-        if (max.isPresent()) {
-            return max.getAsDouble();
-        }
-
-        // If we get here, then there is no common ancestor between the query and any of the disease phenotype annotations.
-
-        // We model this as a default probability of 1 to 100 of a "false-positive finding"
-        //
-
-
-
-        return noCommonOrganProbability(query);// DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
-    }
+//    private double getLrForTermThatDoesNotDirectlyAnnotateDisease(TermId query, HpoDisease disease) {
+//        //Try to find a matching child term.
+//
+//        // 1. the query term is a superclass of the disease term. Therefore,
+//        // our query satisfies the criteria for the disease and we can take the
+//        // frequency of the disease term. Since there may be multiple parents
+//        // take the maximum frequency (since the parent term will have at least this frequency)
+//        double cumfreq=0.0;
+//        boolean isAncestor=false;
+//        for (HpoAnnotation hpoTermId : disease.getPhenotypicAbnormalities()) {
+//            // is query an ancestor of a term that annotates the disease?
+//            if (isSubclass(ontology,hpoTermId.getTermId(),query)) {
+//                cumfreq=Math.max(cumfreq,hpoTermId.getFrequency());
+//                isAncestor=true;
+//            }
+//        }
+//        if (isAncestor) {
+//            double denominator = getBackgroundFrequency(query);
+//            return cumfreq/denominator;
+//        }
+//
+//        //2. If the query term is a subclass of one or more disease terms, then
+//        // we weight the frequency in the disease--- because not everybody with the disease will have the
+//        // subterm in question--they could have another one of the subclasses.
+//
+//        for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
+//            if (isSubclass(ontology, query, annot.getTermId())){
+//                double proportionalFrequency = getProportionalFrequencyInAncestors(query,annot.getTermId());
+//                double queryFrequency = annot.getFrequency();
+//                double f = proportionalFrequency*queryFrequency;
+//                double denominator = getBackgroundFrequency(query);
+//                return Math.max(f,noCommonOrganProbability(query))/denominator;
+//            }
+//        }
+//
+//
+//        List<TermId> commonAncs = getClosestAncestor(query,disease);
+//        OptionalDouble max = OptionalDouble.empty();
+//        for (TermId tid : commonAncs) {
+//            HpoAnnotation hpoTid = disease.getAnnotation(tid);
+//            double numerator = hpoTid.getFrequency();
+//            double denominator = getBackgroundFrequency(tid);
+//            double lr = numerator / denominator;
+//            if (max.isPresent()) {
+//                double m = max.getAsDouble();
+//                if (lr>m) max = OptionalDouble.of(lr);
+//            }
+//        }
+//        if (max.isPresent()) {
+//            return max.getAsDouble();
+//        }
+//
+//        // If we get here, then there is no common ancestor between the query and any of the disease phenotype annotations.
+//
+//        // We model this as a default probability of 1 to 100 of a "false-positive finding"
+//        //
+//
+//
+//
+//        return noCommonOrganProbability(query);// DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY;
+//    }
 
 
     /**

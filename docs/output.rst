@@ -1,16 +1,16 @@
-LR2PG Output
-============
+LIRICAL Output
+==============
 
-Use either the :ref:`yaml` or the :ref:`phenopacket` method to run LR2PG. By default, LR2PG will output an HTML file
-that contains a summary of its analysis results. LR2PG can also output a TSV file that can be used by bioinformatic
-pipelines. Depending on you computer, LR2PG will run from about 15 to 60 seconds, or longer if a whole-genome file is used
+Use either the :ref:`rstyaml` or the :ref:`rstphenopacket` method to run LIRICAL. By default, LIRICAL will output an HTML file
+that contains a summary of its analysis results. LIRICAL can also output a TSV file that can be used by bioinformatic
+pipelines. Depending on you computer, LIRICAL will run from about 15 to 60 seconds, or longer if a whole-genome file is used
 as input.
 
 The HTML Output
 ~~~~~~~~~~~~~~~
 
 The HTML output page begins with a summary of the sample name and a list of the `HPO <http:\\www.human-phenotype-ontology.org>`_ terms
-used to run the program. By default, LR2PG shows a detailed output only for diseases whose posttest probability is
+used to run the program. By default, LIRICAL shows a detailed output only for diseases whose posttest probability is
 calculated to be more than a threshold whose default value is 1% (but which can be adjusted using the ``-t`` command line
 argument). For example, the following figures show an example in which Pfeiffer syndrome was ranked as the second
 candidate according to its posttest probability of 45%. One heterozygous variant in the *FGFR2* gene was identified whose predicted
@@ -26,13 +26,13 @@ a negative contribution because it is not associated with the disease (its likel
 
 The TSV Output
 ~~~~~~~~~~~~~~
-If LR2PG is run with the ``-tsv`` option, it will output a tab-separated values (TSV) file with the results for each of the
+If LIRICAL is run with the ``-tsv`` option, it will output a tab-separated values (TSV) file with the results for each of the
 diagnoses.
 
 TODO-- we still have not finalized the format, but this is what it looks like now. A total of 7424 diagnoses were tested,
 whose posttest probability ranged from 45.03% to 0.00% ::
 
-    ! LR2PG TSV Output
+    ! LIRICAL TSV Output
     ! Sample: manuel
     ! Observed HPO terms
     ! Brachydactyly (<a href="https://hpo.jax.org/app/browse/term/HP:0001156">HP:0001156</a>)

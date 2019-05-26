@@ -33,17 +33,17 @@ public class InducedDiseaseGraph {
      * term that directly annotates {@link #disease}.
      */
     static class CandidateMatch {
-        public int distance;
-        public double frequency;
-        public TermId termId;
+        int distance;
+        double frequency;
+        TermId termId;
 
-        public CandidateMatch(TermId tid, double f) {
+        CandidateMatch(TermId tid, double f) {
             this.termId=tid;
             distance=0;
             this.frequency=f;
         }
 
-        public CandidateMatch(TermId tid, int level) {
+        CandidateMatch(TermId tid, int level) {
             this.termId=tid;
             this.distance = level;
         }
@@ -70,9 +70,6 @@ public class InducedDiseaseGraph {
             double f = annot.getFrequency();
             TermId tid = annot.getTermId();
             CandidateMatch cmatch = new CandidateMatch(tid,f); // distance is zero
-//            term2frequencyMap.putIfAbsent(tid,f);
-//            double oldfreq = term2frequencyMap.get(tid);
-//            if (f>oldfreq) { term2frequencyMap.put(tid,f); }
             Stack<CandidateMatch> stack = new Stack<>();
             stack.push(cmatch);
             while (! stack.empty()) {
@@ -84,7 +81,7 @@ public class InducedDiseaseGraph {
                     }
                     int distance = cm.distance+1;
                     CandidateMatch parentCm = new CandidateMatch(p,distance);
-                    double adjustedFrequency = f/(1.0+distance);
+                    double adjustedFrequency = f/Math.pow(2.0,distance);
                     term2frequencyMap.putIfAbsent(p,adjustedFrequency);
                     double oldfreq = term2frequencyMap.get(p);
                     if (adjustedFrequency>oldfreq) { term2frequencyMap.put(p,adjustedFrequency); }
@@ -98,12 +95,6 @@ public class InducedDiseaseGraph {
         return disease;
     }
 
-
-//    private Term2Freq getByLevel(TermId t, int level) {
-//        if (this.term2frequencyMap.containsKey(t)) {
-//            double rawfrequency = this.term2frequencyMap.get(t);
-//            double f = rawfrequency/Math.pow(2, level);
-//    }
 
     /**
      * Get the terms that annotates disease (or is an ancestor of one of the terms) that are
