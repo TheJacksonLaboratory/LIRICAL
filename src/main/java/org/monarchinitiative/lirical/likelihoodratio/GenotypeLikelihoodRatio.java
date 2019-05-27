@@ -153,7 +153,7 @@ public class GenotypeLikelihoodRatio {
         // a better score for pathogenic than background -- the best explanation for
         // a gene with high background is that a variant is background (unless variant is ClinVar-path, see above).
         if (lambda_background > 1.0) {
-            lambda_background = Math.min(lambda_background, g2g.pathogenicVariantCount());
+            lambda_background = Math.min(lambda_background, g2g.pathogenicAlleleCount());
         }
 
         Optional<Double> max = Optional.empty();
@@ -173,11 +173,11 @@ public class GenotypeLikelihoodRatio {
             // the user will have to judge whether one of the variants is truly pathogenic.
 
 
-            if (strict && inheritanceId.equals(AUTOSOMAL_RECESSIVE) && g2g.pathogenicVariantCount() < 2) {
+            if (strict && inheritanceId.equals(AUTOSOMAL_RECESSIVE) && g2g.pathogenicAlleleCount() < 2) {
                 final double HEURISTIC_ONE_ALLELE_FOR_AR_DISEASE = -0.5;
                 max = updateMax(HEURISTIC_ONE_ALLELE_FOR_AR_DISEASE, max);
-            } else if (strict && g2g.pathogenicVariantCount() > (lambda_disease + EPSILON)) {
-                double HEURISTIC = -0.5 * (g2g.pathogenicVariantCount() - lambda_disease);
+            } else if (strict && g2g.pathogenicAlleleCount() > (lambda_disease + EPSILON)) {
+                double HEURISTIC = -0.5 * (g2g.pathogenicAlleleCount() - lambda_disease);
                 max = updateMax(HEURISTIC, max);
             } else { // the following is the general case, where either the variant count
                 // matches or we are not using the strict option.

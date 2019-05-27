@@ -111,6 +111,33 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
         return this.pathogenicityScore >= PATHOGENICITY_THRESHOLD;
     }
 
+    /**
+     * Count the number of pathogenic alleles. If this variant is not in the pathogenic bin, then
+     * the count is always zero. If the variant is in the pathogenic bin, then the count is 2
+     * if the variant is homozygous, otherwise the count in 1.
+     * @return
+     */
+    public int pathogenicAlleleCount() {
+        if (this.pathogenicityScore<PATHOGENICITY_THRESHOLD) return 0;
+        return this.gtype.equals(SimpleGenotype.HOMOZYGOUS_ALT) ? 2: 1;
+    }
+
+    public boolean isClinVarPathogenic() {
+        return PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(this.clinvar);
+    }
+    /**
+     * Count the number of ClinVar-pathogenic alleles. If this variant is not called Pathogenic in ClinVar, then
+     * the count is always zero. If the variant is ClinVar-pathogenic, then the count is 2
+     * if the variant is homozygous, otherwise the count in 1.
+     * @return
+     */
+    public int pathogenicClinVarAlleleCount() {
+        if (! isClinVarPathogenic()) return 0;
+        else return this.gtype.equals(SimpleGenotype.HOMOZYGOUS_ALT) ? 2: 1;
+    }
+
+
+
     /**@return chromosome on which this variant is located. Returns a String such as chr1 or chrY */
     public String getChromosome() {
         return chromosome;
@@ -174,9 +201,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
     }
 
 
-    public boolean isClinVarPathogenic() {
-        return PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(this.clinvar);
-    }
+
 
     public String getClinvar() {
         if (NOT_PROVIDED.equals(clinvar))

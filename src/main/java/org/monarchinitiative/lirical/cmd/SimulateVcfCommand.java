@@ -264,6 +264,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
                     System.out.println(++counter + ") "+ fileEntry.getName());
                     runOneVcfAnalysis(fileEntry);
                 }
+                if (counter>10)break;
             }
         } else {
             System.err.println("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");

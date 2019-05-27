@@ -97,8 +97,8 @@ public class VcfSimulator {
 
             OntologyClass zygosity = variant.getZygosity();
 
-            LOGGER.error(vcfAllele.getChr() + ":"+ vcfAllele.getPos() + vcfAllele.getRef() +"-"+vcfAllele.getAlt()
-                    +"["+ zygosity.getLabel() +"]" +" subject" + subjectId +" todo -- make this INFO");
+            LOGGER.info(vcfAllele.getChr() + ":"+ vcfAllele.getPos() + vcfAllele.getRef() +"-"+vcfAllele.getAlt()
+                    +" ["+ zygosity.getLabel() +"]" +" subject" + subjectId );
 
 
 

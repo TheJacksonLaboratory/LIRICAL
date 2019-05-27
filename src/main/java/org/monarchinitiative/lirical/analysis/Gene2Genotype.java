@@ -89,11 +89,11 @@ public class Gene2Genotype {
    }
 
    public int pathogenicClinVarCount() {
-       return (int)this.varList.stream().filter(SimpleVariant::isClinVarPathogenic).count();
+       return (int)this.varList.stream().map(SimpleVariant::pathogenicClinVarAlleleCount).reduce(0,Integer::sum);
    }
 
-   public int pathogenicVariantCount() {
-       return (int)this.varList.stream().filter((SimpleVariant::isInPathogenicBin)).count();
+   public int pathogenicAlleleCount() {
+       return (int)this.varList.stream().map(SimpleVariant::pathogenicAlleleCount).reduce(0,Integer::sum);
    }
 
     @Override
