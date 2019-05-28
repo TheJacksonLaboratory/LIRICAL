@@ -56,8 +56,7 @@ public abstract class PrioritizeCommand extends LiricalCommand {
     protected Map<TermId,String> geneId2symbol;
     /** Various metadata that will be used for the HTML org.monarchinitiative.lirical.output. */
     protected Map<String,String> metadata;
-    @Parameter(names={"--evolve"},description = "Use evolutionary algorithm to optimize result")
-    boolean evolve=false;
+
 
     /**
      * Output a summary of results as an HTML file. This function should be used for cases
