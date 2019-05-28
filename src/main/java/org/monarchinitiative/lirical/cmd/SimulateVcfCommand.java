@@ -20,6 +20,7 @@ import org.monarchinitiative.lirical.output.HtmlTemplate;
 import org.monarchinitiative.lirical.output.LiricalRanking;
 import org.monarchinitiative.lirical.output.LiricalTemplate;
 import org.monarchinitiative.lirical.output.TsvTemplate;
+import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -257,6 +258,9 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         } else if (this.phenopacketDir != null) {
             logger.info("Running Phenopacket/VCF simulations at {}", phenopacketDir);
             final File folder = new File(phenopacketDir);
+            if (! folder.isDirectory()) {
+                throw new PhenolRuntimeException("Could not open Phenopackets directory at "+phenopacketDir);
+            }
             int counter=0;
             for (final File fileEntry : folder.listFiles()) {
                 if (fileEntry.isFile() && fileEntry.getAbsolutePath().endsWith(".json")) {
@@ -264,7 +268,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
                     System.out.println(++counter + ") "+ fileEntry.getName());
                     runOneVcfAnalysis(fileEntry);
                 }
-                if (counter>10)break;
+               // if (counter>10)break;
             }
         } else {
             System.err.println("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");
