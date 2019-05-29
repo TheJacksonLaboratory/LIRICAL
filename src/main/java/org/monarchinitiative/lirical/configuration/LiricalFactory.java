@@ -619,19 +619,14 @@ public class LiricalFactory {
         }
 
         public Builder yaml(YamlParser yp) {
-            Optional<String> datadirOpt=yp.getDataDir();
-            if (datadirOpt.isPresent()) {
-                this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(datadirOpt.get());
-            } else {
-                this.liricalDataDir =DEFAULT_DATA_DIRECTORY;
-            }
+            this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(this.liricalDataDir);
             initDatadirFiles();
             this.exomiserDataDir=yp.getExomiserDataDir();
             this.genomeAssembly=yp.getGenomeAssembly();
             this.observedHpoTerms=new ArrayList<>();
             this.negatedHpoTerms=new ArrayList<>();
-            Collections.addAll(this.observedHpoTerms, yp.getHpoTermList());
-            Collections.addAll(this.negatedHpoTerms,yp.getNegatedHpoTermList());
+            this.observedHpoTerms=yp.getHpoTermList();
+            this.negatedHpoTerms=yp.getNegatedHpoTermList();
             switch (yp.transcriptdb().toUpperCase()) {
                 case "ENSEMBL" :
                     this.transcriptdatabase=TranscriptDatabase.ENSEMBL;

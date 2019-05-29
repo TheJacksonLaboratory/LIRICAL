@@ -97,12 +97,12 @@ class BBS1Test {
     @Test
     void testGetHpoIdsYaml() {
         String [] expected = {"HP:0007843","HP:0001513","HP:0000608","HP:0000486"};
-        String [] termList = yamlparser.getHpoTermList();
-        assertEquals(4,termList.length);
-        assertEquals(termList[0],expected[0]);
-        assertEquals(termList[1],expected[1]);
-        assertEquals(termList[2],expected[2]);
-        assertEquals(termList[3],expected[3]);
+        List<String> termList = yamlparser.getHpoTermList();
+        assertEquals(4,termList.size());
+        assertEquals(termList.get(0),expected[0]);
+        assertEquals(termList.get(1),expected[1]);
+        assertEquals(termList.get(2),expected[2]);
+        assertEquals(termList.get(3),expected[3]);
     }
 
     @Test
@@ -121,9 +121,9 @@ class BBS1Test {
     @Test
     void testGetExlucedTermYaml() {
         final String expected = "HP:0001328"; // only one excluded term
-        final String []excludedlist = yamlparser.getNegatedHpoTermList();
-        assertEquals(1,excludedlist.length);
-        assertEquals(expected,excludedlist[0]);
+        final List<String> excludedlist = yamlparser.getNegatedHpoTermList();
+        assertEquals(1,excludedlist.size());
+        assertEquals(expected,excludedlist.get(0));
     }
 
     @Test

@@ -1,3 +1,5 @@
+.. _rstsetup:
+
 Setting up LIRICAL
 ==================
 
