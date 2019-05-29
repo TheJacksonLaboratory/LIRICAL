@@ -13,11 +13,11 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import java.util.Map;
 
 /**
- * This is a common superclass for {@link VcfCommand} and {@link PhenopacketCommand}.
+ * This is a common superclass for {@link YamlVcfCommand} and {@link PhenopacketCommand}.
  * Its purpose is to provide command line parameters and variables that are used
  * in the same way by both of the subclasses.
  */
-public abstract class PrioritizeCommand extends Lr2PgCommand {
+public abstract class PrioritizeCommand extends LiricalCommand {
     /** Directory where various files are downloaded/created. */
     @Parameter(names={"-d","--data"}, description ="directory to download data" )
     protected String datadir="data";
@@ -26,7 +26,9 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
     @Parameter(names={"-k","--keep"}, description = "retain candidates even if no candidate variant is found")
     protected boolean keepIfNoCandidateVariant=false;
     @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
-    protected int minDifferentialsToShow=5;
+    protected int minDifferentialsToShow=10;
+    @Parameter(names={"--strict"},description="use strict genotype matching for likelihood ratio calculation")
+    boolean strict=false;
     /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
      * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
      * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
@@ -54,6 +56,7 @@ public abstract class PrioritizeCommand extends Lr2PgCommand {
     protected Map<TermId,String> geneId2symbol;
     /** Various metadata that will be used for the HTML org.monarchinitiative.lirical.output. */
     protected Map<String,String> metadata;
+
 
     /**
      * Output a summary of results as an HTML file. This function should be used for cases

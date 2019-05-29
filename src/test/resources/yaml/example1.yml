@@ -6,8 +6,7 @@ analysis:
   # hg19 or hg38 is supported
   # make sure the Jannovar transcript file is taken from the same genome build
   genomeAssembly: hg19
-  vcf: /Users/peterrobinson/Documents/data/Pfeiffer.vcf
-  datadir: data
-  exomiser: /Users/peterrobinson/Documents/data/exomiser/1802_hg19/
-hpoIds: [ 'HP:0001363', 'HP:0011304', 'HP:0010055']
-prefix: pfeiffer1
+  vcf: /path/to/Pfeiffer.vcf
+  exomiser: /path/to/1802_hg19/
+hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
+prefix: example1

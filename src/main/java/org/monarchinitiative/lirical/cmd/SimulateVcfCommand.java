@@ -6,6 +6,7 @@ import com.beust.jcommander.Parameters;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.protobuf.util.JsonFormat;
+import org.h2.mvstore.WriteBuffer;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.analysis.VcfSimulator;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
@@ -19,6 +20,7 @@ import org.monarchinitiative.lirical.output.HtmlTemplate;
 import org.monarchinitiative.lirical.output.LiricalRanking;
 import org.monarchinitiative.lirical.output.LiricalTemplate;
 import org.monarchinitiative.lirical.output.TsvTemplate;
+import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -30,10 +32,7 @@ import org.phenopackets.schema.v1.core.Phenotype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,11 +41,27 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Predicate;
 
+
+/**
+ * Simulate one or multiple VCFs from a Phenopacket that has HPO terms and a gene mutation. The mutation will
+ * be "injected" into a template VCF file (this should be a "normal" VCF file), and LIRICAL will be run, and
+ * the rank of the original diagnosis from the Phenopacket will be recorded. To run a single case,
+ * <pre>
+ *     java -jar LIRICAL.jar -p sample-phenopacket.json -e path/to/exomiser-datadir -v template.vcf
+ * </pre>
+ * Use the -m 25 option to show at least 25 differential diagnosis (by default, only diseases with posterior
+ * probability above 1% are displayed).
+ * <p></p>
+ * In order to perform simulation on an entire directory of phenopackets, replace the -p option with
+ * the --phenopacket-dir option.
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ */
+
 @Parameters(commandDescription = "Simulate VCF analysis from phenopacket", hidden = false)
 public class SimulateVcfCommand extends PrioritizeCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulateVcfCommand.class);
     //TODO -- Get this from the VCF file or from the Phenopacket or from command line
-    String genomeAssembly = "GRCh37";
+    private String genomeAssembly = "GRCh37";
     @Parameter(names = {"-p", "--phenopacket"}, description = "path to phenopacket file")
     private String phenopacketPath;
     @Parameter(names = {"-e", "--exomiser"}, description = "path to the Exomiser data directory")
@@ -57,6 +72,10 @@ public class SimulateVcfCommand extends PrioritizeCommand {
     private String backgroundFrequencyFile;
     @Parameter(names = {"--phenopacket-dir"}, description = "path to directory with multiple phenopackets")
     private String phenopacketDir;
+    @Parameter(names = {"-outputfile"}, description = "name of the output file with simulation results")
+    private String simulationOutFile="vcf_simulation_results.tsv";
+
+    private BufferedWriter simulationOutBuffer;
     /**
      * If true, the phenopacket contains the path of a VCF file.
      */
@@ -74,7 +93,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
     private LiricalFactory factory;
 
     /**
-     * No-op constructor meant to demo the phenotype LR2PG algorithm by simulating some case based on
+     * No-op constructor meant to demo the phenotype LIRICAL algorithm by simulating some case based on
      * a phenopacket and a "normal" VCF file.
      */
     public SimulateVcfCommand() {
@@ -92,9 +111,12 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         return ppBuilder.build();
     }
 
-
-    private void runOneVcfAnalysis(String phenopacketAbsolutePath) {
-
+    /**
+     * This method coordinates
+     * @param phenopacketFile File with the Phenopacket we are currently analyzing
+     */
+    private void runOneVcfAnalysis(File phenopacketFile) {
+        String phenopacketAbsolutePath = phenopacketFile.getAbsolutePath();
         Phenopacket pp = readPhenopacket(phenopacketAbsolutePath);
         VcfSimulator vcfSimulator = new VcfSimulator(Paths.get(this.templateVcfPath));
         try {
@@ -133,7 +155,7 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         String vcfPath = htsFile.getFile().getPath();
         this.genotypemap = factory.getGene2GenotypeMap(vcfPath);
         this.genoLr = factory.getGenotypeLR();
-        // this.metadata.put("vcf_file", this.vcfPath);
+        // this.metadata.put("vcf_file", this.getOptionalVcfPath);
 
         logger.trace("Running simulation from phenopacket {} with template VCF {}",
                 phenopacketAbsolutePath,
@@ -177,9 +199,9 @@ public class SimulateVcfCommand extends PrioritizeCommand {
 
         if (outputTSV) {
             LiricalTemplate template = new TsvTemplate(hcase, ontology, genotypemap, this.geneId2symbol, this.metadata);
-            template.outputFile(this.outfilePrefix, outdir);
-            String outname = String.format("%s.tsv", outfilePrefix);
-            int rank = extractRank(outname);
+            String outname=String.format("%s.tsv","temp");
+            template.outputFile(outname);
+            extractRank(outname,phenopacketFile.getName());
         } else {
             HtmlTemplate caseoutput = new HtmlTemplate(hcase,
                     ontology,
@@ -195,26 +217,31 @@ public class SimulateVcfCommand extends PrioritizeCommand {
     /**
      * This can be run in a single phenopacket mode (in which case phenopacketPath needs to be defined) or in
      * multi-phenopacket mode (in which case phenopacketDir needs to be defined).
-     *
-     * @throws LiricalException
      */
     @Override
-    public void run() {
+    public void run()  {
         rankingsList = new ArrayList<>();
         this.metadata = new HashMap<>();
+        try {
+            simulationOutBuffer = new BufferedWriter(new FileWriter(this.simulationOutFile));
+            simulationOutBuffer.write(LiricalRanking.header()+"\n");
+        } catch (IOException e) {
+            throw new LiricalRuntimeException("Could not open " + simulationOutFile + " for writing");
+        }
         this.factory = new LiricalFactory.Builder()
                 .datadir(this.datadir)
                 .genomeAssembly(genomeAssembly)
                 .exomiser(this.exomiserDataDirectory)
-                // .vcf(vcfPath)
+                // .vcf(getOptionalVcfPath)
                 .transcriptdatabase(this.transcriptDb)
                 .backgroundFrequency(this.backgroundFrequencyFile)
+                .strict(this.strict)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
         factory.qcExternalFilesInDataDir();
         factory.qcExomiserFiles();
         factory.qcGenomeBuild();
-      //  factory.qcVcfFile();
+       // factory.qcVcfFile();
 
 
         this.ontology = factory.hpoOntology();
@@ -224,15 +251,21 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         this.geneId2symbol = factory.geneId2symbolMap();
         if (this.phenopacketPath != null) {
             logger.info("Running single file Phenopacket/VCF simulation at {}", phenopacketPath);
-            runOneVcfAnalysis(this.templateVcfPath);
+            runOneVcfAnalysis(new File(this.phenopacketPath));
         } else if (this.phenopacketDir != null) {
             logger.info("Running Phenopacket/VCF simulations at {}", phenopacketDir);
             final File folder = new File(phenopacketDir);
+            if (! folder.isDirectory()) {
+                throw new PhenolRuntimeException("Could not open Phenopackets directory at "+phenopacketDir);
+            }
+            int counter=0;
             for (final File fileEntry : folder.listFiles()) {
                 if (fileEntry.isFile() && fileEntry.getAbsolutePath().endsWith(".json")) {
                     logger.info("\tPhenopacket: \"{}\"", fileEntry.getAbsolutePath());
-                    runOneVcfAnalysis(fileEntry.getAbsolutePath());
+                    System.out.println(++counter + ") "+ fileEntry.getName());
+                    runOneVcfAnalysis(fileEntry);
                 }
+               // if (counter>10)break;
             }
         } else {
             System.err.println("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");
@@ -244,14 +277,29 @@ public class SimulateVcfCommand extends PrioritizeCommand {
         for (LiricalRanking lrank : this.rankingsList) {
             total_rank += lrank.getRank();
             N++;
-            System.out.println(lrank.toString());
+
         }
         double avgrank = (double) total_rank / N;
-        System.out.println("Average rank from " + N + " simulations was " + avgrank);
+        logger.info("Average rank from " + N + " simulations was " + avgrank);
+        try {
+            this.simulationOutBuffer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private int extractRank(String path) {
+
+    /**
+     * Extract data from the output TSV file including the rank of the correct disease
+     * @param path Path to the TSV file created by LIRICAL
+     * @param phenopacketBaseName Name of the phenopacket we are currently analyzing.
+     * @return rank of the correct disease.
+     */
+    private int extractRank(String path, String phenopacketBaseName) {
         int rank = -1;
+        int n_over_50=0; // number of differentials with post prob over 50%
+        int n_total=0; // total number of differentials
+        LiricalRanking lr=null;
         try {
             BufferedReader br = new BufferedReader(new FileReader(path));
             String line;
@@ -259,18 +307,46 @@ public class SimulateVcfCommand extends PrioritizeCommand {
                 if (line.startsWith("!")) continue;
                 if (line.startsWith("rank")) continue;
                 String[] fields = line.split("\t");
-                rank = Integer.parseInt(fields[0]);
-                String diseaseName = fields[1];
-                String diseaseCurie = fields[2];
-                if (diseaseCurie.equals(this.simulatedDisease)) {
-                    logger.info("Got rank of {} for simulated disease {}", rank, simulatedDisease);
+              // see the TSV template for fields
+                try {
+                    rank = Integer.parseInt(fields[0]);
+                    String diseaseName = fields[1];
+                    String diseaseCurie = fields[2];
+                    String pretest = fields[3];
+                    String posttest = fields[4];
+                    String compositeLR = fields[5];
+                    String entrezID = fields[6];
+                    // if no variant was found for a gene, then the eight field will be empty and we will only have 7 fields
+                    // in this case, write simply "n/a"
+                    String var = fields.length==8?fields[7]:"n/a";
+                    if (diseaseCurie.equals(this.simulatedDisease)) {
+                        logger.info("Got rank of {} for simulated disease {}", rank, simulatedDisease);
+                        lr = new LiricalRanking(phenopacketBaseName,rank, diseaseName,diseaseCurie,pretest,posttest,compositeLR,entrezID,var);
+                        rankingsList.add(lr);
+                    }
+                    double posttestprob = Double.parseDouble(posttest.replace("%",""));// remove the percent sign
+                    if (posttestprob>50.0) n_over_50++;
+                    n_total++;
+                } catch (Exception e) {
+                    System.err.println("Exception with " + path);
+                    System.err.println("number of fields " + fields.length);
+                    System.err.println(line);
+                    e.printStackTrace();
+                    System.exit(1);
                 }
-                LiricalRanking lr = new LiricalRanking(rank, line);
-                rankingsList.add(lr);
-                return rank;
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        String over50 = String.format("%d/%d",n_over_50,n_total);
+        if (lr!=null) {
+            try {
+                lr.addNumberOfDiseasesOver50(over50);
+                this.simulationOutBuffer.write(lr.toString() + "\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+                logger.error("[Exception encountered writing LR to file for {}",this.simulatedDisease);
+            }
         }
         // We should never get here. If we do, then probably the OMIM id used in the Phenopacket
         // is incorrect or outdated.

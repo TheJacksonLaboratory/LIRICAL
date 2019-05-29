@@ -106,7 +106,8 @@ public class PhenotypeLikelihoodRatioTest {
         HpoDisease disease = diseaseMap.get(diseaseName);
         assertNotNull(disease);
         double expected =1.0;
-        assertEquals(expected, phenotypeLrCalculator.getFrequencyOfTermInDisease(disease,tid),EPSILON);
+        double frq = disease.getAnnotation(tid).getFrequency();
+        assertEquals(expected,  frq,EPSILON);
     }
 
 

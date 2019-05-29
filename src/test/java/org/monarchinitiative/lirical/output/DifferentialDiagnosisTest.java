@@ -10,10 +10,13 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 class DifferentialDiagnosisTest {
+
+    private final String phenotypeExplanation="example1";
+    private final String expectedShortName="BRACHYPHALANGY, POLYDACTYLY, AND TIBIAL APLASIA/HYPOPLASIA";
 
 
     /** Test that the private function prettifyDiseaseName (which is called from the constructor)
@@ -36,9 +39,9 @@ class DifferentialDiagnosisTest {
         assertEquals(expectedShortName,dd.getDiseaseName());
     }
 
-    /** Test that the leading number is removed from the disease name. */
-    @Test
-    void prettifyNameTest2() {
+
+
+    DifferentialDiagnosis brachyphalangy() {
         String originalName="609945 BRACHYPHALANGY, POLYDACTYLY, AND TIBIAL APLASIA/HYPOPLASIA";
         TestResult result;
         result = Mockito.mock(TestResult.class);
@@ -49,27 +52,28 @@ class DifferentialDiagnosisTest {
         when(result.getPosttestProbability()).thenReturn(0.1);
         when(result.getCompositeLR()).thenReturn(0.3);
         when(result.hasGenotype()).thenReturn(false);
-        String expectedShortName="BRACHYPHALANGY, POLYDACTYLY, AND TIBIAL APLASIA/HYPOPLASIA";
         DifferentialDiagnosis dd = new DifferentialDiagnosis(result);
+        dd.setPhenotypeExplanation(phenotypeExplanation);
+        return dd;
+    }
+
+
+    /** Test that the leading number is removed from the disease name. */
+    @Test
+    void prettifyNameTest2() {
+        DifferentialDiagnosis dd = brachyphalangy();
         assertEquals(expectedShortName,dd.getDiseaseName());
     }
+
+
+
+
 
 
     /** Test that we are correctly setting the flag that is used by the FreeMarker to show variants. */
     @Test
     void checkShowVariants() {
-        String originalName="609945 BRACHYPHALANGY, POLYDACTYLY, AND TIBIAL APLASIA/HYPOPLASIA";
-        TestResult result;
-        result = Mockito.mock(TestResult.class);
-        when(result.getDiseaseName()).thenReturn(originalName);
-        when(result.getPosttestProbability()).thenReturn(0.001);
-        when(result.getDiseaseCurie()).thenReturn(TermId.of("OMIM:101600"));
-        when(result.getRank()).thenReturn(1);
-        when(result.getPosttestProbability()).thenReturn(0.1);
-        when(result.getCompositeLR()).thenReturn(0.3);
-        when(result.hasGenotype()).thenReturn(false);
-        String expectedShortName="BRACHYPHALANGY, POLYDACTYLY, AND TIBIAL APLASIA/HYPOPLASIA";
-        DifferentialDiagnosis dd = new DifferentialDiagnosis(result);
+        DifferentialDiagnosis dd = brachyphalangy();
         Gene2Genotype g2g = Mockito.mock(Gene2Genotype.class);
         when(g2g.getSymbol()).thenReturn("FakeSymbol");
         List<SimpleVariant> emptylist= ImmutableList.of();
@@ -77,4 +81,15 @@ class DifferentialDiagnosisTest {
         dd.addG2G(g2g);
         assertEquals("yes",dd.getHasVariants());
     }
+
+
+    @Test
+    void checkHasPhenotypeExplanation() {
+        DifferentialDiagnosis dd = brachyphalangy();
+        dd.setPhenotypeExplanation(phenotypeExplanation);
+        assertTrue(dd.hasPhenotypeExplanation());
+        assertFalse(dd.hasGenotypeExplanation());
+    }
+
+
 }

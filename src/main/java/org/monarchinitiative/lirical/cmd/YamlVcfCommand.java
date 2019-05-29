@@ -22,18 +22,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class coordinates the main analysis of a VCF file plus list of observed HPO terms.
+ * This class coordinates the main analysis of a VCF file plus list of observed HPO terms. This
+ * analysis is driven by a YAML file.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Phenotype-driven analysis of VCF (Exome/Genome) data")
-public class VcfCommand extends PrioritizeCommand {
-    private static final Logger logger = LoggerFactory.getLogger(VcfCommand.class);
+public class YamlVcfCommand extends PrioritizeCommand {
+    private static final Logger logger = LoggerFactory.getLogger(YamlVcfCommand.class);
     @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
     private String yamlPath;
+
     /**
-     * Command pattern to coordinate analysis of a VCF file with LR2PG.
+     * Command pattern to coordinate analysis of a VCF file with LIRICAL.
      */
-    public VcfCommand() {
+    public YamlVcfCommand() {
     }
 
 
@@ -50,14 +52,14 @@ public class VcfCommand extends PrioritizeCommand {
         this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
         this.metadata.put("analysis_date", factory.getTodaysDate());
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
-        List<TermId> observedHpoTerms = factory.observedHpoTerms();
         Ontology ontology = factory.hpoOntology();
         Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
 
         PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
         Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
         this.geneId2symbol = factory.geneId2symbolMap();
-        CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(observedHpoTerms)
+        CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
+                .negated(factory.negatedHpoTerms())
                 .ontology(ontology)
                 .diseaseMap(diseaseMap)
                 .disease2geneMultimap(disease2geneMultimap)
@@ -69,7 +71,7 @@ public class VcfCommand extends PrioritizeCommand {
 
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
-        hcase.outputTopResults(5,ontology,genotypeMap);// TODO remove this outputs to the shell
+
 
         Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
         if (ontologyMetainfo.containsKey("data-version")) {
@@ -100,6 +102,7 @@ public class VcfCommand extends PrioritizeCommand {
         LiricalFactory.Builder builder = new LiricalFactory.Builder().
                 yaml(yparser).
                 filter(filterOnFILTER);
+        this.outfilePrefix = yparser.getPrefix();
         return builder.buildForGenomicDiagnostics();
     }
 }

@@ -5,33 +5,31 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.monarchinitiative.lirical.exception.LiricalException;
-import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatioTest;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 
 class YamlParserTest {
 
-    private static String demo1path;
+    private static String example1path;
     private static String demo3path;
 
     @BeforeAll
     static void init() throws FileNotFoundException{
-        ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
-        URL resource = classLoader.getResource("yaml/demo1.yml");
+        ClassLoader classLoader = YamlParserTest.class.getClassLoader();
+        URL resource = classLoader.getResource("yaml/example1.yml");
         if (resource==null){
-            throw new FileNotFoundException("Could not find demo1.yml file");
+            throw new FileNotFoundException("Could not find example1.yml file");
         }
-        demo1path = resource.getFile();
+        example1path = resource.getFile();
         resource = classLoader.getResource("yaml/demo3.yml");
         if (resource==null){
             throw new FileNotFoundException("Could not find demo3.yml file");
@@ -41,7 +39,7 @@ class YamlParserTest {
 
     @Test
     void testDemo1YamlFile() throws LiricalException {
-        YamlParser parser = new YamlParser(demo1path);
+        YamlParser parser = new YamlParser(example1path);
         String expected = String.format("%s%s%s","data", File.separator,"hp.obo");
         assertEquals(expected,parser.getHpOboPath());
         expected = String.format("%s%s%s","data", File.separator,"mim2gene_medgen");
@@ -57,8 +55,8 @@ class YamlParserTest {
      */
     @Test @DisabledOnOs(WINDOWS)
     void testMvStorePath() {
-        YamlParser parser = new YamlParser(demo1path);
-        String expected="/home/robinp/data/exomiserdata/1802_hg19/1802_hg19_variants.mv.db";
+        YamlParser parser = new YamlParser(example1path);
+        String expected="/path/to/1802_hg19/1802_hg19_variants.mv.db";
         assertEquals(expected,parser.getMvStorePath());
     }
 
@@ -78,10 +76,10 @@ class YamlParserTest {
      */
     @Test @DisabledOnOs(WINDOWS)
     void testExomiserData()throws LiricalException {
-        YamlParser parser = new YamlParser(demo1path);
-        String expectedMvStore = "/home/robinp/data/exomiserdata/1802_hg19/1802_hg19_variants.mv.db";
+        YamlParser parser = new YamlParser(example1path);
+        String expectedMvStore = "/path/to/1802_hg19/1802_hg19_variants.mv.db";
         assertEquals(expectedMvStore,parser.getMvStorePath());
-        String expectedJannovar = "/home/robinp/data/exomiserdata/1802_hg19/1802_hg19_transcripts_refseq.ser";
+        String expectedJannovar = "/path/to/1802_hg19/1802_hg19_transcripts_ucsc.ser";
         assertEquals(expectedJannovar,parser.jannovarFile());
     }
 
@@ -91,11 +89,11 @@ class YamlParserTest {
      */
     @Test
     void testBackFrequencyPath() {
-        YamlParser parser = new YamlParser(demo1path);
-        String expected="data/background-hg38.txt";
+        YamlParser parser = new YamlParser(example1path);
+        // We do not provide the background frequency path in this YAML file
+        // therefore, the value should be not present
         Optional<String> backgroundOpt = parser.getBackgroundPath();
-        assertTrue(backgroundOpt.isPresent());
-        assertEquals(expected,backgroundOpt.get());
+        assertFalse(backgroundOpt.isPresent());
     }
 
     /** demo3.yml does not indicate the background frequency and thus isPresent should be false.*/
@@ -116,12 +114,11 @@ class YamlParserTest {
     void testGetHpoIds() {
         YamlParser yparser = new YamlParser(demo3path); // [ 'HP:0001363', 'HP:0011304', 'HP:0010055']
         String [] expected = {"HP:0001363", "HP:0011304", "HP:0010055"};
-        String [] hpos =yparser.getHpoTermList();
-        assertEquals(expected.length,hpos.length);
-        assertEquals(3,hpos.length);
-        assertEquals(expected[0],hpos[0]);
-        assertEquals(expected[1],hpos[1]);
-        assertEquals(expected[2],hpos[2]);
+        List<String> hpos =yparser.getHpoTermList();
+        assertEquals(expected.length,hpos.size());
+        assertEquals(3,hpos.size());
+        assertEquals(expected[1],hpos.get(1));
+        assertEquals(expected[2],hpos.get(2));
     }
 
 

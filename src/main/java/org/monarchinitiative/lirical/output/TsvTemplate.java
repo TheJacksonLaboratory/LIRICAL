@@ -94,18 +94,25 @@ public class TsvTemplate extends LiricalTemplate {
 
 
     @Override
+    public void outputFile(String absolutePath) {
+        logger.info("Writing TSV file to {}",absolutePath);
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(absolutePath))) {
+            Template template = cfg.getTemplate("liricalTSV.ftl");
+            template.process(templateData, out);
+        } catch (TemplateException | IOException te) {
+            te.printStackTrace();
+        }
+    }
+
+
+    @Override
     public void outputFile(String prefix, String outdir){
         String outname=String.format("%s.tsv",prefix );
         if (outdir != null) {
             File dir = mkdirIfNotExist(outdir);
             outname = Paths.get(dir.getAbsolutePath(),outname).toString();
         }
-        logger.info("Writing TSV file to {}",outname);
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(outname))) {
-            Template template = cfg.getTemplate("lr2pgTSV.ftl");
-            template.process(templateData, out);
-        } catch (TemplateException | IOException te) {
-            te.printStackTrace();
-        }
+        outputFile(outname);
+
     }
 }

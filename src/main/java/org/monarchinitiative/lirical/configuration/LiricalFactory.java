@@ -59,6 +59,8 @@ public class LiricalFactory {
     private final String vcfPath;
     /** List of HPO terms (phenotypic abnormalities) observed in the person being evaluated. */
     private final List<TermId> hpoIdList;
+    /** List of HPO terms that were excluded in the person being evaluated. */
+    private final List<TermId> negatedHpoIdList;
     /** The directory in which several files are stored. */
     private final String datadir;
     /** THe default data directory */
@@ -75,6 +77,8 @@ public class LiricalFactory {
     private final Ontology ontology;
     /** The path to the Exomiser database file, e.g., {@code 1811_hg19_variants.mv.db}. */
     private String mvStorePath=null;
+    /** genotype matching for likelihood ratio calculation". */
+    private boolean strict;
 
     private String hpoVersion="n/a";
 
@@ -136,7 +140,8 @@ public class LiricalFactory {
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
-        this.datadir=builder.lr2pgDataDir;
+        this.datadir=builder.liricalDataDir;
+        this.strict = builder.strict;
 
         ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
         for (String id : builder.observedHpoTerms) {
@@ -144,6 +149,12 @@ public class LiricalFactory {
             listbuilder.add(hpoId);
         }
         this.hpoIdList=listbuilder.build();
+        listbuilder = new ImmutableList.Builder<>();
+        for (String id : builder.negatedHpoTerms){
+            TermId negatedId = TermId.of(id);
+            listbuilder.add(negatedId);
+        }
+        this.negatedHpoIdList = listbuilder.build();
         if (builder.hpOboPath!=null) {
             this.ontology=hpoOntology();
         } else {
@@ -155,7 +166,7 @@ public class LiricalFactory {
 
 
     /**
-     * @return a list of observed HPO terms (from the YAML file)
+     * @return a list of observed HPO terms (from the YAML/Phenopacket file)
      * @throws LiricalException if one of the terms is not in the HPO Ontology
      */
     public List<TermId> observedHpoTerms() throws LiricalException {
@@ -166,6 +177,20 @@ public class LiricalFactory {
         }
         return hpoIdList;
     }
+    /**
+     * @return a list of observed HPO terms (from the YAML/Phenopacket file)
+     * @throws LiricalException if one of the terms is not in the HPO Ontology
+     */
+    public List<TermId> negatedHpoTerms() throws LiricalException {
+        for (TermId hpoId : negatedHpoIdList) {
+            if (! this.ontology.getTermMap().containsKey(hpoId)) {
+                throw new LiricalException("Could not find HPO term " + hpoId.getValue() + " in ontology");
+            }
+        }
+        return negatedHpoIdList;
+    }
+
+
 
     /** @return the genome assembly corresponding to the VCF file. Can be null. */
     public GenomeAssembly getAssembly() {
@@ -340,7 +365,7 @@ public class LiricalFactory {
         }
         GenotypeDataIngestor ingestor = new GenotypeDataIngestor(this.backgroundFrequencyPath);
         Map<TermId,Double> gene2back = ingestor.parse();
-        return new GenotypeLikelihoodRatio(gene2back);
+        return new GenotypeLikelihoodRatio(gene2back,this.strict);
     }
 
 
@@ -457,14 +482,14 @@ public class LiricalFactory {
     public void qcHumanPhenotypeOntologyFiles() {
         File datadirfile = new File(datadir);
         if (!datadirfile.exists()) {
-            logger.error("Could not find LR2PG data directory at {}",datadir);
+            logger.error("Could not find LIRICAL data directory at {}",datadir);
             logger.error("Consider running download command.");
-            throw new LiricalRuntimeException(String.format("Could not find LR2PG data directory at %s",datadir));
+            throw new LiricalRuntimeException(String.format("Could not find LIRICAL data directory at %s",datadir));
         } else if (!datadirfile.isDirectory()) {
-            logger.error("LR2PG datadir path ({}) is not a directory.",datadir);
-            throw new LiricalRuntimeException(String.format("LR2PG datadir path (%s) is not a directory.",datadir));
+            logger.error("LIRICAL datadir path ({}) is not a directory.",datadir);
+            throw new LiricalRuntimeException(String.format("LIRICAL datadir path (%s) is not a directory.",datadir));
         } else {
-            logger.trace("LR2PG datadirectory: {}", datadir);
+            logger.trace("LIRICAL datadirectory: {}", datadir);
         }
         File f1 = new File(this.hpoOboFilePath);
         if (!f1.exists() && f1.isFile()) {
@@ -576,7 +601,7 @@ public class LiricalFactory {
         /** path to hp.obo file.*/
         private String hpOboPath=null;
         private String phenotypeAnnotationPath=null;
-        private String lr2pgDataDir=null;
+        private String liricalDataDir =null;
         private String exomiserDataDir=null;
         private String geneInfoPath=null;
         private String mim2genemedgenPath=null;
@@ -584,25 +609,24 @@ public class LiricalFactory {
         private String vcfPath=null;
         private String genomeAssembly=null;
         private boolean filterFILTER=true;
+        private boolean strict=false;
         /** The default transcript database is UCSC> */
         private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
         private List<String> observedHpoTerms=ImmutableList.of();
+        private List<String> negatedHpoTerms=ImmutableList.of();
 
         public Builder(){
         }
 
         public Builder yaml(YamlParser yp) {
-            Optional<String> datadirOpt=yp.getDataDir();
-            if (datadirOpt.isPresent()) {
-                this.lr2pgDataDir = getPathWithoutTrailingSeparatorIfPresent(datadirOpt.get());
-            } else {
-                this.lr2pgDataDir=DEFAULT_DATA_DIRECTORY;
-            }
+            this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(this.liricalDataDir);
             initDatadirFiles();
             this.exomiserDataDir=yp.getExomiserDataDir();
             this.genomeAssembly=yp.getGenomeAssembly();
             this.observedHpoTerms=new ArrayList<>();
-            Collections.addAll(this.observedHpoTerms, yp.getHpoTermList());
+            this.negatedHpoTerms=new ArrayList<>();
+            this.observedHpoTerms=yp.getHpoTermList();
+            this.negatedHpoTerms=yp.getNegatedHpoTermList();
             switch (yp.transcriptdb().toUpperCase()) {
                 case "ENSEMBL" :
                     this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
@@ -612,7 +636,7 @@ public class LiricalFactory {
                 default:
                     this.transcriptdatabase=TranscriptDatabase.UCSC;
             }
-            Optional<String> vcfOpt=yp.vcfPath();
+            Optional<String> vcfOpt=yp.getOptionalVcfPath();
             if (vcfOpt.isPresent()) {
                 this.vcfPath=vcfOpt.get();
             } else {
@@ -622,6 +646,12 @@ public class LiricalFactory {
             backgroundOpt.ifPresent(s -> this.backgroundFrequencyPath = s);
 
 
+            return this;
+        }
+
+
+        public Builder strict(boolean b) {
+            this.strict = b;
             return this;
         }
 
@@ -697,19 +727,19 @@ public class LiricalFactory {
         }
 
         /** Initializes the paths to the four files that should be in the data directory. This method
-         * should be called only after {@link #lr2pgDataDir} has been set.
+         * should be called only after {@link #liricalDataDir} has been set.
          */
         private void initDatadirFiles() {
-            this.hpOboPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"hp.obo");
-            this.geneInfoPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"Homo_sapiens_gene_info.gz");
-            this.phenotypeAnnotationPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"phenotype.hpoa");
-            this.mim2genemedgenPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"mim2gene_medgen");
+            this.hpOboPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"hp.obo");
+            this.geneInfoPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"Homo_sapiens_gene_info.gz");
+            this.phenotypeAnnotationPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"phenotype.hpoa");
+            this.mim2genemedgenPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"mim2gene_medgen");
         }
 
 
 
         public Builder datadir(String datadir) {
-            this.lr2pgDataDir=getPathWithoutTrailingSeparatorIfPresent(datadir);
+            this.liricalDataDir =getPathWithoutTrailingSeparatorIfPresent(datadir);
            initDatadirFiles();
             return this;
         }

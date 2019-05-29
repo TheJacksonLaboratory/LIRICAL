@@ -394,7 +394,7 @@ public class Lr2Svg {
         writer.write("<svg width=\""+total_width+"\" height=\""+HEIGHT+"\" " +
                 "xmlns=\"http://www.w3.org/2000/svg\" " +
                 "xmlns:svg=\"http://www.w3.org/2000/svg\">\n");
-        writer.write("<!-- Created by LR2PG -->\n");
+        writer.write("<!-- Created by LIRICAL -->\n");
         writer.write("<g>\n");
     }
 

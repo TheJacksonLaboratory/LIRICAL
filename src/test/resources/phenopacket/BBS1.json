@@ -1,0 +1,184 @@
+{
+  "subject": {
+    "id": "IV-5/family A",
+    "ageAtCollection": {
+      "age": "26Y"
+    },
+    "sex": "MALE",
+    "taxonomy": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    }
+  },
+  "phenotypes": [{
+    "type": {
+      "id": "HP:0007843",
+      "label": "Attenuation of retinal blood vessels"
+    },
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:23559858",
+        "description": "A family was reported in which two affected members had a splicing variant in BBS1, c.47+1G>T."
+      }
+    }]
+  }, {
+    "type": {
+      "id": "HP:0001513",
+      "label": "Obesity"
+    },
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:23559858",
+        "description": "A family was reported in which two affected members had a splicing variant in BBS1, c.47+1G>T."
+      }
+    }]
+  }, {
+    "type": {
+      "id": "HP:0000608",
+      "label": "Macular degeneration"
+    },
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:23559858",
+        "description": "A family was reported in which two affected members had a splicing variant in BBS1, c.47+1G>T."
+      }
+    }]
+  }, {
+    "type": {
+      "id": "HP:0000486",
+      "label": "Strabismus"
+    },
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:23559858",
+        "description": "A family was reported in which two affected members had a splicing variant in BBS1, c.47+1G>T."
+      }
+    }]
+  }, {
+    "type": {
+      "id": "HP:0001328",
+      "label": "Specific learning disability"
+    },
+    "negated": "true",
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:23559858",
+        "description": "A family was reported in which two affected members had a splicing variant in BBS1, c.47+1G>T."
+      }
+    }]
+  }, {
+    "type": {
+      "id": "HP:0000510",
+      "label": "Rod-cone dystrophy"
+    },
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:23559858",
+        "description": "A family was reported in which two affected members had a splicing variant in BBS1, c.47+1G>T."
+      }
+    }]
+  }, {
+    "type": {
+      "id": "HP:0001263",
+      "label": "Global developmental delay"
+    },
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:23559858",
+        "description": "A family was reported in which two affected members had a splicing variant in BBS1, c.47+1G>T."
+      }
+    }]
+  }],
+  "genes": [{
+    "id": "ENTREZ:582",
+    "symbol": "BBS1"
+  }],
+  "htsFiles": [{
+    "htsFormat": "VCF",
+    "genomeAssembly": "GRCh37",
+    "individualToSampleIdentifiers": {
+    },
+    "file": {
+      "path": "/path/to/examples/BBS1.vcf",
+      "uri": "",
+      "description": "BBS1 sample"
+    }
+  }],
+  "diseases": [{
+    "term": {
+      "id": "OMIM:209900",
+      "label": "BARDET-BIEDL SYNDROME 1; BBS1"
+    }
+  }],
+  "metaData": {
+    "createdBy": "HPO:probinson",
+    "resources": [{
+      "id": "hp",
+      "name": "human phenotype ontology",
+      "url": "http://purl.obolibrary.org/obo/hp.owl",
+      "version": "2018-03-08",
+      "namespacePrefix": "HP",
+      "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
+    }, {
+      "id": "pato",
+      "name": "Phenotype And Trait Ontology",
+      "url": "http://purl.obolibrary.org/obo/pato.owl",
+      "version": "2018-03-28",
+      "namespacePrefix": "PATO",
+      "iriPrefix": "http://purl.obolibrary.org/obo/PATO_"
+    }, {
+      "id": "geno",
+      "name": "Genotype Ontology",
+      "url": "http://purl.obolibrary.org/obo/geno.owl",
+      "version": "19-03-2018",
+      "namespacePrefix": "GENO",
+      "iriPrefix": "http://purl.obolibrary.org/obo/GENO_"
+    }, {
+      "id": "ncbitaxon",
+      "name": "NCBI organismal classification",
+      "url": "http://purl.obolibrary.org/obo/ncbitaxon.owl",
+      "version": "2018-03-02",
+      "namespacePrefix": "NCBITaxon"
+    }, {
+      "id": "eco",
+      "name": "Evidence and Conclusion Ontology",
+      "url": "http://purl.obolibrary.org/obo/eco.owl",
+      "version": "2018-11-10",
+      "namespacePrefix": "ECO",
+      "iriPrefix": "http://purl.obolibrary.org/obo/ECO_"
+    }, {
+      "id": "omim",
+      "name": "Online Mendelian Inheritance in Man",
+      "url": "https://www.omim.org",
+      "namespacePrefix": "OMIM"
+    }]
+  }
+}

@@ -1,2 +1,2 @@
-/** Commands to run LR2PG in different configurations. */
+/** Commands to run LIRICAL in different configurations. */
 package org.monarchinitiative.lirical.cmd;

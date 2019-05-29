@@ -1,2 +1,2 @@
-/** Parsers for LR2PG. */
+/** Parsers for LIRICAL. */
 package org.monarchinitiative.lirical.io;
