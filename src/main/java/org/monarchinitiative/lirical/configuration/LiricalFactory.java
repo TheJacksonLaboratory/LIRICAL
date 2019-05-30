@@ -619,7 +619,7 @@ public class LiricalFactory {
         }
 
         public Builder yaml(YamlParser yp) {
-            this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(this.liricalDataDir);
+            this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(yp.getDataDir());
             initDatadirFiles();
             this.exomiserDataDir=yp.getExomiserDataDir();
             this.genomeAssembly=yp.getGenomeAssembly();
