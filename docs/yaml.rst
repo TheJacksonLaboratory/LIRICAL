@@ -81,11 +81,10 @@ You can use either example file as a starting point for your own configuration f
 Running LIRICAL
 ~~~~~~~~~~~~~~~
 
-To see all options for running LR2PG with a yaml file, enter ::
 
-    $ java -jar Lr2pg.jar vcf -h
+A typical command that runs LIRICAL using settings shown in the YAML file with the default data directory would be simply ::
 
-A typical command that runs LR2PG using settings shown in the YAML file with the default data directory would be simply ::
+    $ java -jar LIRICAL.jar vcf -y example.yml
 
-    $ java -jar Lr2pg.jar vcf -y example.yml
+
 
