@@ -4,7 +4,6 @@
 ---
 analysis:
   # hg19 or hg38 is supported
-  # make sure the Jannovar transcript file is taken from the same genome build
   genomeAssembly: hg19
   vcf: /path/to/Pfeiffer.vcf
   exomiser: /path/to/1802_hg19/

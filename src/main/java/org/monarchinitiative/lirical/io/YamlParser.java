@@ -76,14 +76,14 @@ public class YamlParser {
     }
 
     /**
-     * The YAML file is allowed to have an element called analysis/background_freq for the background
+     * The YAML file is allowed to have an element called analysis/background for the background
      * frequency file. If it is present, we return in in an Optional object. Usually, users should use
      * the default files and not include this element in the yaml file.
      * @return path to the background-frequency path if present, otherwise an empty Optional object.
      */
     public Optional<String> getBackgroundPath() {
-        if (yconfig.getAnalysis().containsKey("background_freq")) {
-            return Optional.of(yconfig.getAnalysis().get("background_freq"));
+        if (yconfig.getAnalysis().containsKey("background")) {
+            return Optional.of(yconfig.getAnalysis().get("background"));
         } else {
             return Optional.empty();
         }
@@ -136,11 +136,12 @@ public class YamlParser {
      * command by default. If users choose another path, they should enter a datadir element in the YAML file.
      * An empty Optional object is return if nothing is present in the YAML file, indicating that the default
      * should be used
-     * @return Path of non-default data directory, if present.
+     * @return Path of non-default data directory or default. Trailing slash (if present) will be removed
      */
     public String getDataDir() {
         if (yconfig.getAnalysis().containsKey("datadir")) {
-            return yconfig.getAnalysis().get("datadir");
+            String path = yconfig.getAnalysis().get("datadir");
+            return getPathWithoutTrailingSeparatorIfPresent(path);
         }  else {
             return DEFAULT_DATA_PATH;
         }
@@ -194,10 +195,10 @@ public class YamlParser {
         return String.format("%s%s%s",datadir,File.separator,"hp.obo");
     }
 
-    String getMedgen() {
-        String datadir=getDataDir();
-        return String.format("%s%s%s",datadir,File.separator,"mim2gene_medgen");
-    }
+//    String getMedgen() {
+//        String datadir=getDataDir();
+//        return String.format("%s%s%s",datadir,File.separator,"mim2gene_medgen");
+//    }
 
     /**@return A String representing the genome assembly of the VCF file (should be hg19 or hg38). */
     public String getGenomeAssembly() {
@@ -209,10 +210,10 @@ public class YamlParser {
     }
 
 
-     String getGeneInfo() {
-         String datadir = getDataDir();
-         return String.format("%s%s%s",datadir,File.separator,"Homo_sapiens_gene_info.gz");
-    }
+//     String getGeneInfo() {
+//         String datadir = getDataDir();
+//         return String.format("%s%s%s",datadir,File.separator,"Homo_sapiens_gene_info.gz");
+//    }
 
     /**
      * The user can choose to run LIRICAL without a VCF file. Then, a phenotype only analysis is performed.
@@ -229,10 +230,10 @@ public class YamlParser {
 
 
 
-    String phenotypeAnnotation() {
-        String datadir = getDataDir();
-        return String.format("%s%s%s",datadir,File.separator,"phenotype.hpoa");
-    }
+//    String phenotypeAnnotation() {
+//        String datadir = getDataDir();
+//        return String.format("%s%s%s",datadir,File.separator,"phenotype.hpoa");
+//    }
 
     public String getPrefix() {
         return yconfig.getPrefix();
