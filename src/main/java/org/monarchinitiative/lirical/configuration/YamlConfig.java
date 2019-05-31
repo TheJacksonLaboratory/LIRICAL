@@ -12,6 +12,7 @@ public class YamlConfig {
 
     private Map<String,String> analysis;
     private String prefix;
+    private String outdir;
     private String sampleId;
     private String[] hpoIds;
     private String[] negatedHpoIds;
@@ -48,6 +49,8 @@ public class YamlConfig {
     }
 
     public String[] getNegatedHpoIds() { return negatedHpoIds; }
+
+    public String getOutdir(){ return outdir;}
 
 
 

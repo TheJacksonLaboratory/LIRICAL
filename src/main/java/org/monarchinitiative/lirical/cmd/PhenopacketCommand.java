@@ -37,11 +37,13 @@ import java.util.Map;
 public class PhenopacketCommand extends PrioritizeCommand {
     private static final Logger logger = LoggerFactory.getLogger(PhenopacketCommand.class);
     @Parameter(names = {"-b", "--background"}, description = "path to non-default background frequency file")
-    private String backgroundFrequencyFile;
+    protected String backgroundFrequencyFile;
     @Parameter(names = {"-p", "--phenopacket"}, description = "path to phenopacket file", required = true)
-    private String phenopacketPath;
+    protected String phenopacketPath;
     @Parameter(names = {"-e", "--exomiser"}, description = "path to the Exomiser data directory")
-    private String exomiserDataDirectory;
+    protected String exomiserDataDirectory;
+    @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC, Ensembl, RefSeq)")
+    protected String transcriptDb="ucsc";
 
 
     /**

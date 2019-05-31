@@ -77,12 +77,7 @@ public class Vcf2GenotypeMap {
      * Should be hg37 or hg38
      */
     private final GenomeAssembly genomeAssembly;
-    /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
-     * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
-     * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
-     * can be turned off by entering {@code -q false} or {@code --quality} false. */
-    private final boolean filterOnFILTER;
-    /** Number of variants that were not removed because of the quality filter. */
+    /** Number of variants that were not filtered. */
     private int n_good_quality_variants=0;
     /** Number of variants that were removed because of the quality filter. */
     private int n_filtered_variants=0;
@@ -120,7 +115,6 @@ public class Vcf2GenotypeMap {
         this.referenceDictionary = jannovarData.getRefDict();
         this.chromosomeMap = jannovarData.getChromosomes();
         this.genomeAssembly = ga;
-        this.filterOnFILTER=filter;
     }
 
     /** map with some information about the VCF file that will be shown on the hTML org.monarchinitiative.lirical.output. */

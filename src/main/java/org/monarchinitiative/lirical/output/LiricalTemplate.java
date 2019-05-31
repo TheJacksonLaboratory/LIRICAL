@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +35,8 @@ public abstract class LiricalTemplate {
 
     protected static final String EMPTY_STRING="";
 
+    protected  String outpath;
+
 
     /** This map contains the names of the top differential diagnoses that we will show as a list at the
      * top of the page together with anchors to navigate to the detailed analysis.*/
@@ -47,32 +50,46 @@ public abstract class LiricalTemplate {
                            Ontology ontology,
                            Map<TermId, Gene2Genotype> genotypeMap,
                            Map<TermId,String> geneid2sym,
-                           Map<String,String> metadat){
+                           Map<String,String> metadat,
+                           String predix,
+                           String outdir){
 
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
         this.geneId2symbol=geneid2sym;
-
+        initpath(predix,outdir);
         initTemplateData(hcase,ontology,metadat);
     }
 
     public LiricalTemplate(HpoCase hcase,
                            Ontology ontology,
-                           Map<String,String> metadat){
+                           Map<String,String> metadat,
+                           String prefix,
+                           String outdir){
 
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
         this.geneId2symbol= ImmutableMap.of(); // not needed -- make empty make
         initTemplateData(hcase,ontology,metadat);
+        initpath(prefix,outdir);
+    }
+
+
+    private void initpath(String prefix,String outdir){
+        this.outpath=String.format("%s.html",prefix);
+        if (outdir != null) {
+            File dir = mkdirIfNotExist(outdir);
+            this.outpath = Paths.get(dir.getAbsolutePath(),this.outpath).toString();
+        }
     }
 
     /**
      * output a file (HTML or TSV)
-     * @param prefix -- prefix for the file, (e.g., sample would become sample.html or sample.tsv)
-     * @param directory -- directory to which to write the output file. Created automatically if it does not exist
-     */
-    abstract public void outputFile(String prefix, String directory);
-    abstract public void outputFile(String absolutePath);
+//     * @param prefix -- prefix for the file, (e.g., sample would become sample.html or sample.tsv)
+//     * @param directory -- directory to which to write the output file. Created automatically if it does not exist
+//     */
+//    abstract public void outputFile(String prefix, String directory);
+    abstract public void outputFile();
 
     private void initTemplateData(HpoCase hcase, Ontology ontology, Map<String,String> metadat) {
         for(Map.Entry<String,String> entry : metadat.entrySet()) {
@@ -130,5 +147,85 @@ public abstract class LiricalTemplate {
             return f;
         }
     }
+
+    public static class Builder {
+        private HpoCase hcase;
+        private final Ontology ontology;
+        private final Map<String,String> metadata;
+        private Map<TermId, Gene2Genotype> genotypeMap;
+        private Map<TermId,String> geneid2sym;
+
+        double thres=0.01;
+        int minDifferentials=10;
+        String outfileprefix="lirical";
+        String outdir=null;
+
+
+        public Builder(HpoCase hcase,Ontology ont,Map<String,String> mdata){
+            this.hcase=hcase;
+            this.ontology=ont;
+            this.metadata=mdata;
+        }
+
+
+        public Builder genotypeMap(Map<TermId, Gene2Genotype> gm){this.genotypeMap=gm;return this;}
+        public Builder geneid2symMap(Map<TermId,String> gsm) { this.geneid2sym=gsm;return this;}
+        public Builder threshold(double t) { this.thres=t;return this;}
+        public Builder mindiff(int md){ this.minDifferentials=md; return this;}
+        public Builder prefix(String p){ this.outfileprefix = p; return this;}
+        public Builder outdirectory(String od){ this.outdir=od;return this;}
+
+        public HtmlTemplate buildPhenotypeHtmlTemplate() {
+            /*
+            HpoCase hcase,
+                        Ontology ontology,
+                        Map<String,String> metadat,
+                        double thres,
+                        int minDifferentials
+             */
+            // Note -- we assume client code has initialized correctly
+
+            return new HtmlTemplate(this.hcase,
+                    this.ontology,
+                    this.metadata,
+                    this.thres,
+                    this.minDifferentials,
+                    this.outfileprefix,
+                    this.outdir);
+        }
+
+        public HtmlTemplate buildGenoPhenoHtmlTemplate() {
+            return new HtmlTemplate(this.hcase,
+                    this.ontology,
+                    this.metadata,
+                    this.thres,
+                    this.minDifferentials,
+                    this.outfileprefix,
+                    this.outdir);
+        }
+
+        public TsvTemplate buildPhenotypeTsvTemplate() {
+            return new TsvTemplate(this.hcase,
+                    this.ontology,
+                    this.metadata,
+                    this.outfileprefix,
+                    this.outdir);
+        }
+
+        public TsvTemplate buildGenoPhenoTsvTemplate() {
+
+            return new TsvTemplate(this.hcase,
+                    this.ontology,
+                    this.genotypeMap,
+                    this.geneid2sym,
+                    this.metadata,
+                    this.outfileprefix,
+                    this.outdir);
+
+        }
+
+
+    }
+
 
 }

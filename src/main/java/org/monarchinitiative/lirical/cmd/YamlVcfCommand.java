@@ -100,8 +100,7 @@ public class YamlVcfCommand extends PrioritizeCommand {
     private LiricalFactory deYamylate(String yamlPath) {
         YamlParser yparser = new YamlParser(yamlPath);
         LiricalFactory.Builder builder = new LiricalFactory.Builder().
-                yaml(yparser).
-                filter(filterOnFILTER);
+                yaml(yparser);
         this.outfilePrefix = yparser.getPrefix();
         return builder.buildForGenomicDiagnostics();
     }

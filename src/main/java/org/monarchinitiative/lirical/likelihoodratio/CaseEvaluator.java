@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import org.junit.Test;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
@@ -175,12 +176,9 @@ public class CaseEvaluator {
         ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder<>();
         for (TermId diseaseId : diseaseMap.keySet()) {
             this.currentPhenotypeExplanation=new ArrayList<>();
-            HpoDisease disease = this.diseaseMap.get(diseaseId);
-            double pretest = pretestProbabilityMap.get(diseaseId);
-            List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
-            List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
-            TestResult result = new TestResult(observedLR,excludedLR, disease, pretest);
-            mapbuilder.put(diseaseId, result);
+            Optional<TestResult> opt =evaluateDiseasePhenotypeOnly(diseaseId);
+            if (opt.isPresent())
+                mapbuilder.put(diseaseId,opt.get());
         }
         return mapbuilder.build();
     }
@@ -188,7 +186,8 @@ public class CaseEvaluator {
 
     /**
      * This method calculates the likelihood ratio based only on phenotype. It is inteded to be used
-     * for analyses where we do not have an exome or genome.
+     * for analyses where we do not have an exome or genome. Note that we return an optional because
+     * with some user settings some differentials will be skipped.
      * @param diseaseId The disease being tested
      * @return The corresponding TestResult.
      */
