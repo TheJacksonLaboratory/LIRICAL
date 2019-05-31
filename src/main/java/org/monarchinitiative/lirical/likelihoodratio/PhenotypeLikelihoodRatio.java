@@ -119,7 +119,7 @@ public class PhenotypeLikelihoodRatio {
             if (t2f.nonRootCommonAncestor()) {
                 double numerator = t2f.frequency;
                 double denominator = getBackgroundFrequency(t2f.tid);
-                double lr = numerator/denominator;
+                double lr = Math.max(DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY,numerator/denominator);
                 return LrWithExplanation.nonRootCommonAncestor(queryTid,t2f.tid,lr);
             }
             // If we get here, then the only common ancestor is PHENOTYPIC_ABNORMALITY

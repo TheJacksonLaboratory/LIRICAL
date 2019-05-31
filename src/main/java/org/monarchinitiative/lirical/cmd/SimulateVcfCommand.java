@@ -58,18 +58,12 @@ import java.util.function.Predicate;
  */
 
 @Parameters(commandDescription = "Simulate VCF analysis from phenopacket", hidden = false)
-public class SimulateVcfCommand extends PrioritizeCommand {
+public class SimulateVcfCommand extends PhenopacketCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulateVcfCommand.class);
     //TODO -- Get this from the VCF file or from the Phenopacket or from command line
     private String genomeAssembly = "GRCh37";
-    @Parameter(names = {"-p", "--phenopacket"}, description = "path to phenopacket file")
-    private String phenopacketPath;
-    @Parameter(names = {"-e", "--exomiser"}, description = "path to the Exomiser data directory")
-    private String exomiserDataDirectory;
-    @Parameter(names = {"-v", "--template-vcf"}, description = "path to template VCF file", required = true)
+        @Parameter(names = {"-v", "--template-vcf"}, description = "path to template VCF file", required = true)
     private String templateVcfPath;
-    @Parameter(names = {"-b", "--background"}, description = "path to non-default background frequency file")
-    private String backgroundFrequencyFile;
     @Parameter(names = {"--phenopacket-dir"}, description = "path to directory with multiple phenopackets")
     private String phenopacketDir;
     @Parameter(names = {"-outputfile"}, description = "name of the output file with simulation results")
@@ -198,19 +192,28 @@ public class SimulateVcfCommand extends PrioritizeCommand {
 
 
         if (outputTSV) {
-            LiricalTemplate template = new TsvTemplate(hcase, ontology, genotypemap, this.geneId2symbol, this.metadata);
             String outname=String.format("%s.tsv","temp");
-            template.outputFile(outname);
+            LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,metadata)
+                    .genotypeMap(genotypemap)
+                    .geneid2symMap(geneId2symbol)
+                    .threshold(this.LR_THRESHOLD)
+                    .mindiff(minDifferentialsToShow)
+                    .outdirectory(outdir)
+                    .prefix(outfilePrefix);
+            TsvTemplate tsvtemplate = builder.buildGenoPhenoTsvTemplate();
+            tsvtemplate.outputFile();
             extractRank(outname,phenopacketFile.getName());
         } else {
-            HtmlTemplate caseoutput = new HtmlTemplate(hcase,
-                    ontology,
-                    genotypemap,
-                    this.geneId2symbol,
-                    this.metadata,
-                    this.LR_THRESHOLD,
-                    minDifferentialsToShow);
-            caseoutput.outputFile(this.outfilePrefix, outdir);
+            LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,metadata)
+                    .genotypeMap(genotypemap)
+                    .geneid2symMap(geneId2symbol)
+                    .threshold(this.LR_THRESHOLD)
+                    .mindiff(minDifferentialsToShow)
+                    .outdirectory(outdir)
+                    .prefix(outfilePrefix);
+            HtmlTemplate htemplate = builder.buildGenoPhenoHtmlTemplate();
+            htemplate.outputFile();;
+
         }
     }
 

@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This test class tests the ingest of the BBS1.json (phenotpacket) and BBS1.yml files.
- * They should provide equivalent informtion (although the Phenopacket provides richer information)
+ * They should provide equivalent information (although the Phenopacket provides richer information)
  */
 class BBS1Test {
     private static YamlParser yamlparser;

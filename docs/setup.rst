@@ -69,6 +69,7 @@ This command will install the library in the ``.m2`` directory located in your h
 
 Exomiser database files
 ~~~~~~~~~~~~~~~~~~~~~~~
+.. _rstexomiserdatadir:
 
 LIRICAL uses data files from the Exomiser. We recommend that always the latest version of these files be used. The
 data files are stored at the `Exomiser download site <https://monarch-exomiser-web-dev.monarchinitiative.org/exomiser/download>`_.

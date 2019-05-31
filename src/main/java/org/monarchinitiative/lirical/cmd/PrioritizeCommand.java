@@ -29,19 +29,12 @@ public abstract class PrioritizeCommand extends LiricalCommand {
     protected int minDifferentialsToShow=10;
     @Parameter(names={"--strict"},description="use strict genotype matching for likelihood ratio calculation")
     boolean strict=false;
-    /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
-     * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
-     * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
-     * can be turned off by entering {@code -q false} or {@code --quality} false. */
-    @Parameter(names={"-f","--filter"},description = "filter on VCF FILTER quality",arity = 1)
-    protected boolean filterOnFILTER=true;
     @Parameter(names={"-o","--output-directory"}, description = "directory into which to write output file(s).")
-    private String outdir=null;
+    protected String outdir=null;
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
     @Parameter(names= {"-t","--threshold"}, description = "minimum post-test prob. to show diagnosis in HTML output")
     protected double LR_THRESHOLD=0.01;
-    @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC, Ensembl, RefSeq)")
-    protected String transcriptDb="ucsc";
+
     /** If true, the program will not output an HTML file but will output a Tab Separated Values file instead.*/
     @Parameter(names="--tsv",description = "Use TSV instead of HTML output")
     protected boolean outputTSV=false;
@@ -66,30 +59,46 @@ public abstract class PrioritizeCommand extends LiricalCommand {
      * @param genotypeMap Map with results of genotype analysis for each gene
      */
     protected void outputHTML(HpoCase hcase, Ontology ontology, Map<TermId, Gene2Genotype> genotypeMap) {
-        HtmlTemplate caseoutput = new HtmlTemplate(hcase,
-                ontology,
-                genotypeMap,
-                this.geneId2symbol,
-                this.metadata,
-                this.LR_THRESHOLD,
-                minDifferentialsToShow);
-        caseoutput.outputFile(this.outfilePrefix,this.outdir);
+//        HtmlTemplate caseoutput = new HtmlTemplate(hcase,
+//                ontology,
+//                genotypeMap,
+//                this.geneId2symbol,
+//                this.metadata,
+//                this.LR_THRESHOLD,
+//                minDifferentialsToShow);
+//        caseoutput.outputFile(this.outfilePrefix,this.outdir);
+        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                .prefix(this.outfilePrefix)
+                .outdirectory(this.outdir)
+                .threshold(this.LR_THRESHOLD)
+                .geneid2symMap(this.geneId2symbol)
+                .genotypeMap(genotypeMap)
+                .mindiff(this.minDifferentialsToShow);
+        HtmlTemplate htemp = builder.buildGenoPhenoHtmlTemplate();
+        htemp.outputFile();
     }
 
-    /**
-     * Output a summary of results as an HTML file. This function should be used for cases
-     * in which no exome/genome data is available, i.e., phenotype-only analysis.
-     * @param hcase Reference to the HPO Case
-     * @param ontology Reference to HPO Ontology object
-     */
-    protected void outputHTML(HpoCase hcase, Ontology ontology) {
-        HtmlTemplate caseoutput = new HtmlTemplate(hcase, ontology,
-                this.metadata,
-                this.LR_THRESHOLD,
-                this.minDifferentialsToShow);
-        caseoutput.outputFile(this.outfilePrefix, this.outdir);
-    }
-
+//    /**
+//     * Output a summary of results as an HTML file. This function should be used for cases
+//     * in which no exome/genome data is available, i.e., phenotype-only analysis.
+//     * @param hcase Reference to the HPO Case
+//     * @param ontology Reference to HPO Ontology object
+//     */
+//    protected void outputHTML(HpoCase hcase, Ontology ontology) {
+////        HtmlTemplate caseoutput = new HtmlTemplate(hcase, ontology,
+////                this.metadata,
+////                this.LR_THRESHOLD,
+////                this.minDifferentialsToShow);
+////        caseoutput.outputFile(this.outfilePrefix, this.outdir);
+//        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+//                .prefix(this.outfilePrefix)
+//                .outdirectory(this.outdir)
+//                .threshold(this.LR_THRESHOLD)
+//                .mindiff(this.minDifferentialsToShow);
+//        HtmlTemplate htemp = builder.buildPhenotypeHtmlTemplate();
+//        htemp.outputFile();
+//    }
+//
 
     /**
      * Output a tab-separated values file with one line per differential diagnosis. This
@@ -98,10 +107,17 @@ public abstract class PrioritizeCommand extends LiricalCommand {
      * @param ontology Reference to HPO Ontology object
      * @param genotypeMap Map with results of genotype analysis for each gene
      */
-    protected void outputTSV(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
-        LiricalTemplate template = new TsvTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata);
-        template.outputFile(this.outfilePrefix,this.outdir);
-    }
+//    protected void outputTSV(HpoCase hcase,Ontology ontology,Map<TermId, Gene2Genotype> genotypeMap) {
+////        LiricalTemplate template = new TsvTemplate(hcase,ontology,genotypeMap,this.geneId2symbol,this.metadata);
+////        template.outputFile(this.outfilePrefix,this.outdir);
+//        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+//                .genotypeMap(genotypeMap)
+//                .geneid2symMap(this.geneId2symbol)
+//                .outdirectory(this.outdir)
+//                .prefix(this.outfilePrefix);
+//        TsvTemplate ttemp = builder.buildGenoPhenoTsvTemplate();
+//        ttemp.outputFile();
+//    }
 
     /**
      * Output a tab-separated values file with one line per differential diagnosis. This function should be used for cases
@@ -110,10 +126,15 @@ public abstract class PrioritizeCommand extends LiricalCommand {
      * @param ontology Reference to HPO Ontology object
 
      */
-    protected void outputTSV(HpoCase hcase,Ontology ontology) {
-        LiricalTemplate template = new TsvTemplate(hcase, ontology, this.metadata);
-        template.outputFile(this.outfilePrefix,this.outdir);
-    }
+//    protected void outputTSV(HpoCase hcase,Ontology ontology) {
+////        LiricalTemplate template = new TsvTemplate(hcase, ontology, this.metadata);
+////        template.outputFile(this.outfilePrefix,this.outdir);
+//        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+//                .outdirectory(this.outdir)
+//                .prefix(this.outfilePrefix);
+//        TsvTemplate ttemp = builder.buildPhenotypeTsvTemplate();
+//        ttemp.outputFile();
+//    }
 
 
 }

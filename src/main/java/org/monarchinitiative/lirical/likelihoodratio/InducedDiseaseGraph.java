@@ -81,7 +81,7 @@ public class InducedDiseaseGraph {
                     }
                     int distance = cm.distance+1;
                     CandidateMatch parentCm = new CandidateMatch(p,distance);
-                    double adjustedFrequency = f/Math.pow(2.0,distance);
+                    double adjustedFrequency = f/Math.pow(10.0,distance);
                     term2frequencyMap.putIfAbsent(p,adjustedFrequency);
                     double oldfreq = term2frequencyMap.get(p);
                     if (adjustedFrequency>oldfreq) { term2frequencyMap.put(p,adjustedFrequency); }

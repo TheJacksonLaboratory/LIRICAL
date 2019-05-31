@@ -19,6 +19,7 @@ as `Human Phenotype Ontology (HPO) <http://www.human-phenotype-ontology.org>`_ t
    yaml
    phenopacket
    LR2PG output files <output>
+   options
    other commands <other>
 
 

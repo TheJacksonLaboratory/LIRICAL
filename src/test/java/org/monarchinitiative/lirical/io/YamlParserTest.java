@@ -40,7 +40,7 @@ class YamlParserTest {
     }
 
     @Test
-    void testExample1YamlFile() throws LiricalException {
+    void testExample1YamlFile() {
         YamlParser parser = new YamlParser(example1path);
         String expected = String.format("%s%s%s","data", File.separator,"hp.obo");
         assertEquals(expected,parser.getHpOboPath());
@@ -162,6 +162,22 @@ class YamlParserTest {
         String termid = "HP:0001328"; // the negated term
         List<String> expected = ImmutableList.of(termid);
         assertEquals(expected,yparser.getNegatedHpoTermList());
+    }
+
+    @Test
+    void testOutDir1() {
+        // example 1 does not have an out directory
+        YamlParser yparser = new YamlParser(example1path);
+        assertFalse(yparser.getOutDirectory().isPresent());
+    }
+
+    @Test
+    void testOutDir2() {
+        // example 2 has myoutdirectory
+        YamlParser yparser = new YamlParser(example2path);
+        String expected="myoutdirectory";
+        assertTrue(yparser.getOutDirectory().isPresent());
+        assertEquals(expected,yparser.getOutDirectory().get());
     }
 
 

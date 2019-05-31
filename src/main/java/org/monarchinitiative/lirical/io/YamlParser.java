@@ -261,4 +261,12 @@ public class YamlParser {
         return yconfig.getSampleId();
     }
 
+    public Optional<String> getOutDirectory() {
+        if (yconfig==null ) {
+            throw new LiricalRuntimeException("Could not parse YAML file");
+        }
+        if (yconfig.getOutdir()==null) return Optional.empty();
+        else return Optional.of(yconfig.getOutdir());
+    }
+
 }

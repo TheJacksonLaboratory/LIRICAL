@@ -1,20 +1,20 @@
-Running LR2PG with a Phenopacket file
-=====================================
-
 .. _rstphenopacket:
 
-`Phenopackets <https://github.com/phenopackets>`_ represent an open standard for sharing disease and phenotype information.
+Running LIRICAL with a Phenopacket file
+=======================================
+LIRICAL can be run with clinical data only or with clinical data (HPO terms) and a VCF file representing the
+results of gene panel, exome, or genome sequencing. The prefered input format is
+`Phenopackets <https://github.com/phenopackets>`_, an open standard for sharing disease and phenotype information.
 This is a new standard of the `Global Alliance for Genomics and Health <https://www.ga4gh.org/>`_ that
-links detailed phenotype descriptions with disease, patient, and genetic information. We use PhenoPackets
-as one of two options for the input of phenotype information to LR2PG (the other being :ref:`rstyaml` configuration files).
+links detailed phenotype descriptions with disease, patient, and genetic information. The
+ other input format is :ref:`rstyaml` configuration files).
 
-VCF file input
---------------
-
-LR2PG can be run with or without a VCF file. If run without a VCF file, LR2PG performs a purely phenotype-based
-analysis. If run with a VCF file, it will include the genotype likelihood ratio as a part of its calculations.
-Users should include (or not) a reference to the VCF file in the phenopacket. The following example shows a phenopacket
-representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_ in whom exome sequencing has been performed. ::
+Preparing Phenopacket-formated data
+--------------~~~~~~~~~~~~~~~~~~~~~
+See the `Phenopackets <https://github.com/phenopackets>`_ website for details on the format. LIRICAL expects
+the Phenopacket to be in JSON format. The following example shows a phenopacket
+representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_ in whom exome sequencing has
+been performed, whereby the corresponding VCF file is available at ``/path/to/data/Pfeiffer.vcf``. ::
 
     {
         "subject": {
@@ -73,7 +73,7 @@ representing an individual with `Pfeiffer syndrome <https://omim.org/entry/10160
         },
         "genomeAssembly": "GRCH_37",
         "file": {
-            "path": "/home/peter/data/Pfeiffer.vcf"
+            "path": "/path/to/data/Pfeiffer.vcf"
         }
     }],
     "metaData": {
@@ -89,32 +89,24 @@ representing an individual with `Pfeiffer syndrome <https://omim.org/entry/10160
      }
     }
 
-Options
--------
+Running LIRICAL with clinical and genomic data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LIRICAL will perform combined phenotye and variant analysis if the Phenopacket contains an ``htsFiles`` element.
+In this case, you need to indicate the location of the Exomiser data directory as follows. ::
 
-These are the options for running the ``phenopacket`` command. ::
+    phenopacket -p /path/to/example.json -e /path/to/exomiser-data/
 
-     phenopacket      Run LR2PG from a Phenopacket
-      Usage: phenopacket [options]
-        Options:
-          -d, --data
-            directory to download data (default: ${DEFAULT-VALUE})
-            Default: data
-        * -j, --jannovar
-            path to Jannovar transcript information file
-        * -m, --mvstore
-            path to MV Store Exomiser database file
-          -o, --outfile
-            prefix of outfile
-            Default: lr2pg
-        * -p, --phenopacket
-            path to phenopacket file
-          -t, --threshold
-            threshold for showing diagnosis in HTML output
-            Default: 0.01
-          --tsv
-            Use TSV instead of HTML output
-            Default: false
+The ``-p`` option is used to indicate the Phenopacket, and the -e option is used to indicate the location of
+the :ref:`stexomiserdatadir`.
+
+
+
+Running LIRICAL with clinical data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LIRICAL will perform phenotype-only analysis if the Phenopacket does not contain a ``htsFiles`` element.
+
+
+
 
 
 Output

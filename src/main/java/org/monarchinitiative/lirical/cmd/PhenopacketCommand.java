@@ -14,6 +14,9 @@ import org.monarchinitiative.lirical.io.PhenopacketImporter;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
+import org.monarchinitiative.lirical.output.HtmlTemplate;
+import org.monarchinitiative.lirical.output.LiricalTemplate;
+import org.monarchinitiative.lirical.output.TsvTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -37,11 +40,13 @@ import java.util.Map;
 public class PhenopacketCommand extends PrioritizeCommand {
     private static final Logger logger = LoggerFactory.getLogger(PhenopacketCommand.class);
     @Parameter(names = {"-b", "--background"}, description = "path to non-default background frequency file")
-    private String backgroundFrequencyFile;
+    protected String backgroundFrequencyFile;
     @Parameter(names = {"-p", "--phenopacket"}, description = "path to phenopacket file", required = true)
-    private String phenopacketPath;
+    protected String phenopacketPath;
     @Parameter(names = {"-e", "--exomiser"}, description = "path to the Exomiser data directory")
-    private String exomiserDataDirectory;
+    protected String exomiserDataDirectory;
+    @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC, Ensembl, RefSeq)")
+    protected String transcriptDb="ucsc";
 
 
     /**
@@ -141,13 +146,15 @@ public class PhenopacketCommand extends PrioritizeCommand {
             this.metadata.put("genesWithVar", String.valueOf(n_genes_with_var));
             this.metadata.put("exomiserPath", factory.getExomiserPath());
             this.metadata.put("hpoVersion", factory.getHpoVersion());
-
-            if (outputTSV) {
-                outputTSV(hcase, ontology, genotypemap);
-            } else {
-                outputHTML(hcase, ontology, genotypemap);
-            }
-
+            LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                    .genotypeMap(genotypemap)
+                    .geneid2symMap(this.geneId2symbol)
+                    .outdirectory(this.outdir)
+                    .prefix(this.outfilePrefix);
+            LiricalTemplate template = outputTSV ?
+                    builder.buildGenoPhenoTsvTemplate() :
+                     builder.buildPhenotypeHtmlTemplate();
+            template.outputFile();
         } else {
             // i.e., the Phenopacket has no VCF reference -- LIRICAL will work on just phenotypes!
             LiricalFactory factory = new LiricalFactory.Builder()
@@ -166,11 +173,15 @@ public class PhenopacketCommand extends PrioritizeCommand {
             CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
             HpoCase hcase = evaluator.evaluate();
             this.metadata.put("hpoVersion", factory.getHpoVersion());
-            if (outputTSV) {
-                outputTSV(hcase, ontology);
-            } else {
-                outputHTML(hcase, ontology);
-            }
+            LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                    .prefix(this.outfilePrefix)
+                    .outdirectory(this.outdir)
+                    .threshold(this.LR_THRESHOLD)
+                    .mindiff(this.minDifferentialsToShow);
+            LiricalTemplate template = outputTSV ?
+                    builder.buildPhenotypeTsvTemplate() :
+                    builder.buildPhenotypeHtmlTemplate();
+            template.outputFile();
         }
     }
 }
