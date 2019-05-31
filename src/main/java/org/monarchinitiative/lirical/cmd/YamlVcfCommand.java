@@ -11,6 +11,9 @@ import org.monarchinitiative.lirical.io.YamlParser;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
+import org.monarchinitiative.lirical.output.HtmlTemplate;
+import org.monarchinitiative.lirical.output.LiricalTemplate;
+import org.monarchinitiative.lirical.output.TsvTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -82,13 +85,15 @@ public class YamlVcfCommand extends PrioritizeCommand {
         int n_genes_with_var=factory.getGene2GenotypeMap().size();
         this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
         this.metadata.put("exomiserPath",factory.getExomiserPath());
-
-
-        if (outputTSV) {
-            outputTSV(hcase,ontology,genotypeMap);
-        } else {
-            outputHTML(hcase, ontology, genotypeMap);
-        }
+        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                .prefix(this.outfilePrefix)
+                .outdirectory(this.outdir)
+                .threshold(this.LR_THRESHOLD)
+                .mindiff(this.minDifferentialsToShow);
+        LiricalTemplate template = outputTSV ?
+                builder.buildPhenotypeTsvTemplate() :
+                builder.buildPhenotypeHtmlTemplate();
+        template.outputFile();
     }
 
     /**
