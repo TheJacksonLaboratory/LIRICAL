@@ -238,6 +238,10 @@ public class LiricalFactory {
         return vcfPath;
     }
 
+    public boolean hasVcf() {
+        return this.vcfPath!=null;
+    }
+
     /**
      * This is called if the user passes the {@code --exomiser/-e} option. We expect there to be
      * the Jannovar and the MVStore files in the directory and want to construct the paths here.
@@ -273,7 +277,7 @@ public class LiricalFactory {
         return mvstore;
     }
 
-    public String vcfPath(){ return vcfPath;}
+
 
 
 

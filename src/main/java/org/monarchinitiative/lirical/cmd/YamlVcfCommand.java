@@ -33,6 +33,9 @@ public class YamlVcfCommand extends PrioritizeCommand {
     @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
     private String yamlPath;
 
+    /** If true, run with VCF file, otherwise, perform phenotype-only analysis. */
+    private boolean hasVcf;
+
     /**
      * Command pattern to coordinate analysis of a VCF file with LIRICAL.
      */
@@ -48,50 +51,69 @@ public class YamlVcfCommand extends PrioritizeCommand {
         this.metadata=new HashMap<>();
         Map<TermId, Gene2Genotype> genotypeMap = factory.getGene2GenotypeMap();
         this.metadata.put("sample_name", factory.getSampleName());
-        this.metadata.put("vcf_file", factory.vcfPath());
-        this.metadata.put("n_filtered_variants", String.valueOf(factory.getN_filtered_variants()));
-        this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
         this.metadata.put("analysis_date", factory.getTodaysDate());
-        GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
         Ontology ontology = factory.hpoOntology();
         Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
-
         PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
-        Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
-        this.geneId2symbol = factory.geneId2symbolMap();
-        CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
-                .negated(factory.negatedHpoTerms())
-                .ontology(ontology)
-                .diseaseMap(diseaseMap)
-                .disease2geneMultimap(disease2geneMultimap)
-                .genotypeMap(genotypeMap)
-                .phenotypeLr(phenoLr)
-                .keepCandidates(keepIfNoCandidateVariant)
-                .gene2idMap(geneId2symbol)
-                .genotypeLr(genoLr);
-
-        CaseEvaluator evaluator = caseBuilder.build();
-        HpoCase hcase = evaluator.evaluate();
-
-
         Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
         if (ontologyMetainfo.containsKey("data-version")) {
             this.metadata.put("hpoVersion",ontologyMetainfo.get("data-version"));
         }
-        this.metadata.put("transcriptDatabase", factory.transcriptdb());
         this.metadata.put("yaml", this.yamlPath);
-        int n_genes_with_var=factory.getGene2GenotypeMap().size();
-        this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
-        this.metadata.put("exomiserPath",factory.getExomiserPath());
-        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
-                .prefix(this.outfilePrefix)
-                .outdirectory(this.outdir)
-                .threshold(this.LR_THRESHOLD)
-                .mindiff(this.minDifferentialsToShow);
-        LiricalTemplate template = outputTSV ?
-                builder.buildPhenotypeTsvTemplate() :
-                builder.buildPhenotypeHtmlTemplate();
-        template.outputFile();
+
+        if (factory.hasVcf()) {
+            this.metadata.put("vcf_file", factory.getVcfPath());
+            this.metadata.put("n_filtered_variants", String.valueOf(factory.getN_filtered_variants()));
+            this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
+            GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
+            Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
+            this.geneId2symbol = factory.geneId2symbolMap();
+            CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
+                    .negated(factory.negatedHpoTerms())
+                    .ontology(ontology)
+                    .diseaseMap(diseaseMap)
+                    .disease2geneMultimap(disease2geneMultimap)
+                    .genotypeMap(genotypeMap)
+                    .phenotypeLr(phenoLr)
+                    .keepCandidates(keepIfNoCandidateVariant)
+                    .gene2idMap(geneId2symbol)
+                    .genotypeLr(genoLr);
+
+            CaseEvaluator evaluator = caseBuilder.build();
+            HpoCase hcase = evaluator.evaluate();
+            this.metadata.put("transcriptDatabase", factory.transcriptdb());
+
+            int n_genes_with_var=factory.getGene2GenotypeMap().size();
+            this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
+            this.metadata.put("exomiserPath",factory.getExomiserPath());
+            LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                    .prefix(this.outfilePrefix)
+                    .outdirectory(this.outdir)
+                    .threshold(this.LR_THRESHOLD)
+                    .mindiff(this.minDifferentialsToShow);
+            LiricalTemplate template = outputTSV ?
+                    builder.buildPhenotypeTsvTemplate() :
+                    builder.buildPhenotypeHtmlTemplate();
+            template.outputFile();
+        } else {
+            CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
+                    .ontology(ontology)
+                    .negated(factory.negatedHpoTerms())
+                    .diseaseMap(diseaseMap)
+                    .phenotypeLr(phenoLr);
+            CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
+            HpoCase hcase = evaluator.evaluate();
+            this.metadata.put("hpoVersion", factory.getHpoVersion());
+            LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                    .prefix(this.outfilePrefix)
+                    .outdirectory(this.outdir)
+                    .threshold(this.LR_THRESHOLD)
+                    .mindiff(this.minDifferentialsToShow);
+            LiricalTemplate template = outputTSV ?
+                    builder.buildPhenotypeTsvTemplate() :
+                    builder.buildPhenotypeHtmlTemplate();
+            template.outputFile();
+        }
     }
 
     /**

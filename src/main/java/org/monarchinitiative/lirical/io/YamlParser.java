@@ -196,10 +196,6 @@ public class YamlParser {
         return String.format("%s%s%s",datadir,File.separator,"hp.obo");
     }
 
-//    String getMedgen() {
-//        String datadir=getDataDir();
-//        return String.format("%s%s%s",datadir,File.separator,"mim2gene_medgen");
-//    }
 
     /**@return A String representing the genome assembly of the VCF file (should be hg19 or hg38). */
     public String getGenomeAssembly() {
@@ -210,11 +206,6 @@ public class YamlParser {
         }
     }
 
-
-//     String getGeneInfo() {
-//         String datadir = getDataDir();
-//         return String.format("%s%s%s",datadir,File.separator,"Homo_sapiens_gene_info.gz");
-//    }
 
     /**
      * The user can choose to run LIRICAL without a VCF file. Then, a phenotype only analysis is performed.
@@ -267,11 +258,9 @@ public class YamlParser {
     public boolean keep() {
         if (yconfig.getAnalysis().containsKey("keep")) {
             String k = yconfig.getAnalysis().get("keep");
-            if (k.equalsIgnoreCase("true")) {
-                return true;
-            }
+            return  k.equalsIgnoreCase("true");
         }
-        return false;
+        return false;// no keep entry in YAML file
     }
 
     public Optional<Integer> mindiff() {
@@ -305,11 +294,9 @@ public class YamlParser {
     public boolean doTsv() {
         if (yconfig.getAnalysis().containsKey("tsv")) {
             String k = yconfig.getAnalysis().get("tsv");
-            if (k.equalsIgnoreCase("true")) {
-                return true;
-            }
+            return k.equalsIgnoreCase("true");
         }
-        return false;
+        return false; // no TSV entry in YAML file
     }
 
 }
