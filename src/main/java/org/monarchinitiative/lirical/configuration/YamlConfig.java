@@ -16,6 +16,8 @@ public class YamlConfig {
     private String sampleId;
     private String[] hpoIds;
     private String[] negatedHpoIds;
+    private boolean keep;
+    private String mindiff;
 
     public void setAnalysis(Map<String,String> an) {
         this.analysis=an;
@@ -51,7 +53,5 @@ public class YamlConfig {
     public String[] getNegatedHpoIds() { return negatedHpoIds; }
 
     public String getOutdir(){ return outdir;}
-
-
 
 }

@@ -53,7 +53,8 @@ public class HtmlTemplate extends LiricalTemplate {
                         int minDifferentials,
                         String prefix,
                         String outdir){
-        super(hcase, ontology, genotypeMap, geneid2sym, metadat,prefix,outdir);
+        super(hcase, ontology, genotypeMap, geneid2sym, metadat);
+        initpath(prefix,outdir);
         this.THRESHOLD=thres;
         this.MIN_DIAGNOSES_TO_SHOW=minDifferentials;
 
@@ -118,6 +119,14 @@ public class HtmlTemplate extends LiricalTemplate {
         this.templateData.put("diff",diff);
     }
 
+    private void initpath(String prefix,String outdir){
+        this.outpath=String.format("%s.tsv",prefix);
+        if (outdir != null) {
+            File dir = mkdirIfNotExist(outdir);
+            this.outpath = Paths.get(dir.getAbsolutePath(),this.outpath).toString();
+        }
+    }
+
 
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
@@ -135,7 +144,8 @@ public class HtmlTemplate extends LiricalTemplate {
                         int minDifferentials,
                         String prefix,
                         String outdir){
-        super(hcase, ontology, metadat,prefix,outdir);
+        super(hcase, ontology, metadat);
+        initpath(prefix,outdir);
         this.THRESHOLD=thres;
         this.MIN_DIAGNOSES_TO_SHOW=minDifferentials;
 

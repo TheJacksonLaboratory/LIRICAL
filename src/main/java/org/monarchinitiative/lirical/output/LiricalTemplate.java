@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,38 +49,28 @@ public abstract class LiricalTemplate {
                            Ontology ontology,
                            Map<TermId, Gene2Genotype> genotypeMap,
                            Map<TermId,String> geneid2sym,
-                           Map<String,String> metadat,
-                           String predix,
-                           String outdir){
+                           Map<String,String> metadat){
 
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
         this.geneId2symbol=geneid2sym;
-        initpath(predix,outdir);
         initTemplateData(hcase,ontology,metadat);
     }
 
     public LiricalTemplate(HpoCase hcase,
                            Ontology ontology,
-                           Map<String,String> metadat,
-                           String prefix,
-                           String outdir){
+                           Map<String,String> metadat){
 
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
         this.geneId2symbol= ImmutableMap.of(); // not needed -- make empty make
         initTemplateData(hcase,ontology,metadat);
-        initpath(prefix,outdir);
     }
 
 
-    private void initpath(String prefix,String outdir){
-        this.outpath=String.format("%s.html",prefix);
-        if (outdir != null) {
-            File dir = mkdirIfNotExist(outdir);
-            this.outpath = Paths.get(dir.getAbsolutePath(),this.outpath).toString();
-        }
-    }
+
+
+
 
     /**
      * output a file (HTML or TSV)
@@ -149,7 +138,7 @@ public abstract class LiricalTemplate {
     }
 
     public static class Builder {
-        private HpoCase hcase;
+        private final HpoCase hcase;
         private final Ontology ontology;
         private final Map<String,String> metadata;
         private Map<TermId, Gene2Genotype> genotypeMap;

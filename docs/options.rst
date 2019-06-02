@@ -20,8 +20,6 @@ By default, LIRICAL will create a directory called ``data`` and download the fil
 download to a non-default directory if the user passes the ``-d`` option.
 
 
-
-
 .. list-table::  ``download`` command
     :widths: 25 25 50 50
     :header-rows: 1
@@ -43,7 +41,7 @@ download to a non-default directory if the user passes the ``-d`` option.
 Running LIRICAL with a phenopacket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``yaml`` command runs LIRICAL from a :ref:`rstyaml` configuration file.
+The ``phenopacket`` command runs LIRICAL from a :ref:`rstyaml` configuration file.
 
 .. list-table::  ``yaml`` command
     :widths: 25 25 50 50
@@ -53,10 +51,10 @@ The ``yaml`` command runs LIRICAL from a :ref:`rstyaml` configuration file.
       - long
       - Default
       - Explanation
-    * - ``-y``
-      - ``--yaml``
+    * - ``-p``
+      - ``--phenopacket``
       - n/a
-      - path to yaml configuration file
+      - path to Phenopacket
     * - ``-d``
       - ``--download``
       - data
@@ -64,11 +62,11 @@ The ``yaml`` command runs LIRICAL from a :ref:`rstyaml` configuration file.
     * - ``-k``
       - ``--keep``
       - false
-      - retain candidates even if no candidate variant is found
+      - retain candidate diseases even if no candidate variant is found in VCF file. This option causes LIRICAL to list good phenotype candidates even if there is no supporting variant
     * - ``-m``
       - ``--mindiff``
       - 10
-      - minimal number of differential diagnoses to show
+      - minimal number of differential diagnoses to show in the HTML output file.
     * - ``-o``
       - ``--output-directory``
       - n/a
@@ -80,15 +78,15 @@ The ``yaml`` command runs LIRICAL from a :ref:`rstyaml` configuration file.
     * - none
       - ``--strict``
       - false
-      - use strict genotype matching for likelihood ratio calculation
+      - use strict genotype matching for likelihood ratio calculation. This option causes LIRICAL to show only candidates that have a genotype that matches what is expected because of the mode of inheritance of the disease
     * - ``-t``
       - ``--threshold``
       - 0.01
-      - minimum post-test prob. to show diagnosis in HTML output
+      - minimum post-test probability to show a diagnosis in the HTML output. This option, together with ``--mindiff``, controls the number of panels that show information about candidates in the HTML output.
     * - none
       - ``--transcriptdb``
       - ucsc
-      - transcript database (UCSC, Ensembl, RefSeq)
+      - transcript database. Valid optiona are UCSC, Ensembl, and RefSeq
     * - none
       - ``--tsv``
       - false
@@ -101,17 +99,23 @@ The ``yaml`` command runs LIRICAL from a :ref:`rstyaml` configuration file.
 YAML
 ~~~~
 
-The ``yaml`` command runs LIRICAL from a :ref:`rstyaml` configuration file.
+The ``yaml`` command runs LIRICAL from a :ref:`rstphenopacket` configuration file. Users should
+indicate all non-default arguments within the YAML file. The only valid argument for the
+``yaml`` command is the path to the YAML file. ::
+
+    $ java -jar LIRICAL.java yaml -y example.yaml
+
+
 
 .. list-table::  ``yaml`` command
-:widths: 25 25 50 50
+    :widths: 25 25 50 50
     :header-rows: 1
 
-        * - short
-          - long
-          - Default
-          - Explanation
-        * - ``-y``
+    * - short
+      - long
+      - Default
+      - Explanation
+    * - ``-y``
       - ``--yaml``
       - n/a
       - path to yaml configuration file

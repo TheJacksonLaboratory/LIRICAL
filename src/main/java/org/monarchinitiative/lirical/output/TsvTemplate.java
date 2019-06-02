@@ -36,7 +36,8 @@ public class TsvTemplate extends LiricalTemplate {
                        Map<String, String> metadat,
                        String prefix,
                        String outdir) {
-        super(hcase, ontology, genotypeMap, geneid2sym, metadat,prefix,outdir);
+        super(hcase, ontology, genotypeMap, geneid2sym, metadat);
+        initpath(prefix,outdir);
         ClassLoader classLoader = TsvTemplate.class.getClassLoader();
         cfg.setClassLoaderForTemplateLoading(classLoader,"");
         List<TsvDifferential> diff = new ArrayList<>();
@@ -53,17 +54,20 @@ public class TsvTemplate extends LiricalTemplate {
                 if (g2g != null) {
                    // symbol = g2g.getSymbol();
                     tsvdiff.addG2G(g2g);
-                } else {
-                    tsvdiff.setNoVariantsFoundString("no variants found in " + this.geneId2symbol.get(geneId));
-                    //symbol = "no variants found in " + this.geneId2symbol.get(geneId);//
                 }
-            } else {
-                tsvdiff.setNoVariantsFoundString("No known disease gene");
             }
             diff.add(tsvdiff);
             counter++;
         }
         this.templateData.put("diff",diff);
+    }
+
+    private void initpath(String prefix,String outdir){
+        this.outpath=String.format("%s.tsv",prefix);
+        if (outdir != null) {
+            File dir = mkdirIfNotExist(outdir);
+            this.outpath = Paths.get(dir.getAbsolutePath(),this.outpath).toString();
+        }
     }
 
     /**
@@ -77,7 +81,8 @@ public class TsvTemplate extends LiricalTemplate {
                        Map<String, String> metadat,
                        String prefix,
                        String outdir) {
-        super(hcase,ontology,metadat,prefix,outdir);
+        super(hcase,ontology,metadat);
+        initpath(prefix,outdir);
         ClassLoader classLoader = TsvTemplate.class.getClassLoader();
         cfg.setClassLoaderForTemplateLoading(classLoader,"");
         List<TsvDifferential> diff = new ArrayList<>();
@@ -89,7 +94,6 @@ public class TsvTemplate extends LiricalTemplate {
             String symbol = EMPTY_STRING;
             TsvDifferential tsvdiff = new TsvDifferential(result);
             logger.trace("Diff diag for " + result.getDiseaseName());
-            tsvdiff.setNoVariantsFoundString("Analysis performed without genetic data");
             diff.add(tsvdiff);
             counter++;
         }

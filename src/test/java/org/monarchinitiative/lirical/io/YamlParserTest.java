@@ -24,6 +24,8 @@ class YamlParserTest {
     private static String example1path;
     private static String example2path;
 
+    private static final double EPSILON=0.000001;
+
     @BeforeAll
     static void init() throws FileNotFoundException{
         ClassLoader classLoader = YamlParserTest.class.getClassLoader();
@@ -178,6 +180,70 @@ class YamlParserTest {
         String expected="myoutdirectory";
         assertTrue(yparser.getOutDirectory().isPresent());
         assertEquals(expected,yparser.getOutDirectory().get());
+    }
+
+    @Test
+    void testKeep1() {
+        // example 1 does not have a keep entry
+        YamlParser yparser = new YamlParser(example1path);
+        assertFalse(yparser.keep());
+    }
+
+    @Test
+    void testKeep2() {
+        // example 2 has keep=true
+        YamlParser yparser = new YamlParser(example2path);
+        assertTrue(yparser.keep());
+    }
+
+
+    @Test
+    void testMinDiff1() {
+        //example 1 has no mindiff entry,
+        // the optional element should be empty
+        YamlParser yparser = new YamlParser(example1path);
+        assertFalse(yparser.mindiff().isPresent());
+    }
+
+    @Test
+    void testMinDiff2() {
+        //example 2 has  mindiff:50
+        YamlParser yparser = new YamlParser(example2path);
+        assertTrue(yparser.mindiff().isPresent());
+        int expected=50;
+        assertEquals(expected,yparser.mindiff().get());
+    }
+
+    @Test
+    void testThreshold1() {
+        //example 1 has no threshold entry,
+        // the optional element should be empty
+        YamlParser yparser = new YamlParser(example1path);
+        assertFalse(yparser.threshold().isPresent());
+    }
+
+    @Test
+    void testThreshold2() {
+        //example 2 has threshold: 0.05,
+        // the optional element should be empty
+        YamlParser yparser = new YamlParser(example2path);
+        assertTrue(yparser.threshold().isPresent());
+        double expected = 0.05;
+        assertEquals(expected,yparser.threshold().get(),EPSILON);
+    }
+
+    @Test
+    void testTsv1() {
+        //example 1 has no tsv entry,
+        YamlParser yparser = new YamlParser(example1path);
+        assertFalse(yparser.doTsv());
+    }
+
+    @Test
+    void testTsv2() {
+        //example 2 has  tsv: true,
+        YamlParser yparser = new YamlParser(example2path);
+        assertTrue(yparser.doTsv());
     }
 
 
