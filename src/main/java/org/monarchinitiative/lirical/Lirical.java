@@ -25,7 +25,7 @@ public class Lirical {
     @Parameter(names = {"-h", "--help"}, help = true, arity = 0,description = "display this help message")
     private boolean usageHelpRequested;
 
-    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","simulate","grid","gt2git","vcf","simulate-vcf","phenopacket");
+    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","simulate","grid","gt2git","yaml","simulate-vcf","phenopacket");
 
 
     static public void main(String [] args) {
@@ -36,7 +36,7 @@ public class Lirical {
         SimulatePhenotypesCommand simulate = new SimulatePhenotypesCommand();
         GridSearchCommand grid = new GridSearchCommand();
         Gt2GitCommand gt2git = new Gt2GitCommand();
-        YamlVcfCommand vcf = new YamlVcfCommand();
+        YamlVcfCommand yamlVcf = new YamlVcfCommand();
         PhenopacketCommand phenopacket = new PhenopacketCommand();
         SimulateVcfCommand simvcf = new SimulateVcfCommand();
         JCommander jc = JCommander.newBuilder()
@@ -45,7 +45,7 @@ public class Lirical {
                 .addCommand("simulate", simulate)
                 .addCommand("grid", grid)
                 .addCommand("gt2git",gt2git)
-                .addCommand("vcf",vcf)
+                .addCommand("yaml",yamlVcf)
                 .addCommand("simulate-vcf",simvcf)
                 .addCommand("phenopacket",phenopacket)
                 .build();
@@ -129,7 +129,7 @@ public class Lirical {
                liricalCommand = gt2git;
                break;
            case "vcf":
-               liricalCommand =vcf;
+               liricalCommand =yamlVcf;
                break;
            case "simulate-vcf":
                liricalCommand=simvcf;

@@ -29,6 +29,7 @@ public class YamlParser {
     private final String DEFAULT_DATA_PATH="data";
 
 
+
     public YamlParser(String yamlPath) {
         if (yamlPath==null || !new File(yamlPath).exists()) {
             throw new PhenolRuntimeException("[ERROR] Could not find YAML configuration file at \""+yamlPath+"\"");
@@ -229,12 +230,6 @@ public class YamlParser {
     }
 
 
-
-//    String phenotypeAnnotation() {
-//        String datadir = getDataDir();
-//        return String.format("%s%s%s",datadir,File.separator,"phenotype.hpoa");
-//    }
-
     public String getPrefix() {
         return yconfig.getPrefix();
     }
@@ -267,6 +262,54 @@ public class YamlParser {
         }
         if (yconfig.getOutdir()==null) return Optional.empty();
         else return Optional.of(yconfig.getOutdir());
+    }
+
+    public boolean keep() {
+        if (yconfig.getAnalysis().containsKey("keep")) {
+            String k = yconfig.getAnalysis().get("keep");
+            if (k.equalsIgnoreCase("true")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Optional<Integer> mindiff() {
+        if (yconfig.getAnalysis().containsKey("mindiff")) {
+            String md =  yconfig.getAnalysis().get("mindiff");
+            try {
+                return Optional.of(Integer.parseInt(md));
+            } catch( NumberFormatException nfe) {
+                System.err.println("[ERROR] Could not parse mindiff entry in YAML file. Using default");
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * If the analysis section of the YAML file has a valid threshold entry, return it
+     * @return threshold (may be empty)
+     */
+    public Optional<Double> threshold() {
+        if (yconfig.getAnalysis().containsKey("threshold")) {
+            String thr =  yconfig.getAnalysis().get("threshold");
+            try {
+                return Optional.of(Double.parseDouble(thr));
+            } catch( NumberFormatException nfe) {
+                System.err.println("[ERROR] Could not parse threshold entry in YAML file. Using default");
+            }
+        }
+        return Optional.empty();
+    }
+
+    public boolean doTsv() {
+        if (yconfig.getAnalysis().containsKey("tsv")) {
+            String k = yconfig.getAnalysis().get("tsv");
+            if (k.equalsIgnoreCase("true")) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

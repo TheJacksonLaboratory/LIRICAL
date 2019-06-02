@@ -11,9 +11,7 @@ import org.monarchinitiative.lirical.io.YamlParser;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.lirical.output.HtmlTemplate;
 import org.monarchinitiative.lirical.output.LiricalTemplate;
-import org.monarchinitiative.lirical.output.TsvTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -21,8 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * This class coordinates the main analysis of a VCF file plus list of observed HPO terms. This
@@ -107,6 +105,14 @@ public class YamlVcfCommand extends PrioritizeCommand {
         LiricalFactory.Builder builder = new LiricalFactory.Builder().
                 yaml(yparser);
         this.outfilePrefix = yparser.getPrefix();
+        if (yparser.getOutDirectory().isPresent()) {
+            this.outdir=yparser.getOutDirectory().get();
+        }
+        Optional<Integer> mindiff = yparser.mindiff();
+        mindiff.ifPresent(i -> this.minDifferentialsToShow = i);
+        Optional<Double> threshold = yparser.threshold();
+        threshold.ifPresent(d -> this.LR_THRESHOLD = d);
+
         return builder.buildForGenomicDiagnostics();
     }
 }

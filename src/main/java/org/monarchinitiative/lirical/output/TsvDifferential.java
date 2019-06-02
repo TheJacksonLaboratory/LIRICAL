@@ -20,13 +20,11 @@ public class TsvDifferential {
     private final String entrezGeneId;
 
     private List<SimpleVariant> varlist;
-    private String varString="";
+    private String varString=NOT_AVAILABLE;
     /** Set this to yes as a flag for the template to indicate we can show some variants. */
     private String hasVariants="No";
 
     private String geneSymbol=EMPTY_STRING;
-
-    private String noVariantsFound=EMPTY_STRING;
 
     public TsvDifferential(TestResult result) {
         this.diseaseName=prettifyDiseaseName(result.getDiseaseName());
@@ -65,11 +63,6 @@ public class TsvDifferential {
 
     public String getVarString() {
         return varString;
-    }
-
-    public void setNoVariantsFoundString(String s) {
-        noVariantsFound=s;
-        System.err.println(noVariantsFound);
     }
 
     public String getDiseaseName() {
