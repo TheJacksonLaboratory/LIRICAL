@@ -7,6 +7,7 @@ v0.9.18
 -------
 - Added evolutionary algorithm optimization
 - Bug fixes
+- YAML file analysis can do geno/pheno or pheno-only analysis
 
 -------
 v0.9.16
