@@ -44,7 +44,8 @@ Running LIRICAL with a phenopacket
 The ``phenopacket`` command runs LIRICAL from a :ref:`rstyaml` configuration file.
 
 .. list-table::  ``yaml`` command
-    :widths: 25 25 50 50
+    :widths: 1 1 1 1
+    :class: longtable
     :header-rows: 1
 
     * - short
