@@ -33,6 +33,8 @@ public class HtmlTemplate extends LiricalTemplate {
     /** Have the HTML output show at least this many differntials (default: 5). */
     private final int MIN_DIAGNOSES_TO_SHOW;
 
+
+
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
      * @param hcase The individual (case) represented in the VCF file
@@ -48,8 +50,11 @@ public class HtmlTemplate extends LiricalTemplate {
                         Map<TermId,String> geneid2sym,
                         Map<String,String> metadat,
                         double thres,
-                        int minDifferentials){
+                        int minDifferentials,
+                        String prefix,
+                        String outdir){
         super(hcase, ontology, genotypeMap, geneid2sym, metadat);
+        initpath(prefix,outdir);
         this.THRESHOLD=thres;
         this.MIN_DIAGNOSES_TO_SHOW=minDifferentials;
 
@@ -114,6 +119,14 @@ public class HtmlTemplate extends LiricalTemplate {
         this.templateData.put("diff",diff);
     }
 
+    private void initpath(String prefix,String outdir){
+        this.outpath=String.format("%s.tsv",prefix);
+        if (outdir != null) {
+            File dir = mkdirIfNotExist(outdir);
+            this.outpath = Paths.get(dir.getAbsolutePath(),this.outpath).toString();
+        }
+    }
+
 
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
@@ -128,8 +141,11 @@ public class HtmlTemplate extends LiricalTemplate {
                         Ontology ontology,
                         Map<String,String> metadat,
                         double thres,
-                        int minDifferentials){
+                        int minDifferentials,
+                        String prefix,
+                        String outdir){
         super(hcase, ontology, metadat);
+        initpath(prefix,outdir);
         this.THRESHOLD=thres;
         this.MIN_DIAGNOSES_TO_SHOW=minDifferentials;
 
@@ -173,13 +189,14 @@ public class HtmlTemplate extends LiricalTemplate {
         }
         this.templateData.put("improbdiff",improbdiff);
         this.templateData.put("diff",diff);
+
     }
 
 
     @Override
-    public void outputFile(String absolutePath) {
-        logger.info("Writing HTML file to {}",absolutePath);
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(absolutePath))) {
+    public void outputFile() {
+        logger.info("Writing HTML file to {}",this.outpath);
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(this.outpath))) {
             Template template = cfg.getTemplate("liricalHTML.ftl");
             template.process(templateData, out);
         } catch (TemplateException | IOException te) {
@@ -187,15 +204,7 @@ public class HtmlTemplate extends LiricalTemplate {
         }
     }
 
-    @Override
-    public void outputFile(String prefix, String outdir){
-        String outname=String.format("%s.html",prefix );
-        if (outdir != null) {
-            File dir = mkdirIfNotExist(outdir);
-            outname = Paths.get(dir.getAbsolutePath(),outname).toString();
-        }
-        outputFile(outname);
-    }
+
 
 
 

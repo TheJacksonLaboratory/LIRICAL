@@ -11,6 +11,7 @@ import org.monarchinitiative.lirical.io.YamlParser;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
+import org.monarchinitiative.lirical.output.LiricalTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -18,8 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * This class coordinates the main analysis of a VCF file plus list of observed HPO terms. This
@@ -82,13 +83,15 @@ public class YamlVcfCommand extends PrioritizeCommand {
         int n_genes_with_var=factory.getGene2GenotypeMap().size();
         this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
         this.metadata.put("exomiserPath",factory.getExomiserPath());
-
-
-        if (outputTSV) {
-            outputTSV(hcase,ontology,genotypeMap);
-        } else {
-            outputHTML(hcase, ontology, genotypeMap);
-        }
+        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                .prefix(this.outfilePrefix)
+                .outdirectory(this.outdir)
+                .threshold(this.LR_THRESHOLD)
+                .mindiff(this.minDifferentialsToShow);
+        LiricalTemplate template = outputTSV ?
+                builder.buildPhenotypeTsvTemplate() :
+                builder.buildPhenotypeHtmlTemplate();
+        template.outputFile();
     }
 
     /**
@@ -100,9 +103,16 @@ public class YamlVcfCommand extends PrioritizeCommand {
     private LiricalFactory deYamylate(String yamlPath) {
         YamlParser yparser = new YamlParser(yamlPath);
         LiricalFactory.Builder builder = new LiricalFactory.Builder().
-                yaml(yparser).
-                filter(filterOnFILTER);
+                yaml(yparser);
         this.outfilePrefix = yparser.getPrefix();
+        if (yparser.getOutDirectory().isPresent()) {
+            this.outdir=yparser.getOutDirectory().get();
+        }
+        Optional<Integer> mindiff = yparser.mindiff();
+        mindiff.ifPresent(i -> this.minDifferentialsToShow = i);
+        Optional<Double> threshold = yparser.threshold();
+        threshold.ifPresent(d -> this.LR_THRESHOLD = d);
+
         return builder.buildForGenomicDiagnostics();
     }
 }

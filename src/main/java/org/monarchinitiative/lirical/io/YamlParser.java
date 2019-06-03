@@ -4,14 +4,18 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FilenameUtils;
 import org.monarchinitiative.lirical.configuration.YamlConfig;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -19,13 +23,16 @@ import java.util.Optional;
  * @author Peter Robinson
  */
 public class YamlParser {
-
+    private static final Logger logger = LoggerFactory.getLogger(YamlParser.class);
     private YamlConfig yconfig;
+    /** THe path to which LIRICIAL will download data such as hp.obo by default. */
+    private final String DEFAULT_DATA_PATH="data";
+
 
 
     public YamlParser(String yamlPath) {
         if (yamlPath==null || !new File(yamlPath).exists()) {
-            throw new PhenolRuntimeException("[ERROR] Could not find YAML configuration file for VCF analysis. Terminating program");
+            throw new PhenolRuntimeException("[ERROR] Could not find YAML configuration file at \""+yamlPath+"\"");
         }
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         try {
@@ -41,6 +48,10 @@ public class YamlParser {
         }
     }
 
+
+
+
+
     String getMvStorePath()  {
         if (yconfig.getAnalysis().containsKey("exomiser")) {
             String exomiserPath = yconfig.getAnalysis().get("exomiser");
@@ -50,7 +61,7 @@ public class YamlParser {
             String filename=String.format("%s_variants.mv.db", basename);
             return String.format("%s%s%s", exomiserPath,File.separator,filename);
         } else {
-            throw new LiricalRuntimeException("No MvStore path found in YAML configuration file");
+            throw new LiricalRuntimeException("exomiser path not found in YAML configuration file");
         }
     }
 
@@ -66,14 +77,14 @@ public class YamlParser {
     }
 
     /**
-     * The YAML file is allowed to have an element called analysis/background_freq for the background
+     * The YAML file is allowed to have an element called analysis/background for the background
      * frequency file. If it is present, we return in in an Optional object. Usually, users should use
      * the default files and not include this element in the yaml file.
      * @return path to the background-frequency path if present, otherwise an empty Optional object.
      */
     public Optional<String> getBackgroundPath() {
-        if (yconfig.getAnalysis().containsKey("background_freq")) {
-            return Optional.of(yconfig.getAnalysis().get("background_freq"));
+        if (yconfig.getAnalysis().containsKey("background")) {
+            return Optional.of(yconfig.getAnalysis().get("background"));
         } else {
             return Optional.empty();
         }
@@ -126,13 +137,14 @@ public class YamlParser {
      * command by default. If users choose another path, they should enter a datadir element in the YAML file.
      * An empty Optional object is return if nothing is present in the YAML file, indicating that the default
      * should be used
-     * @return Path of non-default data directory, if present.
+     * @return Path of non-default data directory or default. Trailing slash (if present) will be removed
      */
-    public Optional<String> getDataDir() {
+    public String getDataDir() {
         if (yconfig.getAnalysis().containsKey("datadir")) {
-            return Optional.of(yconfig.getAnalysis().get("datadir"));
+            String path = yconfig.getAnalysis().get("datadir");
+            return getPathWithoutTrailingSeparatorIfPresent(path);
         }  else {
-            return Optional.empty();
+            return DEFAULT_DATA_PATH;
         }
     }
 
@@ -179,23 +191,15 @@ public class YamlParser {
 
 
 
-    String getHpOboPath() throws LiricalException {
-        if (yconfig.getAnalysis().containsKey("datadir")) {
-            String datadir=yconfig.getAnalysis().get("datadir");
-            return String.format("%s%s%s",datadir,File.separator,"hp.obo");
-        } else {
-            throw new LiricalException("No data/hp.obo path found in YAML configuration file");
-        }
+    String getHpOboPath() {
+        String datadir = getDataDir();
+        return String.format("%s%s%s",datadir,File.separator,"hp.obo");
     }
 
-    String getMedgen() throws LiricalException {
-        if (yconfig.getAnalysis().containsKey("datadir")) {
-            String datadir=yconfig.getAnalysis().get("datadir");
-            return String.format("%s%s%s",datadir,File.separator,"mim2gene_medgen");
-        }  else {
-            throw new LiricalException("No data/mim2gene_medgen path found in YAML configuration file");
-        }
-    }
+//    String getMedgen() {
+//        String datadir=getDataDir();
+//        return String.format("%s%s%s",datadir,File.separator,"mim2gene_medgen");
+//    }
 
     /**@return A String representing the genome assembly of the VCF file (should be hg19 or hg38). */
     public String getGenomeAssembly() {
@@ -207,14 +211,10 @@ public class YamlParser {
     }
 
 
-     String getGeneInfo() throws LiricalException {
-        if (yconfig.getAnalysis().containsKey("datadir")) {
-            String datadir=yconfig.getAnalysis().get("datadir");
-            return String.format("%s%s%s",datadir,File.separator,"Homo_sapiens_gene_info.gz");
-        }  else {
-            throw new LiricalException("No Homo_sapiens_gene_info.gz path found in YAML configuration file");
-        }
-    }
+//     String getGeneInfo() {
+//         String datadir = getDataDir();
+//         return String.format("%s%s%s",datadir,File.separator,"Homo_sapiens_gene_info.gz");
+//    }
 
     /**
      * The user can choose to run LIRICAL without a VCF file. Then, a phenotype only analysis is performed.
@@ -230,28 +230,23 @@ public class YamlParser {
     }
 
 
-
-    String phenotypeAnnotation() throws LiricalException {
-        if (yconfig.getAnalysis().containsKey("datadir")) {
-            String datadir=yconfig.getAnalysis().get("datadir");
-            return String.format("%s%s%s",datadir,File.separator,"phenotype.hpoa");
-        }  else {
-            throw new LiricalException("No phenotype.hpoa path found in YAML configuration file");
-        }
-    }
-
     public String getPrefix() {
         return yconfig.getPrefix();
     }
 
     /**
-     * @return array of Strings representing HPOs, e.g., HP:0001234,HPO:0002345
+     * @return list of Strings representing HPOs, e.g., HP:0001234,HPO:0002345
      */
-    public String[] getHpoTermList() {
-        return yconfig.getHpoIds();
+    public List<String> getHpoTermList() {
+        return ImmutableList.copyOf(yconfig.getHpoIds());
     }
-
-    public String[] getNegatedHpoTermList() { return yconfig.getNegatedHpoIds(); }
+    /** @return list of Strings with excluded (negated) HPO terms. */
+    public List<String> getNegatedHpoTermList() {
+        // if the YAML file has no negated section, the YAML config will return null.
+        // in this case we return an empty list.
+        if (yconfig.getNegatedHpoIds()==null) return ImmutableList.of();
+        else return ImmutableList.copyOf(yconfig.getNegatedHpoIds());
+    }
 
 
     public String getSampleId() {
@@ -259,6 +254,62 @@ public class YamlParser {
             throw new LiricalRuntimeException("YAML file does not contain required sampleId element");
         }
         return yconfig.getSampleId();
+    }
+
+    public Optional<String> getOutDirectory() {
+        if (yconfig==null ) {
+            throw new LiricalRuntimeException("Could not parse YAML file");
+        }
+        if (yconfig.getOutdir()==null) return Optional.empty();
+        else return Optional.of(yconfig.getOutdir());
+    }
+
+    public boolean keep() {
+        if (yconfig.getAnalysis().containsKey("keep")) {
+            String k = yconfig.getAnalysis().get("keep");
+            if (k.equalsIgnoreCase("true")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Optional<Integer> mindiff() {
+        if (yconfig.getAnalysis().containsKey("mindiff")) {
+            String md =  yconfig.getAnalysis().get("mindiff");
+            try {
+                return Optional.of(Integer.parseInt(md));
+            } catch( NumberFormatException nfe) {
+                System.err.println("[ERROR] Could not parse mindiff entry in YAML file. Using default");
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * If the analysis section of the YAML file has a valid threshold entry, return it
+     * @return threshold (may be empty)
+     */
+    public Optional<Double> threshold() {
+        if (yconfig.getAnalysis().containsKey("threshold")) {
+            String thr =  yconfig.getAnalysis().get("threshold");
+            try {
+                return Optional.of(Double.parseDouble(thr));
+            } catch( NumberFormatException nfe) {
+                System.err.println("[ERROR] Could not parse threshold entry in YAML file. Using default");
+            }
+        }
+        return Optional.empty();
+    }
+
+    public boolean doTsv() {
+        if (yconfig.getAnalysis().containsKey("tsv")) {
+            String k = yconfig.getAnalysis().get("tsv");
+            if (k.equalsIgnoreCase("true")) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

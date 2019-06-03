@@ -33,8 +33,11 @@ public class TsvTemplate extends LiricalTemplate {
                        Ontology ontology,
                        Map<TermId, Gene2Genotype> genotypeMap,
                        Map<TermId, String> geneid2sym,
-                       Map<String, String> metadat) {
+                       Map<String, String> metadat,
+                       String prefix,
+                       String outdir) {
         super(hcase, ontology, genotypeMap, geneid2sym, metadat);
+        initpath(prefix,outdir);
         ClassLoader classLoader = TsvTemplate.class.getClassLoader();
         cfg.setClassLoaderForTemplateLoading(classLoader,"");
         List<TsvDifferential> diff = new ArrayList<>();
@@ -51,17 +54,20 @@ public class TsvTemplate extends LiricalTemplate {
                 if (g2g != null) {
                    // symbol = g2g.getSymbol();
                     tsvdiff.addG2G(g2g);
-                } else {
-                    tsvdiff.setNoVariantsFoundString("no variants found in " + this.geneId2symbol.get(geneId));
-                    //symbol = "no variants found in " + this.geneId2symbol.get(geneId);//
                 }
-            } else {
-                tsvdiff.setNoVariantsFoundString("No known disease gene");
             }
             diff.add(tsvdiff);
             counter++;
         }
         this.templateData.put("diff",diff);
+    }
+
+    private void initpath(String prefix,String outdir){
+        this.outpath=String.format("%s.tsv",prefix);
+        if (outdir != null) {
+            File dir = mkdirIfNotExist(outdir);
+            this.outpath = Paths.get(dir.getAbsolutePath(),this.outpath).toString();
+        }
     }
 
     /**
@@ -72,8 +78,11 @@ public class TsvTemplate extends LiricalTemplate {
      */
     public TsvTemplate(HpoCase hcase,
                        Ontology ontology,
-                       Map<String, String> metadat) {
+                       Map<String, String> metadat,
+                       String prefix,
+                       String outdir) {
         super(hcase,ontology,metadat);
+        initpath(prefix,outdir);
         ClassLoader classLoader = TsvTemplate.class.getClassLoader();
         cfg.setClassLoaderForTemplateLoading(classLoader,"");
         List<TsvDifferential> diff = new ArrayList<>();
@@ -85,7 +94,6 @@ public class TsvTemplate extends LiricalTemplate {
             String symbol = EMPTY_STRING;
             TsvDifferential tsvdiff = new TsvDifferential(result);
             logger.trace("Diff diag for " + result.getDiseaseName());
-            tsvdiff.setNoVariantsFoundString("Analysis performed without genetic data");
             diff.add(tsvdiff);
             counter++;
         }
@@ -94,25 +102,13 @@ public class TsvTemplate extends LiricalTemplate {
 
 
     @Override
-    public void outputFile(String absolutePath) {
-        logger.info("Writing TSV file to {}",absolutePath);
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(absolutePath))) {
+    public void outputFile() {
+        logger.info("Writing TSV file to {}",this.outpath);
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(this.outpath))) {
             Template template = cfg.getTemplate("liricalTSV.ftl");
             template.process(templateData, out);
         } catch (TemplateException | IOException te) {
             te.printStackTrace();
         }
-    }
-
-
-    @Override
-    public void outputFile(String prefix, String outdir){
-        String outname=String.format("%s.tsv",prefix );
-        if (outdir != null) {
-            File dir = mkdirIfNotExist(outdir);
-            outname = Paths.get(dir.getAbsolutePath(),outname).toString();
-        }
-        outputFile(outname);
-
     }
 }

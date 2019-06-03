@@ -1,3 +1,5 @@
+.. _rstsetup:
+
 Setting up LIRICAL
 ==================
 
@@ -38,16 +40,12 @@ search for the following line in the ``pom.xml`` file: ::
 
      <exomiser.version>12.0.0</exomiser.version>
 
-
-
-
-
-To do so, we clone the code and install using the maven system. ::
+To do so, we clone the code and change into the Exomiser directory. ::
 
     $ git clone https://github.com/exomiser/Exomiser.git
     $ cd Exomiser
 
-Now, we ensure that we are using the correct branch of Exomiser. ::
+Now, we ensure that we are using the correct branch of Exomiser (release-12.0.0). ::
 
     $ git checkout release-12.0.0
         Switched to branch 'release-12.0.0'
@@ -64,9 +62,11 @@ Finally, we use the maven system to install the Exomiser library locally so that
 This command will install the library in the ``.m2`` directory located in your home directory. If you like, explore
 ``.m2/repository/org/monarchinitiative/exomiser/`` to see how maven structures the repository.
 
+.. _rstexomiserdatadir:
 
 Exomiser database files
 ~~~~~~~~~~~~~~~~~~~~~~~
+
 
 LIRICAL uses data files from the Exomiser. We recommend that always the latest version of these files be used. The
 data files are stored at the `Exomiser download site <https://monarch-exomiser-web-dev.monarchinitiative.org/exomiser/download>`_.

@@ -4,10 +4,18 @@
 ---
 analysis:
   # hg19 or hg38 is supported
-  # make sure the Jannovar transcript file is taken from the same genome build
   genomeAssembly: hg19
   vcf: /Users/peterrobinson/Documents/data/Pfeiffer.vcf
-  datadir: data
   exomiser: /Users/peterrobinson/Documents/data/exomiser/1802_hg19/
+  datadir: /path/to/custom_location1/
+  background: /path/to/custom_location2
+  transcriptdb: ensembl
+  keep: true
+  strict: true
+  mindiff: 50
+  threshold: 0.05
+  tsv: true
 hpoIds: [ 'HP:0001363', 'HP:0011304', 'HP:0010055']
-prefix: pfeiffer1
+negatedHpoIds: ['HP:0001328']
+prefix: example2
+outdir: myoutdirectory
