@@ -52,12 +52,13 @@ public class HtmlTemplate extends LiricalTemplate {
                         double thres,
                         int minDifferentials,
                         String prefix,
-                        String outdir){
+                        String outdir,
+                        List<String> errs){
         super(hcase, ontology, genotypeMap, geneid2sym, metadat);
         initpath(prefix,outdir);
         this.THRESHOLD=thres;
         this.MIN_DIAGNOSES_TO_SHOW=minDifferentials;
-
+        this.templateData.put("errorlist",errs);
         List<DifferentialDiagnosis> diff = new ArrayList<>();
         List<ImprobableDifferential> improbdiff = new ArrayList<>();
         this.topDiagnosisMap=new HashMap<>();
@@ -120,7 +121,7 @@ public class HtmlTemplate extends LiricalTemplate {
     }
 
     private void initpath(String prefix,String outdir){
-        this.outpath=String.format("%s.tsv",prefix);
+        this.outpath=String.format("%s.html",prefix);
         if (outdir != null) {
             File dir = mkdirIfNotExist(outdir);
             this.outpath = Paths.get(dir.getAbsolutePath(),this.outpath).toString();
@@ -143,12 +144,13 @@ public class HtmlTemplate extends LiricalTemplate {
                         double thres,
                         int minDifferentials,
                         String prefix,
-                        String outdir){
+                        String outdir,
+                        List<String> errs){
         super(hcase, ontology, metadat);
         initpath(prefix,outdir);
         this.THRESHOLD=thres;
         this.MIN_DIAGNOSES_TO_SHOW=minDifferentials;
-
+        this.templateData.put("errorlist",errs);
         List<DifferentialDiagnosis> diff = new ArrayList<>();
         List<ImprobableDifferential> improbdiff = new ArrayList<>();
         this.topDiagnosisMap=new HashMap<>();

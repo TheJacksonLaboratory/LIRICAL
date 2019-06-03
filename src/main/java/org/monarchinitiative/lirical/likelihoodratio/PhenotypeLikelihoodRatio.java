@@ -31,9 +31,9 @@ public class PhenotypeLikelihoodRatio {
     /** Overall, i.e., background frequency of each HPO term. */
     private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
 
-    private final static TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
-    private final static TermId CLINICAL_COURSE = TermId.of("HP:0031797");
-    private final static TermId PAST_MEDICAL_HISTORY = TermId.of("HP:0032443");
+//    private final static TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
+//    private final static TermId CLINICAL_COURSE = TermId.of("HP:0031797");
+//    private final static TermId PAST_MEDICAL_HISTORY = TermId.of("HP:0032443");
     /**
      * This is the probability of a finding if it the disease is not annotated to it and there
      * is no common ancestor except the root. There are many possible causes of findings called
@@ -48,6 +48,7 @@ public class PhenotypeLikelihoodRatio {
      * The default probability for features that we cannot find in the dataset.
      */
     private final double DEFAULT_BACKGROUND_PROBQABILITY=1.0/10000;
+
 
 
     /**

@@ -1,5 +1,6 @@
 package org.monarchinitiative.lirical.output;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import freemarker.template.Configuration;
 import freemarker.template.Version;
@@ -44,6 +45,8 @@ public abstract class LiricalTemplate {
     protected List<String> topDiagnosisAnchors;
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
     protected final Map<TermId,String> geneId2symbol;
+
+
 
     public LiricalTemplate(HpoCase hcase,
                            Ontology ontology,
@@ -143,6 +146,7 @@ public abstract class LiricalTemplate {
         private final Map<String,String> metadata;
         private Map<TermId, Gene2Genotype> genotypeMap;
         private Map<TermId,String> geneid2sym;
+        private List<String> errors= ImmutableList.of();
 
         double thres=0.01;
         int minDifferentials=10;
@@ -163,16 +167,9 @@ public abstract class LiricalTemplate {
         public Builder mindiff(int md){ this.minDifferentials=md; return this;}
         public Builder prefix(String p){ this.outfileprefix = p; return this;}
         public Builder outdirectory(String od){ this.outdir=od;return this;}
+        public Builder errors(List<String> e) { this.errors = e;return this;}
 
         public HtmlTemplate buildPhenotypeHtmlTemplate() {
-            /*
-            HpoCase hcase,
-                        Ontology ontology,
-                        Map<String,String> metadat,
-                        double thres,
-                        int minDifferentials
-             */
-            // Note -- we assume client code has initialized correctly
 
             return new HtmlTemplate(this.hcase,
                     this.ontology,
@@ -180,17 +177,21 @@ public abstract class LiricalTemplate {
                     this.thres,
                     this.minDifferentials,
                     this.outfileprefix,
-                    this.outdir);
+                    this.outdir,
+                    this.errors);
         }
 
         public HtmlTemplate buildGenoPhenoHtmlTemplate() {
             return new HtmlTemplate(this.hcase,
                     this.ontology,
+                    this.genotypeMap,
+                    this.geneid2sym,
                     this.metadata,
                     this.thres,
                     this.minDifferentials,
                     this.outfileprefix,
-                    this.outdir);
+                    this.outdir,
+                    this.errors);
         }
 
         public TsvTemplate buildPhenotypeTsvTemplate() {
