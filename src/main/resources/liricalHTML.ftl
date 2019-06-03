@@ -308,12 +308,21 @@ footer {
         <div class="column" style="background-color:#aaa;">
           <h2>Observed Phenotypic Features</h2>
           <p>
-                  <ul>
-                    <#list  observedHPOs as hpo>
-                    <li>${hpo}</li>
-                    </#list>
-                  </ul>
-                </p>
+            <ul>
+            <#list  observedHPOs as hpo>
+                <li>${hpo}</li>
+            </#list>
+            </ul>
+          </p>
+          <p>
+          <#if errorlist?has_content>
+            <p>The following errors were encountered while processing the Phenopacket.</p>
+            <ul>
+            <#list errorlist as error>
+                <li>${error}</li>
+            </#list>
+            </ul>
+          </#if>
         </div>
         <div class="column" style="background-color:#bbb;">
            <p>
@@ -369,7 +378,7 @@ footer {
           </header>
           <p>
            <table class="redTable">
-             <tr><th>Pretest probability</th><th>Composite likelihood ratio</th><th>Posttest probability</th></tr>
+             <tr><th>Pretest probability</th><th>Log<sub>10</sub> composite likelihood ratio</th><th>Posttest probability</th></tr>
              <tr><td>${dd.pretestprob}</td><td>${dd.compositeLR}</td><td>${dd.posttestprob}</td></tr>
            </table>
           </p>

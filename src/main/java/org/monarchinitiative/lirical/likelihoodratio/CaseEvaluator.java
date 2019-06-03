@@ -57,6 +57,8 @@ public class CaseEvaluator {
 
     private List<LrWithExplanation> currentPhenotypeExplanation;
 
+    private List<String> errors;
+
     private final static String EMPTY_STRING="";
 
     /**
@@ -89,6 +91,7 @@ public class CaseEvaluator {
         this.useGenotypeAnalysis =false;
         this.threshold=DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD;
         this.keepIfNoCandidateVariant=true; // needs to be true for phenotype-only analysis!
+        this.errors=new ArrayList<>();
     }
 
 
@@ -146,11 +149,16 @@ public class CaseEvaluator {
         HpoDisease disease = this.diseaseMap.get(diseaseId);
         InducedDiseaseGraph idg = new InducedDiseaseGraph(disease,ontology);
         for (TermId tid : this.phenotypicAbnormalities) {
-            LrWithExplanation lrwe = phenotypeLRevaluator.getLikelihoodRatio(tid, idg);
-            builderObserved.add(lrwe.getLR());
-            this.currentPhenotypeExplanation.add(lrwe);
+            try {
+                LrWithExplanation lrwe = phenotypeLRevaluator.getLikelihoodRatio(tid, idg);
+                builderObserved.add(lrwe.getLR());
+                this.currentPhenotypeExplanation.add(lrwe);
+            } catch (Exception e) {
+                String errormsg = String.format("%s (%s/%s)",e.getMessage(),diseaseMap.get(diseaseId).getName(),tid.getValue() );
+                this.errors.add(errormsg);
+            }
             /*logger.error("{}: {} {} [{}]",
-                    diseaseMap.get(diseaseId).getName(),
+                    ,
                     ontology.getTermMap().get(tid).getName(),
                     lrwe.getLR(),
                     lrwe.getExplanation(ontology));*/
@@ -166,6 +174,8 @@ public class CaseEvaluator {
         }
         return builderExcluded.build();
     }
+
+    public List<String> getErrors(){ return this.errors;}
 
 
     /**

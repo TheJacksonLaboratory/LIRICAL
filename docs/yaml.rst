@@ -1,7 +1,7 @@
-Running LIRICAL VCF analysis with a YAML file
-=============================================
-
 .. _rstyaml:
+
+Running LIRICAL with a YAML file
+================================
 
 
 The recommended input format for running LIRICAL is the `Phenopacket <https://github.com/phenopackets>`_, but
