@@ -62,7 +62,7 @@ public class SimulateVcfCommand extends PhenopacketCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulateVcfCommand.class);
     //TODO -- Get this from the VCF file or from the Phenopacket or from command line
     private String genomeAssembly = "GRCh37";
-        @Parameter(names = {"-v", "--template-vcf"}, description = "path to template VCF file", required = true)
+    @Parameter(names = {"-v", "--template-vcf"}, description = "path to template VCF file", required = true)
     private String templateVcfPath;
     @Parameter(names = {"--phenopacket-dir"}, description = "path to directory with multiple phenopackets")
     private String phenopacketDir;
@@ -125,16 +125,14 @@ public class SimulateVcfCommand extends PhenopacketCommand {
         this.metadata.put("phenopacket_file", phenopacketAbsolutePath);
         metadata.put("sample_name", pp.getSubject().getId());
         hasVcf = pp.getHtsFilesList().stream().anyMatch(hf -> hf.getHtsFormat().equals(HtsFile.HtsFormat.VCF));
-        if (pp.getDiseasesCount() != 1) {
-            System.err.println("[ERROR] to run this simulation a phenoopacket must have exactly one disease diagnosis");
-            System.err.println("[ERROR]  " + pp.getSubject().getId() + " had " + pp.getDiseasesCount());
-            return; // skip to next Phenopacket
-        }
         if (!hasVcf) {
-            System.err.println("[ERROR] Could not simulate VCF"); // should never happen
+            System.err.println("[ERROR] Could not simulate VCF for "+phenopacketFile.getName()); // should never happen
             return; // skip to next Phenopacket
         }
-
+        if (!factory.qcPhenopacket(pp) ){
+            System.err.println("[ERROR] Could not simulate VCF for "+phenopacketFile.getName());
+            return;
+        }
 
 
         Disease diagnosis = pp.getDiseases(0);
@@ -201,7 +199,7 @@ public class SimulateVcfCommand extends PhenopacketCommand {
                     .outdirectory(outdir)
                     .prefix(outfilePrefix);
             TsvTemplate tsvtemplate = builder.buildGenoPhenoTsvTemplate();
-            tsvtemplate.outputFile();
+            tsvtemplate.outputFile(outname);
             extractRank(outname,phenopacketFile.getName());
         } else {
             LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,metadata)
@@ -303,6 +301,7 @@ public class SimulateVcfCommand extends PhenopacketCommand {
         int n_over_50=0; // number of differentials with post prob over 50%
         int n_total=0; // total number of differentials
         LiricalRanking lr=null;
+        boolean found=false;
         try {
             BufferedReader br = new BufferedReader(new FileReader(path));
             String line;
@@ -324,8 +323,10 @@ public class SimulateVcfCommand extends PhenopacketCommand {
                     String var = fields.length==8?fields[7]:"n/a";
                     if (diseaseCurie.equals(this.simulatedDisease)) {
                         logger.info("Got rank of {} for simulated disease {}", rank, simulatedDisease);
+                        System.out.println(String.format("Got rank of %d for simulated disease %s", rank, simulatedDisease));
                         lr = new LiricalRanking(phenopacketBaseName,rank, diseaseName,diseaseCurie,pretest,posttest,compositeLR,entrezID,var);
                         rankingsList.add(lr);
+                        found=true;
                     }
                     double posttestprob = Double.parseDouble(posttest.replace("%",""));// remove the percent sign
                     if (posttestprob>50.0) n_over_50++;
@@ -338,8 +339,12 @@ public class SimulateVcfCommand extends PhenopacketCommand {
                     System.exit(1);
                 }
             }
+            br.close();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        if (!found){
+            System.out.println("Could not find disease for " + phenopacketBaseName + " " + this.simulatedDisease);
         }
         String over50 = String.format("%d/%d",n_over_50,n_total);
         if (lr!=null) {

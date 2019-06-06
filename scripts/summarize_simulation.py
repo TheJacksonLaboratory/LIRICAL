@@ -26,11 +26,16 @@ with open(fname,'r') as f:
 
 
 cumulative_percentage=0
+count=0;
 
 for x in range(1,1000):
     s = str(x)
     if s in counts:
         v = counts[s]
+        count += v
         perc = 100*v/total
         cumulative_percentage += perc
         print("Rank {:>2}: {:>3} times ({:.2f}% - cumulative {:.2f}%)".format(s,v,perc,cumulative_percentage))
+
+
+print("total count ",count)
