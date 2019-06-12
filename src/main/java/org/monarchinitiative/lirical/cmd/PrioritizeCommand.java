@@ -49,6 +49,10 @@ public abstract class PrioritizeCommand extends LiricalCommand {
     protected Map<TermId,String> geneId2symbol;
     /** Various metadata that will be used for the HTML org.monarchinitiative.lirical.output. */
     protected Map<String,String> metadata;
+    /** If there is an obsolete or unrecognized HPO term in the Phenopacket/YAML, emit an error and skip it.
+     * The default behavior is to terminate the program with an error warning.  */
+    @Parameter(names={"--skip-obsolete-hpo"}, description = "Skip obsolete HPO terms in Phenopacket")
+    protected boolean skipObsoleteHpo=false;
 
 
     /**

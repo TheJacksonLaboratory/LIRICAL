@@ -26,7 +26,7 @@ import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.Phenopacket;
-import org.phenopackets.schema.v1.core.Phenotype;
+import org.phenopackets.schema.v1.core.PhenotypicFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,24 +165,6 @@ public class LiricalFactory {
         }
         this.filterOnFILTER=builder.filterFILTER;
     }
-
-
-
-    public boolean qcPhenopacket(Phenopacket pp) {
-        if (pp.getDiseasesCount() != 1) {
-            System.err.println("[ERROR] to run this simulation a phenopacket must have exactly one disease diagnosis");
-            System.err.println("[ERROR]  " + pp.getSubject().getId() + " had " + pp.getDiseasesCount());
-            return false; // skip to next Phenopacket
-        }
-        List<Phenotype> phenolist = pp.getPhenotypesList();
-        int n_observed = phenolist.stream().filter( p -> ! p.getNegated()).collect(Collectors.toList()).size();
-        if (n_observed==0) {
-            System.err.println("[ERROR] phenopackets must have at least one observed HPO term. ");
-            return false; // skip to next Phenopacket
-        }
-        return true;
-    }
-
 
 
     /**

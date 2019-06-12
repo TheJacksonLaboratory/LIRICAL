@@ -139,6 +139,7 @@ public class CaseEvaluator {
         }
         this.genotypeMap=genotypeMap;
         this.useGenotypeAnalysis =true;
+        this.errors=new ArrayList<>();
     }
 
     public void setVerbosity(boolean v) { this.verbose=v;}
