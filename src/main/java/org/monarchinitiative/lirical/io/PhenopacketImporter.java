@@ -7,6 +7,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
+import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -31,19 +32,12 @@ public class PhenopacketImporter {
     private static final Logger logger = LoggerFactory.getLogger(PhenopacketImporter.class);
     /** The Phenopacket that represents the individual being sequenced in the current run. */
     private final Phenopacket phenoPacket;
-    /** A list of non-negated HPO terms observed in the subject of this Phenopacket. */
-    private ImmutableList<TermId> hpoTerms;
-    /** A list of negated HPO terms observed in the subject of this Phenopacket. */
-    private ImmutableList<TermId> negatedHpoTerms;
     /** Object representing the VCF file with variants identified in the subject of this Phenopacket. */
     private HtsFile vcfFile;
     /** Name of the proband of the Phenopacket (corresponds to the {@code id} element of the phenopacket). */
     private final String samplename;
     /** Reference to HPO ontology */
     private final Ontology hpo;
-    /** Just skip a term if we cannot find it in the ontology. */
-    private boolean skipObsoleteHpo=false;
-
 
     /**
      * Factory method to obtain a PhenopacketImporter object starting from a phenopacket in Json format
@@ -74,37 +68,22 @@ public class PhenopacketImporter {
         this.phenoPacket=ppack;
         this.samplename = this.phenoPacket.getSubject().getId();
         this.hpo=ontology;
-        extractProbandHpoTerms();
-        extractNegatedProbandHpoTerms();
         extractVcfData();
-    }
-
-
-    public void setSkipObsoleteHpo() {
-        this.skipObsoleteHpo=true;
     }
 
     public boolean hasVcf() { return  this.vcfFile !=null; }
 
     public List<TermId> getHpoTerms() {
-        return getHpoTerms(false);
-    }
-
-
-    public List<TermId> getHpoTerms(boolean includeObsolete) {
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         for (PhenotypicFeature feature : phenoPacket.getPhenotypicFeaturesList()) {
             if (feature.getNegated()) continue;
             String id = feature.getType().getId();
             TermId tid = TermId.of(id);
             if (! hpo.getTermMap().containsKey(tid)) {
-                logger.error("Could not identify HPO term id {}. Skipping this term",tid.getValue());
+                logger.error("Could not identify HPO term id {}.",tid.getValue());
                 System.err.println("[ERROR] Could not identify HPO term id " + tid.getValue() +". ");
-                if (includeObsolete) {
-                    builder.add(tid); // useful for testing or to be strict
-                } else {
-                    continue;
-                }
+                System.err.println("[ERROR] Please check the input file and update to the latest hp.obo file. ");
+                throw new PhenolRuntimeException("Could not identify HPO term id: "+tid.getValue());
             } else if (hpo.getObsoleteTermIds().contains(tid)) {
                 TermId current =  hpo.getPrimaryTermId(tid);
                 builder.add(current);
@@ -121,7 +100,26 @@ public class PhenopacketImporter {
 
 
     public List<TermId> getNegatedHpoTerms() {
-        return negatedHpoTerms;
+        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
+        for (PhenotypicFeature feature : phenoPacket.getPhenotypicFeaturesList()) {
+            if (! feature.getNegated()) continue;
+            String id = feature.getType().getId();
+            TermId tid = TermId.of(id);
+            if (! hpo.getTermMap().containsKey(tid)) {
+                logger.error("Could not identify HPO term id {}.",tid.getValue());
+                System.err.println("[ERROR] Could not identify HPO term id " + tid.getValue() +". ");
+                System.err.println("[ERROR] Please check the input file and update to the latest hp.obo file. ");
+                throw new PhenolRuntimeException("Could not identify HPO term id: "+tid.getValue());
+            } else if (hpo.getObsoleteTermIds().contains(tid)) {
+                TermId current =  hpo.getPrimaryTermId(tid);
+                builder.add(current);
+                logger.error("Replacing obsolete HPO term id {} with current id {}.",tid.getValue(),current.getValue());
+                System.err.println("[ERROR] Replacing obsolete HPO term id " + tid.getValue() +". with current id "+current.getValue());
+            } else {
+                builder.add(tid);
+            }
+        }
+        return builder.build();
     }
 
     public String getVcfPath() {
@@ -174,85 +172,6 @@ public class PhenopacketImporter {
     }
 
 
-
-
-
-    /**
-     * This method extracts a list of
-     * all of the non-negated HPO terms that are annotated to the proband of this
-     * phenopacket. Note that we use "distinct" to get only distinct elements, defensively,
-     * even though a valid phenopacket should not have duplicates.
-     */
-    private void extractProbandHpoTerms() {
-        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
-        for (PhenotypicFeature feature : phenoPacket.getPhenotypicFeaturesList()) {
-            if (feature.getNegated()) continue;
-            String id = feature.getType().getId();
-            TermId tid = TermId.of(id);
-            if (! hpo.getTermMap().containsKey(tid)) {
-                logger.error("Could not identify HPO term id {}. Skipping this term",tid.getValue());
-                System.err.println("[ERROR] Could not identify HPO term id " + tid.getValue() +". Skipping this term.");
-                if (skipObsoleteHpo ) continue; else {builder.add(tid);}
-            } else if (hpo.getObsoleteTermIds().contains(tid)) {
-                TermId current =  hpo.getPrimaryTermId(tid);
-                builder.add(current);
-                logger.error("Replacing obsolete HPO term id {} with current id {}.",tid.getValue(),current.getValue());
-                System.err.println("[ERROR] Replacing obsolete HPO term id " + tid.getValue() +". with current id "+current.getValue());
-            } else {
-                builder.add(tid);
-            }
-        }
-        this.hpoTerms= builder.build();
-                /*phenoPacket
-                .getPhenotypicFeaturesList()
-                .stream()
-                .distinct()
-                .filter(((Predicate<PhenotypicFeature>) PhenotypicFeature::getNegated).negate()) // i.e., just take non-negated phenotypes
-                .map(PhenotypicFeature::getType)
-                .map(OntologyClass::getId)
-                .map(TermId::of)
-                .collect(ImmutableList.toImmutableList()); */
-    }
-
-
-
-
-
-
-
-
-    /**
-     * This function gets a list of all negated HPO terms associated with the proband.
-     */
-    private void extractNegatedProbandHpoTerms() {
-        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
-        for (PhenotypicFeature feature : phenoPacket.getPhenotypicFeaturesList()) {
-            if (! feature.getNegated()) continue;
-            String id = feature.getType().getId();
-            TermId tid = TermId.of(id);
-            if (! hpo.getTermMap().containsKey(tid)) {
-                logger.error("Could not identify HPO term id {}. Skipping this term",tid.getValue());
-                System.err.println("[ERROR] Could not identify HPO term id " + tid.getValue() +". Skipping this term.");
-                continue;
-            } else if (hpo.getObsoleteTermIds().contains(tid)) {
-                TermId current =  hpo.getPrimaryTermId(tid);
-                builder.add(current);
-                logger.error("Replacing obsolete HPO term id {} with current id {}.",tid.getValue(),current.getValue());
-                System.err.println("[ERROR] Replacing obsolete HPO term id " + tid.getValue() +". with current id "+current.getValue());
-            } else {
-                builder.add(tid);
-            }
-        }
-        this.negatedHpoTerms= builder.build();
-       /* this.negatedHpoTerms = phenoPacket
-                .getPhenotypicFeaturesList()
-                .stream()
-                .filter(PhenotypicFeature::getNegated) // i.e., just take negated phenotypes
-                .map(PhenotypicFeature::getType)
-                .map(OntologyClass::getId)
-                .map(TermId::of)
-                .collect(ImmutableList.toImmutableList());*/
-    }
 
     /** This method extracts the VCF file and the corresponding GenomeBuild. We assume that
      * the phenopacket contains a single VCF file and that this file is for a single person. */

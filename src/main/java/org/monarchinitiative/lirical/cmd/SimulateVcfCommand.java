@@ -111,7 +111,7 @@ public class SimulateVcfCommand extends PhenopacketCommand {
         // PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath,this.factory.hpoOntology());
         PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath,this.factory.hpoOntology());
         VcfSimulator vcfSimulator = new VcfSimulator(Paths.get(this.templateVcfPath));
-        HtsFile simulatedVcf=null;
+        HtsFile simulatedVcf;
         try {
             simulatedVcf = vcfSimulator.simulateVcf(importer.getSamplename(), importer.getVariantList(), genomeAssembly);
             //pp = pp.toBuilder().clearHtsFiles().addHtsFiles(htsFile).build();
@@ -124,7 +124,7 @@ public class SimulateVcfCommand extends PhenopacketCommand {
         this.metadata.put("phenopacket_file", phenopacketAbsolutePath);
         metadata.put("sample_name", importer.getSamplename());
         hasVcf = importer.hasVcf();
-        if (!hasVcf) {
+        if (simulatedVcf == null) {
             System.err.println("[ERROR] Could not simulate VCF for "+phenopacketFile.getName()); // should never happen
             return; // skip to next Phenopacket
         }
@@ -191,7 +191,7 @@ public class SimulateVcfCommand extends PhenopacketCommand {
                     .outdirectory(outdir)
                     .prefix(outfilePrefix);
             HtmlTemplate htemplate = builder.buildGenoPhenoHtmlTemplate();
-            htemplate.outputFile();;
+            htemplate.outputFile();
 
         }
     }
