@@ -10,8 +10,9 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -166,6 +167,25 @@ class SimpleVariantTest {
     void testGetFrequency() {
         double expected=0.01;// 0.01%
         assertEquals(expected,svHet.getFrequency(),EPSILON);
+    }
+
+
+    @Test
+    void testCountTwoPathAllelesWithHomozygousVariant() {
+        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        String genotypeString="1/1";
+        SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
+        assertEquals(SimpleGenotype.HOMOZYGOUS_ALT, sv.getGtype());
+        assertEquals(2,sv.pathogenicAlleleCount());
+    }
+
+    @Test
+    void testCountOnePathAllelesWithHeterozygousVariant() {
+        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        String genotypeString="0/1";
+        SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
+        assertEquals(SimpleGenotype.HETEROZYGOUS, sv.getGtype());
+        assertEquals(1,sv.pathogenicAlleleCount());
     }
 
 

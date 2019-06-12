@@ -206,6 +206,17 @@ public class HtmlTemplate extends LiricalTemplate {
         }
     }
 
+    @Override
+    public void outputFile(String fname) {
+        logger.info("Writing HTML file to {}",fname);
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(fname))) {
+            Template template = cfg.getTemplate("liricalTSV.html");
+            template.process(templateData, out);
+        } catch (TemplateException | IOException te) {
+            te.printStackTrace();
+        }
+    }
+
 
 
 

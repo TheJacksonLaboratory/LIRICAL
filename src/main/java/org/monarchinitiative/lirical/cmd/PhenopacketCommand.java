@@ -36,12 +36,13 @@ public class PhenopacketCommand extends PrioritizeCommand {
     private static final Logger logger = LoggerFactory.getLogger(PhenopacketCommand.class);
     @Parameter(names = {"-b", "--background"}, description = "path to non-default background frequency file")
     protected String backgroundFrequencyFile;
-    @Parameter(names = {"-p", "--phenopacket"}, description = "path to phenopacket file", required = true)
-    protected String phenopacketPath;
+    @Parameter(names = {"-p", "--phenopacket"}, description = "path to phenopacket file")
+    protected String phenopacketPath=null;
     @Parameter(names = {"-e", "--exomiser"}, description = "path to the Exomiser data directory")
     protected String exomiserDataDirectory;
     @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC, Ensembl, RefSeq)")
     protected String transcriptDb="ucsc";
+
 
 
     /**
@@ -73,12 +74,15 @@ public class PhenopacketCommand extends PrioritizeCommand {
 
 
     public PhenopacketCommand() {
-
     }
 
     @Override
     public void run() {
         // read the Phenopacket
+        if (phenopacketPath==null) {
+            logger.error("-p option (phenopacket) is required");
+            return;
+        }
         logger.trace("Will analyze phenopacket at " + phenopacketPath);
         this.metadata = new HashMap<>();
         this.errors = new ArrayList<>();
@@ -87,7 +91,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
         this.metadata.put("analysis_date", dateFormat.format(date));
         this.metadata.put("phenopacket_file", this.phenopacketPath);
         try {
-            PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
+            PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath,this.factory.hpoOntology());
             this.vcfPath = importer.getVcfPath();
             hasVcf = importer.hasVcf();
             if (hasVcf) {

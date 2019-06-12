@@ -3,6 +3,18 @@ Changelog
 =========
 
 -------
+v0.9.20
+-------
+- LIRICAL will terminate and emit an error warning if an unknwon HPO term is used in a phenopacket
+
+
+-------
+v0.9.19
+-------
+- Fixed bug in counting pathogenic alleles (previously variants, not alleles, were being counted).
+- Adjusted calculations of phenotype likelihood ratios.
+
+-------
 v0.9.18
 -------
 - Added evolutionary algorithm optimization
@@ -14,6 +26,7 @@ v0.9.16
 -------
 - Added code to simulate cases with template VCF and phenopackets
 - Fixed bug by which YAML file was not correctly setting prefix
+
 
 -------
 v0.9.15
