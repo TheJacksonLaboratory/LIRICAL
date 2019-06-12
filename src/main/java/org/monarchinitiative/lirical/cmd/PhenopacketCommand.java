@@ -44,6 +44,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
     protected String transcriptDb="ucsc";
 
 
+
     /**
      * If true, the phenopacket contains the path of a VCF file.
      */
@@ -73,7 +74,6 @@ public class PhenopacketCommand extends PrioritizeCommand {
 
 
     public PhenopacketCommand() {
-
     }
 
     @Override
@@ -91,7 +91,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
         this.metadata.put("analysis_date", dateFormat.format(date));
         this.metadata.put("phenopacket_file", this.phenopacketPath);
         try {
-            PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
+            PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath,this.factory.hpoOntology());
             this.vcfPath = importer.getVcfPath();
             hasVcf = importer.hasVcf();
             if (hasVcf) {

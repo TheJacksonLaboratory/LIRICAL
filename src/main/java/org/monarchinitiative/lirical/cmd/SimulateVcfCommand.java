@@ -3,16 +3,15 @@ package org.monarchinitiative.lirical.cmd;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.protobuf.util.JsonFormat;
-import org.h2.mvstore.WriteBuffer;
+import org.json.simple.parser.ParseException;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.analysis.VcfSimulator;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
-import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
+import org.monarchinitiative.lirical.io.PhenopacketImporter;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
@@ -27,8 +26,6 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.Disease;
 import org.phenopackets.schema.v1.core.HtsFile;
-import org.phenopackets.schema.v1.core.OntologyClass;
-import org.phenopackets.schema.v1.core.Phenotype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +36,6 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.function.Predicate;
 
 
 /**
@@ -109,13 +105,16 @@ public class SimulateVcfCommand extends PhenopacketCommand {
      * This method coordinates
      * @param phenopacketFile File with the Phenopacket we are currently analyzing
      */
-    private void runOneVcfAnalysis(File phenopacketFile) {
+    private void runOneVcfAnalysis(File phenopacketFile) throws IOException, ParseException {
         String phenopacketAbsolutePath = phenopacketFile.getAbsolutePath();
-        Phenopacket pp = readPhenopacket(phenopacketAbsolutePath);
+        //Phenopacket pp = readPhenopacket(phenopacketAbsolutePath);
+        // PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath,this.factory.hpoOntology());
+        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath,this.factory.hpoOntology());
         VcfSimulator vcfSimulator = new VcfSimulator(Paths.get(this.templateVcfPath));
+        HtsFile simulatedVcf;
         try {
-            HtsFile htsFile = vcfSimulator.simulateVcf(pp.getSubject().getId(), pp.getVariantsList(), genomeAssembly);
-            pp = pp.toBuilder().clearHtsFiles().addHtsFiles(htsFile).build();
+            simulatedVcf = vcfSimulator.simulateVcf(importer.getSamplename(), importer.getVariantList(), genomeAssembly);
+            //pp = pp.toBuilder().clearHtsFiles().addHtsFiles(htsFile).build();
         } catch (IOException e) {
             throw new LiricalRuntimeException("Could not simulate VCF for phenopacket");
         }
@@ -123,28 +122,25 @@ public class SimulateVcfCommand extends PhenopacketCommand {
         Date date = new Date();
         this.metadata.put("analysis_date", dateFormat.format(date));
         this.metadata.put("phenopacket_file", phenopacketAbsolutePath);
-        metadata.put("sample_name", pp.getSubject().getId());
-        hasVcf = pp.getHtsFilesList().stream().anyMatch(hf -> hf.getHtsFormat().equals(HtsFile.HtsFormat.VCF));
-        if (!hasVcf) {
+        metadata.put("sample_name", importer.getSamplename());
+        hasVcf = importer.hasVcf();
+        if (simulatedVcf == null) {
             System.err.println("[ERROR] Could not simulate VCF for "+phenopacketFile.getName()); // should never happen
             return; // skip to next Phenopacket
         }
-        if (!factory.qcPhenopacket(pp) ){
+        if (!importer.qcPhenopacket() ){
             System.err.println("[ERROR] Could not simulate VCF for "+phenopacketFile.getName());
             return;
         }
 
 
-        Disease diagnosis = pp.getDiseases(0);
+        Disease diagnosis = importer.getDiagnosis();
         simulatedDisease = diagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
         this.metadata.put("phenopacket.diagnosisId", simulatedDisease);
         this.metadata.put("phenopacket.diagnosisLabel", diagnosis.getTerm().getLabel());
 
-        HtsFile htsFile = pp.getHtsFilesList().stream()
-                .filter(hf -> hf.getHtsFormat().equals(HtsFile.HtsFormat.VCF))
-                .findFirst()
-                .orElseThrow(() -> new LiricalRuntimeException("Phenopacket has and has not VCF file in the same time... \uD83D\uDE15"));
-        String vcfPath = htsFile.getFile().getPath();
+       // HtsFile htsFile = importer.getVcfFile();
+        String vcfPath = simulatedVcf.getFile().getPath();
         this.genotypemap = factory.getGene2GenotypeMap(vcfPath);
         this.genoLr = factory.getGenotypeLR();
         // this.metadata.put("vcf_file", this.getOptionalVcfPath);
@@ -152,24 +148,9 @@ public class SimulateVcfCommand extends PhenopacketCommand {
         logger.trace("Running simulation from phenopacket {} with template VCF {}",
                 phenopacketAbsolutePath,
                 vcfPath);
-        List<TermId> hpoIdList = pp.getPhenotypesList() // copied from PhenopacketImporter
-                .stream()
-                .distinct()
-                .filter(((Predicate<Phenotype>) Phenotype::getNegated).negate()) // i.e., just take non-negated phenotypes
-                .map(Phenotype::getType)
-                .map(OntologyClass::getId)
-                .map(TermId::of)
-                .collect(ImmutableList.toImmutableList());
+        List<TermId> hpoIdList = importer.getHpoTerms();
         // List of excluded HPO terms in the subject.
-        List<TermId> negatedHpoIdList = pp.getPhenotypesList() // copied from PhenopacketImporter
-                .stream()
-                .filter(Phenotype::getNegated) // i.e., just take negated phenotypes
-                .map(Phenotype::getType)
-                .map(OntologyClass::getId)
-                .map(TermId::of)
-                .collect(ImmutableList.toImmutableList());
-
-
+        List<TermId> negatedHpoIdList = importer.getNegatedHpoTerms();
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(hpoIdList)
                 .ontology(ontology)
                 .negated(negatedHpoIdList)
@@ -210,7 +191,7 @@ public class SimulateVcfCommand extends PhenopacketCommand {
                     .outdirectory(outdir)
                     .prefix(outfilePrefix);
             HtmlTemplate htemplate = builder.buildGenoPhenoHtmlTemplate();
-            htemplate.outputFile();;
+            htemplate.outputFile();
 
         }
     }
@@ -252,7 +233,11 @@ public class SimulateVcfCommand extends PhenopacketCommand {
         this.geneId2symbol = factory.geneId2symbolMap();
         if (this.phenopacketPath != null) {
             logger.info("Running single file Phenopacket/VCF simulation at {}", phenopacketPath);
-            runOneVcfAnalysis(new File(this.phenopacketPath));
+            try {
+                runOneVcfAnalysis(new File(this.phenopacketPath));
+            } catch (IOException | ParseException e) {
+                e.printStackTrace();
+            }
         } else if (this.phenopacketDir != null) {
             logger.info("Running Phenopacket/VCF simulations at {}", phenopacketDir);
             final File folder = new File(phenopacketDir);
@@ -264,7 +249,11 @@ public class SimulateVcfCommand extends PhenopacketCommand {
                 if (fileEntry.isFile() && fileEntry.getAbsolutePath().endsWith(".json")) {
                     logger.info("\tPhenopacket: \"{}\"", fileEntry.getAbsolutePath());
                     System.out.println(++counter + ") "+ fileEntry.getName());
-                    runOneVcfAnalysis(fileEntry);
+                    try {
+                        runOneVcfAnalysis(fileEntry);
+                    } catch (IOException | ParseException e) {
+                        e.printStackTrace();
+                    }
                 }
                // if (counter>10)break;
             }

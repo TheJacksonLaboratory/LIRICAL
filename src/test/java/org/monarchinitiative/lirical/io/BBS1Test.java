@@ -3,6 +3,8 @@ package org.monarchinitiative.lirical.io;
 import com.google.protobuf.util.JsonFormat;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.Phenopacket;
 
@@ -29,6 +31,7 @@ class BBS1Test {
     private final String expectedGenomeAssembly = "GRCh37";
     private final String expectedVcf="/path/to/examples/BBS1.vcf";
     private final String expectedExomiser="/path/to/exomiser_data/1802_hg19";
+    private static Ontology ontology = Mockito.mock(Ontology.class);
 
 
     @BeforeAll
@@ -51,7 +54,7 @@ class BBS1Test {
         Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
         JsonFormat.parser().merge(phenopacketJsonString, phenoPacketBuilder);
         Phenopacket ppacket = phenoPacketBuilder.build();
-        phenopacketimporter = new PhenopacketImporter(ppacket);
+        phenopacketimporter = new PhenopacketImporter(ppacket,ontology);
     }
 
     @Test

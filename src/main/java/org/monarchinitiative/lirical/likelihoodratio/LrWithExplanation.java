@@ -3,6 +3,12 @@ package org.monarchinitiative.lirical.likelihoodratio;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
+/**
+ * There are five possible ways that a query term can match a disease term. The likelihood ratio
+ * is calculated differently for each of these match types (see {@link MatchType}).This class
+ * captures sufficient information about each match to provide an explanation for the HTML output.
+ * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ */
 public class LrWithExplanation implements Comparable<LrWithExplanation> {
 
 
@@ -10,7 +16,7 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
         QUERY_TERM_SUBCLASS_OF_DISEASE_TERM,
         DISEASE_TERM_SUBCLASS_OF_QUERY,
         NON_ROOT_COMMON_ANCESTOR,
-        NO_MATCH_BELOW_ROOT};
+        NO_MATCH_BELOW_ROOT}
 
 
 
@@ -28,29 +34,26 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
     }
 
 
-    public static LrWithExplanation exactMatch(TermId tid, double ratio) {
+    static LrWithExplanation exactMatch(TermId tid, double ratio) {
         return new LrWithExplanation(tid,tid,MatchType.EXACT_MATCH, ratio);
     }
 
 
-    public static LrWithExplanation queryTermSubTermOfDisease(TermId q, TermId m, double ratio) {
+    static LrWithExplanation queryTermSubTermOfDisease(TermId q, TermId m, double ratio) {
         return new LrWithExplanation(q,m,MatchType.QUERY_TERM_SUBCLASS_OF_DISEASE_TERM,ratio);
     }
 
-    public static LrWithExplanation diseaseTermSubTermOfQuery(TermId q, TermId m, double ratio) {
+    static LrWithExplanation diseaseTermSubTermOfQuery(TermId q, TermId m, double ratio) {
         return new LrWithExplanation(q,m,MatchType.DISEASE_TERM_SUBCLASS_OF_QUERY,ratio);
     }
 
-    public static LrWithExplanation nonRootCommonAncestor(TermId q, TermId m, double ratio) {
+    static LrWithExplanation nonRootCommonAncestor(TermId q, TermId m, double ratio) {
         return new LrWithExplanation(q,m,MatchType.NON_ROOT_COMMON_ANCESTOR,ratio);
     }
 
-    public static LrWithExplanation noMatch(TermId q, double ratio) {
+    static LrWithExplanation noMatch(TermId q, double ratio) {
         return new LrWithExplanation(q,q,MatchType.NO_MATCH_BELOW_ROOT,ratio);
     }
-
-    public boolean is_subclass() { return this.matchType.equals(MatchType.DISEASE_TERM_SUBCLASS_OF_QUERY) ||
-    this.matchType.equals(MatchType.QUERY_TERM_SUBCLASS_OF_DISEASE_TERM);}
 
 
     public double getLR(){ return LR; }
@@ -76,10 +79,10 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
 
     /**
      * Get versions of the string that will work in HTML
-     * @param ontology
-     * @return
+     * @param ontology reference to HPO ontology
+     * @return an HTML string that explains this phenotypic LR result.
      */
-    public String getEscapedExplanation(Ontology ontology) {
+    String getEscapedExplanation(Ontology ontology) {
         String qtermlabel = String.format("%s[%s]",ontology.getTermMap().get(this.queryTerm).getName(),queryTerm.getValue() );
         String mtermlabel = String.format("%s[%s]",ontology.getTermMap().get(this.matchingTerm).getName(),matchingTerm.getValue() );
         switch (this.matchType) {
