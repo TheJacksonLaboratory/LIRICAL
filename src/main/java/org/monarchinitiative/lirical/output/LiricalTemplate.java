@@ -1,11 +1,12 @@
 package org.monarchinitiative.lirical.output;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import freemarker.template.Configuration;
 import freemarker.template.Version;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
-import org.monarchinitiative.lirical.configuration.Lr2PgFactory;
-import org.monarchinitiative.lirical.exception.Lr2PgRuntimeException;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.Term;
@@ -24,8 +25,8 @@ import java.util.Map;
  * setting up the data prior to output as either tab-separated values (TSV) or HTML.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public abstract class Lr2pgTemplate {
-    private static final Logger logger = LoggerFactory.getLogger(Lr2PgFactory.class);
+public abstract class LiricalTemplate {
+    private static final Logger logger = LoggerFactory.getLogger(LiricalFactory.class);
 
     /** Map of data that will be used for the FreeMark template. */
     protected final Map<String, Object> templateData= new HashMap<>();
@@ -33,6 +34,8 @@ public abstract class Lr2pgTemplate {
     protected final Configuration cfg;
 
     protected static final String EMPTY_STRING="";
+
+    protected  String outpath;
 
 
     /** This map contains the names of the top differential diagnoses that we will show as a list at the
@@ -43,22 +46,23 @@ public abstract class Lr2pgTemplate {
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
     protected final Map<TermId,String> geneId2symbol;
 
-    public Lr2pgTemplate(HpoCase hcase,
-                         Ontology ontology,
-                         Map<TermId, Gene2Genotype> genotypeMap,
-                         Map<TermId,String> geneid2sym,
-                         Map<String,String> metadat){
+
+
+    public LiricalTemplate(HpoCase hcase,
+                           Ontology ontology,
+                           Map<TermId, Gene2Genotype> genotypeMap,
+                           Map<TermId,String> geneid2sym,
+                           Map<String,String> metadat){
 
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
         this.geneId2symbol=geneid2sym;
-
         initTemplateData(hcase,ontology,metadat);
     }
 
-    public Lr2pgTemplate(HpoCase hcase,
-                         Ontology ontology,
-                         Map<String,String> metadat){
+    public LiricalTemplate(HpoCase hcase,
+                           Ontology ontology,
+                           Map<String,String> metadat){
 
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
@@ -66,12 +70,19 @@ public abstract class Lr2pgTemplate {
         initTemplateData(hcase,ontology,metadat);
     }
 
+
+
+
+
+
     /**
      * output a file (HTML or TSV)
-     * @param prefix -- prefix for the file, (e.g., sample would become sample.html or sample.tsv)
-     * @param directory -- directory to which to write the output file. Created automatically if it does not exist
-     */
-    abstract public void outputFile(String prefix, String directory);
+//     * @param prefix -- prefix for the file, (e.g., sample would become sample.html or sample.tsv)
+//     * @param directory -- directory to which to write the output file. Created automatically if it does not exist
+//     */
+//    abstract public void outputFile(String prefix, String directory);
+    abstract public void outputFile();
+    abstract public void outputFile(String fname);
 
     private void initTemplateData(HpoCase hcase, Ontology ontology, Map<String,String> metadat) {
         for(Map.Entry<String,String> entry : metadat.entrySet()) {
@@ -118,16 +129,94 @@ public abstract class Lr2pgTemplate {
             if (f.isDirectory()) {
                 return f;
             } else {
-                throw new Lr2PgRuntimeException("Cannot create directory since file of same name exists already: " + dir);
+                throw new LiricalRuntimeException("Cannot create directory since file of same name exists already: " + dir);
             }
         }
         // if we get here, we need to make the directory
         boolean success = f.mkdir();
         if (!success) {
-            throw new Lr2PgRuntimeException("Unable to make directory: " + dir);
+            throw new LiricalRuntimeException("Unable to make directory: " + dir);
         } else {
             return f;
         }
     }
+
+    public static class Builder {
+        private final HpoCase hcase;
+        private final Ontology ontology;
+        private final Map<String,String> metadata;
+        private Map<TermId, Gene2Genotype> genotypeMap;
+        private Map<TermId,String> geneid2sym;
+        private List<String> errors= ImmutableList.of();
+
+        double thres=0.01;
+        int minDifferentials=10;
+        String outfileprefix="lirical";
+        String outdir=null;
+
+
+        public Builder(HpoCase hcase,Ontology ont,Map<String,String> mdata){
+            this.hcase=hcase;
+            this.ontology=ont;
+            this.metadata=mdata;
+        }
+
+
+        public Builder genotypeMap(Map<TermId, Gene2Genotype> gm){this.genotypeMap=gm;return this;}
+        public Builder geneid2symMap(Map<TermId,String> gsm) { this.geneid2sym=gsm;return this;}
+        public Builder threshold(double t) { this.thres=t;return this;}
+        public Builder mindiff(int md){ this.minDifferentials=md; return this;}
+        public Builder prefix(String p){ this.outfileprefix = p; return this;}
+        public Builder outdirectory(String od){ this.outdir=od;return this;}
+        public Builder errors(List<String> e) { this.errors = e;return this;}
+
+        public HtmlTemplate buildPhenotypeHtmlTemplate() {
+
+            return new HtmlTemplate(this.hcase,
+                    this.ontology,
+                    this.metadata,
+                    this.thres,
+                    this.minDifferentials,
+                    this.outfileprefix,
+                    this.outdir,
+                    this.errors);
+        }
+
+        public HtmlTemplate buildGenoPhenoHtmlTemplate() {
+            return new HtmlTemplate(this.hcase,
+                    this.ontology,
+                    this.genotypeMap,
+                    this.geneid2sym,
+                    this.metadata,
+                    this.thres,
+                    this.minDifferentials,
+                    this.outfileprefix,
+                    this.outdir,
+                    this.errors);
+        }
+
+        public TsvTemplate buildPhenotypeTsvTemplate() {
+            return new TsvTemplate(this.hcase,
+                    this.ontology,
+                    this.metadata,
+                    this.outfileprefix,
+                    this.outdir);
+        }
+
+        public TsvTemplate buildGenoPhenoTsvTemplate() {
+
+            return new TsvTemplate(this.hcase,
+                    this.ontology,
+                    this.genotypeMap,
+                    this.geneid2sym,
+                    this.metadata,
+                    this.outfileprefix,
+                    this.outdir);
+
+        }
+
+
+    }
+
 
 }

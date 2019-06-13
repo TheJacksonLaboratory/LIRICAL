@@ -12,8 +12,8 @@ import org.monarchinitiative.exomiser.core.genome.jannovar.InvalidFileFormatExce
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.analysis.Vcf2GenotypeMap;
-import org.monarchinitiative.lirical.exception.Lr2PgRuntimeException;
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
 import org.monarchinitiative.lirical.io.YamlParser;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
@@ -41,8 +41,8 @@ import java.util.*;
  * classes that we need as singletons with the various commands.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class Lr2PgFactory {
-    private static final Logger logger = LoggerFactory.getLogger(Lr2PgFactory.class);
+public class LiricalFactory {
+    private static final Logger logger = LoggerFactory.getLogger(LiricalFactory.class);
     /** Path to the {@code hp.obo} file. */
     private final String hpoOboFilePath;
     /** Path to the {@code phenotype.hpoa} file. */
@@ -59,6 +59,8 @@ public class Lr2PgFactory {
     private final String vcfPath;
     /** List of HPO terms (phenotypic abnormalities) observed in the person being evaluated. */
     private final List<TermId> hpoIdList;
+    /** List of HPO terms that were excluded in the person being evaluated. */
+    private final List<TermId> negatedHpoIdList;
     /** The directory in which several files are stored. */
     private final String datadir;
     /** THe default data directory */
@@ -75,6 +77,8 @@ public class Lr2PgFactory {
     private final Ontology ontology;
     /** The path to the Exomiser database file, e.g., {@code 1811_hg19_variants.mv.db}. */
     private String mvStorePath=null;
+    /** genotype matching for likelihood ratio calculation". */
+    private boolean strict;
 
     private String hpoVersion="n/a";
 
@@ -101,7 +105,7 @@ public class Lr2PgFactory {
 
     private JannovarData jannovarData=null;
 
-    private Lr2PgFactory(Builder builder) {
+    private LiricalFactory(Builder builder) {
         this.hpoOboFilePath = builder.hpOboPath;
         this.exomiserPath = builder.exomiserDataDir;
         if (exomiserPath!=null) {
@@ -113,7 +117,7 @@ public class Lr2PgFactory {
         } else {
             // Note-- background files for hg19 and hg38 are stored in src/main/resources/background
             // and are included in the resources by the maven resource plugin
-            ClassLoader classLoader = Lr2PgFactory.class.getClassLoader();
+            ClassLoader classLoader = LiricalFactory.class.getClassLoader();
             URL resource;
             if (assembly.equals(GenomeAssembly.HG19)) {
                 resource = classLoader.getResource("background/background-hg19.txt");
@@ -121,11 +125,11 @@ public class Lr2PgFactory {
                 resource = classLoader.getResource("background/background-hg38.txt");
             } else {
                 logger.error("Did not recognize genome assembly: {}",assembly);
-                throw new Lr2PgRuntimeException("Did not recognize genome assembly: "+assembly);
+                throw new LiricalRuntimeException("Did not recognize genome assembly: "+assembly);
             }
             if (resource==null) {
                 logger.error("Could not find resource for background file");
-                throw new Lr2PgRuntimeException("Could not find resource for background file");
+                throw new LiricalRuntimeException("Could not find resource for background file");
             }
             this.backgroundFrequencyPath=resource.getFile();
         }
@@ -136,7 +140,8 @@ public class Lr2PgFactory {
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
-        this.datadir=builder.lr2pgDataDir;
+        this.datadir=builder.liricalDataDir;
+        this.strict = builder.strict;
 
         ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
         for (String id : builder.observedHpoTerms) {
@@ -144,6 +149,12 @@ public class Lr2PgFactory {
             listbuilder.add(hpoId);
         }
         this.hpoIdList=listbuilder.build();
+        listbuilder = new ImmutableList.Builder<>();
+        for (String id : builder.negatedHpoTerms){
+            TermId negatedId = TermId.of(id);
+            listbuilder.add(negatedId);
+        }
+        this.negatedHpoIdList = listbuilder.build();
         if (builder.hpOboPath!=null) {
             this.ontology=hpoOntology();
         } else {
@@ -153,19 +164,32 @@ public class Lr2PgFactory {
     }
 
 
-
     /**
-     * @return a list of observed HPO terms (from the YAML file)
-     * @throws Lr2pgException if one of the terms is not in the HPO Ontology
+     * @return a list of observed HPO terms (from the YAML/Phenopacket file)
+     * @throws LiricalException if one of the terms is not in the HPO Ontology
      */
-    public List<TermId> observedHpoTerms() throws Lr2pgException{
+    public List<TermId> observedHpoTerms() throws LiricalException {
         for (TermId hpoId : hpoIdList) {
             if (! this.ontology.getTermMap().containsKey(hpoId)) {
-                throw new Lr2pgException("Could not find HPO term " + hpoId.getValue() + " in ontology");
+                throw new LiricalException("Could not find HPO term " + hpoId.getValue() + " in ontology");
             }
         }
         return hpoIdList;
     }
+    /**
+     * @return a list of observed HPO terms (from the YAML/Phenopacket file)
+     * @throws LiricalException if one of the terms is not in the HPO Ontology
+     */
+    public List<TermId> negatedHpoTerms() throws LiricalException {
+        for (TermId hpoId : negatedHpoIdList) {
+            if (! this.ontology.getTermMap().containsKey(hpoId)) {
+                throw new LiricalException("Could not find HPO term " + hpoId.getValue() + " in ontology");
+            }
+        }
+        return negatedHpoIdList;
+    }
+
+
 
     /** @return the genome assembly corresponding to the VCF file. Can be null. */
     public GenomeAssembly getAssembly() {
@@ -208,7 +232,7 @@ public class Lr2PgFactory {
 
     public String getVcfPath() {
         if (this.vcfPath==null) {
-            throw new Lr2PgRuntimeException("VCF path not initialized");
+            throw new LiricalRuntimeException("VCF path not initialized");
         }
         return vcfPath;
     }
@@ -237,7 +261,7 @@ public class Lr2PgFactory {
     public MVStore mvStore() {
         File f = new File(this.mvStorePath);
         if (!f.exists()) {
-            throw new Lr2PgRuntimeException("[FATAL] Could not find Exomiser database file/variants.mv.db at " + this.mvStorePath);
+            throw new LiricalRuntimeException("[FATAL] Could not find Exomiser database file/variants.mv.db at " + this.mvStorePath);
         }
         if (mvstore==null) {
             mvstore = new MVStore.Builder()
@@ -252,24 +276,24 @@ public class Lr2PgFactory {
 
 
 
-    private void parseHpoAnnotations() throws Lr2pgException {
+    private void parseHpoAnnotations()  {
         if (this.ontology==null) {
             hpoOntology();
         }
         if (this.geneInfoPath==null) {
-            throw new Lr2pgException("Path to Homo_sapiens_gene_info.gz file not found");
+            throw new LiricalRuntimeException("Path to Homo_sapiens_gene_info.gz file not found");
         }
         if (this.mim2genemedgenPath==null) {
-            throw new Lr2pgException("Path to mim2genemedgen file not found");
+            throw new LiricalRuntimeException("Path to mim2genemedgen file not found");
         }
 
         File geneInfoFile = new File(geneInfoPath);
         if (!geneInfoFile.exists()) {
-            throw new Lr2pgException("Could not find gene info file at " + geneInfoPath + ". Run download!");
+            throw new LiricalRuntimeException("Could not find gene info file at " + geneInfoPath + ". Run download!");
         }
         File mim2genemedgenFile = new File(this.mim2genemedgenPath);
         if (!mim2genemedgenFile.exists()) {
-            throw new Lr2PgRuntimeException("Could not find medgen file at " + this.mim2genemedgenPath + ". Run download!");
+            throw new LiricalRuntimeException("Could not find medgen file at " + this.mim2genemedgenPath + ". Run download!");
         }
         File orphafilePlaceholder = null;//we do not need this for now
         HpoAssociationParser assocParser = new HpoAssociationParser(geneInfoFile,
@@ -286,7 +310,7 @@ public class Lr2PgFactory {
 
 
     /** @return a multimap with key: a gene CURIE such as NCBIGene:123; value: a collection of disease CURIEs such as OMIM:600123. */
-    public Multimap<TermId,TermId> gene2diseaseMultimap() throws Lr2pgException {
+    public Multimap<TermId,TermId> gene2diseaseMultimap()  {
         if (this.gene2diseaseMultiMap==null) {
             parseHpoAnnotations();
         }
@@ -294,14 +318,14 @@ public class Lr2PgFactory {
     }
 
     /** @return multimap with key:disease CURIEs such as OMIM:600123; value: a collection of gene CURIEs such as NCBIGene:123.  */
-    public Multimap<TermId,TermId> disease2geneMultimap() throws Lr2pgException {
+    public Multimap<TermId,TermId> disease2geneMultimap()  {
         if (this.disease2geneIdMultiMap==null) {
             parseHpoAnnotations();
         }
         return this.disease2geneIdMultiMap;
     }
     /** @return a map with key:a gene id, e.g., NCBIGene:2020; value: the corresponding gene symbol. */
-    public Map<TermId,String> geneId2symbolMap() throws Lr2pgException{
+    public Map<TermId,String> geneId2symbolMap() {
         if (this.geneId2SymbolMap==null) {
             parseHpoAnnotations();
         }
@@ -309,9 +333,9 @@ public class Lr2PgFactory {
     }
 
     /** @return Map with key: geneId, value: corresponding background frequency of bin P variants. */
-    public Map<TermId, Double> gene2backgroundFrequency() throws Lr2pgException{
+    public Map<TermId, Double> gene2backgroundFrequency() {
         if (this.backgroundFrequencyPath==null) {
-            throw new Lr2pgException("Path to background-freq.txt file not found");
+            throw new LiricalRuntimeException("Path to background-freq.txt file not found");
         }
         GenotypeDataIngestor gdingestor = new GenotypeDataIngestor(this.backgroundFrequencyPath);
         return gdingestor.parse();
@@ -336,11 +360,11 @@ public class Lr2PgFactory {
     public GenotypeLikelihoodRatio getGenotypeLR() {
         File f = new File(backgroundFrequencyPath);
         if (!f.exists()) {
-            throw new Lr2PgRuntimeException(String.format("Could not find background frequency file at %s",this.backgroundFrequencyPath));
+            throw new LiricalRuntimeException(String.format("Could not find background frequency file at %s",this.backgroundFrequencyPath));
         }
         GenotypeDataIngestor ingestor = new GenotypeDataIngestor(this.backgroundFrequencyPath);
         Map<TermId,Double> gene2back = ingestor.parse();
-        return new GenotypeLikelihoodRatio(gene2back);
+        return new GenotypeLikelihoodRatio(gene2back,this.strict);
     }
 
 
@@ -376,7 +400,7 @@ public class Lr2PgFactory {
 
         File f = new File(fullpath);
         if (!f.exists()) {
-            throw new Lr2PgRuntimeException("[FATAL] Could not find Jannovar transcript file at " + fullpath);
+            throw new LiricalRuntimeException("[FATAL] Could not find Jannovar transcript file at " + fullpath);
         }
         try {
             Path p = Paths.get(fullpath);
@@ -390,15 +414,15 @@ public class Lr2PgFactory {
             return jannovarData;
         } catch (SerializationException e) {
             logger.error("Could not deserialize Jannovar file with legacy deserializer...");
-            throw new Lr2PgRuntimeException(String.format("Could not load Jannovar data from %s (%s)",
+            throw new LiricalRuntimeException(String.format("Could not load Jannovar data from %s (%s)",
                     fullpath, e.getMessage()));
         }
     }
 
     /** @return a map with key: a disease id (e.g., OMIM:654321) and key the corresponding {@link HpoDisease} object.*/
-    public Map<TermId, HpoDisease> diseaseMap(Ontology ontology) throws Lr2pgException {
+    public Map<TermId, HpoDisease> diseaseMap(Ontology ontology)  {
         if (this.phenotypeAnnotationPath==null) {
-            throw new Lr2pgException("Path to phenotype.hpoa file not found");
+            throw new LiricalRuntimeException("Path to phenotype.hpoa file not found");
         }
         // phenol 1.3.2
         List<String> desiredDatabasePrefixes=ImmutableList.of("OMIM","DECIPHER");
@@ -413,12 +437,16 @@ public class Lr2PgFactory {
             }
             return diseaseMap;
         } catch (PhenolException pe) {
-            throw new Lr2pgException("Could not parse annotation file: " + pe.getMessage());
+            throw new LiricalRuntimeException("Could not parse annotation file: " + pe.getMessage());
         }
     }
 
     public  Map<TermId, Gene2Genotype> getGene2GenotypeMap() {
-        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(getVcfPath(),
+        return getGene2GenotypeMap(getVcfPath());
+    }
+
+    public  Map<TermId, Gene2Genotype> getGene2GenotypeMap(String vcfPath) {
+        Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath,
                 jannovarData(),
                 mvStore(),
                 getAssembly(),
@@ -453,26 +481,26 @@ public class Lr2PgFactory {
     public void qcHumanPhenotypeOntologyFiles() {
         File datadirfile = new File(datadir);
         if (!datadirfile.exists()) {
-            logger.error("Could not find LR2PG data directory at {}",datadir);
+            logger.error("Could not find LIRICAL data directory at {}",datadir);
             logger.error("Consider running download command.");
-            throw new Lr2PgRuntimeException(String.format("Could not find LR2PG data directory at %s",datadir));
+            throw new LiricalRuntimeException(String.format("Could not find LIRICAL data directory at %s",datadir));
         } else if (!datadirfile.isDirectory()) {
-            logger.error("LR2PG datadir path ({}) is not a directory.",datadir);
-            throw new Lr2PgRuntimeException(String.format("LR2PG datadir path (%s) is not a directory.",datadir));
+            logger.error("LIRICAL datadir path ({}) is not a directory.",datadir);
+            throw new LiricalRuntimeException(String.format("LIRICAL datadir path (%s) is not a directory.",datadir));
         } else {
-            logger.trace("LR2PG datadirectory: {}", datadir);
+            logger.trace("LIRICAL datadirectory: {}", datadir);
         }
         File f1 = new File(this.hpoOboFilePath);
         if (!f1.exists() && f1.isFile()) {
             logger.error("Could not find valid hp.obo file at {}",hpoOboFilePath);
-            throw new Lr2PgRuntimeException(String.format("Could not find valid hp.obo file at %s",hpoOboFilePath));
+            throw new LiricalRuntimeException(String.format("Could not find valid hp.obo file at %s",hpoOboFilePath));
         } else {
             logger.trace("hp.obo: {}",hpoOboFilePath);
         }
         File f2 = new File(this.phenotypeAnnotationPath);
         if (!f2.exists() && f2.isFile()) {
             logger.error("Could not find valid phenotype.hpoa file at {}",phenotypeAnnotationPath);
-            throw new Lr2PgRuntimeException(String.format("Could not find valid phenotype.hpoa file at %s",phenotypeAnnotationPath));
+            throw new LiricalRuntimeException(String.format("Could not find valid phenotype.hpoa file at %s",phenotypeAnnotationPath));
         } else {
             logger.trace("phenotype.hpoa: {}",phenotypeAnnotationPath);
         }
@@ -484,14 +512,14 @@ public class Lr2PgFactory {
         File f1 = new File(this.mim2genemedgenPath);
         if (!f1.exists() && f1.isFile()) {
             logger.error("Could not find valid mim2gene_medgen file at {}",mim2genemedgenPath);
-            throw new Lr2PgRuntimeException(String.format("Could not find valid mim2gene_medgen file at %s",mim2genemedgenPath));
+            throw new LiricalRuntimeException(String.format("Could not find valid mim2gene_medgen file at %s",mim2genemedgenPath));
         } else {
             logger.trace("mim2gene_medgen: {}",mim2genemedgenPath);
         }
         File f2 = new File(this.geneInfoPath);
         if (!f2.exists() && f2.isFile()) {
             logger.error("Could not find valid Homo_sapiens_gene_info.gz file at {}",geneInfoPath);
-            throw new Lr2PgRuntimeException(String.format("Could not find valid Homo_sapiens_gene_info.gz file at %s",geneInfoPath));
+            throw new LiricalRuntimeException(String.format("Could not find valid Homo_sapiens_gene_info.gz file at %s",geneInfoPath));
         } else {
             logger.trace("Homo_sapiens_gene_info.gz: {}",geneInfoPath);
         }
@@ -501,17 +529,17 @@ public class Lr2PgFactory {
         File exomiserDir = new File(exomiserPath);
         if (!exomiserDir.exists()) {
             logger.error("Could not find Exomiser data directory at {}",exomiserPath);
-            throw new Lr2PgRuntimeException(String.format("Could not find Exomiser data directory at %s",exomiserPath));
+            throw new LiricalRuntimeException(String.format("Could not find Exomiser data directory at %s",exomiserPath));
         } else if (!exomiserDir.isDirectory()) {
             logger.error("Exomiser data path ({}) is not a directory.",exomiserPath);
-            throw new Lr2PgRuntimeException(String.format("Exomiser data path (%s) is not a directory.",exomiserPath));
+            throw new LiricalRuntimeException(String.format("Exomiser data path (%s) is not a directory.",exomiserPath));
         } else {
             logger.trace("Exomiser data: {}", exomiserPath);
         }
         File mvStoreFile=new File(this.mvStorePath);
         if (!mvStoreFile.exists()) {
             logger.error("Could not find Exomiser database file at {}",this.mvStorePath);
-            throw new Lr2PgRuntimeException(String.format("Could not find Exomiser database file at %s",mvStorePath));
+            throw new LiricalRuntimeException(String.format("Could not find Exomiser database file at %s",mvStorePath));
         }
     }
 
@@ -522,7 +550,7 @@ public class Lr2PgFactory {
         File bgf = new File(this.backgroundFrequencyPath);
         if (! bgf.exists()) {
             logger.error("Could not find background frequency file at {}",this.backgroundFrequencyPath);
-            throw new Lr2PgRuntimeException(String.format("Could not find background frequency file at %s",this.backgroundFrequencyPath));
+            throw new LiricalRuntimeException(String.format("Could not find background frequency file at %s",this.backgroundFrequencyPath));
         } else {
             logger.trace("Background frequency file: {}", this.backgroundFrequencyPath);
         }
@@ -543,11 +571,11 @@ public class Lr2PgFactory {
     public void qcGenomeBuild() {
         if (this.assembly.equals(GenomeAssembly.HG19)) {
             if (! this.exomiserPath.contains("hg19")) {
-                throw new Lr2PgRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg19", this.exomiserPath));
+                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg19", this.exomiserPath));
             }
         } else if (this.assembly.equals(GenomeAssembly.HG38)) {
             if (! this.exomiserPath.contains("hg38")) {
-                throw new Lr2PgRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg38", this.exomiserPath));
+                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg38", this.exomiserPath));
             }
         } else {
             logger.trace("Genome assembly: {}",this.assembly.toString());
@@ -556,23 +584,23 @@ public class Lr2PgFactory {
 
     public void qcVcfFile() {
         if (this.vcfPath==null) {
-            throw new Lr2PgRuntimeException("VCF file was not initialzed");
+            throw new LiricalRuntimeException("VCF file was not initialzed");
         }
         if (! (new File(vcfPath)).exists()) {
-            throw new Lr2PgRuntimeException("We did not find a VCF file at \"" + vcfPath +"\"");
+            throw new LiricalRuntimeException("We did not find a VCF file at \"" + vcfPath +"\"");
         }
         logger.trace("VCF File: {}",this.vcfPath);
     }
 
 
     /**
-     * A convenience Builder class for creating {@link Lr2PgFactory} objects
+     * A convenience Builder class for creating {@link LiricalFactory} objects
      */
     public static class Builder {
         /** path to hp.obo file.*/
         private String hpOboPath=null;
         private String phenotypeAnnotationPath=null;
-        private String lr2pgDataDir=null;
+        private String liricalDataDir =null;
         private String exomiserDataDir=null;
         private String geneInfoPath=null;
         private String mim2genemedgenPath=null;
@@ -580,25 +608,24 @@ public class Lr2PgFactory {
         private String vcfPath=null;
         private String genomeAssembly=null;
         private boolean filterFILTER=true;
+        private boolean strict=false;
         /** The default transcript database is UCSC> */
         private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
         private List<String> observedHpoTerms=ImmutableList.of();
+        private List<String> negatedHpoTerms=ImmutableList.of();
 
         public Builder(){
         }
 
         public Builder yaml(YamlParser yp) {
-            Optional<String> datadirOpt=yp.getDataDir();
-            if (datadirOpt.isPresent()) {
-                this.lr2pgDataDir = getPathWithoutTrailingSeparatorIfPresent(datadirOpt.get());
-            } else {
-                this.lr2pgDataDir=DEFAULT_DATA_DIRECTORY;
-            }
+            this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(yp.getDataDir());
             initDatadirFiles();
             this.exomiserDataDir=yp.getExomiserDataDir();
             this.genomeAssembly=yp.getGenomeAssembly();
             this.observedHpoTerms=new ArrayList<>();
-            Collections.addAll(this.observedHpoTerms, yp.getHpoTermList());
+            this.negatedHpoTerms=new ArrayList<>();
+            this.observedHpoTerms=yp.getHpoTermList();
+            this.negatedHpoTerms=yp.getNegatedHpoTermList();
             switch (yp.transcriptdb().toUpperCase()) {
                 case "ENSEMBL" :
                     this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
@@ -608,7 +635,7 @@ public class Lr2PgFactory {
                 default:
                     this.transcriptdatabase=TranscriptDatabase.UCSC;
             }
-            Optional<String> vcfOpt=yp.vcfPath();
+            Optional<String> vcfOpt=yp.getOptionalVcfPath();
             if (vcfOpt.isPresent()) {
                 this.vcfPath=vcfOpt.get();
             } else {
@@ -616,8 +643,24 @@ public class Lr2PgFactory {
             }
             Optional<String> backgroundOpt = yp.getBackgroundPath();
             backgroundOpt.ifPresent(s -> this.backgroundFrequencyPath = s);
+            return this;
+        }
 
 
+        public Builder yaml(YamlParser yp, boolean phenotypeOnly) {
+            if (!phenotypeOnly) return yaml(yp);
+            this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(yp.getDataDir());
+            initDatadirFiles();
+            this.observedHpoTerms=new ArrayList<>();
+            this.negatedHpoTerms=new ArrayList<>();
+            this.observedHpoTerms=yp.getHpoTermList();
+            this.negatedHpoTerms=yp.getNegatedHpoTermList();
+            return this;
+        }
+
+
+        public Builder strict(boolean b) {
+            this.strict = b;
             return this;
         }
 
@@ -631,9 +674,12 @@ public class Lr2PgFactory {
             switch (tdb.toUpperCase()) {
                 case "ENSEMBL" :
                     this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
+                    break;
                 case "REFSEQ":
                     this.transcriptdatabase=TranscriptDatabase.REFSEQ;
+                    break;
                 case "UCSC":
+                    break;
                 default:
                     this.transcriptdatabase=TranscriptDatabase.UCSC;
             }
@@ -690,34 +736,42 @@ public class Lr2PgFactory {
         }
 
         /** Initializes the paths to the four files that should be in the data directory. This method
-         * should be called only after {@link #lr2pgDataDir} has been set.
+         * should be called only after {@link #liricalDataDir} has been set.
          */
         private void initDatadirFiles() {
-            this.hpOboPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"hp.obo");
-            this.geneInfoPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"Homo_sapiens_gene_info.gz");
-            this.phenotypeAnnotationPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"phenotype.hpoa");
-            this.mim2genemedgenPath=String.format("%s%s%s",this.lr2pgDataDir,File.separator,"mim2gene_medgen");
+            this.hpOboPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"hp.obo");
+            this.geneInfoPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"Homo_sapiens_gene_info.gz");
+            this.phenotypeAnnotationPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"phenotype.hpoa");
+            this.mim2genemedgenPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"mim2gene_medgen");
         }
 
 
 
         public Builder datadir(String datadir) {
-            this.lr2pgDataDir=getPathWithoutTrailingSeparatorIfPresent(datadir);
+            this.liricalDataDir =getPathWithoutTrailingSeparatorIfPresent(datadir);
            initDatadirFiles();
             return this;
         }
 
 
-        public Lr2PgFactory build() {
-            return new Lr2PgFactory(this);
+        public LiricalFactory build() {
+            return new LiricalFactory(this);
         }
 
-        public Lr2PgFactory buildForGenomicDiagnostics() {
+        public LiricalFactory buildForGenomicDiagnostics() {
 
-            Lr2PgFactory factory = new Lr2PgFactory(this);
+            LiricalFactory factory = new LiricalFactory(this);
             factory.qcHumanPhenotypeOntologyFiles();
             factory.qcExternalFilesInDataDir();
             factory.qcExomiserFiles();
+            return factory;
+        }
+
+
+        public LiricalFactory buildForPhenotypeOnlyDiagnostics() {
+            LiricalFactory factory = new LiricalFactory(this);
+            factory.qcHumanPhenotypeOntologyFiles();
+            factory.qcExternalFilesInDataDir();
             return factory;
         }
 

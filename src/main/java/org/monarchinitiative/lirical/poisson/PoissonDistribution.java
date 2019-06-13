@@ -6,7 +6,7 @@ import static org.monarchinitiative.lirical.poisson.SaddlePointExpansion.TWO_PI;
  * This class and the other classes in this package were adapted and mainly copied from the
  * Apache Math package. There were two goals of the adaptation -- to allow double values
  * (apache just allows integers) and to avoid having to import the entire Apache package
- * into LR2PG.
+ * into LIRICAL.
  */
 public class PoissonDistribution {
 

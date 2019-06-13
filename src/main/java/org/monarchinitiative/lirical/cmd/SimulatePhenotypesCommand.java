@@ -3,8 +3,8 @@ package org.monarchinitiative.lirical.cmd;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-import org.monarchinitiative.lirical.configuration.Lr2PgFactory;
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -19,7 +19,7 @@ import java.util.Map;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Simulate phenotype-only cases",hidden = true)
-public class SimulatePhenotypesCommand extends Lr2PgCommand {
+public class SimulatePhenotypesCommand extends LiricalCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulatePhenotypesCommand.class);
     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
     @Parameter(names={"-d","--data"}, description ="directory to download data" )
@@ -34,7 +34,7 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
     private boolean imprecise_phenotype = false;
 
 
-    /** No-op constructor meant to demo the phenotype LR2PG algorithm by similating some case based on
+    /** No-op constructor meant to demo the phenotype LIRICAL algorithm by simulating some case based on
      * randomly chosen diseases and HPO terms.
      */
     public SimulatePhenotypesCommand(){
@@ -42,8 +42,8 @@ public class SimulatePhenotypesCommand extends Lr2PgCommand {
 
 
     @Override
-    public void run() throws Lr2pgException {
-        Lr2PgFactory factory = new Lr2PgFactory.Builder()
+    public void run() throws LiricalException {
+        LiricalFactory factory = new LiricalFactory.Builder()
                 .datadir(this.datadir)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();

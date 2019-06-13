@@ -11,8 +11,8 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.JannovarVariantAnnotator;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
-import org.monarchinitiative.lirical.configuration.Lr2PgFactory;
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.gt2git.GenicIntoleranceCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ import java.util.List;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Calculation of background variant frequency", hidden = true)
-public class Gt2GitCommand extends Lr2PgCommand {
+public class Gt2GitCommand extends LiricalCommand {
     private static final Logger logger = LoggerFactory.getLogger(Gt2GitCommand.class);
 //    @Parameter(names={"-d","--data"}, description ="directory to download data (default: data)" )
 //    private String datadir="data";
@@ -56,7 +56,7 @@ public class Gt2GitCommand extends Lr2PgCommand {
     }
 
     @Override
-    public void run() throws Lr2pgException  {
+    public void run() throws LiricalException {
         if (genomeAssemblyString.toLowerCase().contains("hg19")) {
             this.genomeAssembly=GenomeAssembly.HG19;
             outputFileName="background-hg19.txt";
@@ -70,17 +70,17 @@ public class Gt2GitCommand extends Lr2PgCommand {
             outputFileName="background-hg38.txt";
         }
         if (this.exomiser ==null) {
-            throw new Lr2pgException("Need to specify the Exomiser data directory: -e <path> to run gt2git command!");
+            throw new LiricalException("Need to specify the Exomiser data directory: -e <path> to run gt2git command!");
         }
 
 
 
-        Lr2PgFactory.Builder builder = new Lr2PgFactory.Builder()
+        LiricalFactory.Builder builder = new LiricalFactory.Builder()
                 .exomiser(exomiser)
                 .transcriptdatabase(transcriptdatabase)
                 .genomeAssembly(this.genomeAssemblyString);
 
-        Lr2PgFactory factory = builder.build();
+        LiricalFactory factory = builder.build();
         factory.qcExomiserFiles();
         factory.qcGenomeBuild();
         logger.trace("Will output background frequency file to " + outputFileName);

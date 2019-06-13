@@ -308,12 +308,21 @@ footer {
         <div class="column" style="background-color:#aaa;">
           <h2>Observed Phenotypic Features</h2>
           <p>
-                  <ul>
-                    <#list  observedHPOs as hpo>
-                    <li>${hpo}</li>
-                    </#list>
-                  </ul>
-                </p>
+            <ul>
+            <#list  observedHPOs as hpo>
+                <li>${hpo}</li>
+            </#list>
+            </ul>
+          </p>
+          <p>
+          <#if errorlist?has_content>
+            <p>The following errors were encountered while processing the Phenopacket.</p>
+            <ul>
+            <#list errorlist as error>
+                <li>${error}</li>
+            </#list>
+            </ul>
+          </#if>
         </div>
         <div class="column" style="background-color:#bbb;">
            <p>
@@ -369,7 +378,7 @@ footer {
           </header>
           <p>
            <table class="redTable">
-             <tr><th>Pretest probability</th><th>Composite likelihood ratio</th><th>Posttest probability</th></tr>
+             <tr><th>Pretest probability</th><th>Log<sub>10</sub> composite likelihood ratio</th><th>Posttest probability</th></tr>
              <tr><td>${dd.pretestprob}</td><td>${dd.compositeLR}</td><td>${dd.posttestprob}</td></tr>
            </table>
           </p>
@@ -407,16 +416,23 @@ footer {
                 </td>
                  </tr>
                </#list>
-               <#if dd.hasExplanation() >
-               <tr><td>Genotype score LR:</td><td colspan="5">${dd.explanation}</td></tr>
+               <#if dd.hasGenotypeExplanation() >
+               <tr><td>Genotype score LR:</td><td colspan="5">${dd.genotypeExplanation}</td></tr>
                </#if>
+                <#if dd.hasPhenotypeExplanation() >
+                 <tr><td>Phenotype analysis:</td><td colspan="5">${dd.phenotypeExplanation}</td></tr>
+                </#if>
                </table>
           <#else>
-          <p><table class="minimalistBlack">
-                       <thead>
-                       <tr>
-                       <th>${dd.explanation}</th>
-                       </tr></table></p>
+          <p>
+            <table class="minimalistBlack">
+              <thead>
+                <tr><th>Explanation of phenotype score</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>${dd.phenotypeExplanation}</td></tr>
+              </tbody>
+            </table></p>
           </#if>
           <br/>
           <div style="border:1px solid black; text-align:center;">

@@ -217,10 +217,10 @@ class TestResultTest {
 
     @Test
     void testHasExplanation() {
-        assertFalse(tresultNoGenotype.hasExplanation());
-        tresultNoGenotype.appendToExplanation("nonsense");
-        assertTrue(tresultNoGenotype.hasExplanation());
-        assertEquals("nonsense",tresultNoGenotype.getExplanation());
+        assertFalse(tresultNoGenotype.hasGenotypeExplanation());
+        tresultNoGenotype.setGenotypeExplanation("nonsense");
+        assertTrue(tresultNoGenotype.hasGenotypeExplanation());
+        assertEquals("nonsense",tresultNoGenotype.getGenotypeExplanation());
     }
 
     @Test

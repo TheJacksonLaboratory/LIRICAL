@@ -25,13 +25,15 @@ import java.util.Map;
  * This class coordinates getting the data from the analysis into the FreeMark org.monarchinitiative.lirical.output templates.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class HtmlTemplate extends Lr2pgTemplate {
+public class HtmlTemplate extends LiricalTemplate {
     private static final Logger logger = LoggerFactory.getLogger(HtmlTemplate.class);
 
     /** Threshold posterior probability to show a differential diagnosis in detail. */
     private final double THRESHOLD;
     /** Have the HTML output show at least this many differntials (default: 5). */
     private final int MIN_DIAGNOSES_TO_SHOW;
+
+
 
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
@@ -48,11 +50,15 @@ public class HtmlTemplate extends Lr2pgTemplate {
                         Map<TermId,String> geneid2sym,
                         Map<String,String> metadat,
                         double thres,
-                        int minDifferentials){
+                        int minDifferentials,
+                        String prefix,
+                        String outdir,
+                        List<String> errs){
         super(hcase, ontology, genotypeMap, geneid2sym, metadat);
+        initpath(prefix,outdir);
         this.THRESHOLD=thres;
         this.MIN_DIAGNOSES_TO_SHOW=minDifferentials;
-
+        this.templateData.put("errorlist",errs);
         List<DifferentialDiagnosis> diff = new ArrayList<>();
         List<ImprobableDifferential> improbdiff = new ArrayList<>();
         this.topDiagnosisMap=new HashMap<>();
@@ -73,14 +79,15 @@ public class HtmlTemplate extends Lr2pgTemplate {
                         symbol = g2g.getSymbol();
                         ddx.addG2G(g2g);
                     } else {
-                        ddx.setExplanation("no variants found in " + this.geneId2symbol.get(geneId));
+                        ddx.setGenotypeExplanation("no variants found in " + this.geneId2symbol.get(geneId));
                         symbol="no variants found in " + this.geneId2symbol.get(geneId);// will be used by SVG
                     }
-                    String expl=result.getExplanation();
-                    ddx.setExplanation(expl);
+                    String expl=result.getGenotypeExplanation();
+                    ddx.setGenotypeExplanation(expl);
                 } else {
-                    ddx.setExplanation("No known disease gene");
+                    ddx.setGenotypeExplanation("No known disease gene");
                 }
+                ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
                 // now get SVG
                 Lr2Svg lr2svg = new Lr2Svg(hcase, result.getDiseaseCurie(), result.getDiseaseName(), ontology, symbol);
                 String svg = lr2svg.getSvgString();
@@ -113,6 +120,14 @@ public class HtmlTemplate extends Lr2pgTemplate {
         this.templateData.put("diff",diff);
     }
 
+    private void initpath(String prefix,String outdir){
+        this.outpath=String.format("%s.html",prefix);
+        if (outdir != null) {
+            File dir = mkdirIfNotExist(outdir);
+            this.outpath = Paths.get(dir.getAbsolutePath(),this.outpath).toString();
+        }
+    }
+
 
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
@@ -127,11 +142,15 @@ public class HtmlTemplate extends Lr2pgTemplate {
                         Ontology ontology,
                         Map<String,String> metadat,
                         double thres,
-                        int minDifferentials){
+                        int minDifferentials,
+                        String prefix,
+                        String outdir,
+                        List<String> errs){
         super(hcase, ontology, metadat);
+        initpath(prefix,outdir);
         this.THRESHOLD=thres;
         this.MIN_DIAGNOSES_TO_SHOW=minDifferentials;
-
+        this.templateData.put("errorlist",errs);
         List<DifferentialDiagnosis> diff = new ArrayList<>();
         List<ImprobableDifferential> improbdiff = new ArrayList<>();
         this.topDiagnosisMap=new HashMap<>();
@@ -145,7 +164,7 @@ public class HtmlTemplate extends Lr2pgTemplate {
             if (result.getPosttestProbability() > THRESHOLD || counter < MIN_DIAGNOSES_TO_SHOW) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.trace("Diff diag for " + result.getDiseaseName());
-                ddx.setExplanation("Genetic data not available");
+                ddx.setGenotypeExplanation("Genetic data not available");
                 // now get SVG
                 Lr2Svg lr2svg = new Lr2Svg(hcase, result.getDiseaseCurie(), result.getDiseaseName(), ontology, symbol);
                 String svg = lr2svg.getSvgString();
@@ -155,6 +174,7 @@ public class HtmlTemplate extends Lr2pgTemplate {
                 String counterString=String.format("diagnosis%d",counter);
                 this.topDiagnosisAnchors.add(counterString);
                 ddx.setAnchor(counterString);
+                ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
                 this.topDiagnosisMap.put(counterString,ddx.getDiseaseName());
             } else {
                 TermId geneId = result.getEntrezGeneId();
@@ -171,24 +191,33 @@ public class HtmlTemplate extends Lr2pgTemplate {
         }
         this.templateData.put("improbdiff",improbdiff);
         this.templateData.put("diff",diff);
+
     }
 
 
     @Override
-    public void outputFile(String prefix, String outdir){
-        String outname=String.format("%s.html",prefix );
-        if (outdir != null) {
-            File dir = mkdirIfNotExist(outdir);
-            outname = Paths.get(dir.getAbsolutePath(),outname).toString();
-        }
-        logger.info("Writing HTML file to {}",outname);
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(outname))) {
-            Template template = cfg.getTemplate("lrhtml.ftl");
+    public void outputFile() {
+        logger.info("Writing HTML file to {}",this.outpath);
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(this.outpath))) {
+            Template template = cfg.getTemplate("liricalHTML.ftl");
             template.process(templateData, out);
         } catch (TemplateException | IOException te) {
             te.printStackTrace();
         }
     }
+
+    @Override
+    public void outputFile(String fname) {
+        logger.info("Writing HTML file to {}",fname);
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(fname))) {
+            Template template = cfg.getTemplate("liricalTSV.html");
+            template.process(templateData, out);
+        } catch (TemplateException | IOException te) {
+            te.printStackTrace();
+        }
+    }
+
+
 
 
 

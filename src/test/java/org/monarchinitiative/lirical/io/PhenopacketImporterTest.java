@@ -4,6 +4,9 @@ package org.monarchinitiative.lirical.io;
 
 import com.google.protobuf.util.JsonFormat;
 
+import org.mockito.Mockito;
+import org.monarchinitiative.phenol.io.OntologyLoader;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
@@ -17,6 +20,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -34,6 +38,8 @@ class PhenopacketImporterTest {
     private static Phenopacket ppacket;
 
     private static String phenopacketAbsolutePathOfTempFile;
+
+    private static Ontology ontology;
 
     private static OntologyClass ontologyClass(String id, String label ){
         return OntologyClass.newBuilder().
@@ -56,23 +62,23 @@ class PhenopacketImporterTest {
                 setEvidenceCode(ontologyClass("ECO:0000033","author statement supported by traceable reference")).
                 setReference(ExternalReference.newBuilder().setId("PMID:30509212")).
                 build();
-        Phenotype depressedNasalTip = Phenotype.newBuilder().
+        PhenotypicFeature depressedNasalTip = PhenotypicFeature.newBuilder().
                 setType(ontologyClass("HP:0000437","Depressed nasal tip")).
                 addEvidence(evi).
                 build();
-        Phenotype growthDelay = Phenotype.newBuilder().
+        PhenotypicFeature growthDelay = PhenotypicFeature.newBuilder().
                 setType(ontologyClass("HP:0001510", "Growth delay")).
                 addEvidence(evi).
                 build();
-        Phenotype lowSetEars = Phenotype.newBuilder().
+        PhenotypicFeature lowSetEars = PhenotypicFeature.newBuilder().
                 setType(ontologyClass("HP:0000369", "Low-set ears")).
                 addEvidence(evi).
                 build();
-        Phenotype breechPresentation = Phenotype.newBuilder().
+        PhenotypicFeature breechPresentation = PhenotypicFeature.newBuilder().
                 setType(ontologyClass("HP:0001623", "Breech presentation")).
                 addEvidence(evi).
                 build();
-        Phenotype abnormalThyroidHormone = Phenotype.newBuilder().
+        PhenotypicFeature abnormalThyroidHormone = PhenotypicFeature.newBuilder().
                 setType(ontologyClass("HP:0031508", "Abnormal thyroid hormone level")).
                 setNegated(true).
                 addEvidence(evi).
@@ -96,11 +102,11 @@ class PhenopacketImporterTest {
 
         Phenopacket tmppacket = Phenopacket.newBuilder().
                 setSubject(subject).
-                addPhenotypes(depressedNasalTip).
-                addPhenotypes(growthDelay).
-                addPhenotypes(lowSetEars).
-                addPhenotypes(breechPresentation).
-                addPhenotypes(abnormalThyroidHormone).
+                addPhenotypicFeatures(depressedNasalTip).
+                addPhenotypicFeatures(growthDelay).
+                addPhenotypicFeatures(lowSetEars).
+                addPhenotypicFeatures(breechPresentation).
+                addPhenotypicFeatures(abnormalThyroidHormone).
                 addGenes(kmt2d).
                 addVariants(var).
                 addHtsFiles(vcfFile).
@@ -120,8 +126,9 @@ class PhenopacketImporterTest {
         Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
         JsonFormat.parser().merge(phenopacketJsonString, phenoPacketBuilder);
         ppacket = phenoPacketBuilder.build();
-
-
+        ClassLoader classLoader = PhenopacketImporterTest.class.getClassLoader();
+        String hpoPath = Objects.requireNonNull(classLoader.getResource("hp.small.obo").getFile());
+        ontology = OntologyLoader.loadOntology(new java.io.File(hpoPath));
     }
 
     @Test
@@ -138,19 +145,19 @@ class PhenopacketImporterTest {
     @Test
     void testNumberOfHpoTermsImported() {
         int expected =5;  // we have 4 non-negated (observed) HPO terms and one negated term
-        assertEquals(expected,ppacket.getPhenotypesCount());
+        assertEquals(expected,ppacket.getPhenotypicFeaturesCount());
     }
 
     @Test
     void testNumberOfObservedTerms() {
-        PhenopacketImporter importer = new PhenopacketImporter(ppacket);
+        PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
         int expecte=4;
         assertEquals(expecte,importer.getHpoTerms().size());
     }
 
     @Test
     void testNumberOfNegatedTerms() {
-        PhenopacketImporter importer = new PhenopacketImporter(ppacket);
+        PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
         int expected=1;
         assertEquals(expected,importer.getNegatedHpoTerms().size());
     }
@@ -158,14 +165,14 @@ class PhenopacketImporterTest {
     @Test
     void testIdentifyOfNegatedTerm() {
         TermId tid = TermId.of("HP:0031508");
-        PhenopacketImporter importer = new PhenopacketImporter(ppacket);
+        PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
         assertTrue(importer.getNegatedHpoTerms().contains(tid));
     }
 
     @Test
     void testIdentifyObservedTerm() {
         TermId tid = TermId.of("HP:0031508");
-        PhenopacketImporter importer = new PhenopacketImporter(ppacket);
+        PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
         assertFalse(importer.getHpoTerms().contains(tid)); // should not include negated term
         TermId tid2 = TermId.of("HP:0001510"); // this os one of the observed terms
         assertTrue(importer.getHpoTerms().contains(tid2));
@@ -173,10 +180,13 @@ class PhenopacketImporterTest {
 
     @Test
     void testGetVcfFile() {
-        PhenopacketImporter importer = new PhenopacketImporter(ppacket);
+        PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
         assertTrue(importer.hasVcf());
         assertEquals(fakeVcfPath, importer.getVcfPath());
         assertEquals(fakeGenomeAssembly,importer.getGenomeAssembly());
     }
+
+
+
 
 }

@@ -1,13 +1,13 @@
 Other commands
 ==============
 
-The LR2PG code base contains functionality that is not needed to run LR2PG for prioritizing candidates of the
+The LIRICAL code base contains functionality that is not needed to run LIRICAL for prioritizing candidates of the
 differential diagnosis, but which we used during the development of the algorithm. We expect that the great majority of
 users will not need or want to use these functions, but we have left the code in the
 code base for bioinformaticians and other users who may wish to reproduce or extend our results.
 
 We have hidden the commands in the default command line interface, but detailed help can be obtained
-for any command on this page by passing LR2PG the command name and the ``-h`` or ``--help`` option.
+for any command on this page by passing LIRICAL the command name and the ``-h`` or ``--help`` option.
 
 
 Simulate
@@ -63,7 +63,7 @@ results.
 
 To see the options available for this command, enter ::
 
-    $ java -jar Lr2pg.jar grid -h
+    $ java -jar LIRICAL.jar grid -h
 
 
 

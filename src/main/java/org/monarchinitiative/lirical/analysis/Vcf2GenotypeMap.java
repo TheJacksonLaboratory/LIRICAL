@@ -12,6 +12,7 @@ import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import de.charite.compbio.jannovar.progress.ProgressReporter;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
@@ -76,12 +77,7 @@ public class Vcf2GenotypeMap {
      * Should be hg37 or hg38
      */
     private final GenomeAssembly genomeAssembly;
-    /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
-     * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
-     * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
-     * can be turned off by entering {@code -q false} or {@code --quality} false. */
-    private final boolean filterOnFILTER;
-    /** Number of variants that were not removed because of the quality filter. */
+    /** Number of variants that were not filtered. */
     private int n_good_quality_variants=0;
     /** Number of variants that were removed because of the quality filter. */
     private int n_filtered_variants=0;
@@ -119,7 +115,6 @@ public class Vcf2GenotypeMap {
         this.referenceDictionary = jannovarData.getRefDict();
         this.chromosomeMap = jannovarData.getChromosomes();
         this.genomeAssembly = ga;
-        this.filterOnFILTER=filter;
     }
 
     /** map with some information about the VCF file that will be shown on the hTML org.monarchinitiative.lirical.output. */
@@ -132,7 +127,7 @@ public class Vcf2GenotypeMap {
         final boolean useInterval = false;
         this.gene2genotypeMap = new HashMap<>();
         try (VCFFileReader vcfReader = new VCFFileReader(new File(vcfPath), useInterval)) {
-            //final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(vcfPath));
+            //final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(getOptionalVcfPath));
             VCFHeader vcfHeader = vcfReader.getFileHeader();
             this.samplenames = vcfHeader.getSampleNamesInOrder();
             this.n_samples=samplenames.size();
@@ -144,7 +139,7 @@ public class Vcf2GenotypeMap {
             VariantContextAnnotator variantEffectAnnotator =
                     new VariantContextAnnotator(this.referenceDictionary, this.chromosomeMap,
                             new VariantContextAnnotator.Options());
-            // Note that we do not use Genomiser data in this version of LR2PG
+            // Note that we do not use Genomiser data in this version of LIRICAL
             // Therefore, just pass in an empty list to satisfy the API
             List<RegulatoryFeature> emtpylist = ImmutableList.of();
             ChromosomalRegionIndex<RegulatoryFeature> emptyRegionIndex = ChromosomalRegionIndex.of(emtpylist);
@@ -163,8 +158,12 @@ public class Vcf2GenotypeMap {
                 String contig = vc.getContig();
                 int start = vc.getStart();
                 String ref = vc.getReference().getBaseString();
-                for (Allele allele : altAlleles) {
+                for (int i=0;i<altAlleles.size();i++){
+               // for (Allele allele : altAlleles) {
+                    Allele allele =altAlleles.get(i);
+                    Genotype gt = vc.getGenotype(i);
                     String alt = allele.getBaseString();
+                    Map<String, SampleGenotype> sampleGenotypes = createAlleleSampleGenotypes(vc,i);
                     VariantAnnotation va = jannovarVariantAnnotator.annotate(contig, start, ref, alt);
                     VariantEffect variantEffect = va.getVariantEffect();
                     if (!variantEffect.isOffExome()) {
@@ -181,8 +180,8 @@ public class Vcf2GenotypeMap {
                             continue;
                         }
                         gene2genotypeMap.putIfAbsent(geneId, new Gene2Genotype(geneId, symbol));
-                        Gene2Genotype genotype = gene2genotypeMap.get(geneId);
-                        VariantEvaluation veval = buildVariantEvaluation(vc, va);
+                        Gene2Genotype gene2Genotype = gene2genotypeMap.get(geneId);
+                        VariantEvaluation veval = buildVariantEvaluation(vc, va,sampleGenotypes);
                         AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(veval);
                         AlleleProto.AlleleProperties alleleProp = alleleMap.get(alleleKey);
                         int chrom = veval.getChromosome();
@@ -196,14 +195,14 @@ public class Vcf2GenotypeMap {
                             // this is not an error, the variant could be very rare or otherwise not seen before
                             freq = DEFAULT_FREQUENCY;
                             path = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
-                            genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, path, freq, ClinVarData.ClinSig.NOT_PROVIDED);
+                            gene2Genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, path, freq, ClinVarData.ClinSig.NOT_PROVIDED);
                         } else {
                             FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
                             PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);
                             freq = frequencyData.getMaxFreq();
                             float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
                             ClinVarData cVarData = pathogenicityData.getClinVarData();
-                            genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, pathogenicity, freq, cVarData.getPrimaryInterpretation());
+                            gene2Genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, pathogenicity, freq, cVarData.getPrimaryInterpretation());
                         }
 
                     }
@@ -217,6 +216,62 @@ public class Vcf2GenotypeMap {
         }
 
         return gene2genotypeMap;
+    }
+
+
+    public static Map<String, SampleGenotype> createAlleleSampleGenotypes(VariantContext variantContext, int altAlleleId) {
+        ImmutableMap.Builder<String, SampleGenotype> builder = ImmutableMap.builder();
+        Allele refAllele = variantContext.getReference();
+        Allele altAllele = variantContext.getAlternateAllele(altAlleleId);
+        logger.debug("Making sample genotypes for altAllele: {} {} {} {}", altAlleleId, refAllele, altAllele, variantContext);
+
+        for (Genotype genotype : variantContext.getGenotypes()) {
+            logger.debug("Building sample genotype for {}", genotype);
+            AlleleCall[] alleleCalls = buildAlleleCalls(refAllele, altAllele, genotype.getAlleles());
+            SampleGenotype sampleGenotype = buildSampleGenotype(genotype, alleleCalls);
+            logger.debug("Variant [{} {}] sample {} {} has genotype {}", variantContext.getReference(), altAllele, genotype, genotype.getType(), sampleGenotype);
+            String sampleName = genotype.getSampleName();
+            builder.put(sampleName, sampleGenotype);
+        }
+
+        return builder.build();
+    }
+
+    private static AlleleCall[] buildAlleleCalls(Allele refAllele, Allele altAllele, List<Allele> genotypeAlleles) {
+        AlleleCall[] alleleCalls = new AlleleCall[genotypeAlleles.size()];
+        logger.trace("Checking genotype {} against {} {}", genotypeAlleles, refAllele, altAllele);
+        for (int currentAlleleId = 0; currentAlleleId < genotypeAlleles.size(); currentAlleleId++) {
+            Allele currentAllele = genotypeAlleles.get(currentAlleleId);
+            alleleCalls[currentAlleleId] = determineAlleleCall(altAllele, currentAllele);
+        }
+        logger.trace("Assigned: {}", Arrays.asList(alleleCalls));
+        return alleleCalls;
+    }
+
+    private static AlleleCall determineAlleleCall(Allele altAllele, Allele allele) {
+        if (allele.isNoCall()) {
+            return AlleleCall.NO_CALL;
+        }
+        if (allele.isReference()) {
+            return AlleleCall.REF;
+        }
+        // this is the key bit - we've originally split the VCF into single ref/alt alleles so that:
+        //     CHR POS REF ALT GT
+        // VCF: 1 12345 A T,C 1/2
+        // becomes two variant alleles:
+        // 1 12345 A T  -/1 (altAlleleId = 0)
+        // 1 12345 A C  -/1 (altAlleleId = 1)
+        // so a heterozygous non-ref genotype 1/2 should become two hets - one for each alt allele *where the alt allele matches*
+        //so the -/1 genotype represents a split genotype where '-' means 'present, but in another allele'
+        if (allele.isNonReference() && allele.equals(altAllele)) {
+            return AlleleCall.ALT;
+        }
+        //does this make sense for symbolic?
+        return AlleleCall.OTHER_ALT;
+    }
+
+    private static SampleGenotype buildSampleGenotype(Genotype genotype, AlleleCall[] alleleCalls) {
+        return genotype.isPhased() ? SampleGenotype.phased(alleleCalls) : SampleGenotype.of(alleleCalls);
     }
 
     public int getN_samples() {
@@ -267,7 +322,10 @@ public class Vcf2GenotypeMap {
     }
 
 
-    private VariantEvaluation buildVariantEvaluation(VariantContext variantContext, VariantAnnotation variantAnnotation) {
+
+    private VariantEvaluation buildVariantEvaluation(VariantContext variantContext,
+                                                     VariantAnnotation variantAnnotation,
+                                                     Map<String, SampleGenotype> sampleMap) {
 
         GenomeAssembly genomeAssembly = variantAnnotation.getGenomeAssembly();
         int chr = variantAnnotation.getChromosome();
@@ -280,6 +338,7 @@ public class Vcf2GenotypeMap {
         String geneId = variantAnnotation.getGeneId();
         VariantEffect variantEffect = variantAnnotation.getVariantEffect();
         List<TranscriptAnnotation> annotations = variantAnnotation.getTranscriptAnnotations();
+
 
         return VariantEvaluation.builder(chr, pos, ref, alt)
                 .genomeAssembly(genomeAssembly)
@@ -299,6 +358,7 @@ public class Vcf2GenotypeMap {
                 //This used to be an ENTREZ gene identifier, but could now be anything.
                 .geneId(geneId)
                 .variantEffect(variantEffect)
+                .sampleGenotypes(sampleMap)
                 .annotations(annotations)
                 .build();
     }

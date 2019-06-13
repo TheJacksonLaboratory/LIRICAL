@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.analysis;
 
 
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -54,9 +54,9 @@ public class GridSearch  {
     /**
      * Perform a grid search over varying numbers of terms and random terms
      * both with and without moving the terms to parent terms (imprecision).
-     * @throws Lr2pgException upon I/O problems with the annotations
+     * @throws LiricalException upon I/O problems with the annotations
      */
-    public void gridsearch() throws Lr2pgException {
+    public void gridsearch() throws LiricalException {
 
         int[] termnumber = {1,2,3,4,5,6,7,8,9,10};
         int[] randomtermnumber = {0,1,2,3,4};
@@ -100,7 +100,7 @@ public class GridSearch  {
             writer.write("hist3D(x=seq(0,4),y=seq(1,10),z = mat, scale = FALSE, expand = 3, bty = \"g\", phi = 15, border = \"black\", shade = 0.2,\n"+
                     "ltheta = 50, theta = 40, space = 0.3, ticktype = \"detailed\", d = 50)");
         } catch (IOException e) {
-            throw new Lr2pgException("I/O error: " + e.getMessage());
+            throw new LiricalException("I/O error: " + e.getMessage());
         }
 
     }

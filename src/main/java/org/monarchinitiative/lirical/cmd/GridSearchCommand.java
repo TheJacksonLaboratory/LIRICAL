@@ -3,8 +3,8 @@ package org.monarchinitiative.lirical.cmd;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import org.monarchinitiative.lirical.analysis.GridSearch;
-import org.monarchinitiative.lirical.configuration.Lr2PgFactory;
-import org.monarchinitiative.lirical.exception.Lr2pgException;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -15,11 +15,11 @@ import java.util.Map;
 
 /**
  * Run a grid search over number of terms and number of noise terms for
- * phenotype-only LR2PG. Can be run with or with imprecision.
+ * phenotype-only LIRICAL. Can be run with or with imprecision.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Grid search for simulation of phenotype-only cases",hidden = true)
-public class GridSearchCommand extends Lr2PgCommand {
+public class GridSearchCommand extends LiricalCommand {
     private static final Logger logger = LoggerFactory.getLogger(GridSearchCommand.class);
      /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
     @Parameter(names={"-d","--data"}, description ="directory to download data" )
@@ -34,8 +34,8 @@ public class GridSearchCommand extends Lr2PgCommand {
         super();
     }
 
-    public void run() throws Lr2pgException {
-        Lr2PgFactory factory = new Lr2PgFactory.Builder()
+    public void run() throws LiricalException {
+        LiricalFactory factory = new LiricalFactory.Builder()
                 .datadir(this.datadir)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();

@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
  * {@code Homo_sapiencs_gene_info.gz}, and {@code mim2gene_medgen}.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-@Parameters(commandDescription = "Download files for LR2PG")
-public class DownloadCommand extends Lr2PgCommand {
+@Parameters(commandDescription = "Download files for LIRICAL")
+public class DownloadCommand extends LiricalCommand {
     private static final Logger logger = LoggerFactory.getLogger(DownloadCommand.class);
 
     @Parameter(names={"-d","--data"}, description ="directory to download data (default: data)" )
