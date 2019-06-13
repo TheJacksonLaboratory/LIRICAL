@@ -83,6 +83,7 @@ public class HpoDownloader {
             logger.error(String.format("Error downloading %s from %s" ,filename, webAddress));
             logger.error(e.getMessage());
         }
+        System.out.println("[INFO] Downloaded " + filename);
     }
 
 

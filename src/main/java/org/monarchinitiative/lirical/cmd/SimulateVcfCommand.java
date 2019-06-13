@@ -89,17 +89,17 @@ public class SimulateVcfCommand extends PhenopacketCommand {
     public SimulateVcfCommand() {
     }
 
-    private static Phenopacket readPhenopacket(String phenopacketPath) {
-        Path ppPath = Paths.get(phenopacketPath);
-        Phenopacket.Builder ppBuilder = Phenopacket.newBuilder();
-        try (BufferedReader reader = Files.newBufferedReader(ppPath)) {
-            JsonFormat.parser().merge(reader, ppBuilder);
-        } catch (IOException e) {
-            logger.warn("Unable to read/decode file '{}'", ppPath);
-            throw new LiricalRuntimeException(String.format("Unable to read/decode file '%s'", ppPath));
-        }
-        return ppBuilder.build();
-    }
+//    private static Phenopacket readPhenopacket(String phenopacketPath) {
+//        Path ppPath = Paths.get(phenopacketPath);
+//        Phenopacket.Builder ppBuilder = Phenopacket.newBuilder();
+//        try (BufferedReader reader = Files.newBufferedReader(ppPath)) {
+//            JsonFormat.parser().merge(reader, ppBuilder);
+//        } catch (IOException e) {
+//            logger.warn("Unable to read/decode file '{}'", ppPath);
+//            throw new LiricalRuntimeException(String.format("Unable to read/decode file '%s'", ppPath));
+//        }
+//        return ppBuilder.build();
+//    }
 
     /**
      * This method coordinates
@@ -109,7 +109,7 @@ public class SimulateVcfCommand extends PhenopacketCommand {
         String phenopacketAbsolutePath = phenopacketFile.getAbsolutePath();
         //Phenopacket pp = readPhenopacket(phenopacketAbsolutePath);
         // PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath,this.factory.hpoOntology());
-        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath,this.factory.hpoOntology());
+        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketAbsolutePath,this.factory.hpoOntology());
         VcfSimulator vcfSimulator = new VcfSimulator(Paths.get(this.templateVcfPath));
         HtsFile simulatedVcf;
         try {
@@ -214,7 +214,6 @@ public class SimulateVcfCommand extends PhenopacketCommand {
                 .datadir(this.datadir)
                 .genomeAssembly(genomeAssembly)
                 .exomiser(this.exomiserDataDirectory)
-                // .vcf(getOptionalVcfPath)
                 .transcriptdatabase(this.transcriptDb)
                 .backgroundFrequency(this.backgroundFrequencyFile)
                 .strict(this.strict)
@@ -223,7 +222,7 @@ public class SimulateVcfCommand extends PhenopacketCommand {
         factory.qcExternalFilesInDataDir();
         factory.qcExomiserFiles();
         factory.qcGenomeBuild();
-       // factory.qcVcfFile();
+
 
 
         this.ontology = factory.hpoOntology();
@@ -239,6 +238,7 @@ public class SimulateVcfCommand extends PhenopacketCommand {
                 e.printStackTrace();
             }
         } else if (this.phenopacketDir != null) {
+            outputTSV=true; // needed so that we can capture the results of the simulations across all cases
             logger.info("Running Phenopacket/VCF simulations at {}", phenopacketDir);
             final File folder = new File(phenopacketDir);
             if (! folder.isDirectory()) {
@@ -255,7 +255,7 @@ public class SimulateVcfCommand extends PhenopacketCommand {
                         e.printStackTrace();
                     }
                 }
-               // if (counter>10)break;
+               //if (counter>4)break;
             }
         } else {
             System.err.println("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");
