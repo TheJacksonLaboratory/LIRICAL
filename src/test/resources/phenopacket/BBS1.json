@@ -10,7 +10,7 @@
       "label": "Homo sapiens"
     }
   },
-  "phenotypes": [{
+  "phenotypicFeatures": [{
     "type": {
       "id": "HP:0007843",
       "label": "Attenuation of retinal blood vessels"

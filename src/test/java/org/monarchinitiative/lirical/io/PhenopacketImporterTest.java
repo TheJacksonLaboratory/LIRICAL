@@ -5,6 +5,7 @@ package org.monarchinitiative.lirical.io;
 import com.google.protobuf.util.JsonFormat;
 
 import org.mockito.Mockito;
+import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.Phenopacket;
@@ -19,6 +20,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -37,7 +39,7 @@ class PhenopacketImporterTest {
 
     private static String phenopacketAbsolutePathOfTempFile;
 
-    private static Ontology ontology = Mockito.mock(Ontology.class);
+    private static Ontology ontology;
 
     private static OntologyClass ontologyClass(String id, String label ){
         return OntologyClass.newBuilder().
@@ -124,8 +126,9 @@ class PhenopacketImporterTest {
         Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
         JsonFormat.parser().merge(phenopacketJsonString, phenoPacketBuilder);
         ppacket = phenoPacketBuilder.build();
-
-
+        ClassLoader classLoader = PhenopacketImporterTest.class.getClassLoader();
+        String hpoPath = Objects.requireNonNull(classLoader.getResource("hp.small.obo").getFile());
+        ontology = OntologyLoader.loadOntology(new java.io.File(hpoPath));
     }
 
     @Test
