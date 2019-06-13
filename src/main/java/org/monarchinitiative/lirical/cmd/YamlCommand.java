@@ -41,6 +41,9 @@ public class YamlCommand extends PrioritizeCommand {
 
     private PhenotypeLikelihoodRatio phenoLr;
 
+    /** If true, run with VCF file, otherwise, perform phenotype-only analysis. */
+    private boolean hasVcf;
+
     /**
      * Command pattern to coordinate analysis of a VCF file with LIRICAL.
      */
@@ -61,8 +64,7 @@ public class YamlCommand extends PrioritizeCommand {
 
     private HpoCase runVcf() throws LiricalException {
         Map<TermId, Gene2Genotype> genotypeMap = factory.getGene2GenotypeMap();
-
-        this.metadata.put("vcf_file", factory.vcfPath());
+        this.metadata.put("vcf_file", factory.getVcfPath());
         this.metadata.put("n_filtered_variants", String.valueOf(factory.getN_filtered_variants()));
         this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
@@ -99,6 +101,9 @@ public class YamlCommand extends PrioritizeCommand {
         this.metadata.put("sample_name", factory.getSampleName());
         this.metadata.put("analysis_date", factory.getTodaysDate());
         this.metadata.put("yaml", this.yamlPath);
+        Ontology ontology = factory.hpoOntology();
+        Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
+        PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
         Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
         if (ontologyMetainfo.containsKey("data-version")) {
             this.metadata.put("hpoVersion",ontologyMetainfo.get("data-version"));
