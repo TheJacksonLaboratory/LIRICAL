@@ -25,8 +25,6 @@ import org.monarchinitiative.phenol.io.assoc.HpoAssociationParser;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.phenopackets.schema.v1.Phenopacket;
-import org.phenopackets.schema.v1.core.PhenotypicFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +35,6 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Not a full implementation of the factory pattern but rather a convenience class to create objects of various
@@ -646,8 +643,18 @@ public class LiricalFactory {
             }
             Optional<String> backgroundOpt = yp.getBackgroundPath();
             backgroundOpt.ifPresent(s -> this.backgroundFrequencyPath = s);
+            return this;
+        }
 
 
+        public Builder yaml(YamlParser yp, boolean phenotypeOnly) {
+            if (!phenotypeOnly) return yaml(yp);
+            this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(yp.getDataDir());
+            initDatadirFiles();
+            this.observedHpoTerms=new ArrayList<>();
+            this.negatedHpoTerms=new ArrayList<>();
+            this.observedHpoTerms=yp.getHpoTermList();
+            this.negatedHpoTerms=yp.getNegatedHpoTermList();
             return this;
         }
 
@@ -757,6 +764,14 @@ public class LiricalFactory {
             factory.qcHumanPhenotypeOntologyFiles();
             factory.qcExternalFilesInDataDir();
             factory.qcExomiserFiles();
+            return factory;
+        }
+
+
+        public LiricalFactory buildForPhenotypeOnlyDiagnostics() {
+            LiricalFactory factory = new LiricalFactory(this);
+            factory.qcHumanPhenotypeOntologyFiles();
+            factory.qcExternalFilesInDataDir();
             return factory;
         }
 

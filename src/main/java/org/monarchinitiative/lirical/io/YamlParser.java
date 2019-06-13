@@ -25,7 +25,7 @@ import java.util.Optional;
 public class YamlParser {
     private static final Logger logger = LoggerFactory.getLogger(YamlParser.class);
     private YamlConfig yconfig;
-    /** THe path to which LIRICIAL will download data such as hp.obo by default. */
+    /** THe path to which LIRICAL will download data such as hp.obo by default. */
     private final String DEFAULT_DATA_PATH="data";
 
 
@@ -146,6 +146,22 @@ public class YamlParser {
         }  else {
             return DEFAULT_DATA_PATH;
         }
+    }
+
+    /**
+     * The Yaml file should have an entry {@code mode: phenotype} in the analysis
+     * section if the user wants to run a phenotype only analysis. If there is
+     * {@code mode: vcf} or if there is no entry, we will run a VCF analysis
+     * @return true if phenotype only analysis should be performed.
+     */
+    public boolean phenotypeOnlyMode() {
+        if (yconfig.getAnalysis().containsKey("mode")) {
+            String mode = yconfig.getAnalysis().get("mode");
+            if (mode.equalsIgnoreCase("phenotype")) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

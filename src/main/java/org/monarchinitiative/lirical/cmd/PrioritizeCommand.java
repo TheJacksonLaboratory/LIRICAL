@@ -7,7 +7,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import java.util.Map;
 
 /**
- * This is a common superclass for {@link YamlVcfCommand} and {@link PhenopacketCommand}.
+ * This is a common superclass for {@link YamlCommand} and {@link PhenopacketCommand}.
  * Its purpose is to provide command line parameters and variables that are used
  * in the same way by both of the subclasses.
  */

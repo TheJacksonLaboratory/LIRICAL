@@ -36,7 +36,7 @@ public class Lirical {
         SimulatePhenotypesCommand simulate = new SimulatePhenotypesCommand();
         GridSearchCommand grid = new GridSearchCommand();
         Gt2GitCommand gt2git = new Gt2GitCommand();
-        YamlVcfCommand yamlVcf = new YamlVcfCommand();
+        YamlCommand yaml = new YamlCommand();
         PhenopacketCommand phenopacket = new PhenopacketCommand();
         SimulateVcfCommand simvcf = new SimulateVcfCommand();
         JCommander jc = JCommander.newBuilder()
@@ -45,7 +45,7 @@ public class Lirical {
                 .addCommand("simulate", simulate)
                 .addCommand("grid", grid)
                 .addCommand("gt2git",gt2git)
-                .addCommand("yaml",yamlVcf)
+                .addCommand("yaml",yaml)
                 .addCommand("simulate-vcf",simvcf)
                 .addCommand("phenopacket",phenopacket)
                 .build();
@@ -128,9 +128,9 @@ public class Lirical {
            case "gt2git":
                liricalCommand = gt2git;
                break;
-           case "vcf":
-               liricalCommand =yamlVcf;
-               break;
+            case "yaml":
+                liricalCommand = yaml;
+                break;
            case "simulate-vcf":
                liricalCommand=simvcf;
                break;
