@@ -27,36 +27,45 @@ import java.util.Optional;
  * analysis is driven by a YAML file.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-@Parameters(commandDescription = "Phenotype-driven analysis of VCF (Exome/Genome) data")
-public class YamlVcfCommand extends PrioritizeCommand {
-    private static final Logger logger = LoggerFactory.getLogger(YamlVcfCommand.class);
+@Parameters(commandDescription = "Run LIRICAL from YAML file")
+public class YamlCommand extends PrioritizeCommand {
+    private static final Logger logger = LoggerFactory.getLogger(YamlCommand.class);
     @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
     private String yamlPath;
+    /** Reference to the HPO. */
+    private Ontology ontology;
+
+    private  Map<TermId,HpoDisease> diseaseMap;
+
+    private boolean phenotypeOnly;
+
+    private PhenotypeLikelihoodRatio phenoLr;
 
     /**
      * Command pattern to coordinate analysis of a VCF file with LIRICAL.
      */
-    public YamlVcfCommand() {
+    public YamlCommand() {
     }
 
 
 
-    @Override
-    public void run() throws LiricalException {
-        this.factory = deYamylate(this.yamlPath);
-        factory.qcYaml();
-        this.metadata=new HashMap<>();
+    private HpoCase runPhenotypeOnly() throws LiricalException {
+        CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
+                .negated(factory.negatedHpoTerms())
+                .ontology(ontology)
+                .diseaseMap(diseaseMap)
+                .phenotypeLr(phenoLr);
+        CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
+        return evaluator.evaluate();
+    }
+
+    private HpoCase runVcf() throws LiricalException {
         Map<TermId, Gene2Genotype> genotypeMap = factory.getGene2GenotypeMap();
-        this.metadata.put("sample_name", factory.getSampleName());
+
         this.metadata.put("vcf_file", factory.vcfPath());
         this.metadata.put("n_filtered_variants", String.valueOf(factory.getN_filtered_variants()));
         this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
-        this.metadata.put("analysis_date", factory.getTodaysDate());
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
-        Ontology ontology = factory.hpoOntology();
-        Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
-
-        PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
         Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
         this.geneId2symbol = factory.geneId2symbolMap();
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
@@ -69,20 +78,38 @@ public class YamlVcfCommand extends PrioritizeCommand {
                 .keepCandidates(keepIfNoCandidateVariant)
                 .gene2idMap(geneId2symbol)
                 .genotypeLr(genoLr);
-
+        this.metadata.put("transcriptDatabase", factory.transcriptdb());
+        int n_genes_with_var=factory.getGene2GenotypeMap().size();
+        this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
+        this.metadata.put("exomiserPath",factory.getExomiserPath());
         CaseEvaluator evaluator = caseBuilder.build();
-        HpoCase hcase = evaluator.evaluate();
+        return evaluator.evaluate();
+    }
 
 
+
+
+    @Override
+    public void run() throws LiricalException {
+        this.factory = deYamylate(this.yamlPath);
+        this.ontology =  factory.hpoOntology();
+        this.diseaseMap = factory.diseaseMap(ontology);
+        this.phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
+        this.metadata=new HashMap<>();
+        this.metadata.put("sample_name", factory.getSampleName());
+        this.metadata.put("analysis_date", factory.getTodaysDate());
+        this.metadata.put("yaml", this.yamlPath);
         Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
         if (ontologyMetainfo.containsKey("data-version")) {
             this.metadata.put("hpoVersion",ontologyMetainfo.get("data-version"));
         }
-        this.metadata.put("transcriptDatabase", factory.transcriptdb());
-        this.metadata.put("yaml", this.yamlPath);
-        int n_genes_with_var=factory.getGene2GenotypeMap().size();
-        this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
-        this.metadata.put("exomiserPath",factory.getExomiserPath());
+        HpoCase hcase;
+        if (this.phenotypeOnly) {
+            hcase =runPhenotypeOnly();
+        } else {
+            hcase=runVcf();
+        }
+
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
                 .prefix(this.outfilePrefix)
                 .outdirectory(this.outdir)
@@ -102,17 +129,27 @@ public class YamlVcfCommand extends PrioritizeCommand {
      */
     private LiricalFactory deYamylate(String yamlPath) {
         YamlParser yparser = new YamlParser(yamlPath);
-        LiricalFactory.Builder builder = new LiricalFactory.Builder().
-                yaml(yparser);
-        this.outfilePrefix = yparser.getPrefix();
-        if (yparser.getOutDirectory().isPresent()) {
-            this.outdir=yparser.getOutDirectory().get();
-        }
         Optional<Integer> mindiff = yparser.mindiff();
         mindiff.ifPresent(i -> this.minDifferentialsToShow = i);
         Optional<Double> threshold = yparser.threshold();
         threshold.ifPresent(d -> this.LR_THRESHOLD = d);
+        this.outfilePrefix = yparser.getPrefix();
 
-        return builder.buildForGenomicDiagnostics();
+        if (yparser.getOutDirectory().isPresent()) {
+            this.outdir=yparser.getOutDirectory().get();
+        }
+
+        if (yparser.phenotypeOnlyMode()) {
+            phenotypeOnly=true;
+            LiricalFactory.Builder builder = new LiricalFactory.Builder().
+                    yaml(yparser,phenotypeOnly);
+            return builder.buildForPhenotypeOnlyDiagnostics();
+        } else {
+            phenotypeOnly=false;
+            LiricalFactory.Builder builder = new LiricalFactory.Builder().
+                    yaml(yparser);
+            return builder.buildForGenomicDiagnostics();
+        }
+
     }
 }
