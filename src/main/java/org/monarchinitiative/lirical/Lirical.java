@@ -38,7 +38,7 @@ public class Lirical {
         Gt2GitCommand gt2git = new Gt2GitCommand();
         YamlCommand yaml = new YamlCommand();
         PhenopacketCommand phenopacket = new PhenopacketCommand();
-        SimulateVcfCommand simvcf = new SimulateVcfCommand();
+        SimulatePhenopacketCommand simvcf = new SimulatePhenopacketCommand();
         JCommander jc = JCommander.newBuilder()
                 .addObject(lirical)
                 .addCommand("download", download)
