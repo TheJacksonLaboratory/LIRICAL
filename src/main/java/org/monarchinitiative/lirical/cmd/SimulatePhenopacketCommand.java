@@ -27,6 +27,7 @@ import org.phenopackets.schema.v1.core.HtsFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.text.html.Option;
 import java.io.*;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -77,8 +78,11 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
     private Multimap<TermId, TermId> disease2geneMultimap;
     private Map<TermId, String> geneId2symbol;
     private Map<TermId, Gene2Genotype> genotypemap;
-
+    /** Ranks of diseases */
     private Map<String,Integer> disease2rankMap;
+    /** Diseases for which we could not get a rank, they were filtered out e.g., because of the strict option. */
+    private List<String> unrankedDiseases;
+    /** The number of counts a certain rank was assigned */
     private Map<Integer,Integer> rank2countMap;
 
     private LiricalFactory factory;
@@ -151,11 +155,19 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
 
-        int rank = hcase.getRank(correctDiagnosisTermId);
-        disease2rankMap.put(diagnosis.getTerm().getLabel(),rank);
-        rank2countMap.putIfAbsent(rank,0); // create key if needed.
-        rank2countMap.merge(rank,1,Integer::sum); // increment count
-        System.out.println(diagnosis.getTerm().getLabel() + ": " + rank);
+        Optional<Integer> optRank = hcase.getRank(correctDiagnosisTermId);
+        if (optRank.isPresent()) {
+            int rank = optRank.get();
+            disease2rankMap.put(diagnosis.getTerm().getLabel(),rank);
+            rank2countMap.putIfAbsent(rank,0); // create key if needed.
+            rank2countMap.merge(rank,1,Integer::sum); // increment count
+            System.out.println(diagnosis.getTerm().getLabel() + ": " + rank);
+        } else {
+            unrankedDiseases.add(diagnosis.getTerm().getLabel());
+        }
+
+
+
 
         /*
         String outdir = ".";
@@ -196,7 +208,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
 
     private void runOnePhenotypeOnlyAnalysis(File phenopacketFile) throws IOException, ParseException {
         String phenopacketAbsolutePath = phenopacketFile.getAbsolutePath();
-        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketAbsolutePath,this.factory.hpoOntology());
+        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketAbsolutePath, this.factory.hpoOntology());
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
         this.metadata.put("analysis_date", dateFormat.format(date));
@@ -220,13 +232,18 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
 
         CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
         HpoCase hcase = evaluator.evaluate();
-        TermId diseaseTermId = TermId.of(simulatedDisease);
-        int rank = hcase.getRank(diseaseTermId);
-        disease2rankMap.put(diagnosis.getTerm().getLabel(),rank);
-        rank2countMap.putIfAbsent(rank,0); // create key if needed.
-        rank2countMap.merge(rank,1,Integer::sum); // increment count
-        System.out.println(diagnosis.getTerm().getLabel() + ": " + rank);
+        TermId correctDiagnosisTermId = TermId.of(simulatedDisease);
 
+        Optional<Integer> optRank = hcase.getRank(correctDiagnosisTermId);
+        if (optRank.isPresent()) {
+            int rank = optRank.get();
+            disease2rankMap.put(diagnosis.getTerm().getLabel(), rank);
+            rank2countMap.putIfAbsent(rank, 0); // create key if needed.
+            rank2countMap.merge(rank, 1, Integer::sum); // increment count
+            System.out.println(diagnosis.getTerm().getLabel() + ": " + rank);
+        } else {
+            unrankedDiseases.add(diagnosis.getTerm().getLabel());
+        }
     }
 
 
@@ -376,7 +393,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         try {
             BufferedWriter br = new BufferedWriter(new FileWriter("rankedSimulations.txt"));
             for (String diseaseLabel : disease2rankMap.keySet()) {
-                br.write(diseaseLabel + ": " + disease2rankMap.get(diseaseLabel));
+                br.write(diseaseLabel + ": " + disease2rankMap.get(diseaseLabel) +"\n");
             }
 
             for (Map.Entry<Integer, Integer> e : rank2countMap.entrySet()) {

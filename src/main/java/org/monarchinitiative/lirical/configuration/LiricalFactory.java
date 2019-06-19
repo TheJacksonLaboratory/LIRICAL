@@ -428,10 +428,8 @@ public class LiricalFactory {
         if (this.phenotypeAnnotationPath==null) {
             throw new LiricalRuntimeException("Path to phenotype.hpoa file not found");
         }
-        // phenol 1.3.2
         List<String> desiredDatabasePrefixes=ImmutableList.of("OMIM","DECIPHER");
         HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(phenotypeAnnotationPath,ontology,desiredDatabasePrefixes);
-       // HpoDiseaseAnnotationParser annotationParser = new HpoDiseaseAnnotationParser(this.phenotypeAnnotationPath, this.ontology);
         try {
             Map<TermId, HpoDisease> diseaseMap = annotationParser.parse();
             if (!annotationParser.validParse()) {
