@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.cmd;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.Multimap;
 import org.json.simple.parser.ParseException;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
@@ -14,10 +15,7 @@ import org.monarchinitiative.lirical.io.PhenopacketImporter;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.lirical.output.HtmlTemplate;
 import org.monarchinitiative.lirical.output.LiricalRanking;
-import org.monarchinitiative.lirical.output.LiricalTemplate;
-import org.monarchinitiative.lirical.output.TsvTemplate;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -27,12 +25,15 @@ import org.phenopackets.schema.v1.core.HtsFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.text.html.Option;
 import java.io.*;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Map.Entry.comparingByKey;
+import static java.util.Map.Entry.comparingByValue;
 
 
 /**
@@ -63,12 +64,13 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
     private String simulationOutFile="vcf_simulation_results.tsv";
     @Parameter(names = {"--phenotype-only"}, description = "run simulations with phenotypes only?")
     private boolean phenotypeOnly=false;
+    @Parameter(names={"--output-vcf"}, description = "output a VCF file or files with results of the simulation")
+    private boolean outputVCF = false;
+    @Parameter(names={"--output-tsv"}, description = "output a TSV file or files with results of the simulation")
+    private boolean outputTSV = false;
+
 
     private BufferedWriter simulationOutBuffer;
-    /**
-     * If true, the phenopacket contains the path of a VCF file.
-     */
-    private boolean hasVcf;
     private String simulatedDisease = null;
     private List<LiricalRanking> rankingsList;
     private GenotypeLikelihoodRatio genoLr;
@@ -114,7 +116,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         this.metadata.put("analysis_date", dateFormat.format(date));
         this.metadata.put("phenopacket_file", phenopacketAbsolutePath);
         metadata.put("sample_name", importer.getSamplename());
-        hasVcf = importer.hasVcf();
         if (simulatedVcf == null) {
             System.err.println("[ERROR] Could not simulate VCF for "+phenopacketFile.getName()); // should never happen
             return; // skip to next Phenopacket
@@ -214,7 +215,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         this.metadata.put("analysis_date", dateFormat.format(date));
         this.metadata.put("phenopacket_file", phenopacketAbsolutePath);
         metadata.put("sample_name", importer.getSamplename());
-        hasVcf = importer.hasVcf();
         Disease diagnosis = importer.getDiagnosis();
         simulatedDisease = diagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
         this.metadata.put("phenopacket.diagnosisId", simulatedDisease);
@@ -348,9 +348,52 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
             System.err.println("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");
             throw new LiricalRuntimeException("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");
         }
+    }
 
+
+
+    private void outputRankings() {
+        // some diseases could not be ranked.
+        // we assign them to the rank right after the ranks of the ranked diseases
+        int rankOfUnrankedDiseases = 1 + this.rank2countMap.size();
+        int N = unrankedDiseases.size();
+        this.rank2countMap.put(N,rankOfUnrankedDiseases);
+        // sort the map by values first
+        Map<Integer, Integer> sorted = this.rank2countMap
+                .entrySet()
+                .stream()
+                //.sorted(comparingByValue())
+                .sorted(comparingByKey())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+                                LinkedHashMap::new));
+
+        for (Map.Entry<Integer, Integer> e : sorted.entrySet()) {
+            System.out.println(e.getKey() + ": " + e.getValue());
+        }
+        // output two files.
+        // 1. rank2count.txt
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("rank2count.txt"))){
+            for (Map.Entry<Integer, Integer> e : sorted.entrySet()) {
+                writer.write(e.getKey() + ": " + e.getValue() +"\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // 2. simulation-results.txt (show one line with the rank of each simulated disease).
+        try {
+            BufferedWriter br = new BufferedWriter(new FileWriter("rankedSimulations.txt"));
+            for (String diseaseLabel : disease2rankMap.keySet()) {
+                br.write(diseaseLabel + ": " + disease2rankMap.get(diseaseLabel) +"\n");
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
+
+
 
 
 
@@ -365,6 +408,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         this.metadata = new HashMap<>();
         disease2rankMap = new HashMap<>();
         rank2countMap=new HashMap<>();
+        unrankedDiseases=new ArrayList<>();
         try {
             simulationOutBuffer = new BufferedWriter(new FileWriter(this.simulationOutFile));
             simulationOutBuffer.write(LiricalRanking.header()+"\n");
@@ -390,19 +434,12 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        try {
-            BufferedWriter br = new BufferedWriter(new FileWriter("rankedSimulations.txt"));
-            for (String diseaseLabel : disease2rankMap.keySet()) {
-                br.write(diseaseLabel + ": " + disease2rankMap.get(diseaseLabel) +"\n");
-            }
+        outputRankings();
 
-            for (Map.Entry<Integer, Integer> e : rank2countMap.entrySet()) {
-                System.out.println(e.getKey() + ": " + e.getValue());
-            }
-            br.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+
+
+
     }
 
 
@@ -411,7 +448,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
      * @param path Path to the TSV file created by LIRICAL
      * @param phenopacketBaseName Name of the phenopacket we are currently analyzing.
      * @return rank of the correct disease.
-     */
+
     private int extractRank(String path, String phenopacketBaseName) {
         int rank = -1;
         int n_over_50=0; // number of differentials with post prob over 50%
@@ -482,6 +519,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         }
         return rank;
     }
-
+     */
 
 }
