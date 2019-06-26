@@ -429,18 +429,7 @@ public class LiricalFactory {
             throw new LiricalRuntimeException("Path to phenotype.hpoa file not found");
         }
         List<String> desiredDatabasePrefixes=ImmutableList.of("OMIM","DECIPHER");
-        HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(phenotypeAnnotationPath,ontology,desiredDatabasePrefixes);
-        try {
-            Map<TermId, HpoDisease> diseaseMap = annotationParser.parse();
-            if (!annotationParser.validParse()) {
-                int n = annotationParser.getErrors().size();
-                logger.warn("Parse problems encountered with the annotation file at {}. Got {} errors",
-                        this.phenotypeAnnotationPath,n);
-            }
-            return diseaseMap;
-        } catch (PhenolException pe) {
-            throw new LiricalRuntimeException("Could not parse annotation file: " + pe.getMessage());
-        }
+        return HpoDiseaseAnnotationParser.loadDiseaseMap(phenotypeAnnotationPath,ontology,desiredDatabasePrefixes);
     }
 
     public  Map<TermId, Gene2Genotype> getGene2GenotypeMap() {
