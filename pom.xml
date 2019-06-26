@@ -24,7 +24,7 @@
         <junit.version>5.4.1</junit.version>
         <phenol.version>1.4.0</phenol.version>
         <exomiser.version>12.0.0</exomiser.version>
-        <phenopacket.version>1.0.0-RC1</phenopacket.version>
+        <phenopacket.version>1.0.0-RC2</phenopacket.version>
         <slf4j.version>1.7.26</slf4j.version>
     </properties>
 
@@ -225,7 +225,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.7.0</version>
+            <version>3.8.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.tukaani/xz
