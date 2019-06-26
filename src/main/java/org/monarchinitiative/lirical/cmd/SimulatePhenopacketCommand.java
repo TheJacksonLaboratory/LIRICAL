@@ -157,15 +157,12 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         HpoCase hcase = evaluator.evaluate();
 
         Optional<Integer> optRank = hcase.getRank(correctDiagnosisTermId);
-        if (optRank.isPresent()) {
-            int rank = optRank.get();
-            disease2rankMap.put(diagnosis.getTerm().getLabel(),rank);
-            rank2countMap.putIfAbsent(rank,0); // create key if needed.
-            rank2countMap.merge(rank,1,Integer::sum); // increment count
-            System.out.println(diagnosis.getTerm().getLabel() + ": " + rank);
-        } else {
-            unrankedDiseases.add(diagnosis.getTerm().getLabel());
-        }
+        int rank = optRank.isPresent() ? optRank.get() : hcase.getRankOfUnrankedDisease();
+        disease2rankMap.put(diagnosis.getTerm().getLabel(),rank);
+        rank2countMap.putIfAbsent(rank,0); // create key if needed.
+        rank2countMap.merge(rank,1,Integer::sum); // increment count
+        System.out.println(diagnosis.getTerm().getLabel() + ": " + rank);
+
 
 
 
@@ -353,11 +350,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
 
 
     private void outputRankings() {
-        // some diseases could not be ranked.
-        // we assign them to the rank right after the ranks of the ranked diseases
-        int rankOfUnrankedDiseases = 1 + this.rank2countMap.size();
-        int N = unrankedDiseases.size();
-        this.rank2countMap.put(N,rankOfUnrankedDiseases);
         // sort the map by values first
         Map<Integer, Integer> sorted = this.rank2countMap
                 .entrySet()
@@ -366,9 +358,9 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
                 .sorted(comparingByKey())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
                                 LinkedHashMap::new));
-
+        int total = this.rank2countMap.values().stream().mapToInt(i->i).sum();
         for (Map.Entry<Integer, Integer> e : sorted.entrySet()) {
-            System.out.println(e.getKey() + ": " + e.getValue());
+            System.out.println(String.format("%s: %d (%.1f%%)", e.getKey(), e.getValue(),(100.0*e.getValue()/total)));
         }
         // output two files.
         // 1. rank2count.txt
@@ -390,7 +382,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
 
@@ -435,90 +426,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
             e.printStackTrace();
         }
         outputRankings();
-
-
-
-
-
     }
-
-
-    /**
-     * Extract data from the output TSV file including the rank of the correct disease
-     * @param path Path to the TSV file created by LIRICAL
-     * @param phenopacketBaseName Name of the phenopacket we are currently analyzing.
-     * @return rank of the correct disease.
-
-    private int extractRank(String path, String phenopacketBaseName) {
-        int rank = -1;
-        int n_over_50=0; // number of differentials with post prob over 50%
-        int n_total=0; // total number of differentials
-        LiricalRanking lr=null;
-        boolean found=false;
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(path));
-            String line;
-            while ((line = br.readLine()) != null) {
-                if (line.startsWith("!")) continue;
-                if (line.startsWith("rank")) continue;
-                String[] fields = line.split("\t");
-              // see the TSV template for fields
-                try {
-                    rank = Integer.parseInt(fields[0]);
-                    String diseaseName = fields[1];
-                    String diseaseCurie = fields[2];
-                    String pretest = fields[3];
-                    String posttest = fields[4];
-                    String compositeLR = fields[5];
-                    String entrezID = fields[6];
-                    // if no variant was found for a gene, then the eight field will be empty and we will only have 7 fields
-                    // in this case, write simply "n/a"
-                    String var = fields.length==8?fields[7]:"n/a";
-                    if (diseaseCurie.equals(this.simulatedDisease)) {
-                        logger.info("Got rank of {} for simulated disease {}", rank, simulatedDisease);
-                        System.out.println(String.format("Got rank of %d for simulated disease %s", rank, simulatedDisease));
-                        lr = new LiricalRanking(phenopacketBaseName,rank, diseaseName,diseaseCurie,pretest,posttest,compositeLR,entrezID,var);
-                        rankingsList.add(lr);
-                        found=true;
-                    }
-                    double posttestprob = Double.parseDouble(posttest.replace("%",""));// remove the percent sign
-                    if (posttestprob>50.0) n_over_50++;
-                    n_total++;
-                } catch (Exception e) {
-                    System.err.println("Exception with " + path);
-                    System.err.println("number of fields " + fields.length);
-                    System.err.println(line);
-                    e.printStackTrace();
-                    System.exit(1);
-                }
-            }
-            br.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (!found){
-            System.out.println("Could not find disease for " + phenopacketBaseName + " " + this.simulatedDisease);
-        }
-        String over50 = String.format("%d/%d",n_over_50,n_total);
-        if (lr!=null) {
-            try {
-                lr.addNumberOfDiseasesOver50(over50);
-                this.simulationOutBuffer.write(lr.toString() + "\n");
-            } catch (IOException e) {
-                e.printStackTrace();
-                logger.error("[Exception encountered writing LR to file for {}",this.simulatedDisease);
-            }
-        }
-        // We should never get here. If we do, then probably the OMIM id used in the Phenopacket
-        // is incorrect or outdated.
-        // This command is not intended for general consumption. Therefore, it is better
-        // to terminate the program and correct the error rather than just continuing.
-        if (rank==-1) {
-            System.err.println("[ERROR] Could not find rank of simulated disease \"" +simulatedDisease + "\"");
-            System.exit(1);
-        }
-        return rank;
-    }
-     */
 
 }

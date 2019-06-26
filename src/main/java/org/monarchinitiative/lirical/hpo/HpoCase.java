@@ -86,6 +86,14 @@ public final class HpoCase {
         return Optional.of(result.getRank());
     }
 
+    /**
+     * If a disease is unranked, then it is tied for the rank after the last rank of the ranked diseases
+     * @return (tied) rank of an unranked disease
+     */
+    public int getRankOfUnrankedDisease() {
+        return 1 + this.disease2resultMap.size();
+    }
+
 
 //    private String niceFormat(double d) {
 //        DecimalFormat df = new DecimalFormat("0.000E0");
