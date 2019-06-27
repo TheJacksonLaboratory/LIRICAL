@@ -124,6 +124,8 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
             System.err.println("[ERROR] Could not simulate VCF for "+phenopacketFile.getName());
             return;
         }
+        TermId geneId = TermId.of(importer.getGene());
+        System.out.print("GENE = " + geneId.getValue());
 
 
         Disease diagnosis = importer.getDiagnosis();

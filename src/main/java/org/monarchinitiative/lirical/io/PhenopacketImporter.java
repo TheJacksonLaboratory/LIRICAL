@@ -96,6 +96,12 @@ public class PhenopacketImporter {
         return builder.build();
     }
 
+    public String getGene() {
+        if (phenoPacket.getGenesCount()==0) return null;
+        Gene g = phenoPacket.getGenes(0);
+        return g.getId();
+    }
+
 
 
 
