@@ -3,37 +3,21 @@ package org.monarchinitiative.lirical.cmd;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.collect.Comparators;
-import com.google.common.collect.Multimap;
 import org.json.simple.parser.ParseException;
-import org.monarchinitiative.lirical.analysis.Gene2Genotype;
-import org.monarchinitiative.lirical.analysis.VcfSimulator;
+import org.monarchinitiative.lirical.analysis.PhenoGenoCaseSimulator;
+import org.monarchinitiative.lirical.analysis.PhenoOnlyCaseSimulator;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
-import org.monarchinitiative.lirical.hpo.HpoCase;
-import org.monarchinitiative.lirical.io.PhenopacketImporter;
-import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
-import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
-import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.output.LiricalRanking;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
-import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.phenopackets.schema.v1.core.Disease;
-import org.phenopackets.schema.v1.core.HtsFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.file.Paths;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Map.Entry.comparingByKey;
-import static java.util.Map.Entry.comparingByValue;
 
 
 /**
@@ -68,24 +52,26 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
     private boolean outputVCF = false;
     @Parameter(names={"--output-tsv"}, description = "output a TSV file or files with results of the simulation")
     private boolean outputTSV = false;
+    @Parameter(names={"--genewise-simulation"},description = "rank the output by gene rather than disease (only valid for VCF simulation")
+    private boolean genewiseSimulation = false;
 
 
     private BufferedWriter simulationOutBuffer;
     private String simulatedDisease = null;
+
+    /** If true, output HTML or TSV */
+    private boolean outputFiles = false;
+
+
     private List<LiricalRanking> rankingsList;
-    private GenotypeLikelihoodRatio genoLr;
-    private PhenotypeLikelihoodRatio phenoLr;
-    private Ontology ontology;
-    private Map<TermId, HpoDisease> diseaseMap;
-    private Multimap<TermId, TermId> disease2geneMultimap;
-    private Map<TermId, String> geneId2symbol;
-    private Map<TermId, Gene2Genotype> genotypemap;
+
     /** Ranks of diseases */
     private Map<String,Integer> disease2rankMap;
-    /** Diseases for which we could not get a rank, they were filtered out e.g., because of the strict option. */
-    private List<String> unrankedDiseases;
+
     /** The number of counts a certain rank was assigned */
     private Map<Integer,Integer> rank2countMap;
+
+    private Map<Integer,Integer> geneRank2CountMap;
 
     private LiricalFactory factory;
 
@@ -101,148 +87,44 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
      * @param phenopacketFile File with the Phenopacket we are currently analyzing
      */
     private void runOneVcfAnalysis(File phenopacketFile) throws IOException, ParseException {
-        String phenopacketAbsolutePath = phenopacketFile.getAbsolutePath();
-        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketAbsolutePath,this.factory.hpoOntology());
-        VcfSimulator vcfSimulator = new VcfSimulator(Paths.get(this.templateVcfPath));
-        HtsFile simulatedVcf;
-        try {
-            simulatedVcf = vcfSimulator.simulateVcf(importer.getSamplename(), importer.getVariantList(), genomeAssembly);
-            //pp = pp.toBuilder().clearHtsFiles().addHtsFiles(htsFile).build();
-        } catch (IOException e) {
-            throw new LiricalRuntimeException("Could not simulate VCF for phenopacket");
-        }
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        Date date = new Date();
-        this.metadata.put("analysis_date", dateFormat.format(date));
-        this.metadata.put("phenopacket_file", phenopacketAbsolutePath);
-        metadata.put("sample_name", importer.getSamplename());
-        if (simulatedVcf == null) {
-            System.err.println("[ERROR] Could not simulate VCF for "+phenopacketFile.getName()); // should never happen
-            return; // skip to next Phenopacket
-        }
-        if (!importer.qcPhenopacket() ){
-            System.err.println("[ERROR] Could not simulate VCF for "+phenopacketFile.getName());
-            return;
-        }
-        TermId geneId = TermId.of(importer.getGene());
-        System.out.print("GENE = " + geneId.getValue());
+        PhenoGenoCaseSimulator simulator = new PhenoGenoCaseSimulator(phenopacketFile, this.templateVcfPath, this.factory);
+        simulator.run();
+        int diseaseRank = simulator.getRank_of_disease();
+        int geneRank    = simulator.getRank_of_gene();
+        String diseaseLabel = simulator.getDiagnosisLabel();
 
 
-        Disease diagnosis = importer.getDiagnosis();
-        simulatedDisease = diagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
-        TermId correctDiagnosisTermId = TermId.of(simulatedDisease);
-        this.metadata.put("phenopacket.diagnosisId", simulatedDisease);
-        this.metadata.put("phenopacket.diagnosisLabel", diagnosis.getTerm().getLabel());
+        disease2rankMap.put(diseaseLabel,diseaseRank);
+        rank2countMap.putIfAbsent(diseaseRank,0); // create key if needed.
+        rank2countMap.merge(diseaseRank,1,Integer::sum); // increment count
 
-       // HtsFile htsFile = importer.getVcfFile();
-        String vcfPath = simulatedVcf.getFile().getPath();
-        this.genotypemap = factory.getGene2GenotypeMap(vcfPath);
-        this.genoLr = factory.getGenotypeLR();
-        // this.metadata.put("vcf_file", this.getOptionalVcfPath);
+        geneRank2CountMap.putIfAbsent(geneRank,0);
+        geneRank2CountMap.merge(geneRank,1,Integer::sum); // increment count
 
-        logger.trace("Running simulation from phenopacket {} with template VCF {}",
-                phenopacketAbsolutePath,
-                vcfPath);
-        List<TermId> hpoIdList = importer.getHpoTerms();
-        // List of excluded HPO terms in the subject.
-        List<TermId> negatedHpoIdList = importer.getNegatedHpoTerms();
-        CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(hpoIdList)
-                .ontology(ontology)
-                .negated(negatedHpoIdList)
-                .diseaseMap(diseaseMap)
-                .disease2geneMultimap(disease2geneMultimap)
-                .genotypeMap(genotypemap)
-                .phenotypeLr(phenoLr)
-                .genotypeLr(genoLr);
-
-        CaseEvaluator evaluator = caseBuilder.build();
-        HpoCase hcase = evaluator.evaluate();
-
-        Optional<Integer> optRank = hcase.getRank(correctDiagnosisTermId);
-        int rank = optRank.isPresent() ? optRank.get() : hcase.getRankOfUnrankedDisease();
-        disease2rankMap.put(diagnosis.getTerm().getLabel(),rank);
-        rank2countMap.putIfAbsent(rank,0); // create key if needed.
-        rank2countMap.merge(rank,1,Integer::sum); // increment count
-        System.out.println(diagnosis.getTerm().getLabel() + ": " + rank);
-
-
-
-
-
-        /*
-        String outdir = ".";
-        int n_genes_with_var = this.genotypemap.size();
-        this.metadata.put("genesWithVar", String.valueOf(n_genes_with_var));
-        this.metadata.put("exomiserPath", factory.getExomiserPath());
-        this.metadata.put("hpoVersion", factory.getHpoVersion());
+        System.out.println(diseaseLabel + ": " + diseaseRank);
 
 
         if (outputTSV) {
-            String outname=String.format("%s.tsv","temp");
-            LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,metadata)
-                    .genotypeMap(genotypemap)
-                    .geneid2symMap(geneId2symbol)
-                    .threshold(this.LR_THRESHOLD)
-                    .mindiff(minDifferentialsToShow)
-                    .outdirectory(outdir)
-                    .prefix(outfilePrefix);
-            TsvTemplate tsvtemplate = builder.buildGenoPhenoTsvTemplate();
-            tsvtemplate.outputFile(outname);
-            extractRank(outname,phenopacketFile.getName());
+            simulator.outputTsv(outfilePrefix,LR_THRESHOLD,minDifferentialsToShow,outdir);
         } else {
-            LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,metadata)
-                    .genotypeMap(genotypemap)
-                    .geneid2symMap(geneId2symbol)
-                    .threshold(this.LR_THRESHOLD)
-                    .mindiff(minDifferentialsToShow)
-                    .outdirectory(outdir)
-                    .prefix(outfilePrefix);
-            HtmlTemplate htemplate = builder.buildGenoPhenoHtmlTemplate();
-            htemplate.outputFile();
-
+            simulator.outputHtml(outfilePrefix,LR_THRESHOLD,minDifferentialsToShow,outdir);
         }
-    */
+
     }
 
 
 
     private void runOnePhenotypeOnlyAnalysis(File phenopacketFile) throws IOException, ParseException {
-        String phenopacketAbsolutePath = phenopacketFile.getAbsolutePath();
-        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketAbsolutePath, this.factory.hpoOntology());
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        Date date = new Date();
-        this.metadata.put("analysis_date", dateFormat.format(date));
-        this.metadata.put("phenopacket_file", phenopacketAbsolutePath);
-        metadata.put("sample_name", importer.getSamplename());
-        Disease diagnosis = importer.getDiagnosis();
-        simulatedDisease = diagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
-        this.metadata.put("phenopacket.diagnosisId", simulatedDisease);
-        this.metadata.put("phenopacket.diagnosisLabel", diagnosis.getTerm().getLabel());
 
-        logger.trace("Running simulation from phenopacket {} (Phenotype only)", phenopacketAbsolutePath);
-        List<TermId> hpoIdList = importer.getHpoTerms();
-        // List of excluded HPO terms in the subject.
-        List<TermId> negatedHpoIdList = importer.getNegatedHpoTerms();
-        CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(hpoIdList)
-                .ontology(ontology)
-                .negated(negatedHpoIdList)
-                .diseaseMap(diseaseMap)
-                .phenotypeLr(phenoLr);
+        PhenoOnlyCaseSimulator simulator = new PhenoOnlyCaseSimulator(phenopacketFile,this.factory);
 
-        CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
-        HpoCase hcase = evaluator.evaluate();
-        TermId correctDiagnosisTermId = TermId.of(simulatedDisease);
+        int rank = simulator.getRank_of_disease();
+        String diseaseLabel = simulator.getDiagnosisLabel();
+        disease2rankMap.put(diseaseLabel, rank);
+        rank2countMap.putIfAbsent(rank, 0); // create key if needed.
+        rank2countMap.merge(rank, 1, Integer::sum); // increment count
+        System.out.println(diseaseLabel + ": " + rank);
 
-        Optional<Integer> optRank = hcase.getRank(correctDiagnosisTermId);
-        if (optRank.isPresent()) {
-            int rank = optRank.get();
-            disease2rankMap.put(diagnosis.getTerm().getLabel(), rank);
-            rank2countMap.putIfAbsent(rank, 0); // create key if needed.
-            rank2countMap.merge(rank, 1, Integer::sum); // increment count
-            System.out.println(diagnosis.getTerm().getLabel() + ": " + rank);
-        } else {
-            unrankedDiseases.add(diagnosis.getTerm().getLabel());
-        }
     }
 
 
@@ -263,12 +145,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         factory.qcGenomeBuild();
 
 
-
-        this.ontology = factory.hpoOntology();
-        this.diseaseMap = factory.diseaseMap(ontology);
-        this.phenoLr = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
-        this.disease2geneMultimap = factory.disease2geneMultimap();
-        this.geneId2symbol = factory.geneId2symbolMap();
         if (this.phenopacketPath != null) {
             logger.info("Running single file Phenopacket/VCF simulation at {}", phenopacketPath);
             try {
@@ -313,9 +189,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         factory.qcExternalFilesInDataDir();
 
 
-        this.ontology = factory.hpoOntology();
-        this.diseaseMap = factory.diseaseMap(ontology);
-        this.phenoLr = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
         if (this.phenopacketPath != null) {
             logger.info("Running single file Phenopacket/VCF simulation at {}", phenopacketPath);
             try {
@@ -364,6 +237,21 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         for (Map.Entry<Integer, Integer> e : sorted.entrySet()) {
             System.out.println(String.format("%s: %d (%.1f%%)", e.getKey(), e.getValue(),(100.0*e.getValue()/total)));
         }
+
+        // now gene ranks
+        sorted = this.geneRank2CountMap
+                .entrySet()
+                .stream()
+                //.sorted(comparingByValue())
+                .sorted(comparingByKey())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+                        LinkedHashMap::new));
+        total = this.geneRank2CountMap.values().stream().mapToInt(i->i).sum();
+        for (Map.Entry<Integer, Integer> e : sorted.entrySet()) {
+            System.out.println(String.format("%s: %d (%.1f%%)  [by gene]", e.getKey(), e.getValue(),(100.0*e.getValue()/total)));
+        }
+
+
         // output two files.
         // 1. rank2count.txt
 
@@ -401,7 +289,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         this.metadata = new HashMap<>();
         disease2rankMap = new HashMap<>();
         rank2countMap=new HashMap<>();
-        unrankedDiseases=new ArrayList<>();
+        geneRank2CountMap = new HashMap<>();
         try {
             simulationOutBuffer = new BufferedWriter(new FileWriter(this.simulationOutFile));
             simulationOutBuffer.write(LiricalRanking.header()+"\n");
