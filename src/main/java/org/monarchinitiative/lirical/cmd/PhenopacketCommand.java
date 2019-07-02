@@ -41,7 +41,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
     @Parameter(names = {"-e", "--exomiser"}, description = "path to the Exomiser data directory")
     protected String exomiserDataDirectory;
     @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC, Ensembl, RefSeq)")
-    protected String transcriptDb="ucsc";
+    protected String transcriptDb="refseq";
 
 
 

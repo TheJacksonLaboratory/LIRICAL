@@ -421,6 +421,8 @@ public class CaseEvaluator {
     private Map<TermId,TestResult> phenoGenoEvaluation() {
         ImmutableMap.Builder<TermId,TestResult> mapbuilder = new ImmutableMap.Builder<>();
         for (TermId diseaseId : diseaseMap.keySet()) {
+//            String idd = diseaseId.getValue();
+//            System.out.print(idd);
             Optional<TestResult> optionalTestResult;
             this.currentPhenotypeExplanation=new ArrayList<>();
             if (useGenotypeAnalysis) {

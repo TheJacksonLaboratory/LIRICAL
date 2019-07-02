@@ -66,7 +66,10 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
     private List<LiricalRanking> rankingsList;
 
     /** Ranks of diseases */
-    private Map<String,Integer> disease2rankMap;
+   // private Map<String,Integer> disease2rankMap;
+
+    /** Each entry in this list represents one simulated case with various data about the simulation. */
+    private List<String> detailedResultLineList;
 
     /** The number of counts a certain rank was assigned */
     private Map<Integer,Integer> rank2countMap;
@@ -92,16 +95,14 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         int diseaseRank = simulator.getRank_of_disease();
         int geneRank    = simulator.getRank_of_gene();
         String diseaseLabel = simulator.getDiagnosisLabel();
-
-
-        disease2rankMap.put(diseaseLabel,diseaseRank);
+        detailedResultLineList.add(simulator.getDetails());
+        System.out.println(simulator.getDetails());
+        //disease2rankMap.put(diseaseLabel,diseaseRank);
         rank2countMap.putIfAbsent(diseaseRank,0); // create key if needed.
         rank2countMap.merge(diseaseRank,1,Integer::sum); // increment count
 
         geneRank2CountMap.putIfAbsent(geneRank,0);
         geneRank2CountMap.merge(geneRank,1,Integer::sum); // increment count
-
-        System.out.println(diseaseLabel + ": " + diseaseRank);
 
 
         if (outputTSV) {
@@ -120,7 +121,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
 
         int rank = simulator.getRank_of_disease();
         String diseaseLabel = simulator.getDiagnosisLabel();
-        disease2rankMap.put(diseaseLabel, rank);
+        detailedResultLineList.add(simulator.getDetails());
         rank2countMap.putIfAbsent(rank, 0); // create key if needed.
         rank2countMap.merge(rank, 1, Integer::sum); // increment count
         System.out.println(diseaseLabel + ": " + rank);
@@ -128,7 +129,12 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
     }
 
 
-
+    /**
+     * Run one or multiple simulations that are driven from one or multiple phenopackets. Each simulation
+     * will add pathogenic allele(s) from the phenopacket to the otherwise background VCF file at
+     * {@link #templateVcfPath}. The function {@link #runOneVcfAnalysis(File)} will determine the
+     * rank of the correct diagnosis as represented in the Phenopacket.
+     */
     private void runWithVcf() {
 
         this.factory = new LiricalFactory.Builder()
@@ -265,8 +271,14 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         // 2. simulation-results.txt (show one line with the rank of each simulated disease).
         try {
             BufferedWriter br = new BufferedWriter(new FileWriter("rankedSimulations.txt"));
-            for (String diseaseLabel : disease2rankMap.keySet()) {
-                br.write(diseaseLabel + ": " + disease2rankMap.get(diseaseLabel) +"\n");
+            if (phenotypeOnly) {
+                br.write(PhenoOnlyCaseSimulator.getHeader() + "\n");
+            } else {
+                br.write(PhenoGenoCaseSimulator.getHeader() + "\n");
+            }
+
+            for (String diseaseResult : detailedResultLineList) {
+                br.write(diseaseResult + "\n");
             }
             br.close();
         } catch (IOException e) {
@@ -287,7 +299,8 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
     public void run()  {
         rankingsList = new ArrayList<>();
         this.metadata = new HashMap<>();
-        disease2rankMap = new HashMap<>();
+       // disease2rankMap = new HashMap<>();
+        detailedResultLineList = new ArrayList<>();
         rank2countMap=new HashMap<>();
         geneRank2CountMap = new HashMap<>();
         try {

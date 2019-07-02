@@ -173,12 +173,15 @@ public class Vcf2GenotypeMap {
                         try {
                             geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
                         } catch (PhenolRuntimeException pre) {
-                           // logger.error("Could not identify gene \"{}\" with symbol \"{}\" for variant {}", genIdString,symbol,va.toString());
+                           logger.error("Could not identify gene \"{}\" with symbol \"{}\" for variant {}", genIdString,symbol,va.toString());
                            // if gene is not included in the Jannovar file then it is not a Mendelian
                             // disease gene, e.g., abParts.
+                            System.out.println(genIdString);
+                            System.out.print(symbol);
                             // Therefore just skip it
                             continue;
                         }
+
                         gene2genotypeMap.putIfAbsent(geneId, new Gene2Genotype(geneId, symbol));
                         Gene2Genotype gene2Genotype = gene2genotypeMap.get(geneId);
                         VariantEvaluation veval = buildVariantEvaluation(vc, va,sampleGenotypes);
@@ -189,20 +192,25 @@ public class Vcf2GenotypeMap {
                         List<TranscriptAnnotation> transcriptAnnotationList = veval.getTranscriptAnnotations();
                         String genotypeString = veval.getGenotypeString();
                         float freq;
-                        float path;
+                        float pathogenicity;
                         if (alleleProp == null) {
                             // this means the variant is not represented in the Exomiser data
                             // this is not an error, the variant could be very rare or otherwise not seen before
                             freq = DEFAULT_FREQUENCY;
-                            path = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
-                            gene2Genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, path, freq, ClinVarData.ClinSig.NOT_PROVIDED);
+                            pathogenicity = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
+                            gene2Genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, pathogenicity, freq, ClinVarData.ClinSig.NOT_PROVIDED);
                         } else {
                             FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
                             PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);
                             freq = frequencyData.getMaxFreq();
-                            float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
+                            pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
                             ClinVarData cVarData = pathogenicityData.getClinVarData();
-                            gene2Genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, pathogenicity, freq, cVarData.getPrimaryInterpretation());
+                            // Only use ClinVar data if it is backed up by assertions.
+                            if (cVarData.getReviewStatus().startsWith("no_assertion")) {
+                                gene2Genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, pathogenicity, freq, ClinVarData.ClinSig.NOT_PROVIDED);
+                            } else {
+                                gene2Genotype.addVariant(chrom, pos, ref, alt, transcriptAnnotationList, genotypeString, pathogenicity, freq, cVarData.getPrimaryInterpretation());
+                            }
                         }
 
                     }

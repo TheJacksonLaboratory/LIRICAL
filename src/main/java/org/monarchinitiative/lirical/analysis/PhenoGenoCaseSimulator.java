@@ -161,11 +161,6 @@ public class PhenoGenoCaseSimulator {
         }
 
 
-
-        System.out.println(simulatedDiagnosis.getTerm().getLabel() + ": " + rank_of_disease + " (disease rank)");
-        System.out.println(simulatedDiagnosis.getTerm().getLabel() + ": " + rank_of_gene + " (gene rank)");
-
-
         this.metadata.put("genesWithVar", String.valueOf(genotypemap.size()));
         this.metadata.put("exomiserPath", factory.getExomiserPath());
         this.metadata.put("hpoVersion", factory.getHpoVersion());
@@ -212,4 +207,23 @@ public class PhenoGenoCaseSimulator {
     public int getRank_of_gene() {
         return rank_of_gene;
     }
+
+
+    public static String getHeader() {
+        String [] fields = {"Phenopacket", "Diagnosis", "Diagnosis-ID", "Gene", "Disease Rank", "Gene Rank"};
+        return String.join("\t",fields);
+
+    }
+
+    public String getDetails() {
+        return String.format("%s\t%s\t%s\t%s\t%d\t%d", phenopacketFile.getName(),
+                simulatedDiagnosis.getTerm().getLabel(),
+                simulatedDiagnosis.getTerm().getId(),
+                simulatedDiseaseGene.getValue(),
+                rank_of_disease,
+                rank_of_gene);
+    }
+
+
+
 }

@@ -162,8 +162,10 @@ public class VcfSimulator {
         }
 
         // we create a temporary VCF file for LIRICAL analysis
-        final File outPath = File.createTempFile("single-vcf-simulator-" + subjectId + "-", ".vcf");
+        final File outPath = File.createTempFile("single-vcf-simulator-" + subjectId.replaceAll(" ","_") + "-", ".vcf");
         outPath.deleteOnExit();
+
+
 
         try (VCFFileReader reader = new VCFFileReader(templateVcfPath, false);
              VariantContextWriter writer = new VariantContextWriterBuilder()

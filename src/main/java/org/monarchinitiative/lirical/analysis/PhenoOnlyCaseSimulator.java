@@ -138,4 +138,19 @@ public class PhenoOnlyCaseSimulator {
     public int getRank_of_disease() {
         return rank_of_disease;
     }
+
+
+    public static String getHeader() {
+        String [] fields = {"Phenopacket", "Diagnosis", "Diagnosis-ID", "Disease Rank"};
+        return String.join("\t",fields);
+
+    }
+
+    public String getDetails() {
+        return String.format("%s\t%s\t%s\t%d", phenopacketFile.getName(),
+                simulatedDiagnosis.getTerm().getLabel(),
+                simulatedDiagnosis.getTerm().getId(),
+                rank_of_disease);
+    }
+
 }
