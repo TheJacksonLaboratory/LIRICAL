@@ -2,6 +2,14 @@
 Changelog
 =========
 
+
+-------
+v0.9.21
+-------
+- ClinVar now requires assessment to be counted
+- bug-fix of "missing" genes
+- fixing SVG format for excluded phenotypes
+
 -------
 v0.9.20
 -------
