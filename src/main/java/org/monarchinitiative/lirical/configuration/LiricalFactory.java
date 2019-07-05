@@ -17,7 +17,6 @@ import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
 import org.monarchinitiative.lirical.io.YamlParser;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
-import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.io.OntologyLoader;
@@ -79,6 +78,8 @@ public class LiricalFactory {
     private String mvStorePath=null;
     /** genotype matching for likelihood ratio calculation". */
     private boolean strict;
+    /** retain candidates even if no candidate variant is found */
+    private final boolean keepIfNoCandidateVariant;
 
     private String hpoVersion="n/a";
 
@@ -161,6 +162,7 @@ public class LiricalFactory {
             this.ontology=null;
         }
         this.filterOnFILTER=builder.filterFILTER;
+        this.keepIfNoCandidateVariant = builder.keep;
     }
 
 
@@ -464,6 +466,8 @@ public class LiricalFactory {
         return n_filtered_variants;
     }
 
+    public boolean keepIfNoCandidateVariant() { return  keepIfNoCandidateVariant; }
+
     /**
      * This is used by the Builder to check that all of the necessary files in the Data directory are present.
      * It writes one line to the logger for each file it checks, and throws a RunTime exception if a file is
@@ -589,17 +593,18 @@ public class LiricalFactory {
      */
     public static class Builder {
         /** path to hp.obo file.*/
-        private String hpOboPath=null;
-        private String phenotypeAnnotationPath=null;
-        private String liricalDataDir =null;
-        private String exomiserDataDir=null;
-        private String geneInfoPath=null;
-        private String mim2genemedgenPath=null;
-        private String backgroundFrequencyPath=null;
-        private String vcfPath=null;
-        private String genomeAssembly=null;
-        private boolean filterFILTER=true;
-        private boolean strict=false;
+        private String hpOboPath = null;
+        private String phenotypeAnnotationPath = null;
+        private String liricalDataDir = null;
+        private String exomiserDataDir = null;
+        private String geneInfoPath = null;
+        private String mim2genemedgenPath = null;
+        private String backgroundFrequencyPath = null;
+        private String vcfPath = null;
+        private String genomeAssembly = null;
+        private boolean filterFILTER = true;
+        private boolean strict = false;
+        private boolean keep = false;
         /** The default transcript database is UCSC> */
         private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
         private List<String> observedHpoTerms=ImmutableList.of();
@@ -652,6 +657,11 @@ public class LiricalFactory {
 
         public Builder strict(boolean b) {
             this.strict = b;
+            return this;
+        }
+
+        public Builder keep(boolean b) {
+            this.keep = b;
             return this;
         }
 

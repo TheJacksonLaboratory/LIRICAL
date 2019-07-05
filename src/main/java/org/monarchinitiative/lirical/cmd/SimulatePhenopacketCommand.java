@@ -143,6 +143,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
                 .exomiser(this.exomiserDataDirectory)
                 .transcriptdatabase(this.transcriptDb)
                 .backgroundFrequency(this.backgroundFrequencyFile)
+                .keep(this.keepIfNoCandidateVariant)
                 .strict(this.strict)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();

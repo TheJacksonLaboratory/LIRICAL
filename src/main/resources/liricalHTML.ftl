@@ -400,7 +400,7 @@ footer {
               <tr>
                 <td>${svar.ucsc}</td>
                 <#if svar.isInPathogenicBin() >
-                <td class="red">${svar.pathogenicity!"n/a"}</td>
+                <td class="red">${svar.pathogenicityScore!"n/a"}</td>
                 <#else>
                  <td>${svar.pathogenicityScore!"n/a"}</td>
                 </#if>

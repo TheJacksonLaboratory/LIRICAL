@@ -144,6 +144,8 @@ public class PhenoGenoCaseSimulator {
                 .disease2geneMultimap(disease2geneMultimap)
                 .genotypeMap(genotypemap)
                 .phenotypeLr(phenoLr)
+                .gene2idMap(factory.geneId2symbolMap())
+                .keepCandidates(factory.keepIfNoCandidateVariant())
                 .genotypeLr(genoLr);
 
         CaseEvaluator evaluator = caseBuilder.build();

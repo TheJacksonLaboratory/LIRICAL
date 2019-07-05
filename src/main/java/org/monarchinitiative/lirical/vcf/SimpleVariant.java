@@ -177,7 +177,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
         return String.format("%s:%d%s>%s %s pathogenicity:%.1f [%s]", chromosome,position,ref,alt,annotation2string(annotationList.get(0)),pathogenicityScore,gtype);
     }
 
-    public float getPathogenicity() {
+    public float getPathogenicityScore() {
         return pathogenicityScore;
     }
 

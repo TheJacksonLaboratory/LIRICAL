@@ -117,11 +117,10 @@ public class Vcf2GenotypeMap {
         this.genomeAssembly = ga;
     }
 
-    /** map with some information about the VCF file that will be shown on the hTML org.monarchinitiative.lirical.output. */
-//    public Map<String, String > getVcfMetaData() {
-//        return vcfMetaData;
-//    }
-
+    /**
+     * Read the VCF file and extract genotype
+     * @return
+     */
     public Map<TermId, Gene2Genotype> vcf2genotypeMap() {
         // whether or not to just look at a specific genomic interval
         final boolean useInterval = false;

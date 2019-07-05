@@ -26,7 +26,7 @@ public class YamlParser {
     private static final Logger logger = LoggerFactory.getLogger(YamlParser.class);
     private YamlConfig yconfig;
     /** THe path to which LIRICAL will download data such as hp.obo by default. */
-    private final String DEFAULT_DATA_PATH="data";
+    private static final String DEFAULT_DATA_PATH="data";
 
 
 

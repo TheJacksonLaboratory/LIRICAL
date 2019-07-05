@@ -70,9 +70,9 @@ public class Gene2Genotype {
         if (simplevar.isInPathogenicBin()) {
             SimpleGenotype sgenotype=simplevar.getGtype();
             if (sgenotype.equals(SimpleGenotype.HOMOZYGOUS_ALT)) {
-                this.sumOfPathBinScores += 2*simplevar.getPathogenicity();
+                this.sumOfPathBinScores += 2*simplevar.getPathogenicityScore();
             } else  { // assume het
-                this.sumOfPathBinScores+=simplevar.getPathogenicity();
+                this.sumOfPathBinScores+=simplevar.getPathogenicityScore();
             }
         }
         Collections.sort(varList); // keep variant list sorted
