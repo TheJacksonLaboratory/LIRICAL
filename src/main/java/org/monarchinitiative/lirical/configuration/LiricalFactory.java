@@ -301,14 +301,9 @@ public class LiricalFactory {
         if (!mim2genemedgenFile.exists()) {
             throw new LiricalRuntimeException("Could not find medgen file at " + this.mim2genemedgenPath + ". Run download!");
         }
-        File orphafilePlaceholder = null;//we do not need this for now
-        HpoAssociationParser assocParser = new HpoAssociationParser(geneInfoFile,
-                mim2genemedgenFile,
-                orphafilePlaceholder,
+        HpoAssociationParser assocParser = new HpoAssociationParser(geneInfoFile.getAbsolutePath(),
+                mim2genemedgenFile.getAbsolutePath(),
                 ontology);
-        assocParser.parse();
-        assocParser.getDiseaseToGeneIdMap();
-
         this.gene2diseaseMultiMap=assocParser.getGeneToDiseaseIdMap();
         this.disease2geneIdMultiMap=assocParser.getDiseaseToGeneIdMap();
         this.geneId2SymbolMap=assocParser.getGeneIdToSymbolMap();
