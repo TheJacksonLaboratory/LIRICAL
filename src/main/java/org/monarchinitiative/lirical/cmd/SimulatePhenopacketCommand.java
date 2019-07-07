@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.cmd;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.google.common.collect.ImmutableList;
 import org.json.simple.parser.ParseException;
 import org.monarchinitiative.lirical.analysis.PhenoGenoCaseSimulator;
 import org.monarchinitiative.lirical.analysis.PhenoOnlyCaseSimulator;
@@ -10,10 +11,12 @@ import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.output.LiricalRanking;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,7 +48,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
     @Parameter(names = {"--phenopacket-dir"}, description = "path to directory with multiple phenopackets")
     private String phenopacketDir;
     @Parameter(names = {"-outputfile"}, description = "name of the output file with simulation results")
-    private String simulationOutFile="vcf_simulation_results.tsv";
+    private String simulationOutFile = null;
     @Parameter(names = {"--phenotype-only"}, description = "run simulations with phenotypes only?")
     private boolean phenotypeOnly=false;
     @Parameter(names={"--output-vcf"}, description = "output a VCF file or files with results of the simulation")
@@ -54,26 +57,18 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
     private boolean outputTSV = false;
     @Parameter(names={"--genewise-simulation"},description = "rank the output by gene rather than disease (only valid for VCF simulation")
     private boolean genewiseSimulation = false;
-
-
-    private BufferedWriter simulationOutBuffer;
-    private String simulatedDisease = null;
-
+    @Parameter(names={"--random"},description = "randomize the HPO terms from the phenopacket")
+    private boolean randomize = false;
     /** If true, output HTML or TSV */
     private boolean outputFiles = false;
 
-
     private List<LiricalRanking> rankingsList;
-
-    /** Ranks of diseases */
-   // private Map<String,Integer> disease2rankMap;
-
     /** Each entry in this list represents one simulated case with various data about the simulation. */
     private List<String> detailedResultLineList;
 
     /** The number of counts a certain rank was assigned */
     private Map<Integer,Integer> rank2countMap;
-
+    /** key-- rank in a simulation; value -- number of times the rank was achieved. */
     private Map<Integer,Integer> geneRank2CountMap;
 
     private LiricalFactory factory;
@@ -90,7 +85,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
      * @param phenopacketFile File with the Phenopacket we are currently analyzing
      */
     private void runOneVcfAnalysis(File phenopacketFile) throws IOException, ParseException {
-        PhenoGenoCaseSimulator simulator = new PhenoGenoCaseSimulator(phenopacketFile, this.templateVcfPath, this.factory);
+        PhenoGenoCaseSimulator simulator = new PhenoGenoCaseSimulator(phenopacketFile, this.templateVcfPath, this.factory, this.randomize);
         simulator.run();
         int diseaseRank = simulator.getRank_of_disease();
         int geneRank    = simulator.getRank_of_gene();
@@ -262,7 +257,13 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         // output two files.
         // 1. rank2count.txt
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("rank2count.txt"))){
+        String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+        String rank2countName = String.format("rank2count-%s.txt",timeStamp);
+        if (this.simulationOutFile==null) {
+            simulationOutFile = String.format("ranked_simulation_results-%s.tsv",timeStamp);
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(rank2countName))){
             for (Map.Entry<Integer, Integer> e : sorted.entrySet()) {
                 writer.write(e.getKey() + ": " + e.getValue() +"\n");
             }
@@ -271,7 +272,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         }
         // 2. simulation-results.txt (show one line with the rank of each simulated disease).
         try {
-            BufferedWriter br = new BufferedWriter(new FileWriter("rankedSimulations.txt"));
+            BufferedWriter br = new BufferedWriter(new FileWriter(this.simulationOutFile));
             if (phenotypeOnly) {
                 br.write(PhenoOnlyCaseSimulator.getHeader() + "\n");
             } else {
@@ -304,12 +305,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         detailedResultLineList = new ArrayList<>();
         rank2countMap=new HashMap<>();
         geneRank2CountMap = new HashMap<>();
-        try {
-            simulationOutBuffer = new BufferedWriter(new FileWriter(this.simulationOutFile));
-            simulationOutBuffer.write(LiricalRanking.header()+"\n");
-        } catch (IOException e) {
-            throw new LiricalRuntimeException("Could not open " + simulationOutFile + " for writing");
-        }
         if (phenotypeOnly) {
             runPhenotypeOnly();
         } else {
@@ -324,11 +319,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         }
         double avgrank = (double) total_rank / N;
         logger.info("Average rank from " + N + " simulations was " + avgrank);
-        try {
-            this.simulationOutBuffer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         outputRankings();
     }
 

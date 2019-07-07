@@ -1,5 +1,6 @@
 package org.monarchinitiative.lirical.analysis;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import org.json.simple.parser.ParseException;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
@@ -15,6 +16,7 @@ import org.monarchinitiative.lirical.output.LiricalTemplate;
 import org.monarchinitiative.lirical.output.TsvTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.core.Disease;
 import org.phenopackets.schema.v1.core.HtsFile;
@@ -27,6 +29,9 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static org.monarchinitiative.phenol.formats.hpo.HpoSubOntologyRootTermIds.PHENOTYPIC_ABNORMALITY;
+import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
 
 public class PhenoGenoCaseSimulator {
     private static final Logger logger = LoggerFactory.getLogger(PhenoGenoCaseSimulator.class);
@@ -69,10 +74,24 @@ public class PhenoGenoCaseSimulator {
     private int rank_of_disease;
     /** Rank of simulated disease gene (best rank of any disease associated with the correct disease gene). */
     private int rank_of_gene;
+    /** The posttest probability of the simulated disease. */
+    private double posttest_probability;
+    /** If true, replace the HPO terms with random terms (both the observed and the included). */
+    private final boolean randomize;
+    /** A list of all HPO term ids in the Phenotypic abnormality subontology. */
+    private final ImmutableList<TermId> phenotypeterms;
 
 
-
-    public PhenoGenoCaseSimulator(File phenopacket, String vcfpath, LiricalFactory factory) throws IOException, ParseException {
+    /**
+     *
+     * @param phenopacket A GA4GH Phenopacket with information about a case
+     * @param vcfpath Path to a template VCF file we will add a mutation to
+     * @param factory {@link LiricalFactory} object
+     * @param rand if true, randomize the HPO terms in the phenopacket
+     * @throws IOException
+     * @throws ParseException
+     */
+    public PhenoGenoCaseSimulator(File phenopacket, String vcfpath, LiricalFactory factory, boolean rand) throws IOException, ParseException {
         phenopacketFile = phenopacket;
         templateVcfPath = vcfpath;
         this.metadata = new HashMap<>();
@@ -84,8 +103,30 @@ public class PhenoGenoCaseSimulator {
         simulatedDiagnosis = importer.getDiagnosis();
         String disId = simulatedDiagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
         this.simulatedDiseaseId = TermId.of(disId);
-        hpoIdList = importer.getHpoTerms();
-        negatedHpoIdList = importer.getNegatedHpoTerms();
+
+        this.randomize = rand;
+        if (randomize) {
+            Set<TermId> descendents=getDescendents(factory.hpoOntology(),PHENOTYPIC_ABNORMALITY);
+            ImmutableList.Builder<TermId> termbuilder = new ImmutableList.Builder<>();
+            for (TermId t: descendents) {
+                termbuilder.add(t);
+            }
+            this.phenotypeterms=termbuilder.build();
+            ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
+            for (int i=0;i<importer.getHpoTerms().size();i++) {
+                builder.add(getRandomPhenotypeTerm());
+            }
+            this.hpoIdList = builder.build();
+            builder = new ImmutableList.Builder<>();
+            for (int i=0;i<importer.getNegatedHpoTerms().size();i++) {
+                builder.add(getRandomPhenotypeTerm());
+            }
+            negatedHpoIdList = builder.build();
+        } else {
+            this.phenotypeterms = ImmutableList.of(); // not needed
+            hpoIdList = importer.getHpoTerms();
+            negatedHpoIdList = importer.getNegatedHpoTerms();
+        }
 
         VcfSimulator vcfSimulator = new VcfSimulator(Paths.get(this.templateVcfPath));
         HtsFile simulatedVcf;
@@ -125,6 +166,17 @@ public class PhenoGenoCaseSimulator {
        this.metadata.put("phenopacket.diagnosisLabel", simulatedDiagnosis.getTerm().getLabel());
     }
 
+    /**
+     * This is a term that was observed in the simulated patient (note that it should not be a HpoTermId, which
+     * contains metadata about the term in a disease entity, such as overall frequency. Instead, we are simulating an
+     * individual patient and this is a definite observation.
+     * @return a random term from the phenotype subontology.
+     */
+    private TermId getRandomPhenotypeTerm() {
+        int n=phenotypeterms.size();
+        int r = (int)Math.floor(n*Math.random());
+        return phenotypeterms.get(r);
+    }
 
 
     /**
@@ -154,6 +206,7 @@ public class PhenoGenoCaseSimulator {
         Optional<Integer> optRank = this.hpocase.getRank(simulatedDiseaseId);
         this.rank_of_disease = optRank.orElseGet(() -> this.hpocase.getRankOfUnrankedDisease());
         this.rank_of_gene = this.rank_of_disease;
+        this.posttest_probability = this.hpocase.getPosttestProbability(simulatedDiseaseId);
         for (TermId diseaseId : this.gene2diseaseMultimap.get(this.simulatedDiseaseGene)) {
             optRank = this.hpocase.getRank(diseaseId);
             int r = optRank.orElseGet(() -> this.hpocase.getRankOfUnrankedDisease());
@@ -210,20 +263,23 @@ public class PhenoGenoCaseSimulator {
         return rank_of_gene;
     }
 
+    public double getPosttestProbabilityOfSimulatedDisease() { return this.posttest_probability; }
+
 
     public static String getHeader() {
-        String [] fields = {"Phenopacket", "Diagnosis", "Diagnosis-ID", "Gene", "Disease Rank", "Gene Rank"};
+        String [] fields = {"Phenopacket", "Diagnosis", "Diagnosis-ID", "Gene", "Disease-Rank", "Gene-Rank", "Posttest-prob"};
         return String.join("\t",fields);
 
     }
 
     public String getDetails() {
-        return String.format("%s\t%s\t%s\t%s\t%d\t%d", phenopacketFile.getName(),
+        return String.format("%s\t%s\t%s\t%s\t%d\t%d\t%f", phenopacketFile.getName(),
                 simulatedDiagnosis.getTerm().getLabel(),
                 simulatedDiagnosis.getTerm().getId(),
                 simulatedDiseaseGene.getValue(),
                 rank_of_disease,
-                rank_of_gene);
+                rank_of_gene,
+                posttest_probability);
     }
 
 

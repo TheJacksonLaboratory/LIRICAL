@@ -26,9 +26,8 @@ public class GenotypeLikelihoodRatio {
 
     private static final double EPSILON = 1e-5;
 
-    /** Use strict penalities if the genotype does not match the disease model in terms of number of called
-     * pathogenic alleles.
-     */
+    /** Use strict penalties if the genotype does not match the disease model in terms of number of called
+     * pathogenic alleles.*/
     private final boolean strict;
 
     /**

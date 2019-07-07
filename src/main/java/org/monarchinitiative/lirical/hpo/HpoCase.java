@@ -86,6 +86,14 @@ public final class HpoCase {
         return Optional.of(result.getRank());
     }
 
+    public double getPosttestProbability(TermId diseaseId) {
+        TestResult result = this.disease2resultMap.get(diseaseId);
+        if (result==null) {
+            return 0.0;
+        }
+        return result.getPosttestProbability();
+    }
+
     /**
      * If a disease is unranked, then it is tied for the rank after the last rank of the ranked diseases
      * @return (tied) rank of an unranked disease
@@ -94,17 +102,6 @@ public final class HpoCase {
         return 1 + this.disease2resultMap.size();
     }
 
-
-//    private String niceFormat(double d) {
-//        DecimalFormat df = new DecimalFormat("0.000E0");
-//        if (d > 1.0) {
-//            return String.format("%.2f", d);
-//        } else if (d > 0.005) {
-//            return String.format("%.4f", d);
-//        } else {
-//            return df.format(d);
-//        }
-//    }
 
     @Override
     public String toString() {
