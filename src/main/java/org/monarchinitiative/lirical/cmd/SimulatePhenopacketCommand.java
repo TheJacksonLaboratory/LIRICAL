@@ -55,8 +55,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
     private boolean outputVCF = false;
     @Parameter(names={"--output-tsv"}, description = "output a TSV file or files with results of the simulation")
     private boolean outputTSV = false;
-    @Parameter(names={"--genewise-simulation"},description = "rank the output by gene rather than disease (only valid for VCF simulation")
-    private boolean genewiseSimulation = false;
     @Parameter(names={"--random"},description = "randomize the HPO terms from the phenopacket")
     private boolean randomize = false;
     /** If true, output HTML or TSV */
@@ -226,6 +224,18 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
 
 
 
+    private String getSettingsString() {
+        List<String> settings= new ArrayList<>();
+        settings.add("phenopacket-dir: "+phenopacketDir!=null?phenopacketDir:"n/a");
+        settings.add("phenopackets: n=" + this.rankingsList.size());
+        settings.add("string: " + (strict ? "true" : "false"));
+        settings.add("random: " + (randomize ?  "true" : "false"));
+        settings.add("phenotypeOnly: "+ (phenotypeOnly? "true":"false"));
+        settings.add("transcriptDb: " + this.transcriptDb);
+
+        return String.join(";",settings);
+    }
+
     private void outputRankings() {
         // sort the map by values first
         Map<Integer, Integer> sorted = this.rank2countMap
@@ -272,17 +282,18 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         }
         // 2. simulation-results.txt (show one line with the rank of each simulated disease).
         try {
-            BufferedWriter br = new BufferedWriter(new FileWriter(this.simulationOutFile));
+            BufferedWriter bw = new BufferedWriter(new FileWriter(this.simulationOutFile));
             if (phenotypeOnly) {
-                br.write(PhenoOnlyCaseSimulator.getHeader() + "\n");
+                bw.write(PhenoOnlyCaseSimulator.getHeader() + "\n");
             } else {
-                br.write(PhenoGenoCaseSimulator.getHeader() + "\n");
+                bw.write(PhenoGenoCaseSimulator.getHeader() + "\n");
             }
+            bw.write("#" + getSettingsString() + "\n");
 
             for (String diseaseResult : detailedResultLineList) {
-                br.write(diseaseResult + "\n");
+                bw.write(diseaseResult + "\n");
             }
-            br.close();
+            bw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

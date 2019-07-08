@@ -155,7 +155,7 @@ public class Lirical {
         else if (elapsedTime>59) {
             int elapsedSeconds = elapsedTime % 60;
             int elapsedMinutes = (elapsedTime/60) % 60;
-            System.out.println(String.format("LIRICAL: Elapsed time was %d%2d",elapsedMinutes,elapsedSeconds));
+            System.out.println(String.format("LIRICAL: Elapsed time was %d min, %d sec",elapsedMinutes,elapsedSeconds));
         } else {
             System.out.println("LIRICAL: Elapsed time was " + (stopTime - startTime) * (1.0) / 1000 + " seconds.");
         }
