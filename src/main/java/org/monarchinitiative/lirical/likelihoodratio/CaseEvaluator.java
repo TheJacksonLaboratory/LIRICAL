@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import org.junit.Test;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
@@ -46,10 +45,6 @@ public class CaseEvaluator {
     private final boolean keepIfNoCandidateVariant;
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
     private Map<TermId,String> geneId2symbol;
-
-    private static final double DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD=0.01;
-    /** Threshold post-test probability to show a differential diagnosis in the HTML output. */
-    private final double threshold;
     /** If true, then genotype information is available for the analysis. Otherwise, skip it. */
     private final boolean useGenotypeAnalysis;
 
@@ -89,7 +84,6 @@ public class CaseEvaluator {
             pretestProbabilityMap.put(tid,prob);
         }
         this.useGenotypeAnalysis =false;
-        this.threshold=DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD;
         this.keepIfNoCandidateVariant=true; // needs to be true for phenotype-only analysis!
         this.errors=new ArrayList<>();
     }
@@ -105,7 +99,6 @@ public class CaseEvaluator {
      * @param phenotypeLrEvaluator reference to object that evaluates the phenotype LR
      * @param genotypeLrEvalutator reference to object that evaluates the genotype LR
      * @param genotypeMap Map of gene symbol to genotype evaluations
-     * @param thres threshold posterior probability
      * @param keep if true, do not discard candidates if they do not have a candidate variant
      */
     private CaseEvaluator(List<TermId> hpoTerms,
@@ -116,7 +109,6 @@ public class CaseEvaluator {
                           PhenotypeLikelihoodRatio phenotypeLrEvaluator,
                           GenotypeLikelihoodRatio genotypeLrEvalutator,
                           Map<TermId,Gene2Genotype> genotypeMap,
-                          double thres,
                           boolean keep,
                           Map<TermId,String> geneId2symbol) {
         this.phenotypicAbnormalities=hpoTerms;
@@ -126,10 +118,8 @@ public class CaseEvaluator {
         this.phenotypeLRevaluator =phenotypeLrEvaluator;
         this.genotypeLrEvalutator=genotypeLrEvalutator;
         this.ontology=ontology;
-        this.threshold=thres;
         this.keepIfNoCandidateVariant=keep;
         this.geneId2symbol=geneId2symbol;
-
         // For now, assume equal pretest probabilities
         this.pretestProbabilityMap =new HashMap<>();
         int n=diseaseMap.size();
@@ -506,8 +496,6 @@ public class CaseEvaluator {
         /** Key: an EntrezGene id; value: corresponding gene symbol. */
         private Map<TermId,String> geneId2symbol;
 
-        private double threshold=DEFAULT_POSTERIOR_PROBABILITY_THRESHOLD;
-
         public Builder(List<TermId> hpoTerms){ this.hpoTerms=hpoTerms; }
 
         public Builder ontology(Ontology hont) { this.ontology=hont; return this;}
@@ -521,8 +509,6 @@ public class CaseEvaluator {
         public Builder phenotypeLr(PhenotypeLikelihoodRatio phenoLr) { this.phenotypeLR=phenoLr; return this; }
 
         public Builder genotypeLr(GenotypeLikelihoodRatio glr) { this.genotypeLR=glr; return this; }
-
-        public Builder threshold(double t) { this.threshold=t; return this;}
 
         public Builder keepCandidates(boolean keep) {
             this.keepIfNoCandidateVariant=keep;
@@ -558,7 +544,6 @@ public class CaseEvaluator {
                     phenotypeLR,
                     genotypeLR,
                     genotypeMap,
-                    threshold,
                     keepIfNoCandidateVariant,
                     this.geneId2symbol);
         }
