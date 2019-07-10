@@ -126,22 +126,26 @@
                     <groupId>org.tukaani</groupId>
                     <artifactId>xz</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
 
-         <dependency>
+        <!-- <dependency>
              <groupId>org.apache.logging.log4j</groupId>
              <artifactId>log4j-slf4j-impl</artifactId>
              <version>2.11.1</version>
          </dependency>
-
-        <!-- <dependency>
+-->
+         <dependency>
              <groupId>org.slf4j</groupId>
              <artifactId>slf4j-simple</artifactId>
              <version>1.7.5</version>
          </dependency>
--->
+
 
          <dependency>
              <groupId>org.monarchinitiative.phenol</groupId>

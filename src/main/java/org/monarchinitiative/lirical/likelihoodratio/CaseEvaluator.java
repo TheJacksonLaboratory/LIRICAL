@@ -272,7 +272,7 @@ public class CaseEvaluator {
         result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
         if (!foundPredictedPathogenicVariant) {
             String expl = String.format("No variants found in disease-associated gene%s: %s",
-                    genesWithNoIdentifiedVariant.size() > 1 ? "s" : "",
+                    genesWithNoIdentifiedVariant.size() > 1 ? "s" : EMPTY_STRING,
                     String.join("; ", genesWithNoIdentifiedVariant));
             result.setGenotypeExplanation(expl);
 

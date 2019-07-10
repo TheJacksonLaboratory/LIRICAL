@@ -77,7 +77,7 @@ public class Lirical {
             System.exit(1);
         }
         String parsedCommand = jc.getParsedCommand();
-        if (parsedCommand.isEmpty()) {
+        if (parsedCommand==null || parsedCommand.isEmpty()) {
             jc.usage(); // user ran program with no arguments, probably help is want is wanted.
             System.exit(0);
         }
