@@ -285,14 +285,7 @@ public class CaseEvaluator {
      * @return the explanation for the score.
      */
     private String getGenotypeScoreExplanation(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
-        double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
-        String expl =  this.genotypeLrEvalutator.explainGenotypeScore(observedWeightedPathogenicVariantCount, inheritancemodes, geneId);
-        if (g2g.hasPathogenicClinvarVar()) {
-            int clinvarPathCount = g2g.pathogenicClinVarCount();
-            double score = g2g.getSumOfPathBinScores();
-            expl += String.format("%.4f were added to score because of the %d pathogenic ClinVar variants",score,clinvarPathCount);
-        }
-        return expl;
+        return this.genotypeLrEvalutator.explainGenotypeScore(g2g, inheritancemodes, geneId);
     }
 
 

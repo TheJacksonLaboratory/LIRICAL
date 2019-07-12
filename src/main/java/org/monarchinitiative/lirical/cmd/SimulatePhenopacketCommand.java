@@ -3,7 +3,6 @@ package org.monarchinitiative.lirical.cmd;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.google.common.collect.ImmutableList;
 import org.json.simple.parser.ParseException;
 import org.monarchinitiative.lirical.analysis.PhenoGenoCaseSimulator;
 import org.monarchinitiative.lirical.analysis.PhenoOnlyCaseSimulator;
@@ -11,7 +10,6 @@ import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.output.LiricalRanking;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
-import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

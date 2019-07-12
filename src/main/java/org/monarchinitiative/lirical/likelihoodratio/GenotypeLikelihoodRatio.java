@@ -206,12 +206,14 @@ public class GenotypeLikelihoodRatio {
      * produces a shoprt summary that can be displayed in the org.monarchinitiative.lirical.output file. It is intended to be used for the
      * best candidates, i.e., those that will be displayed on the org.monarchinitiative.lirical.output page.
      *
-     * @param observedPathogenicVarCount number of variants called to ne pathogenic
+     * @param g2g {@link Gene2Genotype} object with variants/genotypes in the current gene.
      * @param inheritancemodes           List of all inheritance modes associated with this disease (usually has one element,rarely multiple)
      * @param geneId                     EntrezGene id of the current gene.
      * @return short summary of the genotype likelihood ratio score.
      */
-    String explainGenotypeScore(double observedPathogenicVarCount, List<TermId> inheritancemodes, TermId geneId) {
+    String explainGenotypeScore(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
+        double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
+
         StringBuilder sb = new StringBuilder();
         double lambda_disease = 1.0;
         if (inheritancemodes != null && inheritancemodes.size() > 0) {
@@ -231,16 +233,30 @@ public class GenotypeLikelihoodRatio {
         }
         double lambda_background = this.gene2backgroundFrequency.getOrDefault(geneId, DEFAULT_LAMBDA_BACKGROUND);
         sb.append(String.format("Observed weighted pathogenic variant count: %.2f. &lambda;<sub>disease</sub>=%d. &lambda;<sub>background</sub>=%.4f. ",
-                observedPathogenicVarCount, (int) lambda_disease, lambda_background));
+                observedWeightedPathogenicVariantCount, (int) lambda_disease, lambda_background));
+        if (g2g.hasPathogenicClinvarVar()) {
+            int count = g2g.pathogenicClinVarCount();
+            if (inheritancemodes.contains(AUTOSOMAL_RECESSIVE)) {
+                if (count == 2) {
+                    sb.append(" Genotype score set to LR=10<sup>6</sup> with two ClinGen pathogenic alleles and autosomal recessive mode of inheritance.");
+                   return sb.toString();
+                }
+            } else { // for all other MoI, including AD, assume that only one ClinVar allele is pathogenic
+                sb.append(" Genotype score set to LR=10<sup>3</sup> with one ClinGen pathogenic alle.");
+                return sb.toString();
+            }
+        }
+
+
         double D;
-        if (observedPathogenicVarCount < EPSILON) {
+        if (observedWeightedPathogenicVariantCount < EPSILON) {
             D = 0.05; // heuristic--chance of zero variants given this is disease is 5%
         } else {
             PoissonDistribution pdDisease = new PoissonDistribution(lambda_disease);
-            D = pdDisease.probability(observedPathogenicVarCount);
+            D = pdDisease.probability(observedWeightedPathogenicVariantCount);
         }
         PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
-        double B = pdBackground.probability(observedPathogenicVarCount);
+        double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
         sb.append(String.format("P(G|D)=%.4f. P(G|&#172;D)=%.4f", D, B));
         if (B > 0 && D > 0) {
             double r = Math.log10(D / B);
