@@ -9,8 +9,10 @@ This is a new standard of the `Global Alliance for Genomics and Health <https://
 links detailed phenotype descriptions with disease, patient, and genetic information (The
 other allowed input format is YAML. See :ref:`rstyaml`).
 
+
 Preparing Phenopacket-formated data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 See the `Phenopackets <https://phenopackets-schema.readthedocs.io/en/latest/>`_ website for details on the format. LIRICAL expects
 the Phenopacket to be in JSON format. The following example shows a phenopacket
