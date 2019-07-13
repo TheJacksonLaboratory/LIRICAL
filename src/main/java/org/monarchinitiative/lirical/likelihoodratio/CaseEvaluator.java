@@ -160,7 +160,9 @@ public class CaseEvaluator {
     private List<Double> excludedPhenotypesLikelihoodRatios(TermId diseaseId) {
         ImmutableList.Builder<Double> builderExcluded = new ImmutableList.Builder<>();
         for (TermId negated : this.negatedPhenotypicAbnormalities) {
-            double LR = phenotypeLRevaluator.getLikelihoodRatioForExcludedTerm(negated, diseaseId);
+            LrWithExplanation lrwe = phenotypeLRevaluator.getLikelihoodRatioForExcludedTerm(negated, diseaseId);
+            this.currentPhenotypeExplanation.add(lrwe);
+            double LR = lrwe.getLR();
             builderExcluded.add(LR);
         }
         return builderExcluded.build();

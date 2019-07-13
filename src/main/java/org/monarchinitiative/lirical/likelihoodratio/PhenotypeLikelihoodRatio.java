@@ -47,7 +47,11 @@ public class PhenotypeLikelihoodRatio {
     /**
      * The default probability for features that we cannot find in the dataset.
      */
-    private final double DEFAULT_BACKGROUND_PROBQABILITY=1.0/10000;
+    private static final double DEFAULT_BACKGROUND_PROBQABILITY=1.0/10000;
+    /** The default likelihood ratio for a query term that is explicitly excluded in a disease.*/
+    private static final double EXCLUDED_IN_DISEASE_BUT_PRESENT_IN_QUERY_PROBABILITY = 1.0/1000;
+    /** The default likelihood ratio for an excluded query term that is explicitly excluded in a disease.*/
+    private static final double EXCLUDED_IN_DISEASE_AND_EXCLUDED_IN_QUERY_PROBABILITY = 1000.0;
 
 
 
@@ -68,8 +72,18 @@ public class PhenotypeLikelihoodRatio {
      * @param idg The {@link InducedDiseaseGraph} of the disease
      * @return the likelihood ratio of observing the HPO term in the diseases
      */
-    public LrWithExplanation getLikelihoodRatio(TermId queryTid, InducedDiseaseGraph idg) {
+    LrWithExplanation getLikelihoodRatio(TermId queryTid, InducedDiseaseGraph idg) {
         HpoDisease disease = idg.getDisease();
+        Set<TermId> queryancestors = getAncestorTerms(ontology,queryTid,true);
+        List<TermId> diseaseExcludedTerms = disease.getNegativeAnnotations();
+        if (!diseaseExcludedTerms.isEmpty()) {
+            for (TermId excl : diseaseExcludedTerms) {
+                if (queryancestors.contains(excl)) {
+                    // i.e., the query term is explicitly EXCLUDED in the disease definition
+                    return LrWithExplanation.queryTermExcluded(queryTid, EXCLUDED_IN_DISEASE_BUT_PRESENT_IN_QUERY_PROBABILITY);
+                }
+            }
+        }
         if (disease.isDirectlyAnnotatedTo(queryTid)) {
             HpoAnnotation hpoTid = disease.getAnnotation(queryTid);
             double numerator = hpoTid.getFrequency();
@@ -136,20 +150,38 @@ public class PhenotypeLikelihoodRatio {
      * @param diseaseId The CURIE (e.g., OMIM:600300) of the disease
      * @return the likelihood ratio of an EXCLUDED HPO term in the diseases
      */
-    public double getLikelihoodRatioForExcludedTerm(TermId tid, TermId diseaseId) {
+    LrWithExplanation getLikelihoodRatioForExcludedTerm(TermId tid, TermId diseaseId) {
         HpoDisease disease = this.diseaseMap.get(diseaseId);
+        // check if term exluded in query is also excluded in disease
+        List<TermId> diseaseExcludedTerms = disease.getNegativeAnnotations();
+        Set<TermId> queryancestors = getAncestorTerms(ontology,tid,true);
+        if (!diseaseExcludedTerms.isEmpty()) {
+            for (TermId excl : diseaseExcludedTerms) {
+                if (queryancestors.contains(excl)) {
+                    // i.e., the query term is explicitly EXCLUDED in the disease definition
+                    return LrWithExplanation.excludedQueryTermEcludedInDisease(tid, EXCLUDED_IN_DISEASE_AND_EXCLUDED_IN_QUERY_PROBABILITY);
+                }
+            }
+        }
+
+
         double backgroundFrequency=getBackgroundFrequency(tid);
+
+
+
         // probability a feature is present but not recorded or not noticed.
         final double FALSE_NEGATIVE_OBSERVATION_OF_PHENOTYPE_PROB=0.01;
         if (backgroundFrequency>0.99) {
             logger.error("Warning, unusually high background frequency calculated for {} of {} (should never happen)",
                     backgroundFrequency,tid.getValue());
-            return 1.0; // should never happen, but protect against divide by zero if there is some error
+            // should never happen, but protect against divide by zero if there is some error
+            return LrWithExplanation.unusualBackgroundFrequency(tid,1.0);
         }
         // The phenotype was excluded in the proband and also the disease
         // is not annotated to the term. This should result in a slight improvement of the LR score.
         if (! isIndirectlyAnnotatedTo(tid,disease,ontology)) {
-            return 1.0/(1.0-backgroundFrequency); // this is the negative LR if the disease does not have the term
+            double lr = 1.0/(1.0-backgroundFrequency); // this is the negative LR if the disease does not have the term
+            return LrWithExplanation.excludedQueryTermNotPresentInDisease(tid,lr);
         }
         double frequency=getFrequencyOfTermInDiseaseWithAnnotationPropagation(tid,disease,ontology);
         // If the disease actually does have the abnormality in question, but the abnormality was ruled out in
@@ -161,11 +193,11 @@ public class PhenotypeLikelihoodRatio {
         //backgroundFrequency/0.5
         double excludedFrequency=Math.max(FALSE_NEGATIVE_OBSERVATION_OF_PHENOTYPE_PROB, 1-frequency);
         // now calculate and return the likelihood ratio
-        return excludedFrequency/(1.0-backgroundFrequency);
+        double lr = excludedFrequency/(1.0-backgroundFrequency);
+        return LrWithExplanation.excludedQueryTermPresentInDisease(tid,lr);
     }
 
-    /** NOTE: Use the version in phenol-1.3.3 once it becomes available!
-     *
+    /**
      * @param tid TermId of an HPO term
      * @param disease the disease being studied
      * @param ontology reference to HPO Ontology
@@ -200,23 +232,21 @@ public class PhenotypeLikelihoodRatio {
 
 
     static class CandidateMatch {
-        public int distance;
-        public TermId termId;
+        int distance;
+        TermId termId;
 
-        public CandidateMatch(TermId tid) {
+        CandidateMatch(TermId tid) {
             this.termId=tid;
             distance=0;
         }
 
-        public CandidateMatch(TermId tid, int level) {
+        CandidateMatch(TermId tid, int level) {
             this.termId=tid;
             this.distance = level;
         }
 
-        public int getDistance() { return distance; }
-        public TermId getTermId() { return termId; }
-
-
+        int getDistance() { return distance; }
+        TermId getTermId() { return termId; }
 
     }
 
