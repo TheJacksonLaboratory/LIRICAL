@@ -285,7 +285,9 @@ footer {
     <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
   <![endif]-->
 <header class="banner">
-    <h1>LR2PG: Likelihood Ratio Analysis of Phenotype and Genotype Data</h1>
+    <h1><font color="#FFDA1A">LIRICAL</font>: <font color="#FFDA1A">LI</font>kelihood <font color="#FFDA1A">R</font>atio
+    <font color="#FFDA1A">I</font>nterpretation of <font color="#FFDA1A">C</font>linical
+    <font color="#FFDA1A">A</font>bnorma<font color="#FFDA1A">L</font>ities</h1>
 </header>
 
 <nav>
@@ -516,6 +518,7 @@ footer {
     sequence variants found in the exome or genome file to derive a list of candidate diagnoses with estimated posterior
     probabilities. LR2PG is intended as a resource to aide diagnosticians and does not make a diagnosis itself. The
     results of LR2PG should not be construed as medical advice and should always be reviewed by medical professionals.</p>
+    <p>See LIRICAL's <a href="https://lirical.readthedocs.io/en/latest/" target="_blank">online documentation</a>.</p>
     </article>
     </section>
 <footer>
