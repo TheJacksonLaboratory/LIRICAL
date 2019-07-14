@@ -48,8 +48,6 @@ public class CaseEvaluator {
     /** If true, then genotype information is available for the analysis. Otherwise, skip it. */
     private final boolean useGenotypeAnalysis;
 
-    private boolean verbose=true;
-
     private List<LrWithExplanation> currentPhenotypeExplanation;
 
     private List<String> errors;
@@ -132,9 +130,6 @@ public class CaseEvaluator {
         this.errors=new ArrayList<>();
     }
 
-    public void setVerbosity(boolean v) { this.verbose=v;}
-
-
     private List<Double> observedPhenotypesLikelihoodRatios(TermId diseaseId) {
         ImmutableList.Builder<Double> builderObserved = new ImmutableList.Builder<>();
         HpoDisease disease = this.diseaseMap.get(diseaseId);
@@ -159,8 +154,10 @@ public class CaseEvaluator {
 
     private List<Double> excludedPhenotypesLikelihoodRatios(TermId diseaseId) {
         ImmutableList.Builder<Double> builderExcluded = new ImmutableList.Builder<>();
+        HpoDisease disease = this.diseaseMap.get(diseaseId);
+        InducedDiseaseGraph idg = new InducedDiseaseGraph(disease,ontology);
         for (TermId negated : this.negatedPhenotypicAbnormalities) {
-            LrWithExplanation lrwe = phenotypeLRevaluator.getLikelihoodRatioForExcludedTerm(negated, diseaseId);
+            LrWithExplanation lrwe = phenotypeLRevaluator.getLikelihoodRatioForExcludedTerm(negated, idg);
             this.currentPhenotypeExplanation.add(lrwe);
             double LR = lrwe.getLR();
             builderExcluded.add(LR);
@@ -180,8 +177,7 @@ public class CaseEvaluator {
         for (TermId diseaseId : diseaseMap.keySet()) {
             this.currentPhenotypeExplanation=new ArrayList<>();
             Optional<TestResult> opt =evaluateDiseasePhenotypeOnly(diseaseId);
-            if (opt.isPresent())
-                mapbuilder.put(diseaseId,opt.get());
+            opt.ifPresent(testResult -> mapbuilder.put(diseaseId, testResult));
         }
         return mapbuilder.build();
     }

@@ -147,21 +147,24 @@ public class PhenotypeLikelihoodRatio {
      * Calculate and return the likelihood ratio of an EXCLUDED HPO feature tid in an individual
      * with the disease "diseaseId"
      * @param tid An HPO phenotypic abnormality
-     * @param diseaseId The CURIE (e.g., OMIM:600300) of the disease
+     * @param idg An {@link InducedDiseaseGraph} created for the disease
      * @return the likelihood ratio of an EXCLUDED HPO term in the diseases
      */
-    LrWithExplanation getLikelihoodRatioForExcludedTerm(TermId tid, TermId diseaseId) {
-        HpoDisease disease = this.diseaseMap.get(diseaseId);
+    LrWithExplanation getLikelihoodRatioForExcludedTerm(TermId tid, InducedDiseaseGraph idg) {
+        HpoDisease disease = idg.getDisease();
         // check if term exluded in query is also excluded in disease
-        List<TermId> diseaseExcludedTerms = disease.getNegativeAnnotations();
-        Set<TermId> queryancestors = getAncestorTerms(ontology,tid,true);
-        if (!diseaseExcludedTerms.isEmpty()) {
-            for (TermId excl : diseaseExcludedTerms) {
-                if (queryancestors.contains(excl)) {
-                    // i.e., the query term is explicitly EXCLUDED in the disease definition
-                    return LrWithExplanation.excludedQueryTermEcludedInDisease(tid, EXCLUDED_IN_DISEASE_AND_EXCLUDED_IN_QUERY_PROBABILITY);
-                }
-            }
+//        List<TermId> diseaseExcludedTerms = disease.getNegativeAnnotations();
+//        Set<TermId> queryancestors = getAncestorTerms(ontology,tid,true);
+//        if (!diseaseExcludedTerms.isEmpty()) {
+//            for (TermId excl : diseaseExcludedTerms) {
+//                if (queryancestors.contains(excl)) {
+//                    // i.e., the query term is explicitly EXCLUDED in the disease definition
+//                    return LrWithExplanation.excludedQueryTermEcludedInDisease(tid, EXCLUDED_IN_DISEASE_AND_EXCLUDED_IN_QUERY_PROBABILITY);
+//                }
+//            }
+//        }
+        if (idg.isExactExcludedMatch(tid)) {
+            return LrWithExplanation.excludedQueryTermEcludedInDisease(tid, EXCLUDED_IN_DISEASE_AND_EXCLUDED_IN_QUERY_PROBABILITY);
         }
 
 

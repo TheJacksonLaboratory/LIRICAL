@@ -5,6 +5,7 @@ Changelog
 v0.9.22
 -------
 - update to phenol-1.4.1
+- Scoring for features excluded in query and disease.
 
 -------
 v0.9.21

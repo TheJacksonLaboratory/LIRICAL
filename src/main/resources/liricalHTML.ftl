@@ -351,7 +351,7 @@ footer {
       <#if phenopacket_file?has_content>
                 <p>Phenopacket file: ${phenopacket_file}</p>
             </#if>
-      <p>LR2PG analysis performed on ${analysis_date}.</p>
+      <p>LIRICAL analysis performed on ${analysis_date}.</p>
     </article>
   </section>
 
@@ -473,7 +473,7 @@ footer {
 
       <article>
          <h2>Settings</h2>
-        <p>LR2PG was run with the following settings.</p>
+        <p>LIRICAL was run with the following settings.</p>
         <p>
         <ul>
           <#if hpoVersion?has_content>
@@ -512,17 +512,17 @@ footer {
     <a name="about"></a>
     <h2>About</h2>
 
-    <p>LR2PG is a tool for exploring exome or genome sequencing data obtained for an individual with suspected rare genetic disease.
-    LR2PG uses phenotypic features that describe the clinical manifestations observed in the individual and expressed
+    <p>LIRICAL is a tool for exploring exome or genome sequencing data obtained for an individual with suspected rare genetic disease.
+    LIRICAL uses phenotypic features that describe the clinical manifestations observed in the individual and expressed
     as <a href="http://www.human-phenotype-ontology.org">Human Phenotype Ontology</a> (HPO) terms as well as the
     sequence variants found in the exome or genome file to derive a list of candidate diagnoses with estimated posterior
-    probabilities. LR2PG is intended as a resource to aide diagnosticians and does not make a diagnosis itself. The
-    results of LR2PG should not be construed as medical advice and should always be reviewed by medical professionals.</p>
+    probabilities. LIRICAL is intended as a resource to aide diagnosticians and does not make a diagnosis itself. The
+    results of LIRICAL should not be construed as medical advice and should always be reviewed by medical professionals.</p>
     <p>See LIRICAL's <a href="https://lirical.readthedocs.io/en/latest/" target="_blank">online documentation</a>.</p>
     </article>
     </section>
 <footer>
-  <p>LR2PG &copy; 2019</p>
+  <p>LIRICAL &copy; 2019</p>
 </footer>
 </body>
 </html>
