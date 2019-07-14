@@ -43,16 +43,16 @@ public class DifferentialDiagnosis {
         this.diseaseName=prettifyDiseaseName(result.getDiseaseName());
         this.diseaseCurie=result.getDiseaseCurie().getValue();
         this.rank=result.getRank();
-        if (result.getPosttestProbability()>0.9999) {
-            this.posttestprob=String.format("%.5f%%",100*result.getPosttestProbability());
-        } else if (result.getPosttestProbability()>0.999) {
-            this.posttestprob=String.format("%.4f%%",100*result.getPosttestProbability());
-        } else if (result.getPosttestProbability()>0.99) {
-            this.posttestprob=String.format("%.3f%%",100*result.getPosttestProbability());
-        } else {
-            this.posttestprob=String.format("%.2f%%",100*result.getPosttestProbability());
-        }
-
+//        if (result.getPosttestProbability()>0.9999) {
+//            this.posttestprob=String.format("%.1f%%",100*result.getPosttestProbability());
+//        } else if (result.getPosttestProbability()>0.999) {
+//            this.posttestprob=String.format("%.1f%%",100*result.getPosttestProbability());
+//        } else if (result.getPosttestProbability()>0.99) {
+//            this.posttestprob=String.format("%.1f%%",100*result.getPosttestProbability());
+//        } else {
+//            this.posttestprob=String.format("%.1f%%",100*result.getPosttestProbability());
+//        }
+        this.posttestprob=String.format("%.1f%%",100*result.getPosttestProbability());
         double ptp=result.getPretestProbability();
         if (ptp < 0.001) {
             this.pretestprob = String.format("1/%d",Math.round(1.0/ptp));
