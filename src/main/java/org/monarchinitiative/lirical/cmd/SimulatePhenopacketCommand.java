@@ -39,7 +39,7 @@ import static java.util.Map.Entry.comparingByKey;
 @Parameters(commandDescription = "Simulate analysis from phenopacket (with or without VCF)", hidden = false)
 public class SimulatePhenopacketCommand extends PhenopacketCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulatePhenopacketCommand.class);
-    //TODO -- Get this from the VCF file or from the Phenopacket or from command line
+    @Parameter(names = {"-a","--assembly"})
     private String genomeAssembly = "GRCh37";
     @Parameter(names = {"-v", "--template-vcf"}, description = "path to template VCF file", required = true)
     private String templateVcfPath;
@@ -168,7 +168,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
                         e.printStackTrace();
                     }
                 }
-                //if (counter>4)break;
             }
         } else {
             System.err.println("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");

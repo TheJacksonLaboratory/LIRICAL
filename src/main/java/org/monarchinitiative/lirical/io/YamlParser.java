@@ -148,6 +148,11 @@ public class YamlParser {
         }
     }
 
+    public String getHpoPath() {
+        String ddir = getDataDir();
+        return String.format("%s%s%s",ddir,File.separator,"hp.obo");
+    }
+
     /**
      * The Yaml file should have an entry {@code mode: phenotype} in the analysis
      * section if the user wants to run a phenotype only analysis. If there is
@@ -157,9 +162,7 @@ public class YamlParser {
     public boolean phenotypeOnlyMode() {
         if (yconfig.getAnalysis().containsKey("mode")) {
             String mode = yconfig.getAnalysis().get("mode");
-            if (mode.equalsIgnoreCase("phenotype")) {
-                return true;
-            }
+            return mode.equalsIgnoreCase("phenotype");
         }
         return false;
     }
@@ -256,7 +259,7 @@ public class YamlParser {
     }
 
 
-    public String getSampleId() {
+    String getSampleId() {
         if (yconfig==null || yconfig.getSampleId() == null) {
             throw new LiricalRuntimeException("YAML file does not contain required sampleId element");
         }
@@ -307,7 +310,7 @@ public class YamlParser {
         return Optional.empty();
     }
 
-    public boolean doTsv() {
+    boolean doTsv() {
         if (yconfig.getAnalysis().containsKey("tsv")) {
             String k = yconfig.getAnalysis().get("tsv");
             return k.equalsIgnoreCase("true");

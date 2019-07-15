@@ -43,25 +43,22 @@ public class PhenopacketImporter {
      * Factory method to obtain a PhenopacketImporter object starting from a phenopacket in Json format
      * @param pathToJsonPhenopacketFile -- path to the phenopacket
      * @return {@link PhenopacketImporter} object corresponding to the PhenoPacket
-     * @throws ParseException if the JSON code cannot be parsed
-     * @throws IOException if the File cannot be found
      */
-    public static PhenopacketImporter fromJson(String pathToJsonPhenopacketFile, Ontology ontology) throws ParseException,IOException {
+    public static PhenopacketImporter fromJson(String pathToJsonPhenopacketFile, Ontology ontology)  {
         JSONParser parser = new JSONParser();
         logger.trace("Importing Phenopacket: " + pathToJsonPhenopacketFile);
-        Object obj = parser.parse(new FileReader(pathToJsonPhenopacketFile));
-        JSONObject jsonObject = (JSONObject) obj;
-        String phenopacketJsonString = jsonObject.toJSONString();
-        Phenopacket phenopacket;
         try {
+            Object obj = parser.parse(new FileReader(pathToJsonPhenopacketFile));
+            JSONObject jsonObject = (JSONObject) obj;
+            String phenopacketJsonString = jsonObject.toJSONString();
             Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
             JsonFormat.parser().merge(phenopacketJsonString, phenoPacketBuilder);
-            phenopacket = phenoPacketBuilder.build();
-        } catch (IOException e1) {
+            Phenopacket phenopacket = phenoPacketBuilder.build();
+            return new PhenopacketImporter(phenopacket,ontology);
+        } catch (IOException | ParseException e1) {
             e1.printStackTrace();
             throw new LiricalRuntimeException("Could not load phenopacket at " + pathToJsonPhenopacketFile);
         }
-        return new PhenopacketImporter(phenopacket,ontology);
     }
 
     public PhenopacketImporter(Phenopacket ppack, Ontology ontology){

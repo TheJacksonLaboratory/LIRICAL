@@ -155,10 +155,6 @@ public class PhenotypeOnlyHpoCaseSimulator {
                 }
                 ranks.putIfAbsent(rank,0);
                 ranks.put(rank, ranks.get(rank) + 1);
-//                if (++c>n_cases_to_simulate) {
-//                    break; // finished!
-//                }
-
             } else {
                 notRanked.add(diseaseToSimulate);
             }
@@ -290,7 +286,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
 
 
 
-    public Optional<Integer> simulateCase(HpoDisease disease) throws LiricalException {
+    private Optional<Integer> simulateCase(HpoDisease disease) throws LiricalException {
         if (disease == null) {
             // should never happen!
             throw new LiricalException("Attempt to create case from Null-value for disease");
@@ -304,7 +300,6 @@ public class PhenotypeOnlyHpoCaseSimulator {
         // the following evaluates the case for each disease with equal pretest probabilities.
         // Object to evaluate the results of differential diagnosis by LR analysis.
         CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
-        evaluator.setVerbosity(this.verbose);
         HpoCase hpocase = evaluator.evaluate();
         if (verbose)
             System.err.println(hpocase.toString());

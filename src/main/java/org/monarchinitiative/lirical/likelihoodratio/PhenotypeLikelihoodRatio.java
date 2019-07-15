@@ -152,6 +152,8 @@ public class PhenotypeLikelihoodRatio {
      */
     LrWithExplanation getLikelihoodRatioForExcludedTerm(TermId tid, InducedDiseaseGraph idg) {
         HpoDisease disease = idg.getDisease();
+        TermId disid = disease.getDiseaseDatabaseId();
+
         // check if term exluded in query is also excluded in disease
 //        List<TermId> diseaseExcludedTerms = disease.getNegativeAnnotations();
 //        Set<TermId> queryancestors = getAncestorTerms(ontology,tid,true);
