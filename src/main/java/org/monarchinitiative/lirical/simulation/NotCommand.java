@@ -27,6 +27,7 @@ public class NotCommand extends LiricalCommand {
         Ontology hpo = factory.hpoOntology();
         NotSimulator notsim = new NotSimulator(hpo,factory.diseaseMap(hpo));
         notsim.runSimulations(n_cases);
+        notsim.outputSimulationData();
     }
 
 }

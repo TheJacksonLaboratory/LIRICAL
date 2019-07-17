@@ -13,7 +13,11 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getParentTerms;
@@ -54,6 +58,10 @@ public class NotSimulator {
     private int n_cases_to_simulate;
     private List<NotAnnotationDifferential> caselist;
 
+    private List<Double> positiveAnnotationsCorrectDisease;
+    private List<Double> positiveAnnotationsDifferential;
+    private List<Double> negativeAnnotationsCorrectDisease;
+    private List<Double> negativeAnnotationsDifferential;
 
     /**
      * The constructor initializes {@link #ontology} and {@link #diseaseMap} and {@link #phenotypeterms}. This
@@ -75,6 +83,10 @@ public class NotSimulator {
         this.phenotypeterms=builder.build();
         this.termIndices=diseaseMap.keySet().toArray(new TermId[0]);
         initializeCaseList();
+        this.positiveAnnotationsCorrectDisease = new ArrayList<>();
+        this.positiveAnnotationsDifferential = new ArrayList<>();
+        this.negativeAnnotationsCorrectDisease = new ArrayList<>();
+        this.negativeAnnotationsDifferential = new ArrayList<>();
     }
 
     /**
@@ -112,25 +124,46 @@ public class NotSimulator {
         TermId diseaseIdWithTermAnnotated = nad.diseaseIdWithTermAnnotated;
         TermId diseaseIdWithTermExcluded = nad.diseaseIdWithTermExcluded;
         TermId hpo = nad.hpoId;
-        HpoDisease diseaseWithTermAnnotated = this.diseaseMap.get(diseaseIdWithTermAnnotated);
         HpoDisease diseaseWithTermExcluded = this.diseaseMap.get(diseaseIdWithTermExcluded);
         try {
             HpoCase hcase = simulateCase(diseaseWithTermExcluded);
             HpoCase hcaseX = simulateCaseWithExcludedTerm(diseaseWithTermExcluded,hpo);
-            double denominator1 = hcase.getResult(diseaseIdWithTermAnnotated).getPosttestProbability();
-            double numerator1 = hcase.getResult(diseaseIdWithTermExcluded).getPosttestProbability();
-            double ratio1 = numerator1 - denominator1;
-            double denominator2 = hcaseX.getResult(diseaseIdWithTermAnnotated).getPosttestProbability();
-            double numerator2 = hcaseX.getResult(diseaseIdWithTermExcluded).getPosttestProbability();
-            double ratio2 = numerator2 - denominator2;
-            // we expect that diseaseWithTermExcluded will get the better score.
-            // there should be an improvement with using the negated term
-            System.out.println(String.format("ratio2 = %.1f  ratio1 = %.1f", ratio2, ratio1));
+            double differentialPositive = hcase.getResult(diseaseIdWithTermAnnotated).getPosttestProbability();
+            double correctDiseasePositive = hcase.getResult(diseaseIdWithTermExcluded).getPosttestProbability();
+
+            double differentialNegative = hcaseX.getResult(diseaseIdWithTermAnnotated).getPosttestProbability();
+            double correctDiseaseNegative = hcaseX.getResult(diseaseIdWithTermExcluded).getPosttestProbability();
+            this.positiveAnnotationsCorrectDisease.add(correctDiseasePositive);
+            this.positiveAnnotationsDifferential.add(differentialPositive);
+            this.negativeAnnotationsCorrectDisease.add(correctDiseaseNegative);
+            this.negativeAnnotationsDifferential.add(differentialNegative);
 
         } catch(LiricalException e) {
             e.printStackTrace();
         }
+    }
 
+
+    public void outputSimulationData() {
+        String outfilename = "not-simulations.R";
+        String positiveCorrect = this.positiveAnnotationsCorrectDisease.stream().map(String::valueOf).collect(Collectors.joining(","));
+        String positiveDifferential = this.positiveAnnotationsDifferential.stream().map(String::valueOf).collect(Collectors.joining(","));
+        String negativeCorrect  = this.negativeAnnotationsCorrectDisease.stream().map(String::valueOf).collect(Collectors.joining(","));
+        String negativeDifferential  = this.negativeAnnotationsDifferential.stream().map(String::valueOf).collect(Collectors.joining(","));
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(outfilename));
+            bw.write("pos.correct <- c(" + positiveCorrect +")\n");
+            bw.write("pos.diff <- c(" + positiveDifferential +")\n");
+            bw.write("neg.correct <- c(" + negativeCorrect +")\n");
+            bw.write("neg.diff <- c(" + negativeDifferential +")\n");
+           // bw.write("DF <- data.frame(\n");
+           // bw.write(" x=c(c(pos.correct,pos.diff),c(neg.correct,neg.diff)),\n");
+           // bw.write(" y = rep")
+            // see https://stackoverflow.com/questions/47479522/how-to-create-a-grouped-boxplot-in-r
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -141,7 +174,9 @@ public class NotSimulator {
         n_noise_terms = 3;
         addTermImprecision = true;
         for (NotAnnotationDifferential nad : this.caselist) {
-            runSimulation(nad);
+            for (int j=0;j<n_cases_to_simulate;j++) {
+                runSimulation(nad);
+            }
         }
     }
 
