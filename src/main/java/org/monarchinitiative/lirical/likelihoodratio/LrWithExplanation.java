@@ -14,8 +14,13 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
 
     enum MatchType {EXACT_MATCH,
         QUERY_TERM_SUBCLASS_OF_DISEASE_TERM,
+        QUERY_TERM_PRESENT_BUT_EXCLUDED_IN_DISEASE,
         DISEASE_TERM_SUBCLASS_OF_QUERY,
         NON_ROOT_COMMON_ANCESTOR,
+        UNUSUAL_BACKGROUND_FREQUENCY,
+        EXCLUDED_QUERY_TERM_NOT_PRESENT_IN_DISEASE,
+        EXCLUDED_QUERY_TERM_EXCLUDED_IN_DISEASE,
+        EXCLUDED_QUERY_TERM_PRESENT_IN_DISEASE,
         NO_MATCH_BELOW_ROOT}
 
 
@@ -36,6 +41,25 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
 
     static LrWithExplanation exactMatch(TermId tid, double ratio) {
         return new LrWithExplanation(tid,tid,MatchType.EXACT_MATCH, ratio);
+    }
+
+    static LrWithExplanation unusualBackgroundFrequency(TermId tid, double ratio) {
+        return new LrWithExplanation(tid,tid,MatchType.UNUSUAL_BACKGROUND_FREQUENCY,ratio);
+    }
+
+    static LrWithExplanation queryTermExcluded(TermId tid, double ratio) {
+        return new LrWithExplanation(tid,tid,MatchType.QUERY_TERM_PRESENT_BUT_EXCLUDED_IN_DISEASE,ratio);
+    }
+
+    static LrWithExplanation excludedQueryTermNotPresentInDisease(TermId tid,double ratio){
+        return new LrWithExplanation(tid,tid,MatchType.EXCLUDED_QUERY_TERM_NOT_PRESENT_IN_DISEASE,ratio);
+    }
+
+    static LrWithExplanation  excludedQueryTermPresentInDisease(TermId tid,double ratio){
+        return new LrWithExplanation(tid,tid,MatchType.EXCLUDED_QUERY_TERM_PRESENT_IN_DISEASE,ratio);
+    }
+    static LrWithExplanation  excludedQueryTermEcludedInDisease(TermId tid,double ratio){
+        return new LrWithExplanation(tid,tid,MatchType.EXCLUDED_QUERY_TERM_EXCLUDED_IN_DISEASE,ratio);
     }
 
 
@@ -72,6 +96,16 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
                 return String.format("Q~D:%s~%s[%.3f]",qtermlabel,mtermlabel,LR);
             case NO_MATCH_BELOW_ROOT:
                 return String.format("NM:%s[%.3f]",qtermlabel,LR);
+            case QUERY_TERM_PRESENT_BUT_EXCLUDED_IN_DISEASE:
+                return String.format("X:%s[%.3f]",qtermlabel,LR);
+            case UNUSUAL_BACKGROUND_FREQUENCY:
+                return String.format("U:%s[%.3f]",qtermlabel,LR);
+            case EXCLUDED_QUERY_TERM_EXCLUDED_IN_DISEASE:
+                return String.format("XX:%s[%.3f]",qtermlabel,LR);
+            case EXCLUDED_QUERY_TERM_NOT_PRESENT_IN_DISEASE:
+                return String.format("XA:%s[%.3f]",qtermlabel,LR);
+            case EXCLUDED_QUERY_TERM_PRESENT_IN_DISEASE:
+                return String.format("XP:%s[%.3f]",qtermlabel,LR);
              default:
                  return String.format("NM:%s[%.3f]",qtermlabel,LR); // should never happen but needed for compiler
         }
@@ -96,6 +130,16 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
                 return String.format("<b>Q~D</b>:%s~%s[%.3f]",qtermlabel,mtermlabel,LR);
             case NO_MATCH_BELOW_ROOT:
                 return String.format("<b>NM</b>:%s[%.3f]",qtermlabel,LR);
+            case QUERY_TERM_PRESENT_BUT_EXCLUDED_IN_DISEASE:
+                return String.format("X:%s[%.3f]",qtermlabel,LR);
+            case UNUSUAL_BACKGROUND_FREQUENCY:
+                return String.format("U:%s[%.3f]",qtermlabel,LR);
+            case EXCLUDED_QUERY_TERM_EXCLUDED_IN_DISEASE:
+                return String.format("XX:%s[%.3f]",qtermlabel,LR);
+            case EXCLUDED_QUERY_TERM_NOT_PRESENT_IN_DISEASE:
+                return String.format("XA:%s[%.3f]",qtermlabel,LR);
+            case EXCLUDED_QUERY_TERM_PRESENT_IN_DISEASE:
+                return String.format("XP:%s[%.3f]",qtermlabel,LR);
             default:
                 return String.format("<b>NM</b>:%s[%.3f]",qtermlabel,LR); // should never happen but needed for compiler
         }
@@ -109,9 +153,7 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
      */
     @Override
     public int compareTo(LrWithExplanation that) {
-        if (LR>that.LR) return -1;
-        else if (LR<that.LR) return 1;
-        else return 0;
+        return Double.compare(LR,that.LR);
     }
 
 

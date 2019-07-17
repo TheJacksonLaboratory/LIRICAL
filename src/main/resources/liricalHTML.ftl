@@ -285,7 +285,9 @@ footer {
     <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
   <![endif]-->
 <header class="banner">
-    <h1>LR2PG: Likelihood Ratio Analysis of Phenotype and Genotype Data</h1>
+    <h1><font color="#FFDA1A">LIRICAL</font>: <font color="#FFDA1A">LI</font>kelihood <font color="#FFDA1A">R</font>atio
+    <font color="#FFDA1A">I</font>nterpretation of <font color="#FFDA1A">C</font>linical
+    <font color="#FFDA1A">A</font>bnorma<font color="#FFDA1A">L</font>ities</h1>
 </header>
 
 <nav>
@@ -349,7 +351,7 @@ footer {
       <#if phenopacket_file?has_content>
                 <p>Phenopacket file: ${phenopacket_file}</p>
             </#if>
-      <p>LR2PG analysis performed on ${analysis_date}.</p>
+      <p>LIRICAL analysis performed on ${analysis_date}.</p>
     </article>
   </section>
 
@@ -400,7 +402,7 @@ footer {
               <tr>
                 <td>${svar.ucsc}</td>
                 <#if svar.isInPathogenicBin() >
-                <td class="red">${svar.pathogenicity!"n/a"}</td>
+                <td class="red">${svar.pathogenicityScore!"n/a"}</td>
                 <#else>
                  <td>${svar.pathogenicityScore!"n/a"}</td>
                 </#if>
@@ -454,7 +456,7 @@ footer {
       </header> -->
 
       <p>Variants were identified in the following genes. The posttest probability of diseases
-      assosiated with these genes was below ${postprobthreshold}. The table shows the total count of
+      associated with these genes was below ${postprobthreshold}. The table shows the total count of
       variants found in the genes.</p>
 
       <table class="redTable">
@@ -471,7 +473,7 @@ footer {
 
       <article>
          <h2>Settings</h2>
-        <p>LR2PG was run with the following settings.</p>
+        <p>LIRICAL was run with the following settings.</p>
         <p>
         <ul>
           <#if hpoVersion?has_content>
@@ -510,16 +512,17 @@ footer {
     <a name="about"></a>
     <h2>About</h2>
 
-    <p>LR2PG is a tool for exploring exome or genome sequencing data obtained for an individual with suspected rare genetic disease.
-    LR2PG uses phenotypic features that describe the clinical manifestations observed in the individual and expressed
+    <p>LIRICAL is a tool for exploring exome or genome sequencing data obtained for an individual with suspected rare genetic disease.
+    LIRICAL uses phenotypic features that describe the clinical manifestations observed in the individual and expressed
     as <a href="http://www.human-phenotype-ontology.org">Human Phenotype Ontology</a> (HPO) terms as well as the
     sequence variants found in the exome or genome file to derive a list of candidate diagnoses with estimated posterior
-    probabilities. LR2PG is intended as a resource to aide diagnosticians and does not make a diagnosis itself. The
-    results of LR2PG should not be construed as medical advice and should always be reviewed by medical professionals.</p>
+    probabilities. LIRICAL is intended as a resource to aide diagnosticians and does not make a diagnosis itself. The
+    results of LIRICAL should not be construed as medical advice and should always be reviewed by medical professionals.</p>
+    <p>See LIRICAL's <a href="https://lirical.readthedocs.io/en/latest/" target="_blank">online documentation</a>.</p>
     </article>
     </section>
 <footer>
-  <p>LR2PG &copy; 2019</p>
+  <p>LIRICAL &copy; 2019</p>
 </footer>
 </body>
 </html>

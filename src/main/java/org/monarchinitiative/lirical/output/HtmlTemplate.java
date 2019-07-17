@@ -27,7 +27,6 @@ import java.util.Map;
  */
 public class HtmlTemplate extends LiricalTemplate {
     private static final Logger logger = LoggerFactory.getLogger(HtmlTemplate.class);
-
     /** Threshold posterior probability to show a differential diagnosis in detail. */
     private final double THRESHOLD;
     /** Have the HTML output show at least this many differntials (default: 5). */

@@ -16,9 +16,11 @@ public class DifferentialDiagnosis {
 
     private final static String EMPTY_STRING="";
     private final String diseaseName;
+    /** The CURIE-like identifier of the disease, e.g., OMIM:600123 */
     private final String diseaseCurie;
     /** This is the anchor that will be used on the HTML page. */
     private  String anchor=EMPTY_STRING;
+    /** The rank of this disease in the current analysis. */
     private final int rank;
     private final String pretestprob;
     private final String posttestprob;
@@ -26,16 +28,17 @@ public class DifferentialDiagnosis {
     private final double compositeLR;
     private final String entrezGeneId;
     private final String url;
+    /** SVG string illustrating the contributions of each feature to the overall score. */
     private String svg;
     private List<SimpleVariant> varlist;
     /** Set this to yes as a flag for the template to indicate we can show some variants. */
     private String hasVariants="No";
 
-    private String geneSymbol=EMPTY_STRING;
+    private String geneSymbol = EMPTY_STRING;
 
-    private String genotypeExplanation =EMPTY_STRING;
+    private String genotypeExplanation = EMPTY_STRING;
 
-    private String phenotypeExplanation=EMPTY_STRING;
+    private String phenotypeExplanation = EMPTY_STRING;
 
 
 
@@ -43,16 +46,7 @@ public class DifferentialDiagnosis {
         this.diseaseName=prettifyDiseaseName(result.getDiseaseName());
         this.diseaseCurie=result.getDiseaseCurie().getValue();
         this.rank=result.getRank();
-        if (result.getPosttestProbability()>0.9999) {
-            this.posttestprob=String.format("%.5f%%",100*result.getPosttestProbability());
-        } else if (result.getPosttestProbability()>0.999) {
-            this.posttestprob=String.format("%.4f%%",100*result.getPosttestProbability());
-        } else if (result.getPosttestProbability()>0.99) {
-            this.posttestprob=String.format("%.3f%%",100*result.getPosttestProbability());
-        } else {
-            this.posttestprob=String.format("%.2f%%",100*result.getPosttestProbability());
-        }
-
+        this.posttestprob=String.format("%.1f%%",100*result.getPosttestProbability());
         double ptp=result.getPretestProbability();
         if (ptp < 0.001) {
             this.pretestprob = String.format("1/%d",Math.round(1.0/ptp));

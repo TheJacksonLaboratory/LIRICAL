@@ -216,7 +216,7 @@
     "individualToSampleIdentifiers": {
     },
     "file": {
-      "path": "/Users/peterrobinson/Documents/data/Pfeiffer.vcf",
+      "path": "/path/to/Pfeiffer.vcf",
       "uri": "",
       "description": "Pfeiffer sample"
     }

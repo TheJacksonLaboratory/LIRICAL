@@ -13,7 +13,9 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
 import java.io.File;
+import java.net.URL;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -34,16 +36,15 @@ public class PhenotypeLikelihoodRatioTest {
 
 
     @BeforeAll
-    static void setup() throws PhenolException, NullPointerException {
+    static void setup() throws NullPointerException {
         ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
-        String hpoPath = classLoader.getResource("hp.small.obo").getFile();
+        URL url = classLoader.getResource("hp.small.obo");
+        Objects.requireNonNull(url);
+        String hpoPath = url.getFile();
         String annotationPath = classLoader.getResource("small.hpoa").getFile();
         // The HPO is in the default  curie map and only contains known relationships / HP terms
         Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));
-
-
-        HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(annotationPath,ontology);
-        diseaseMap=annotationParser.parse();
+        diseaseMap = HpoDiseaseAnnotationParser.loadDiseaseMap(annotationPath,ontology);
         phenotypeLrCalculator =new PhenotypeLikelihoodRatio(ontology,diseaseMap);
     }
 

@@ -1,6 +1,18 @@
 =========
 Changelog
 =========
+-------
+v0.9.22
+-------
+- update to phenol-1.4.1
+- Scoring for features excluded in query and disease.
+
+-------
+v0.9.21
+-------
+- ClinVar now requires assessment to be counted
+- bug-fix of "missing" genes
+- fixing SVG format for excluded phenotypes
 
 -------
 v0.9.20

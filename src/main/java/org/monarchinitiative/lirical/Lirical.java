@@ -33,12 +33,12 @@ public class Lirical {
 
         Lirical lirical = new Lirical();
         DownloadCommand download = new DownloadCommand();
-        SimulatePhenotypesCommand simulate = new SimulatePhenotypesCommand();
+        SimulatePhenotypeOnlyCommand simulate = new SimulatePhenotypeOnlyCommand();
         GridSearchCommand grid = new GridSearchCommand();
         Gt2GitCommand gt2git = new Gt2GitCommand();
         YamlCommand yaml = new YamlCommand();
         PhenopacketCommand phenopacket = new PhenopacketCommand();
-        SimulateVcfCommand simvcf = new SimulateVcfCommand();
+        SimulatePhenopacketCommand simvcf = new SimulatePhenopacketCommand();
         JCommander jc = JCommander.newBuilder()
                 .addObject(lirical)
                 .addCommand("download", download)
@@ -71,17 +71,13 @@ public class Lirical {
                     System.exit(1);
                 }
             }
-            if (commandstring==null) { // user ran without any command
-                jc.usage();
-                System.exit(0);
-            }
             System.err.println("[ERROR] "+e.getMessage());
             System.err.println("[ERROR] your command: "+commandstring);
             System.err.println("[ERROR] enter java -jar LIRICAL.jar -h for more information.");
             System.exit(1);
         }
         String parsedCommand = jc.getParsedCommand();
-        if (parsedCommand==null) {
+        if (parsedCommand==null || parsedCommand.isEmpty()) {
             jc.usage(); // user ran program with no arguments, probably help is want is wanted.
             System.exit(0);
         }
@@ -149,7 +145,20 @@ public class Lirical {
             e.printStackTrace();
         }
         long stopTime = System.currentTimeMillis();
-        System.out.println("LRPG: Elapsed time was " + (stopTime - startTime)*(1.0)/1000 + " seconds.");
+        int elapsedTime = (int)((stopTime - startTime)*(1.0)/1000);
+        if (elapsedTime > 3599) {
+            int elapsedSeconds = elapsedTime % 60;
+            int elapsedMinutes = (elapsedTime/60) % 60;
+            int elapsedHours = elapsedTime/3600;
+            System.out.println(String.format("LIRICAL: Elapsed time was %d:%2d%2d",elapsedHours,elapsedMinutes,elapsedSeconds));
+        }
+        else if (elapsedTime>59) {
+            int elapsedSeconds = elapsedTime % 60;
+            int elapsedMinutes = (elapsedTime/60) % 60;
+            System.out.println(String.format("LIRICAL: Elapsed time was %d min, %d sec",elapsedMinutes,elapsedSeconds));
+        } else {
+            System.out.println("LIRICAL: Elapsed time was " + (stopTime - startTime) * (1.0) / 1000 + " seconds.");
+        }
     }
 
 

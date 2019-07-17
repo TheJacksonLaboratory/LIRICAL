@@ -1,4 +1,4 @@
-.. _rstyaml:
+.. _rstyaml-hpo:
 
 Running LIRICAL with a YAML file
 ================================

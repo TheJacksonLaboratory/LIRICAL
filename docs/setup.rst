@@ -4,36 +4,12 @@ Setting up LIRICAL
 ==================
 
 LIRICAL is a desktop Java application that requires several external files to run. This document
-details how to download these files and prepare to run LIRICAL.
+details how to download these files and prepare to run LIRICAL. LIRICAL requires Exomiser to be installed
+as a library before it can be compiled and built.
 
 
-
-Installation
-~~~~~~~~~~~~
-
-Go the GitHub page of `LIRICAL <https://github.com/TheJacksonLaboratory/LIRICAL>`_, and clone or download the project.
-Build the executable from source with maven, and then test the build. ::
-
-    $ git clone https://github.com/TheJacksonLaboratory/LIRICAL.git
-    $ cd LIRICAL
-    $ mvn package
-    $ java -jar target/LIRICAL.jar
-    $ Usage: <main class> [options] [command] [command options]
-      Options:
-        -h, --help
-          display this help message
-      (...)
-
-
-
-LIRICAL requires `maven <https://maven.apache.org/>`_ version 3.5.3. Alternatively, go to the Releases section of the
-`LIRICAL <https://github.com/TheJacksonLaboratory/LIRICAL>`_, GitHub page and download the latest precompiled version
-of LIRICAL.
-
-
-
-Exomiser as a Java library
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installation of Exomiser as a Java library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LIRICAL relies on some classes from the Exomiser. To build LIRICAL, we need to install the Exomiser code base locally.
 Note that the version of Exomiser must match the version indicated in LIRICAL's pom file (current 12.0). To check this,
 search for the following line in the ``pom.xml`` file: ::
@@ -62,7 +38,36 @@ Finally, we use the maven system to install the Exomiser library locally so that
 This command will install the library in the ``.m2`` directory located in your home directory. If you like, explore
 ``.m2/repository/org/monarchinitiative/exomiser/`` to see how maven structures the repository.
 
+
+
+
+Installation
+~~~~~~~~~~~~
+
+Go the GitHub page of `LIRICAL <https://github.com/TheJacksonLaboratory/LIRICAL>`_, and clone or download the project.
+Build the executable from source with maven, and then test the build. ::
+
+    $ git clone https://github.com/TheJacksonLaboratory/LIRICAL.git
+    $ cd LIRICAL
+    $ mvn compile
+    $ mvn package
+    $ java -jar target/LIRICAL.jar
+    $ Usage: <main class> [options] [command] [command options]
+      Options:
+        -h, --help
+          display this help message
+      (...)
+
+
+
+LIRICAL requires `maven <https://maven.apache.org/>`_ version 3.5.3. Alternatively, go to the Releases section of the
+`LIRICAL <https://github.com/TheJacksonLaboratory/LIRICAL>`_, GitHub page and download the latest precompiled version
+of LIRICAL.
+
+
+
 .. _rstexomiserdatadir:
+
 
 Exomiser database files
 ~~~~~~~~~~~~~~~~~~~~~~~

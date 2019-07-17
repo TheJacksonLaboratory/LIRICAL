@@ -17,7 +17,6 @@ import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
 import org.monarchinitiative.lirical.io.YamlParser;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
-import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.io.OntologyLoader;
@@ -28,6 +27,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.plaf.BorderUIResource;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
@@ -43,8 +43,6 @@ import java.util.*;
  */
 public class LiricalFactory {
     private static final Logger logger = LoggerFactory.getLogger(LiricalFactory.class);
-    /** Path to the {@code hp.obo} file. */
-    private final String hpoOboFilePath;
     /** Path to the {@code phenotype.hpoa} file. */
     private final String phenotypeAnnotationPath;
     /** UCSC, RefSeq, Ensembl. */
@@ -79,6 +77,8 @@ public class LiricalFactory {
     private String mvStorePath=null;
     /** genotype matching for likelihood ratio calculation". */
     private boolean strict;
+    /** retain candidates even if no candidate variant is found */
+    private final boolean keepIfNoCandidateVariant;
 
     private String hpoVersion="n/a";
 
@@ -106,7 +106,11 @@ public class LiricalFactory {
     private JannovarData jannovarData=null;
 
     private LiricalFactory(Builder builder) {
-        this.hpoOboFilePath = builder.hpOboPath;
+        this.ontology = builder.ontology;
+        Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
+        if (ontologyMetainfo.containsKey("data-version")) {
+            this.hpoVersion=ontologyMetainfo.get("data-version");
+        }
         this.exomiserPath = builder.exomiserDataDir;
         if (exomiserPath!=null) {
             initializeExomiserPaths();
@@ -155,12 +159,8 @@ public class LiricalFactory {
             listbuilder.add(negatedId);
         }
         this.negatedHpoIdList = listbuilder.build();
-        if (builder.hpOboPath!=null) {
-            this.ontology=hpoOntology();
-        } else {
-            this.ontology=null;
-        }
         this.filterOnFILTER=builder.filterFILTER;
+        this.keepIfNoCandidateVariant = builder.keep;
     }
 
 
@@ -198,19 +198,7 @@ public class LiricalFactory {
 
     /** @return HpoOntology object. */
     public Ontology hpoOntology() {
-        if (ontology != null) return ontology;
-        // The HPO is in the default  curie map and only contains known relationships / HP terms
-        Ontology ontology =  OntologyLoader.loadOntology(new File(this.hpoOboFilePath));
-        if (ontology==null) {
-            throw new PhenolRuntimeException("Could not load ontology from \"" + this.hpoOboFilePath +"\"");
-        } else {
-
-            Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
-            if (ontologyMetainfo.containsKey("data-version")) {
-                this.hpoVersion=ontologyMetainfo.get("data-version");
-            }
-            return ontology;
-        }
+        return ontology;
     }
 
     /** returns "n/a if {@link #transcriptdatabase} was not initialized (should not happen). */
@@ -299,14 +287,9 @@ public class LiricalFactory {
         if (!mim2genemedgenFile.exists()) {
             throw new LiricalRuntimeException("Could not find medgen file at " + this.mim2genemedgenPath + ". Run download!");
         }
-        File orphafilePlaceholder = null;//we do not need this for now
-        HpoAssociationParser assocParser = new HpoAssociationParser(geneInfoFile,
-                mim2genemedgenFile,
-                orphafilePlaceholder,
+        HpoAssociationParser assocParser = new HpoAssociationParser(geneInfoFile.getAbsolutePath(),
+                mim2genemedgenFile.getAbsolutePath(),
                 ontology);
-        assocParser.parse();
-        assocParser.getDiseaseToGeneIdMap();
-
         this.gene2diseaseMultiMap=assocParser.getGeneToDiseaseIdMap();
         this.disease2geneIdMultiMap=assocParser.getDiseaseToGeneIdMap();
         this.geneId2SymbolMap=assocParser.getGeneIdToSymbolMap();
@@ -428,21 +411,8 @@ public class LiricalFactory {
         if (this.phenotypeAnnotationPath==null) {
             throw new LiricalRuntimeException("Path to phenotype.hpoa file not found");
         }
-        // phenol 1.3.2
         List<String> desiredDatabasePrefixes=ImmutableList.of("OMIM","DECIPHER");
-        HpoDiseaseAnnotationParser annotationParser=new HpoDiseaseAnnotationParser(phenotypeAnnotationPath,ontology,desiredDatabasePrefixes);
-       // HpoDiseaseAnnotationParser annotationParser = new HpoDiseaseAnnotationParser(this.phenotypeAnnotationPath, this.ontology);
-        try {
-            Map<TermId, HpoDisease> diseaseMap = annotationParser.parse();
-            if (!annotationParser.validParse()) {
-                int n = annotationParser.getErrors().size();
-                logger.warn("Parse problems encountered with the annotation file at {}. Got {} errors",
-                        this.phenotypeAnnotationPath,n);
-            }
-            return diseaseMap;
-        } catch (PhenolException pe) {
-            throw new LiricalRuntimeException("Could not parse annotation file: " + pe.getMessage());
-        }
+        return HpoDiseaseAnnotationParser.loadDiseaseMap(phenotypeAnnotationPath,ontology,desiredDatabasePrefixes);
     }
 
     public  Map<TermId, Gene2Genotype> getGene2GenotypeMap() {
@@ -477,6 +447,8 @@ public class LiricalFactory {
         return n_filtered_variants;
     }
 
+    public boolean keepIfNoCandidateVariant() { return  keepIfNoCandidateVariant; }
+
     /**
      * This is used by the Builder to check that all of the necessary files in the Data directory are present.
      * It writes one line to the logger for each file it checks, and throws a RunTime exception if a file is
@@ -493,13 +465,6 @@ public class LiricalFactory {
             throw new LiricalRuntimeException(String.format("LIRICAL datadir path (%s) is not a directory.",datadir));
         } else {
             logger.trace("LIRICAL datadirectory: {}", datadir);
-        }
-        File f1 = new File(this.hpoOboFilePath);
-        if (!f1.exists() && f1.isFile()) {
-            logger.error("Could not find valid hp.obo file at {}",hpoOboFilePath);
-            throw new LiricalRuntimeException(String.format("Could not find valid hp.obo file at %s",hpoOboFilePath));
-        } else {
-            logger.trace("hp.obo: {}",hpoOboFilePath);
         }
         File f2 = new File(this.phenotypeAnnotationPath);
         if (!f2.exists() && f2.isFile()) {
@@ -602,23 +567,31 @@ public class LiricalFactory {
      */
     public static class Builder {
         /** path to hp.obo file.*/
-        private String hpOboPath=null;
-        private String phenotypeAnnotationPath=null;
-        private String liricalDataDir =null;
-        private String exomiserDataDir=null;
-        private String geneInfoPath=null;
-        private String mim2genemedgenPath=null;
-        private String backgroundFrequencyPath=null;
-        private String vcfPath=null;
-        private String genomeAssembly=null;
-        private boolean filterFILTER=true;
-        private boolean strict=false;
+        private Ontology ontology = null;
+        private String phenotypeAnnotationPath = null;
+        private String liricalDataDir = null;
+        private String exomiserDataDir = null;
+        private String geneInfoPath = null;
+        private String mim2genemedgenPath = null;
+        private String backgroundFrequencyPath = null;
+        private String vcfPath = null;
+        private String genomeAssembly = null;
+        private boolean filterFILTER = true;
+        private boolean strict = false;
+        private boolean keep = false;
         /** The default transcript database is UCSC> */
         private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
         private List<String> observedHpoTerms=ImmutableList.of();
         private List<String> negatedHpoTerms=ImmutableList.of();
 
+        /** If this constructor is used, the the build method will attempt to load the HPO
+         * based on its file location in datadir. If it is not possible, we will die gracefully.
+         */
         public Builder(){
+        }
+
+        public Builder(Ontology  hpo){
+            ontology = hpo;
         }
 
         public Builder yaml(YamlParser yp) {
@@ -668,6 +641,11 @@ public class LiricalFactory {
             return this;
         }
 
+        public Builder keep(boolean b) {
+            this.keep = b;
+            return this;
+        }
+
 
         public Builder genomeAssembly(String ga) {
             this.genomeAssembly=ga;
@@ -692,7 +670,7 @@ public class LiricalFactory {
 
 
         /** @return an {@link org.monarchinitiative.exomiser.core.genome.GenomeAssembly} object representing the genome build.*/
-        public GenomeAssembly getAssembly() {
+        GenomeAssembly getAssembly() {
             if (genomeAssembly!=null) {
                 switch (genomeAssembly.toLowerCase()) {
                     case "hg19":
@@ -712,11 +690,6 @@ public class LiricalFactory {
 
         public Builder backgroundFrequency(String bf) {
             this.backgroundFrequencyPath=bf;
-            return this;
-        }
-
-        public Builder filter(boolean f) {
-            this.filterFILTER=f;
             return this;
         }
 
@@ -743,7 +716,6 @@ public class LiricalFactory {
          * should be called only after {@link #liricalDataDir} has been set.
          */
         private void initDatadirFiles() {
-            this.hpOboPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"hp.obo");
             this.geneInfoPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"Homo_sapiens_gene_info.gz");
             this.phenotypeAnnotationPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"phenotype.hpoa");
             this.mim2genemedgenPath=String.format("%s%s%s",this.liricalDataDir,File.separator,"mim2gene_medgen");
@@ -757,13 +729,20 @@ public class LiricalFactory {
             return this;
         }
 
+        private void ingestHpo() {
+            String hpopath = String.format("%s%s%s",this.liricalDataDir,File.separator,"hp.obo");
+            this.ontology = OntologyLoader.loadOntology(new File(hpopath));
+            Objects.requireNonNull(this.ontology);
+        }
+
 
         public LiricalFactory build() {
+            if (this.ontology == null) ingestHpo();
             return new LiricalFactory(this);
         }
 
         public LiricalFactory buildForGenomicDiagnostics() {
-
+            if (this.ontology == null) ingestHpo();
             LiricalFactory factory = new LiricalFactory(this);
             factory.qcHumanPhenotypeOntologyFiles();
             factory.qcExternalFilesInDataDir();
@@ -773,6 +752,7 @@ public class LiricalFactory {
 
 
         public LiricalFactory buildForPhenotypeOnlyDiagnostics() {
+            if (this.ontology == null) ingestHpo();
             LiricalFactory factory = new LiricalFactory(this);
             factory.qcHumanPhenotypeOntologyFiles();
             factory.qcExternalFilesInDataDir();

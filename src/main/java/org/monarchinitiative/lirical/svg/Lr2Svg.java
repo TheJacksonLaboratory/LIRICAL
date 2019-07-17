@@ -37,7 +37,7 @@ public class Lr2Svg {
     /** width of the bars part of the image in px */
     private final int WIDTH=500;
     /** additional width of the text part of the image in px */
-    private final static int TEXTPART_WIDTH=400;
+    private final static int TEXTPART_WIDTH=500;
     /** minimum distance to top of image of graphic elements */
     private final static int MIN_VERTICAL_OFFSET=10;
     /** distance between two adjacent "boxes" */

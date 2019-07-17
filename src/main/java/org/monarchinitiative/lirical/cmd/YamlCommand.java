@@ -13,11 +13,13 @@ import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.output.LiricalTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -140,18 +142,21 @@ public class YamlCommand extends PrioritizeCommand {
         threshold.ifPresent(d -> this.LR_THRESHOLD = d);
         this.outfilePrefix = yparser.getPrefix();
 
+        String hpoPath = yparser.getHpoPath();
+        Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));
+
         if (yparser.getOutDirectory().isPresent()) {
             this.outdir=yparser.getOutDirectory().get();
         }
 
         if (yparser.phenotypeOnlyMode()) {
             phenotypeOnly=true;
-            LiricalFactory.Builder builder = new LiricalFactory.Builder().
+            LiricalFactory.Builder builder = new LiricalFactory.Builder(ontology).
                     yaml(yparser,phenotypeOnly);
             return builder.buildForPhenotypeOnlyDiagnostics();
         } else {
             phenotypeOnly=false;
-            LiricalFactory.Builder builder = new LiricalFactory.Builder().
+            LiricalFactory.Builder builder = new LiricalFactory.Builder(ontology).
                     yaml(yparser);
             return builder.buildForGenomicDiagnostics();
         }

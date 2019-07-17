@@ -112,9 +112,9 @@ public class TestResult implements Comparable<TestResult> {
         return genotypeLR!=null ? genotypeLR*compositeLR : compositeLR;
     }
 
-    /** @return the total count of tests performed (including one for the genotype if done).*/
+    /** @return the total count of tests performed (excluding genotype).*/
     public int getNumberOfTests() {
-        return results.size();
+        return results.size() + excludedResults.size();
     }
 
     /** @return the pretest odds.*/
