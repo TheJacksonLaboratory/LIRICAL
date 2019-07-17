@@ -1,9 +1,11 @@
-package org.monarchinitiative.lirical.analysis;
+package org.monarchinitiative.lirical.simulation;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import org.json.simple.parser.ParseException;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.lirical.analysis.Gene2Genotype;
+import org.monarchinitiative.lirical.analysis.VcfSimulator;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
@@ -16,7 +18,6 @@ import org.monarchinitiative.lirical.output.LiricalTemplate;
 import org.monarchinitiative.lirical.output.TsvTemplate;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
-import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.core.Disease;
 import org.phenopackets.schema.v1.core.HtsFile;

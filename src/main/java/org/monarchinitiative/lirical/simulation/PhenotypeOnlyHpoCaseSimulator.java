@@ -1,8 +1,9 @@
-package org.monarchinitiative.lirical.hpo;
+package org.monarchinitiative.lirical.simulation;
 
 
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.lirical.exception.LiricalException;
+import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
@@ -13,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import javax.swing.text.html.Option;
 import java.util.*;
 
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;

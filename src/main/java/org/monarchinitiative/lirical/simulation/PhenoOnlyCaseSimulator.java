@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.analysis;
+package org.monarchinitiative.lirical.simulation;
 
 import org.json.simple.parser.ParseException;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
