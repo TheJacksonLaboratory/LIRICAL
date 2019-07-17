@@ -23,7 +23,7 @@ import java.util.*;
 public class CaseEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(CaseEvaluator.class);
     /** List of abnormalities seen in the person being evaluated. */
-    private List<TermId> phenotypicAbnormalities;
+    private final List<TermId> phenotypicAbnormalities;
     /** List of abnormalities excluded in the person being evaluated. */
     private List<TermId> negatedPhenotypicAbnormalities;
     /** Map of the observed genotypes in the VCF file. Key is an EntrezGene is, and the value is the average pathogenicity score times the
@@ -289,7 +289,7 @@ public class CaseEvaluator {
 
     private String getPhenotypeExplanation() {
         ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
-        Collections.sort(this.currentPhenotypeExplanation);
+        Collections.sort(this.currentPhenotypeExplanation,Collections.reverseOrder());
         for (LrWithExplanation lrwe:this.currentPhenotypeExplanation) {
             String e = lrwe.getEscapedExplanation(this.ontology);
             builder.add(e);

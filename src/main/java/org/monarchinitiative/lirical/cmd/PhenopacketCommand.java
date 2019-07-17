@@ -5,10 +5,8 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.common.collect.Multimap;
 
-import org.json.simple.parser.ParseException;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
-import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.io.PhenopacketImporter;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
@@ -23,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -44,7 +41,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
     protected String exomiserDataDirectory = null;
     @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC, Ensembl, RefSeq)")
     protected String transcriptDb="refseq";
-
+    /** Reference to HPO object. */
     private Ontology ontology;
 
     /**
@@ -67,13 +64,6 @@ public class PhenopacketCommand extends PrioritizeCommand {
      * Path to the VCF file (if any).
      */
     private String vcfPath = null;
-
-    /**
-     * List of errors encountered while processing the VCF file and the Phenopacket. We will show the list of errors in the
-     * output HTML file.
-     */
-    private List<String> errors;
-
 
     public PhenopacketCommand() {
     }
@@ -124,6 +114,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
         this.metadata.put("genesWithVar", String.valueOf(n_genes_with_var));
         this.metadata.put("exomiserPath", factory.getExomiserPath());
         this.metadata.put("hpoVersion", factory.getHpoVersion());
+        this.metadata.put("sample_name", factory.getSampleName());
         this.geneId2symbol = factory.geneId2symbolMap();
         List<String> errors = evaluator.getErrors();
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
@@ -198,7 +189,6 @@ public class PhenopacketCommand extends PrioritizeCommand {
 
         logger.trace("Will analyze phenopacket at " + phenopacketPath);
         this.metadata = new HashMap<>();
-        this.errors = new ArrayList<>();
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
         this.metadata.put("analysis_date", dateFormat.format(date));

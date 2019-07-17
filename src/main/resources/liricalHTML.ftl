@@ -456,7 +456,7 @@ footer {
       </header> -->
 
       <p>Variants were identified in the following genes. The posttest probability of diseases
-      assosiated with these genes was below ${postprobthreshold}. The table shows the total count of
+      associated with these genes was below ${postprobthreshold}. The table shows the total count of
       variants found in the genes.</p>
 
       <table class="redTable">

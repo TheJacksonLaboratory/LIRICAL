@@ -1,4 +1,4 @@
-.. _rstphenopacket:
+.. _rstphenopackethpo:
 
 Running LIRICAL with a Phenopacket file
 =======================================
@@ -22,7 +22,7 @@ been performed, whereby the corresponding VCF file is available at ``/path/to/da
     {
         "subject": {
         "id": "example-1",
-        "phenotypes": [{
+        "phenotypicFeatures": [{
             "type": {
                 "id": "HP:0000244",
                 "label": "Turribrachycephaly"
@@ -65,20 +65,10 @@ been performed, whereby the corresponding VCF file is available at ``/path/to/da
         },
             "classOfOnset": {
                 "id": "HP:0003577",
-            "label": "Congenital onset"
+                "label": "Congenital onset"
         }
         }]
     },
-        "htsFiles": [{
-            "htsFormat": "VCF",
-            "individualToSampleIdentifiers": {
-                "example-1": "example-1"
-        },
-        "genomeAssembly": "GRCH_37",
-        "file": {
-            "path": "/path/to/data/Pfeiffer.vcf"
-        }
-    }],
     "metaData": {
         "createdBy": "Peter R.",
         "resources": [{
@@ -92,20 +82,6 @@ been performed, whereby the corresponding VCF file is available at ``/path/to/da
      }
     }
 
-Running LIRICAL with clinical and genomic data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-LIRICAL will perform combined phenotye and variant analysis if the Phenopacket contains an ``htsFiles`` element. In this
-case, you need to indicate the path to the VCF file on your system as shown above (``/path/to/data/Pfeiffer.vcf``).
-
-
-The ``-p`` option is used to indicate the Phenopacket, and the -e option is used to indicate the location of
-the :ref:`rstexomiserdatadir`.
-::
-
-    $ java -jar LIRICAL.java phenopacket -p /path/to/example.json -e /path/to/exomiser-data/
-
-
 
 
 Running LIRICAL with clinical data
@@ -117,11 +93,62 @@ In this case, the only required argument is the phenopacket. ::
 
 
 
+LIRICAL Options for clinical/genomic analysis
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following options can be use to alter the default behavior of LIRICAL
+
+::
+
+  -d, --data <directory>
+
+By default, LIRICAL downloads several data files to a directory called ``data`` that it creates in the
+current working directory. If you download these files to some other directory, then you will need to
+indicate that path with this option.
+
+
+::
+
+     -m, --mindiff <int>
+
+
+By default, LIRICAL shows all differential diagnoses with a posterior probability of
+at least 1%, and at least 10 entries regardless of the posterior probability. If you
+want LIRICAL to show details about more differentials, set this option to the desired number.
+
+::
+
+    -t, --threshold
+
+This option controls the minimum post-test probability to show a differential diagnosis in HTML output.
+By default, LIRICAL shows all differnetials with a posterior probability of 1% or greater.
+
+
+::
+
+     -x, --prefix
+
+The output file will be either ``prefix.html`` or ``prefix.tsv``, whereby prefix can be set with this
+option (e.g., ``-x example`` would cause LIRICAL to output ``example.html``). By default, the prefix is
+set to "lirical".
+
+
+::
+
+      -o, --output-directory
+
+Directory into which to write output file(s).
+
+
+::
+
+     --tsv
+Use TSV instead of HTML output (Default: false).
+
+
 
 Output
 ~~~~~~
 
-LR2PG can output either an HTML file with a summary of results or a tab-separated values (TSV) file for computational
-pipelines. By default, LR2PG outputs an HTML file. TODO-link to page explaining the output.
-Passing the --tsv flag will cause it to instead output a
-TSV file that has one line for each differential diagnosis, ordered according to the post-test probability.
+
+See :ref:`rstoutput` for details on the HTML and TSV output files.

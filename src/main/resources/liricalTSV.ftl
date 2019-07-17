@@ -1,5 +1,5 @@
 ! LR2PG TSV Output
-! Sample: ${sample_name}
+! Sample: ${sample_name!"n/a"}
 ! Observed HPO terms
 <#assign tab="\t">
 <#list  observedHPOs as hpo>

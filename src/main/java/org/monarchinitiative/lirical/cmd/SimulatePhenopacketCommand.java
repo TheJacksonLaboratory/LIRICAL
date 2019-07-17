@@ -323,7 +323,6 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         for (LiricalRanking lrank : this.rankingsList) {
             total_rank += lrank.getRank();
             N++;
-
         }
         double avgrank = (double) total_rank / N;
         logger.info("Average rank from " + N + " simulations was " + avgrank);
