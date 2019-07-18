@@ -5,7 +5,6 @@ import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -30,7 +29,7 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getPa
 public class NotSimulator {
     private static final Logger logger = LoggerFactory.getLogger(NotSimulator.class);
     /** An object representing the Human Phenotype Ontology */
-    private Ontology ontology;
+    private final Ontology ontology;
     /** An object that calculates the foreground frequency of an HPO term in a disease as well as the background frequency */
     private final PhenotypeLikelihoodRatio phenotypeLrEvaluator;
     /** A list of all HPO term ids in the Phenotypic abnormality subontology. */
@@ -44,9 +43,7 @@ public class NotSimulator {
     private double proportionAtRank1=0.0;
     /** This array will hold the TermIds from the disease map in order -- this will allow us to
      * get random indices for the simulations. */
-    private TermId[] termIndices;
-    /** If true, show lots of results in STDOUT while we are calculating. */
-    private boolean verbose=true;
+    private final TermId[] termIndices;
     /** Root term id in the phenotypic abnormality subontology. */
     private final static TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
@@ -58,10 +55,10 @@ public class NotSimulator {
     private int n_cases_to_simulate;
     private List<NotAnnotationDifferential> caselist;
 
-    private List<Double> positiveAnnotationsCorrectDisease;
-    private List<Double> positiveAnnotationsDifferential;
-    private List<Double> negativeAnnotationsCorrectDisease;
-    private List<Double> negativeAnnotationsDifferential;
+    private final List<Double> positiveAnnotationsCorrectDisease;
+    private final List<Double> positiveAnnotationsDifferential;
+    private final List<Double> negativeAnnotationsCorrectDisease;
+    private final List<Double> negativeAnnotationsDifferential;
 
     /**
      * The constructor initializes {@link #ontology} and {@link #diseaseMap} and {@link #phenotypeterms}. This
@@ -93,15 +90,15 @@ public class NotSimulator {
      * Represents a pair of diseases where one disease has a certain HPO term and the
      * other disease is explicitly annotated NOT to have that HPO term.
      */
-    public static class NotAnnotationDifferential {
+    static class NotAnnotationDifferential {
         /** disease id., e.g., OMIM:600123, of a disease that is annotated to {@link #hpoId} .*/
-        public final TermId diseaseIdWithTermAnnotated;
+        final TermId diseaseIdWithTermAnnotated;
         /** disease id., e.g., OMIM:600125, of a disease for which {@link #hpoId} is excluded.*/
-        public final TermId diseaseIdWithTermExcluded;
+        final TermId diseaseIdWithTermExcluded;
         /** Term id of an HPO term. */
-        public final TermId hpoId;
+        final TermId hpoId;
 
-        public NotAnnotationDifferential(TermId disease1, TermId disease2, TermId hpo) {
+        NotAnnotationDifferential(TermId disease1, TermId disease2, TermId hpo) {
             this.diseaseIdWithTermAnnotated = disease1;
             this.diseaseIdWithTermExcluded  = disease2;
             this.hpoId = hpo;
@@ -111,12 +108,68 @@ public class NotSimulator {
 
     private void initializeCaseList() {
         caselist = new ArrayList<>();
-        // Marfan vs Loes sDietz Syndrome 4.
+        // Marfan vs Loeys-Dietz Syndrome 4.
         TermId marfan = TermId.of("OMIM:154700");
         TermId lds4 = TermId.of("OMIM:614816");
         TermId ectopiaLentis = TermId.of("HP:0001083");
         NotAnnotationDifferential nad1 = new NotAnnotationDifferential(marfan,lds4,ectopiaLentis);
         caselist.add(nad1);
+
+        TermId tietz = TermId.of("OMIM:103500");
+        TermId waardenburg2A = TermId.of("OMIM:193510");
+        TermId heterochromiaIridis = TermId.of("HP:0001100");
+        NotAnnotationDifferential nad2 = new NotAnnotationDifferential(tietz,waardenburg2A,heterochromiaIridis);
+        caselist.add(nad2);
+
+        TermId hypochondroplasia = TermId.of("OMIM:146000");
+        TermId achondroplasia = TermId.of("OMIM:100800");
+        TermId tridentHand = TermId.of("HP:0004060");
+        NotAnnotationDifferential nad3 = new NotAnnotationDifferential(hypochondroplasia,achondroplasia,tridentHand);
+        caselist.add(nad3);
+
+        TermId osteogenesisImperfectaXII = TermId.of("OMIM:613849");
+        TermId osteogenesisImperfectaIV = TermId.of("OMIM:166220");
+        TermId dentinogenesisImperfecta = TermId.of("HP:0000703");
+        NotAnnotationDifferential nad4 = new NotAnnotationDifferential(osteogenesisImperfectaXII,osteogenesisImperfectaIV,dentinogenesisImperfecta);
+        caselist.add(nad4);
+
+        TermId smaProgressiveMyoclonicEpilepsy = TermId.of("OMIM:159950");
+        TermId sbmaKennedy = TermId.of("OMIM:313200");
+        TermId elevatedCK = TermId.of("HP:0003236");
+        NotAnnotationDifferential nad5 = new NotAnnotationDifferential(smaProgressiveMyoclonicEpilepsy,sbmaKennedy,elevatedCK);
+        caselist.add(nad5);
+
+
+        TermId myotoniaCongenitaDominant = TermId.of("OMIM:160800");
+        TermId myotonicDystrophy1 = TermId.of("OMIM:160900");
+        TermId muscleWeakness = TermId.of("HP:0001324");
+        NotAnnotationDifferential nad6 = new NotAnnotationDifferential(myotoniaCongenitaDominant,myotonicDystrophy1,muscleWeakness);
+        caselist.add(nad6);
+
+        TermId trichorhinophalangealSyndromeI = TermId.of("OMIM:190350");
+        TermId trichorhinophalangealSyndromeII = TermId.of("OMIM:150230");
+        TermId intellectualDisability = TermId.of("HP:0001249");
+        NotAnnotationDifferential nad7 = new NotAnnotationDifferential(trichorhinophalangealSyndromeI,trichorhinophalangealSyndromeII,intellectualDisability);
+        caselist.add(nad7);
+
+        TermId GMI_typeI = TermId.of("OMIM:230500");
+        TermId GMI_typeIII = TermId.of("OMIM:230650");
+        TermId cherryRedSpot = TermId.of("HP:0010729");
+        NotAnnotationDifferential nad8 = new NotAnnotationDifferential(GMI_typeI,GMI_typeIII,cherryRedSpot);
+        caselist.add(nad8);
+
+        TermId megalocornea1Xlinked = TermId.of("OMIM:309300");
+        TermId Glaucoma3primaryCongenitalA  = TermId.of("OMIM:231300");
+        TermId abnormalIntraocularPressure  = TermId.of("HP:0012632");
+        NotAnnotationDifferential nad9 = new NotAnnotationDifferential(megalocornea1Xlinked,Glaucoma3primaryCongenitalA,abnormalIntraocularPressure);
+        caselist.add(nad9);
+
+        TermId ectodermalDysplasia9HairNailType  = TermId.of("OMIM:614931");
+        TermId ectodermalDysplasia1hypohidroticXlinked  = TermId.of("OMIM:305100");
+        TermId abnormalityDentition  = TermId.of("HP:0000164");
+        NotAnnotationDifferential nad10 = new NotAnnotationDifferential(ectodermalDysplasia9HairNailType,ectodermalDysplasia1hypohidroticXlinked,abnormalityDentition);
+        caselist.add(nad10);
+
     }
 
 
@@ -144,7 +197,7 @@ public class NotSimulator {
     }
 
 
-    public void outputSimulationData() {
+    void outputSimulationData() {
         String outfilename = "not-simulations.R";
         String positiveCorrect = this.positiveAnnotationsCorrectDisease.stream().map(String::valueOf).collect(Collectors.joining(","));
         String positiveDifferential = this.positiveAnnotationsDifferential.stream().map(String::valueOf).collect(Collectors.joining(","));
@@ -168,7 +221,7 @@ public class NotSimulator {
 
 
 
-    public void runSimulations(int n) {
+    void runSimulations(int n) {
         this.n_cases_to_simulate = n;
         n_terms_per_case = 5;
         n_noise_terms = 3;
@@ -183,9 +236,6 @@ public class NotSimulator {
     /** @return a non-root random parent of term tid. It could be empty. */
     private Optional<TermId> getNonRootRandomParentTerm(TermId tid) {
         Set<TermId> parents = new HashSet<>(getParentTerms(ontology.subOntology(PHENOTYPIC_ABNORMALITY),tid,false));
-        if (parents.contains(PHENOTYPIC_ABNORMALITY)){
-            parents.remove(PHENOTYPIC_ABNORMALITY);
-        }
         if (parents.isEmpty()) { //no parents could be found
             return Optional.empty();
         }
@@ -201,7 +251,7 @@ public class NotSimulator {
      * @return a random term from the phenotype subontology.
      */
     private TermId getRandomPhenotypeTerm() {
-        int n=phenotypeterms.size();
+        int n = phenotypeterms.size();
         int r = (int)Math.floor(n*Math.random());
         return phenotypeterms.get(r);
     }
@@ -279,8 +329,5 @@ public class NotSimulator {
         return evaluator.evaluate();
 
     }
-
-
-
 
 }
