@@ -35,7 +35,7 @@ the path to a file located on your system). ::
         },
             "classOfOnset": {
                 "id": "HP:0003577",
-            "label": "Congenital onset"
+                "label": "Congenital onset"
         }
         }]
     },
@@ -82,4 +82,43 @@ the :ref:`rstexomiserdatadir`. The minimal command (using all default settings) 
 LIRICAL Options for clinical/genomic analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-todo
+All of the options for the phenotype-only phenopacket analysis (:ref:`rstphenopackethpo`) can be used for the
+clinical/genomic analysis. Additionally, the following options are available.
+
+::
+
+    -b, --background
+
+
+LIRICAL uses a background frequency file that records the freqeuncy of predicted pathogenic variants
+in protein-coding genes (as estimated from gnomAD data). By default, LIRICAL will use pre-fabricated
+files for this (that are included in the ``src/main/resources/background`` directory). This is recommended
+for most users. If you create your own background file, then you can use it with the ``-b`` option, that should
+then indicate the path to a non-default background frequency file.
+
+::
+
+    -e, --exomiser
+
+Path to the Exomiser data directory (required for VCF-based analysis).
+
+
+::
+
+     --strict
+
+By default, LIRICAL will include good matches to diseases that do not have a known disease gene, or
+that have a known disease gene but for which no predicted pathogenic variants were found. If you use the
+``--strict`` option, then LIRICAL will only report matches with a predicted pathogenic variant (Default: false).
+
+::
+
+     --transcriptdb
+
+LIRICAL can use transcript data from UCSC, Ensembl, or RefSeq. The default is
+`RefSeq <https://www.ncbi.nlm.nih.gov/refseq/>`_, but transcript definitions from
+`UCSC <http://genome.ucsc.edu/>`_ and `Ensembl <http://genome.ucsc.edu/>`_ can also be used
+(e.g., ``--transcriptdb USCS`` or ``--transcriptdb ensembl``).
+
+
+

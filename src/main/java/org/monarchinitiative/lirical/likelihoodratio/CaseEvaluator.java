@@ -295,7 +295,7 @@ public class CaseEvaluator {
             builder.add(e);
         }
         List<String> l = builder.build();
-        return String.join(": ",l);
+        return String.join("; ",l);
     }
 
     /**

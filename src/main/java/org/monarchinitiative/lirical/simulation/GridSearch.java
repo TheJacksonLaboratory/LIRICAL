@@ -1,8 +1,7 @@
-package org.monarchinitiative.lirical.analysis;
+package org.monarchinitiative.lirical.simulation;
 
 
 import org.monarchinitiative.lirical.exception.LiricalException;
-import org.monarchinitiative.lirical.hpo.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;

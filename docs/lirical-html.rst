@@ -6,20 +6,49 @@ LIRICAL HTML Output
 
 
 
-The HTML Output
-~~~~~~~~~~~~~~~
+Sample information and list of differentials
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The HTML output page begins with a summary of the sample name and a list of the `HPO <http:\\www.human-phenotype-ontology.org>`_ terms
-used to run the program. By default, LIRICAL shows a detailed output only for diseases whose posttest probability is
-calculated to be more than a threshold whose default value is 1% (but which can be adjusted using the ``-t`` command line
-argument). For example, the following figures show an example in which Pfeiffer syndrome was ranked as the second
-candidate according to its posttest probability of 45%. One heterozygous variant in the *FGFR2* gene was identified whose predicted
-pathogenicity score was 1.0. This corresponds to a genotype likelihood ratio score of 10^{0.63} for this gene.
-The diagnram then shows the contribution of each of the HPO terms as well as the genotype to the combined likelihood
-ratio for this diagnosis. In this case, Broad hallux, Broad thumb, and Craniosynostosis have a contribution of
-100-fold or more (note that the X-axis shows the base-10 logarithm of the likelihood ratios). Brachydactyly shows
-a negative contribution because it is not associated with the disease (its likelhood ratio is shown in red).
+The HTML output page begins with a summary of the sample name and a list of
+the `HPO <http:\\www.human-phenotype-ontology.org>`_ terms
+used to run the program. By default, LIRICAL shows a detailed output only for the top 10 differential
+diagnoses (or more if more diagnoses have a posterior probability above the default threshold of 1%
+(The minimum number of differential diagnoses to show can be changed with the ``-m`` option, and
+the probability threshold can be changed with the ``-t`` option).
 
 
-.. figure:: _static/pfeiffer-output.png
+
+
+.. figure:: _static/lirical-top.png
+
+
+Disease evaluations
+~~~~~~~~~~~~~~~~~~~
+
+LIRICAL evaluates each of the diseases in the HPO database and estimates the probability that a disease
+explains the observed phenotypic abnormalities (and if applicable, the observed variants).
+
+For example, the following figure shows the evaluation of a simulated case based on a published case
+report of an individual with pure hair and nail ectodermal dysplasia (ECTD9) related to a pathogenic variant
+in the <i>HOXC13</i> gene
+(`Khan et al., 2017 <https://www.ncbi.nlm.nih.gov/pubmed/28403827>`_).
+
+LIRICAL has estimate the composite likelihood ratio score at 8.951 (note that this is displayed
+on a log\ :subscript:`10` scale, so that the likelihood ratio is actually 10\ :superscript:`8.951`). The
+posttestprobability is close to 100%.
+
+The contribution of each of the HPO terms entered for the proband is shown. In this case,
+`Nail dystrophy <https://hpo.jax.org/app/browse/term/HP:0008404>`_ makes the largest contribution, and a number
+of other features make more modest contributions (as indicated by the length of the blue bar).
+
+
+.. figure:: _static/hoxc13-output.png
+
+
+The user should inspect the top differentials. In this case, the posterior probability of the remaining differentials
+drops off quickly. For instance, the throd best hit, Nicoliades Baraitser syndrome, has a posttest probability of
+only 3.6% and several of the observed phenotypes are not characteristic of this syndrome and thus reduce the match score
+(indicated as red bars).
+
+.. figure:: _static/nb-diff.png
 
