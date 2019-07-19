@@ -3,7 +3,7 @@
 LIRICAL Options
 ===============
 
-LIRICAL can be run with the following options.
+This page summarizes the options explained in detail in the :ref:`rstrunning` section.
 
 
 Download

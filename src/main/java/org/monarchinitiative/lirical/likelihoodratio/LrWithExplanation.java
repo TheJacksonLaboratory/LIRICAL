@@ -131,15 +131,15 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
             case NO_MATCH_BELOW_ROOT:
                 return String.format("<b>NM</b>:%s[%.3f]",qtermlabel,LR);
             case QUERY_TERM_PRESENT_BUT_EXCLUDED_IN_DISEASE:
-                return String.format("X:%s[%.3f]",qtermlabel,LR);
+                return String.format("<b>X</b>:%s[%.3f]",qtermlabel,LR);
             case UNUSUAL_BACKGROUND_FREQUENCY:
-                return String.format("U:%s[%.3f]",qtermlabel,LR);
+                return String.format("<b>U</b>:%s[%.3f]",qtermlabel,LR);
             case EXCLUDED_QUERY_TERM_EXCLUDED_IN_DISEASE:
-                return String.format("XX:%s[%.3f]",qtermlabel,LR);
+                return String.format("<b>XX</b>:%s[%.3f]",qtermlabel,LR);
             case EXCLUDED_QUERY_TERM_NOT_PRESENT_IN_DISEASE:
-                return String.format("XA:%s[%.3f]",qtermlabel,LR);
+                return String.format("<b>XA</b>:%s[%.3f]",qtermlabel,LR);
             case EXCLUDED_QUERY_TERM_PRESENT_IN_DISEASE:
-                return String.format("XP:%s[%.3f]",qtermlabel,LR);
+                return String.format("<b>XP:</b>%s[%.3f]",qtermlabel,LR);
             default:
                 return String.format("<b>NM</b>:%s[%.3f]",qtermlabel,LR); // should never happen but needed for compiler
         }
