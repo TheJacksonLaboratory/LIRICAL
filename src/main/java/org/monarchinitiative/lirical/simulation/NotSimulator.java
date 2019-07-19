@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getParentTerms;
@@ -92,15 +92,15 @@ public class NotSimulator {
      */
     static class NotAnnotationDifferential {
         /** disease id., e.g., OMIM:600123, of a disease that is annotated to {@link #hpoId} .*/
-        final TermId diseaseIdWithTermAnnotated;
+        final TermId differentialIncorrectDiagnosisWithTermAnnotated;
         /** disease id., e.g., OMIM:600125, of a disease for which {@link #hpoId} is excluded.*/
-        final TermId diseaseIdWithTermExcluded;
+        final TermId correctDiagnosisWithExcludedTerm;
         /** Term id of an HPO term. */
         final TermId hpoId;
 
         NotAnnotationDifferential(TermId disease1, TermId disease2, TermId hpo) {
-            this.diseaseIdWithTermAnnotated = disease1;
-            this.diseaseIdWithTermExcluded  = disease2;
+            this.correctDiagnosisWithExcludedTerm = disease1;
+            this.differentialIncorrectDiagnosisWithTermAnnotated = disease2;
             this.hpoId = hpo;
         }
     }
@@ -112,7 +112,7 @@ public class NotSimulator {
         TermId marfan = TermId.of("OMIM:154700");
         TermId lds4 = TermId.of("OMIM:614816");
         TermId ectopiaLentis = TermId.of("HP:0001083");
-        NotAnnotationDifferential nad1 = new NotAnnotationDifferential(marfan,lds4,ectopiaLentis);
+        NotAnnotationDifferential nad1 = new NotAnnotationDifferential(lds4,marfan,ectopiaLentis);
         caselist.add(nad1);
 
         TermId tietz = TermId.of("OMIM:103500");
@@ -174,8 +174,8 @@ public class NotSimulator {
 
 
     private void runSimulation(NotAnnotationDifferential nad) {
-        TermId diseaseIdWithTermAnnotated = nad.diseaseIdWithTermAnnotated;
-        TermId diseaseIdWithTermExcluded = nad.diseaseIdWithTermExcluded;
+        TermId diseaseIdWithTermAnnotated = nad.differentialIncorrectDiagnosisWithTermAnnotated;
+        TermId diseaseIdWithTermExcluded = nad.correctDiagnosisWithExcludedTerm;
         TermId hpo = nad.hpoId;
         HpoDisease diseaseWithTermExcluded = this.diseaseMap.get(diseaseIdWithTermExcluded);
         try {
@@ -198,20 +198,27 @@ public class NotSimulator {
 
 
     void outputSimulationData() {
-        String outfilename = "not-simulations.R";
-        String positiveCorrect = this.positiveAnnotationsCorrectDisease.stream().map(String::valueOf).collect(Collectors.joining(","));
-        String positiveDifferential = this.positiveAnnotationsDifferential.stream().map(String::valueOf).collect(Collectors.joining(","));
-        String negativeCorrect  = this.negativeAnnotationsCorrectDisease.stream().map(String::valueOf).collect(Collectors.joining(","));
-        String negativeDifferential  = this.negativeAnnotationsDifferential.stream().map(String::valueOf).collect(Collectors.joining(","));
+        String outfilename = "not-simulations.tsv";
+        DecimalFormat df = new DecimalFormat("#");
+        df.setMaximumFractionDigits(10);
+//        String positiveCorrect = this.positiveAnnotationsCorrectDisease.stream().map(mv -> df.format(mv)).collect(Collectors.joining(","));
+//        String positiveDifferential = this.positiveAnnotationsDifferential.stream().map(mv -> df.format(mv)).collect(Collectors.joining(","));
+//        String negativeCorrect  = this.negativeAnnotationsCorrectDisease.stream().map(mv -> df.format(mv)).collect(Collectors.joining(","));
+//        String negativeDifferential  = this.negativeAnnotationsDifferential.stream().map(mv -> df.format(mv)).collect(Collectors.joining(","));
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(outfilename));
-            bw.write("pos.correct <- c(" + positiveCorrect +")\n");
-            bw.write("pos.diff <- c(" + positiveDifferential +")\n");
-            bw.write("neg.correct <- c(" + negativeCorrect +")\n");
-            bw.write("neg.diff <- c(" + negativeDifferential +")\n");
-           // bw.write("DF <- data.frame(\n");
-           // bw.write(" x=c(c(pos.correct,pos.diff),c(neg.correct,neg.diff)),\n");
-           // bw.write(" y = rep")
+            for (Double pc : this.positiveAnnotationsCorrectDisease) {
+                bw.write(df.format(pc)+"\tpc\n");
+            }
+            for (Double pd : this.positiveAnnotationsDifferential) {
+                bw.write(df.format(pd)+"\tpd\n");
+            }
+            for (Double nc : this.negativeAnnotationsCorrectDisease) {
+                bw.write(df.format(nc)+"\tnc\n");
+            }
+            for (Double nd : this.negativeAnnotationsDifferential) {
+                bw.write(df.format(nd)+"\tnd\n");
+            }
             // see https://stackoverflow.com/questions/47479522/how-to-create-a-grouped-boxplot-in-r
             bw.close();
         } catch (IOException e) {
@@ -227,9 +234,12 @@ public class NotSimulator {
         n_noise_terms = 3;
         addTermImprecision = true;
         for (NotAnnotationDifferential nad : this.caselist) {
+            System.out.println("[INFO] Simulating disease " + this.diseaseMap.get(nad.correctDiagnosisWithExcludedTerm).getName());
             for (int j=0;j<n_cases_to_simulate;j++) {
                 runSimulation(nad);
+                System.out.print("\rCase " + (j+1));
             }
+            System.out.println();
         }
     }
 
