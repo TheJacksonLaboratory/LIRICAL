@@ -1,7 +1,16 @@
 {
   "subject": {
     "id": "manuel",
-    "phenotypes": [{
+    "ageAtCollection": {
+      "age": "26Y"
+    },
+    "sex": "MALE",
+    "taxonomy": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    }
+  },
+    "phenotypicFeatures": [{
       "type": {
         "id": "HP:0000244",
         "label": "Turribrachycephaly"
@@ -46,8 +55,7 @@
         "id": "HP:0003577",
         "label": "Congenital onset"
       }
-    }]
-  },
+    }],
   "metaData": {
     "createdBy": "Peter R.",
     "resources": [{

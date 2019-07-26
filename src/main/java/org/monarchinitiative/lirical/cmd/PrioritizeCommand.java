@@ -36,6 +36,8 @@ public abstract class PrioritizeCommand extends LiricalCommand {
      * be {@code sample1.tsv}. */
     @Parameter(names={"-x", "--prefix"},description = "prefix of outfile")
     protected String outfilePrefix="lirical";
+    @Parameter(names={"--orpha"},description = "use Orphanet annotation data")
+    boolean useOrphanet = false;
     /** An object that contains parameters from the YAML file for configuration. */
     protected LiricalFactory factory;
     /** Key: an EntrezGene id; value: corresponding gene symbol. */

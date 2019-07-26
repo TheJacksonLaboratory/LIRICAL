@@ -1,11 +1,14 @@
 =========
 Changelog
 =========
+
+
 -------
 v0.9.22
 -------
 - update to phenol-1.4.1
 - Scoring for features excluded in query and disease.
+- Adding option to use Orphanet annotations
 
 -------
 v0.9.21

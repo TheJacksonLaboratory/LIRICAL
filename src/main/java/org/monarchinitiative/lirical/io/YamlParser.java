@@ -274,12 +274,15 @@ public class YamlParser {
         else return Optional.of(yconfig.getOutdir());
     }
 
+    /** @return true if the YAML analysis section contains a KV pair keep:true */
     public boolean keep() {
-        if (yconfig.getAnalysis().containsKey("keep")) {
-            String k = yconfig.getAnalysis().get("keep");
-            return  k.equalsIgnoreCase("true");
-        }
-        return false;// no keep entry in YAML file
+        String v = yconfig.getAnalysis().getOrDefault("keep","notfound");
+        return  v.equalsIgnoreCase("true");
+    }
+
+    public boolean orphanet() {
+        String v = yconfig.getAnalysis().getOrDefault("orphanet","notfound");
+        return v.equalsIgnoreCase("true");
     }
 
     public Optional<Integer> mindiff() {

@@ -146,6 +146,11 @@ Directory into which to write output file(s).
 Use TSV instead of HTML output (Default: false).
 
 
+::
+
+    --orphanet
+
+Use annotation data from `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>_`.
 
 Output
 ~~~~~~

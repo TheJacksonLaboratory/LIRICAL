@@ -26,6 +26,7 @@ file must include the following information. ::
         threshold: 0.05
         tsv: true
         datadir: mydata
+        orphanet: true
     hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
     negatedHpoIds: ['HP:0001328']
     prefix: example
@@ -59,7 +60,8 @@ Use TSV instead of HTML output (Default: false).
 The path with LIRICAL data that should be downloaded before running LIRICAL
 (see :ref:`rstsetup` for details). This option should not be used if the default data location (``data``) is used.
 
-
+5. ``orphanet``
+If true, use annotation data from `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>_`.
 
 Additionally, ``hpoIds`` is a list of HPO term representing the clinical manifestations
 observed in the individual being analyzed. In contrast, ``negatedHpoIds`` represents
