@@ -26,7 +26,7 @@ public class YamlConfig {
     /**
      * This is a map in the YAML file that contains the following items:
      * genomeAssembly, vcf,jannovar, hp.obo, phenotype.hpoa,
-     * gene_info, medgen, background_freq, datadir, mvstore
+     * gene_info, medgen, background_freq, datadir, mvstore, orphanet
      * In each case, the item is a path to a file that is needed (except for
      * genomeAssembly, which should be {@code hg19} or {@code hg38}).
      *

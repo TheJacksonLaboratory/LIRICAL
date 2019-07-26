@@ -79,6 +79,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
                 .vcf(this.vcfPath)
                 .backgroundFrequency(this.backgroundFrequencyFile)
                 .strict(this.strict)
+                .orphanet(this.useOrphanet)
                 .transcriptdatabase(this.transcriptDb)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
@@ -137,6 +138,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
     private void runPhenotypeOnlyAnalysis() {
         LiricalFactory factory = new LiricalFactory.Builder(ontology)
                 .datadir(this.datadir)
+                .orphanet(this.useOrphanet)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
         factory.qcExternalFilesInDataDir();

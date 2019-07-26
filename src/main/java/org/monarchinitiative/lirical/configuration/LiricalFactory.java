@@ -17,7 +17,6 @@ import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
 import org.monarchinitiative.lirical.io.YamlParser;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
-import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.io.assoc.HpoAssociationParser;
@@ -27,7 +26,6 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.plaf.BorderUIResource;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
@@ -81,6 +79,8 @@ public class LiricalFactory {
     private final boolean keepIfNoCandidateVariant;
 
     private String hpoVersion="n/a";
+
+    private List<String> desiredDatabasePrefixes;
 
     /** An object representing the Exomiser database. */
     private MVStore mvstore = null;
@@ -161,6 +161,11 @@ public class LiricalFactory {
         this.negatedHpoIdList = listbuilder.build();
         this.filterOnFILTER=builder.filterFILTER;
         this.keepIfNoCandidateVariant = builder.keep;
+        if (builder.useOrphanet) {
+            this.desiredDatabasePrefixes=ImmutableList.of("ORPHA");
+        } else {
+            this.desiredDatabasePrefixes=ImmutableList.of("OMIM","DECIPHER");
+        }
     }
 
 
@@ -411,7 +416,7 @@ public class LiricalFactory {
         if (this.phenotypeAnnotationPath==null) {
             throw new LiricalRuntimeException("Path to phenotype.hpoa file not found");
         }
-        List<String> desiredDatabasePrefixes=ImmutableList.of("OMIM","DECIPHER");
+
         return HpoDiseaseAnnotationParser.loadDiseaseMap(phenotypeAnnotationPath,ontology,desiredDatabasePrefixes);
     }
 
@@ -579,6 +584,7 @@ public class LiricalFactory {
         private boolean filterFILTER = true;
         private boolean strict = false;
         private boolean keep = false;
+        private boolean useOrphanet = false;
         /** The default transcript database is UCSC> */
         private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
         private List<String> observedHpoTerms=ImmutableList.of();
@@ -638,6 +644,11 @@ public class LiricalFactory {
 
         public Builder strict(boolean b) {
             this.strict = b;
+            return this;
+        }
+
+        public Builder orphanet(boolean b) {
+            this.useOrphanet = b;
             return this;
         }
 
