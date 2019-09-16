@@ -2,7 +2,6 @@ package org.monarchinitiative.lirical.simulation;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
-import org.json.simple.parser.ParseException;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.analysis.VcfSimulator;
@@ -89,10 +88,8 @@ public class PhenoGenoCaseSimulator {
      * @param vcfpath Path to a template VCF file we will add a mutation to
      * @param factory {@link LiricalFactory} object
      * @param rand if true, randomize the HPO terms in the phenopacket
-     * @throws IOException
-     * @throws ParseException
      */
-    public PhenoGenoCaseSimulator(File phenopacket, String vcfpath, LiricalFactory factory, boolean rand) throws IOException, ParseException {
+    public PhenoGenoCaseSimulator(File phenopacket, String vcfpath, LiricalFactory factory, boolean rand) {
         phenopacketFile = phenopacket;
         templateVcfPath = vcfpath;
         this.metadata = new HashMap<>();
@@ -274,10 +271,15 @@ public class PhenoGenoCaseSimulator {
     }
 
     public String getDetails() {
+        String simulatedGene;
+        if (simulatedDiseaseGene==null)
+            simulatedGene = "n/a";
+        else
+            simulatedGene = simulatedDiseaseGene.getValue();
         return String.format("%s\t%s\t%s\t%s\t%d\t%d\t%f", phenopacketFile.getName(),
                 simulatedDiagnosis.getTerm().getLabel(),
                 simulatedDiagnosis.getTerm().getId(),
-                simulatedDiseaseGene.getValue(),
+                simulatedGene,
                 rank_of_disease,
                 rank_of_gene,
                 posttest_probability);
