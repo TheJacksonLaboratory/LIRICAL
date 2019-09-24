@@ -42,7 +42,7 @@ public class PhenotypeLikelihoodRatio {
      */
     private final double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY=0.01;
     /**
-     * The default probability for features that we cannot find in the dataset.
+     * The default probability for an HPO term annotating a disease if we cannot find in the dataset.
      */
     private static final double DEFAULT_BACKGROUND_PROBQABILITY=1.0/10000;
     /** The default likelihood ratio for a query term that is explicitly excluded in a disease.*/
