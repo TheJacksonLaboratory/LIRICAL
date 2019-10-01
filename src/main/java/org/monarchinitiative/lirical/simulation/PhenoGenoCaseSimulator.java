@@ -134,7 +134,7 @@ public class PhenoGenoCaseSimulator {
         } catch (IOException e) {
             throw new LiricalRuntimeException("Could not simulate VCF for phenopacket");
         }
-        String vcfPath = simulatedVcf.getFile().getPath();
+        String vcfPath = simulatedVcf.getUri();//File().getPath();
         this.metadata.put("vcf_file", vcfPath);
         this.genotypemap = factory.getGene2GenotypeMap(vcfPath);
         this.ontology = factory.hpoOntology();
