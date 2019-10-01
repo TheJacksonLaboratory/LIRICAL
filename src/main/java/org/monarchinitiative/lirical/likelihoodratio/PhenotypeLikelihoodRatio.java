@@ -42,7 +42,7 @@ public class PhenotypeLikelihoodRatio {
      */
     private final double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY=0.01;
     /**
-     * The default probability for features that we cannot find in the dataset.
+     * The default probability for an HPO term annotating a disease if we cannot find in the dataset.
      */
     private static final double DEFAULT_BACKGROUND_PROBQABILITY=1.0/10000;
     /** The default likelihood ratio for a query term that is explicitly excluded in a disease.*/
@@ -113,16 +113,31 @@ public class PhenotypeLikelihoodRatio {
             //2. If the query term is a subclass of one or more disease terms, then
             // we weight the frequency in the disease--- because not everybody with the disease will have the
             // subterm in question--they could have another one of the subclasses.
+            //  Note that isSubclass is implemented like this:
+            //public static boolean isSubclass(
+            //    Ontology ontology, TermId source, TermId dest) {
+            //    return ontology.getAncestorTermIds(source).contains(dest);
+            //  }
 
+            boolean hasNonRootCommonAncestor = false;
+            double maxF = 0f;
+            TermId bestMatchTermId = null;
+            double denominatorForNonRootCommandAnc = getBackgroundFrequency(queryTid);
             for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
                 if (isSubclass(ontology, queryTid, annot.getTermId())){
                     double proportionalFrequency = getProportionalFrequencyInAncestors(queryTid,annot.getTermId());
                     double queryFrequency = annot.getFrequency();
                     double f = proportionalFrequency*queryFrequency;
-                    double denominator = getBackgroundFrequency(queryTid);
-                    double lr = Math.max(f,noCommonOrganProbability(queryTid))/denominator;
-                    return LrWithExplanation.queryTermSubTermOfDisease(queryTid,annot.getTermId(),lr);
+                    if (f > maxF) {
+                        bestMatchTermId = annot.getTermId();
+                        maxF = f;
+                        hasNonRootCommonAncestor = true;
+                    }
                 }
+            }
+            if (hasNonRootCommonAncestor) {
+                double lr = Math.max(maxF,noCommonOrganProbability(queryTid))/denominatorForNonRootCommandAnc;
+                return LrWithExplanation.queryTermSubTermOfDisease(queryTid,bestMatchTermId,lr);
             }
             // If we get here, queryId is not directly annotated in the disease, and it is not a subclass
             // of a disease term, nor is a disease term a subclass of queryTid. The next bit of code
@@ -255,9 +270,15 @@ public class PhenotypeLikelihoodRatio {
         }     
         double f=0.0;
         for (TermId tid : directChildren) {
-            f += getProportionalFrequencyInAncestors(queryTid,tid);
+            if (queryTid.equals(tid)) {
+                f += 1.0;
+            }
+            //f += getProportionalFrequencyInAncestors(queryTid,tid);
         }
-        return f/(double)directChildren.size();
+        if (f>0)
+            return f/(double)directChildren.size();
+        else
+            return 0d;
     }
     
         
