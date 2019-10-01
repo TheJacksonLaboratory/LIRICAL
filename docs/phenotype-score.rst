@@ -58,8 +58,8 @@ In the output file of LIRICAL, such matches are shown with the code **E**. The l
     * - E:Nail dystrophy[HP:0008404][84.767]
 
 
-2. :math:`h_i` is an ancestor of one or more of the terms to which :math:`\mathcal{D}` is annotated.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2. :math:`h_i` is an ancestor (superclass) of one or more of the terms to which :math:`\mathcal{D}` is annotated.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Because of the annotation propagation rule of subclass hierarchies in ontologies,
 :math:`P(h_i|\mathcal{D})` is implicitly annotated to all of the ancestors of the set of annotating terms. For instance,
@@ -73,18 +73,19 @@ In this case, the probability of :math:`h_i` in disease :math:`\mathcal{D}` is e
 any of the ancestors of :math:`h_i` in $\mathcal{D}$.
 
 
- .. list-table:: `**Q~D**. Query term matches ancestor of term annotated to :math:`\mathcal{D}`
+
+ .. list-table:: `**D<Q**. Query term  annotated to :math:`\mathcal{D}` is child of
     :widths: 100
     :header-rows: 1
 
     * - Example
-    * - Q<D:Macular degeneration[HP:0000608]<Retinal degeneration[HP:0000546][32.605]
+    * - D<Q:Short middle phalanx of the 5th finger[HP:0004220]<Brachydactyly[HP:0001156][29.847]
 
-In this example, the likelihood ratio is 2.082. *Macular degeneration* (`HP:0000608 <https://hpo.jax.org/app/browse/term/HP:0000608>`_)
-is a subclass of *Retinal degeneration* (`HP:0000546 <https://hpo.jax.org/app/browse/term/HP:0000546>`_).
 
-3. :math:`h_i`  is a descendant of one or more of the terms to which :math:`\mathcal{D}` is annotated.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+3. :math:`h_i`  is a child term (subclass) of one or more of the terms to which :math:`\mathcal{D}` is annotated.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In this case, :math:`h_i` is a descendant (i.e., specific subclass of) some term :math:`h_j` of :math:`\mathcal{D}`.
 For instance, disease :math:`\mathcal{D}` might be annotated to *Syncope*
@@ -95,3 +96,99 @@ of *Syncope*. In addition, *Syncope* has two other child terms, *Carotid sinus s
 (`HP:0012668 <https://hpo.jax.org/app/browse/term/HP:0012668>`_). According to our model,
 we will adjust the frequency of *Syncope* in disease :math:`\mathcal{D}` (say, 0.72) by dividing it by the total number
 of child terms of :math:`h_j` (so in our example, we would use the frequency :math:`0.72\times 1/3=0.24`).
+
+
+
+ .. list-table:: `**Q<D**. Query term matches ancestor of term annotated to :math:`\mathcal{D}`
+    :widths: 100
+    :header-rows: 1
+
+    * - Example
+    * - Q<D:Macular degeneration[HP:0000608]<Retinal degeneration[HP:0000546][32.605]
+
+In this example, the likelihood ratio is 2.082. *Macular degeneration* (`HP:0000608 <https://hpo.jax.org/app/browse/term/HP:0000608>`_)
+is a subclass of *Retinal degeneration* (`HP:0000546 <https://hpo.jax.org/app/browse/term/HP:0000546>`_).
+
+4. :math:`h_i`  and some term to which :math:`\mathcal{D}` is annotated have a non-root common ancestor.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This option pertains if options (ii) and (iii) do not, i.e., :math:`h_i`  is not a child term of any disease term
+:math:`h_j`  and no disease term :math:`h_j`  is a child of :math:`h_i` .
+
+If this is the case, then we find the closest common-ancestor, and determine the likelihood ratio according to the
+formula :math:`\rm{LR}(h_i) = \frac{P(h_i|\mathcal{D})}{P(h_i|\neg \mathcal{D})}`. Because the common ancestor is
+higher up in the HPO hierarchy, the likelihood ratio tends to be lower and sometimes substantially lower. In order
+to limit the amount of negative influence of any one query term, the likelihood ratio is defined to be at least 1/100.
+
+ .. list-table:: `**Q~D**. Non-root distant match
+    :widths: 100
+    :header-rows: 1
+
+    * - Example
+    * - Q~D:Macular degeneration[HP:0000608]~Abnormal retinal morphology[HP:0000479][0.127]
+
+In this example, *Macular degeneration* (`HP:0000608 <https://hpo.jax.org/app/browse/term/HP:0000608>`_) is not
+a direct child of *Abnormal retinal morphology* (`HP:0000479 <https://hpo.jax.org/app/browse/term/HP:0000479>`_) -- it
+is a "grandchild", i.e., *Macular degeneration* is a direct child of &Abnormal macular morphology
+(`HP:0001103 <https://hpo.jax.org/app/browse/term/HP:0001103>`_) which in turn is a direct child of *Abnormal retinal
+morphology*. Therefore, it is considered to be a non-root distant match. It is assigned a likelihood ratio
+of 0.127.
+
+
+5. :math:`h_i` does not have any non-root common ancestor with any term to which :math:`\mathcal{D}` is annotated.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In this case, a heuristic value of 1/100 is assigned for the likelihood ratio.
+
+ .. list-table:: `**NM**. No match (NM)
+    :widths: 100
+    :header-rows: 1
+
+    * - Example
+    * - NM:Specific learning disability[HP:0001328][0.010]
+
+
+6. phenotypic abnormality :math:`h_i` is explicitly excluded from disease :math:`\mathcal{D}`.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the HPO annotation resource, each disease is represented by a list of HPO terms that characterize it together with
+metadata including provenance, and in some cases, frequency and onset information.
+Some diseases additionally have explicitly excluded terms (there are a total of 921 such annotations in the September
+2019 release of the HPOA data). These annotations are used for phenotypic abnormalities that are important for the
+differential diagnosis. For instance, Marfan syndrome and Loeys-Dietz syndrome share many phenotypic abnormalities.
+The feature *Ectopia lentis* (`HP:0001083 <https://hpo.jax.org/app/browse/term/HP:0001083>`_) is characteristic of
+Marfan syndrome but is not found in Loeys-Dietz syndrome. The likelihood ratio for such query terms is assigned an
+arbitrary value of :math:`\frac{1}{1000}`, i.e., the ratio for a candidate diagnosis is reduced by a factor of
+one thousand if an HPO term is present in the proband that is explicitly excluded from the disease.
+
+ .. list-table:: `**XP**. Excluded in query and present in disease
+    :widths: 100
+    :header-rows: 1
+
+    * - Example
+    * - XP:Ectopia lentis[HP:0001083][0.001]
+
+
+If a term is excluded in the query, but not annotated one way of another in the disease, then the likelihood ratio is
+calculated without additional heuristics. These query terms generally result in a likelihood ratio near 1 and do not affect
+the differential diagnostic ranking much.
+
+ .. list-table:: `**XA**. Excluded in query and not annotated in disease
+    :widths: 100
+    :header-rows: 1
+
+    * - Example
+    * - XA:Abnormality of alkaline phosphatase activity[HP:0004379][1.008]
+
+
+On the other hand, if the query includes a negated term that is explicitly excluded in the disease, then the opposite
+value is assigned, i.e., the ratio for a candidate diagnosis is increased by a factor of one thousand if an HPO term is
+present in the proband that is explicitly excluded from the disease.
+
+
+ .. list-table:: `**XX**. Excluded in both query and disease
+    :widths: 100
+    :header-rows: 1
+
+    * - Example
+    * - XX:Trident hand[HP:0004060][1000.000]

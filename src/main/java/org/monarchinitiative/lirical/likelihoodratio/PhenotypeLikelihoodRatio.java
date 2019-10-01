@@ -139,7 +139,7 @@ public class PhenotypeLikelihoodRatio {
                 double lr = Math.max(maxF,noCommonOrganProbability(queryTid))/denominatorForNonRootCommandAnc;
                 return LrWithExplanation.queryTermSubTermOfDisease(queryTid,bestMatchTermId,lr);
             }
-            // If we get here, queryId is not directly annotated in the disease, and it is not a subclass
+            // If we get here, queryId is not directly annotated in the disease, and it is not a child
             // of a disease term, nor is a disease term a subclass of queryTid. The next bit of code
             // checks whether they have a common ancestor that is more specfic that Phenotypic_Abnormality
             Term2Freq t2f = idg.getClosestAncestor(queryTid);
