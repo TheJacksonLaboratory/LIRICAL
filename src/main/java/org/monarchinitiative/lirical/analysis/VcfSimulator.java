@@ -198,10 +198,12 @@ public class VcfSimulator {
                 .setGenomeAssembly(genomeAssembly)
 //                 individual_to_sample_identifiers not set here, this is a naive thing for now
 //                .putAllIndividualToSampleIdentifiers()
-                .setFile(org.phenopackets.schema.v1.core.File.newBuilder()
-                        .setPath(outPath.getAbsolutePath())
-                        .setDescription(description)
-                        .build())
+              //  .setFile(org.phenopackets.schema.v1.core.File.newBuilder()
+              //          .setPath(outPath.getAbsolutePath())
+               //         .setDescription(description)
+               //         .build())
+                .setUri(outPath.getAbsolutePath())
+                .setDescription(description)
                 .build();
     }
 }

@@ -1,7 +1,12 @@
 =========
 Changelog
 =========
-
+-------
+v0.9.23
+-------
+- update to phenopacket-schema version 1.0.0-RC3
+- revisions to phenotype likelihood ratio algorithm for non-exact matching
+- more documentation
 
 -------
 v0.9.22

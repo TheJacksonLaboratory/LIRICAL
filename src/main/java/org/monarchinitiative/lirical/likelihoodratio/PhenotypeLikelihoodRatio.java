@@ -125,7 +125,7 @@ public class PhenotypeLikelihoodRatio {
             double denominatorForNonRootCommandAnc = getBackgroundFrequency(queryTid);
             for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
                 if (isSubclass(ontology, queryTid, annot.getTermId())){
-                    double proportionalFrequency = getProportionalFrequencyInAncestors(queryTid,annot.getTermId());
+                    double proportionalFrequency = getProportionInChildren(queryTid,annot.getTermId());
                     double queryFrequency = annot.getFrequency();
                     double f = proportionalFrequency*queryFrequency;
                     if (f > maxF) {
@@ -139,7 +139,7 @@ public class PhenotypeLikelihoodRatio {
                 double lr = Math.max(maxF,noCommonOrganProbability(queryTid))/denominatorForNonRootCommandAnc;
                 return LrWithExplanation.queryTermSubTermOfDisease(queryTid,bestMatchTermId,lr);
             }
-            // If we get here, queryId is not directly annotated in the disease, and it is not a subclass
+            // If we get here, queryId is not directly annotated in the disease, and it is not a child
             // of a disease term, nor is a disease term a subclass of queryTid. The next bit of code
             // checks whether they have a common ancestor that is more specfic that Phenotypic_Abnormality
             Term2Freq t2f = idg.getClosestAncestor(queryTid);
@@ -260,7 +260,7 @@ public class PhenotypeLikelihoodRatio {
      * @param diseaseTid A term that is annotated to the disease we are investigating
      * @return the proportion of the frequency of diseaseTerm that is attributable to query
      */
-    private double getProportionalFrequencyInAncestors(TermId queryTid, TermId diseaseTid) {
+    private double getProportionInChildren(TermId queryTid, TermId diseaseTid) {
         if (queryTid.getId().equals(diseaseTid.getId())) {
             return 1.0;
         }
@@ -271,14 +271,11 @@ public class PhenotypeLikelihoodRatio {
         double f=0.0;
         for (TermId tid : directChildren) {
             if (queryTid.equals(tid)) {
-                f += 1.0;
+                return 1.0/(double)directChildren.size();
             }
-            //f += getProportionalFrequencyInAncestors(queryTid,tid);
         }
-        if (f>0)
-            return f/(double)directChildren.size();
-        else
-            return 0d;
+        // if we get here, there was no match
+        return 0d;
     }
     
         
