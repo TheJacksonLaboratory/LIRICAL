@@ -47,6 +47,11 @@ public class PhenopacketImporter {
     public static PhenopacketImporter fromJson(String pathToJsonPhenopacketFile, Ontology ontology)  {
         JSONParser parser = new JSONParser();
         logger.trace("Importing Phenopacket: " + pathToJsonPhenopacketFile);
+        java.io.File tmp = new java.io.File(pathToJsonPhenopacketFile);
+        if (! tmp.exists() ) {
+            System.err.println("[ERROR] Could not find phenopacket file at " + pathToJsonPhenopacketFile);
+            throw new LiricalRuntimeException("[ERROR] Could not find phenopacket file at " + pathToJsonPhenopacketFile);
+        }
         try {
             Object obj = parser.parse(new FileReader(pathToJsonPhenopacketFile));
             JSONObject jsonObject = (JSONObject) obj;
@@ -127,7 +132,8 @@ public class PhenopacketImporter {
 
     public String getVcfPath() {
         return this.vcfFile!=null ?
-                this.vcfFile.getFile().getPath() :
+                this.vcfFile.getUri() :
+               // this.vcfFile.getFile().getPath() :
                 null;
     }
 

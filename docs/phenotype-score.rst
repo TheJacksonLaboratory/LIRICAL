@@ -18,13 +18,13 @@ on :ref:`rstlirical-html` shows the following:
 
 ::
 
-    E:Nail dystrophy[HP:0008404][84.767];
-    Q~D:Onycholysis of fingernails[HP:0040039]~Abnormality of the nail[HP:0001597][2.423]; \
-    Q~D:Absent hair[HP:0002298]~Abnormal hair quantity[HP:0011362][2.082];
-    Q~D:Absent eyebrow[HP:0002223]~Abnormal hair quantity[HP:0011362][2.082];
-    Q~D:Absent eyelashes[HP:0000561]~Abnormal hair quantity[HP:0011362][2.082];
-    XA:Abnormality of the dentition[HP:0000164][1.089];
-    XA:Abnormal sweat gland morphology[HP:0000971][1.001]
+    E:Specific learning disability[HP:0001328][152.894]
+    E:Obesity[HP:0001513][62.561]
+    E:Rod-cone dystrophy[HP:0000510][45.396]
+    Q<D:Macular degeneration[HP:0000608]<Retinal degeneration[HP:0000546][32.605]
+    E:Strabismus[HP:0000486][16.648]
+    E:Global developmental delay[HP:0001263][6.800]
+    Q~D:Attenuation of retinal blood vessels[HP:0007843]~Abnormal retinal morphology[HP:0000479][1.267]
 
 Each match shows a code for the category of the match, followed by details of the matching term (only
 one term is shown for exact matches), and the matching score.
@@ -47,21 +47,16 @@ In this case, :math:`P(h_i|\mathcal{D})` is equal to the frequency of :math:`h_i
 disease :math:`\mathcal{D}` (by default, this is taken to be 100%, but in many cases more precise frequencies
 are available in the HPO database).
 
-In the output file of LIRICAL, such matches are shown with the code *E* (Table 1).
+In the output file of LIRICAL, such matches are shown with the code **E**. The likelihood ratio for this match is
+84.767.
 
- .. list-table:: `. Exact phenotypic feature match
-    :widths: 25 50 50
+ .. list-table:: ``**E**. Exact phenotypic feature match
+    :widths: 100
     :header-rows: 1
 
-    * - Code
-      - Explanation
-      - Example
-    * - *E*
-      - exact match
-      - E:Nail dystrophy[HP:0008404]
-    * - *Q~D*
-      - query term subset of disease term
-      - Absent hair[HP:0002298]~Abnormal hair quantity[HP:0011362][
+    * - Example
+    * - E:Nail dystrophy[HP:0008404][84.767]
+
 
 2. :math:`h_i` is an ancestor of one or more of the terms to which :math:`\mathcal{D}` is annotated.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -77,6 +72,16 @@ cataract can also be said to have a cataract).
 In this case, the probability of :math:`h_i` in disease :math:`\mathcal{D}` is equal to the maximum frequency of
 any of the ancestors of :math:`h_i` in $\mathcal{D}$.
 
+
+ .. list-table:: `**Q~D**. Query term matches ancestor of term annotated to :math:`\mathcal{D}`
+    :widths: 100
+    :header-rows: 1
+
+    * - Example
+    * - Q<D:Macular degeneration[HP:0000608]<Retinal degeneration[HP:0000546][32.605]
+
+In this example, the likelihood ratio is 2.082. *Macular degeneration* (`HP:0000608 <https://hpo.jax.org/app/browse/term/HP:0000608>`_)
+is a subclass of *Retinal degeneration* (`HP:0000546 <https://hpo.jax.org/app/browse/term/HP:0000546>`_).
 
 3. :math:`h_i`  is a descendant of one or more of the terms to which :math:`\mathcal{D}` is annotated.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
