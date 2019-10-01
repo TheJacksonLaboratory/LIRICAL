@@ -50,7 +50,7 @@ are available in the HPO database).
 In the output file of LIRICAL, such matches are shown with the code **E**. The likelihood ratio for this match is
 84.767.
 
- .. list-table:: ``**E**. Exact phenotypic feature match
+ .. list-table:: Exact phenotypic feature match (E)
     :widths: 100
     :header-rows: 1
 
@@ -74,7 +74,7 @@ any of the ancestors of :math:`h_i` in $\mathcal{D}$.
 
 
 
- .. list-table:: `**D<Q**. Query term  annotated to :math:`\mathcal{D}` is child of
+ .. list-table:: Query term is parent of a disease term term (D<Q)
     :widths: 100
     :header-rows: 1
 
@@ -99,7 +99,7 @@ of child terms of :math:`h_j` (so in our example, we would use the frequency :ma
 
 
 
- .. list-table:: `**Q<D**. Query term matches ancestor of term annotated to :math:`\mathcal{D}`
+ .. list-table:: Query term is child of disease term (Q<D)
     :widths: 100
     :header-rows: 1
 
@@ -120,7 +120,7 @@ formula :math:`\rm{LR}(h_i) = \frac{P(h_i|\mathcal{D})}{P(h_i|\neg \mathcal{D})}
 higher up in the HPO hierarchy, the likelihood ratio tends to be lower and sometimes substantially lower. In order
 to limit the amount of negative influence of any one query term, the likelihood ratio is defined to be at least 1/100.
 
- .. list-table:: `**Q~D**. Non-root distant match
+ .. list-table:: Non-root distant match (Q~D)
     :widths: 100
     :header-rows: 1
 
@@ -140,7 +140,7 @@ of 0.127.
 
 In this case, a heuristic value of 1/100 is assigned for the likelihood ratio.
 
- .. list-table:: `**NM**. No match (NM)
+ .. list-table:: No match (NM)
     :widths: 100
     :header-rows: 1
 
@@ -161,7 +161,7 @@ Marfan syndrome but is not found in Loeys-Dietz syndrome. The likelihood ratio f
 arbitrary value of :math:`\frac{1}{1000}`, i.e., the ratio for a candidate diagnosis is reduced by a factor of
 one thousand if an HPO term is present in the proband that is explicitly excluded from the disease.
 
- .. list-table:: `**XP**. Excluded in query and present in disease
+ .. list-table:: Excluded in query and present in disease (XP)
     :widths: 100
     :header-rows: 1
 
@@ -173,7 +173,7 @@ If a term is excluded in the query, but not annotated one way of another in the 
 calculated without additional heuristics. These query terms generally result in a likelihood ratio near 1 and do not affect
 the differential diagnostic ranking much.
 
- .. list-table:: `**XA**. Excluded in query and not annotated in disease
+ .. list-table:: Excluded in query and not annotated in disease (XA)
     :widths: 100
     :header-rows: 1
 
@@ -186,7 +186,7 @@ value is assigned, i.e., the ratio for a candidate diagnosis is increased by a f
 present in the proband that is explicitly excluded from the disease.
 
 
- .. list-table:: `**XX**. Excluded in both query and disease
+ .. list-table:: Excluded in both query and disease (XX)
     :widths: 100
     :header-rows: 1
 
