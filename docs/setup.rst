@@ -11,10 +11,10 @@ as a library before it can be compiled and built.
 Installation of Exomiser as a Java library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LIRICAL relies on some classes from the Exomiser. To build LIRICAL, we need to install the Exomiser code base locally.
-Note that the version of Exomiser must match the version indicated in LIRICAL's pom file (current 12.0). To check this,
+Note that the version of Exomiser must match the version indicated in LIRICAL's pom file (currently 12.1.0). To check this,
 search for the following line in the ``pom.xml`` file: ::
 
-     <exomiser.version>12.0.0</exomiser.version>
+     <exomiser.version>12.1.0</exomiser.version>
 
 To do so, we clone the code and change into the Exomiser directory. ::
 
@@ -76,24 +76,24 @@ Exomiser database files
 LIRICAL uses data files from the Exomiser. We recommend that always the latest version of these files be used. The
 data files are stored at the `Exomiser download site <https://monarch-exomiser-web-dev.monarchinitiative.org/exomiser/download>`_.
 You may need to scroll (right hand side) to see the subdirectory ``latest``, which includes the current version of
-these files. Download either ``1811_hg19.zip`` (for the hg19/GRCh37 genome assembly)  or ``1811_hg38.zip`` for the
+these files. Download either ``1902_hg19.zip`` (for the hg19/GRCh37 genome assembly)  or ``1902_hg38.zip`` for the
 hg38/GRCh38 assembly). Of course, the datafile you use should match the assembly used to align and call
 the exome/genome data you want to analyze with LIRICAL.  Unpack the file, e.g., ::
 
-    $ unzip 1811_hg19.zip
+    $ unzip 1902_hg19.zip
 
 Remember the path, since it will be needed to run LIRICAL with exome/genome data. We will use the argument: ::
 
-    -e /some/path/1811_hg19
+    -e /some/path/1902_hg19
 
-where ``1811_hg19`` is the directory that is created by unpacking the archive file. The directory should contain the
-files
+where ``1902_hg19`` is the directory that is created by unpacking the archive file. The directory should contain 10
+files including
 
-* 1811_hg19_genome.h2.db
-* 1811_hg19_transcripts_ensembl.ser
-* 1811_hg19_transcripts_refseq.ser
-* 1811_hg19_transcripts_ucsc.ser
-* 1811_hg19_variants.mv.db
+* 1902_hg19_genome.h2.db
+* 1902_hg19_transcripts_ensembl.ser
+* 1902_hg19_transcripts_refseq.ser
+* 1902_hg19_transcripts_ucsc.ser
+* 1902_hg19_variants.mv.db
 
 These files are used by LIRICAL to annotate the VCF file and support variant interpretation.
 

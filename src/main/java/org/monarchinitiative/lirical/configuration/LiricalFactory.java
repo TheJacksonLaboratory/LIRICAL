@@ -104,6 +104,33 @@ public class LiricalFactory {
 
 
     private JannovarData jannovarData=null;
+    /** Used as a flag to pick the right constructor in {@link Builder#buildForGt2Git()}. */
+    private enum BuildType { GT2GIT}
+
+    /**
+     * This constructor is used to build Gt2Git. The BuildType argument is used as a flag.
+     */
+    private LiricalFactory(Builder builder, BuildType bt){
+            filterOnFILTER = false;
+            keepIfNoCandidateVariant = false;
+            ontology = null;
+            assembly = builder.getAssembly();
+            this.exomiserPath = builder.exomiserDataDir;
+            if (exomiserPath!=null) {
+                initializeExomiserPaths();
+            }
+            this.geneInfoPath = null;
+            this.mim2genemedgenPath=builder.mim2genemedgenPath;
+
+            this.phenotypeAnnotationPath = null;
+            this.transcriptdatabase = builder.transcriptdatabase;
+            this.vcfPath = null;
+            this.datadir= builder.liricalDataDir;
+            this.strict = false;
+            backgroundFrequencyPath = null;
+            hpoIdList = ImmutableList.of();
+            negatedHpoIdList = ImmutableList.of();
+    }
 
     private LiricalFactory(Builder builder) {
         this.ontology = builder.ontology;
@@ -124,9 +151,9 @@ public class LiricalFactory {
             ClassLoader classLoader = LiricalFactory.class.getClassLoader();
             URL resource;
             if (assembly.equals(GenomeAssembly.HG19)) {
-                resource = classLoader.getResource("background/background-hg19.txt");
+                resource = classLoader.getResource("background/background-hg19.tsv");
             } else if (assembly.equals(GenomeAssembly.HG38)) {
-                resource = classLoader.getResource("background/background-hg38.txt");
+                resource = classLoader.getResource("background/background-hg38.tsv");
             } else {
                 logger.error("Did not recognize genome assembly: {}",assembly);
                 throw new LiricalRuntimeException("Did not recognize genome assembly: "+assembly);
@@ -751,6 +778,12 @@ public class LiricalFactory {
             if (this.ontology == null) ingestHpo();
             return new LiricalFactory(this);
         }
+
+
+        public LiricalFactory buildForGt2Git() {
+            return new LiricalFactory(this,BuildType.GT2GIT);
+        }
+
 
         public LiricalFactory buildForGenomicDiagnostics() {
             if (this.ontology == null) ingestHpo();
