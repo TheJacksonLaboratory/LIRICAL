@@ -109,7 +109,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
     private void runOnePhenotypeOnlyAnalysis(File phenopacketFile) throws IOException, ParseException {
 
         PhenoOnlyCaseSimulator simulator = new PhenoOnlyCaseSimulator(phenopacketFile,this.factory);
-
+        simulator.run();
         int rank = simulator.getRank_of_disease();
         String diseaseLabel = simulator.getDiagnosisLabel();
         detailedResultLineList.add(simulator.getDetails());
@@ -211,8 +211,9 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
                         e.printStackTrace();
                     }
                 }
-                //if (counter>4)break;
+               // if (counter>4)break;
             }
+            System.out.println("[INFO] Processed " + counter + " phenopackets");
         } else {
             System.err.println("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");
             throw new LiricalRuntimeException("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");
