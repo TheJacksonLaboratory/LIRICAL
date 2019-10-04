@@ -1,5 +1,4 @@
-[![Documentation Status](https://readthedocs.org/projects/lirical/badge/](https://lirical.readthedocs.io/en/latest/?badge=latest)
-
+[![Documentation Status](https://readthedocs.org/projects/lirical/badge/?version=latest)](http://lirical.readthedocs.io/en/latest/?badge=latest)
 
 #######
 LIRICAL
