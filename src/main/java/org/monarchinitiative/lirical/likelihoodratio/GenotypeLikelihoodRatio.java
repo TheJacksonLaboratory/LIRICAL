@@ -21,27 +21,32 @@ import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermI
  */
 public class GenotypeLikelihoodRatio {
     private static final Logger logger = LoggerFactory.getLogger(GenotypeLikelihoodRatio.class);
-
+    /* Default frequency of called-pathogenic variants in the general population (gnomAD). In the vast majority of
+     * cases, we can derive this information from gnomAD. This constant is used if for whatever reason,
+     * data was not available.
+     */
     private static final double DEFAULT_LAMBDA_BACKGROUND = 0.1;
-
+    /** A small-ish number to avoid dividing by zero. */
     private static final double EPSILON = 1e-5;
-
     /** Use strict penalties if the genotype does not match the disease model in terms of number of called
      * pathogenic alleles.*/
     private final boolean strict;
 
     /**
-     * Entrez gene Curie, e.g., NCBIGene:2200; value--corresponding background frequency sum of pathogenic bin variants.
+     * Entrez gene Curie, e.g., NCBIGene:2200; value--corresponding background frequency (ie.,
+     * lambda-background), the sum of pathogenic bin variants in the population (gnomAD).
      */
     private final Map<TermId, Double> gene2backgroundFrequency;
     /**
      * This is a Poisson distribution object that is used to help calculate the genotype likelihood ratio for cases
-     * with autosomal recessive inheritance. We can construct this object once and reuse it.
+     * with autosomal recessive inheritance. We can construct this object once and reuse it. This is
+     * lambda-disease with lambda=2
      */
     private final PoissonDistribution recessivePoissonDistribution;
     /**
      * This is a Poisson distribution object that is used to help calculate the genotype likelihood ratio for cases
-     * with autosomal dominant inheritance. We can construct this object once and reuse it.
+     * with autosomal dominant inheritance. We can construct this object once and reuse it. This is
+     * lambda-disease with lambda=1
      */
     private final PoissonDistribution dominantPoissonDistribution;
 
@@ -57,7 +62,7 @@ public class GenotypeLikelihoodRatio {
 
     /**
      * @param g2background background frequencies of called pathogenic variants in genes.
-     * @param str strictness of genotype likelihood ratio
+     * @param str strictness of genotype likelihood ratio (see {@link #strict}).
      */
     public GenotypeLikelihoodRatio(Map<TermId, Double> g2background, boolean str) {
         this.gene2backgroundFrequency = g2background;
@@ -86,7 +91,12 @@ public class GenotypeLikelihoodRatio {
         return ESTIMATED_PROB;
     }
 
-
+    /**
+     * Check if the optional has a value already. If not, set it to val. Otherwise, set it to the maximum
+     * @param val New value
+     * @param opt Optional that may or may not already have a value
+     * @return an optional with val or with the max of val and opt.get() if opt has a value
+     */
     Optional<Double> updateMax(double val, Optional<Double> opt) {
         if (!opt.isPresent()) {
             return Optional.of(val);
@@ -114,10 +124,9 @@ public class GenotypeLikelihoodRatio {
         }
         // special case 2: Clinvar-pathogenic variant(s) found in this gene.
         // The likelihood ratio is defined as 1000**count, where 1 for autosomal dominant and
-        // min(2,clinVarcount) for autosomal recessive.
-        // if the count of ClinVar variants matches the expected number of variants according
-        // to the mode of inheritance, then return a heuristic upweighting. Otherwise,
-        // set the pathogenicity of the variant to 1.0 and continue with the score.
+        // 2 for autosomal recessive. (If the count of pathogenic alleles does not match
+        // the expected count, return 1000.
+
         if (g2g.hasPathogenicClinvarVar()) {
             int count = g2g.pathogenicClinVarCount();
             if (inheritancemodes.contains(AUTOSOMAL_RECESSIVE)) {
