@@ -23,7 +23,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <junit.version>5.5.0</junit.version>
         <phenol.version>1.4.1</phenol.version>
-        <exomiser.version>12.0.0</exomiser.version>
+        <exomiser.version>12.1.0</exomiser.version>
         <phenopacket.version>1.0.0-RC3</phenopacket.version>
         <slf4j.version>1.7.25</slf4j.version>
     </properties>
@@ -293,6 +293,18 @@
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
                     <artifactId>log4j-slf4j18-impl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-collections</groupId>
+                    <artifactId>commons-collections</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>-com.google.protobuf</groupId>
+                    <artifactId>protobuf-java-util</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -619,7 +631,7 @@
                  </configuration>
              </plugin>
 
-
+<!--
              <plugin>
                  <groupId>org.apache.maven.plugins</groupId>
                  <artifactId>maven-enforcer-plugin</artifactId>
@@ -638,6 +650,8 @@
                      </execution>
                  </executions>
              </plugin>
+
+             -->
 
              <plugin>
                  <groupId>org.jacoco</groupId>
