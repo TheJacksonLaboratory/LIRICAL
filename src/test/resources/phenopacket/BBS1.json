@@ -122,14 +122,11 @@
     "symbol": "BBS1"
   }],
   "htsFiles": [{
+    "uri": "file:/path/to/examples/BBS1.vcf",
+    "description": "BBS1 sample",
     "htsFormat": "VCF",
     "genomeAssembly": "GRCh37",
     "individualToSampleIdentifiers": {
-    },
-    "file": {
-      "path": "/path/to/examples/BBS1.vcf",
-      "uri": "",
-      "description": "BBS1 sample"
     }
   }],
   "diseases": [{

@@ -66,7 +66,7 @@ public class PhenopacketImporter {
         }
     }
 
-    public PhenopacketImporter(Phenopacket ppack, Ontology ontology){
+    PhenopacketImporter(Phenopacket ppack, Ontology ontology){
         this.phenoPacket=ppack;
         this.samplename = this.phenoPacket.getSubject().getId();
         this.hpo=ontology;
@@ -130,11 +130,18 @@ public class PhenopacketImporter {
         return builder.build();
     }
 
+    /**
+     * The path to the VCF file may be a string such as file:/path/to/examples/BBS1.vcf
+     * In this case, remove the prefix 'path:', otherwise return the original URI
+     * @return URI of VCF file mentioned in the Phenopacket
+     */
     public String getVcfPath() {
-        return this.vcfFile!=null ?
-                this.vcfFile.getUri() :
-               // this.vcfFile.getFile().getPath() :
-                null;
+        if (this.vcfFile == null) {
+            return null;
+        }
+        return this.vcfFile.getUri().startsWith("file:") ?
+                this.vcfFile.getUri().substring(5) :
+                this.vcfFile.getUri();
     }
 
     public HtsFile getVcfFile() {

@@ -82,7 +82,8 @@ class BBS1Test {
 
     @Test
     void testGetVcfPhenopacket() {
-        assertEquals(expectedVcf,phenopacketimporter.getVcfPath());
+        String vcfpath = phenopacketimporter.getVcfPath();
+        assertEquals(expectedVcf, vcfpath);
     }
 
     @Test

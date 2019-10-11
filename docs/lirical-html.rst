@@ -30,7 +30,7 @@ explains the observed phenotypic abnormalities (and if applicable, the observed 
 
 For example, the following figure shows the evaluation of a simulated case based on a published case
 report of an individual with pure hair and nail ectodermal dysplasia (ECTD9) related to a pathogenic variant
-in the <i>HOXC13</i> gene
+in the *HOXC13* gene
 (`Khan et al., 2017 <https://www.ncbi.nlm.nih.gov/pubmed/28403827>`_).
 
 LIRICAL has estimate the composite likelihood ratio score at 8.951 (note that this is displayed
@@ -46,7 +46,7 @@ of other features make more modest contributions (as indicated by the length of 
 
 
 The user should inspect the top differentials. In this case, the posterior probability of the remaining differentials
-drops off quickly. For instance, the throd best hit, Nicoliades Baraitser syndrome, has a posttest probability of
+drops off quickly. For instance, the throd best hit, Nicolaides Baraitser syndrome, has a posttest probability of
 only 3.6% and several of the observed phenotypes are not characteristic of this syndrome and thus reduce the match score
 (indicated as red bars).
 

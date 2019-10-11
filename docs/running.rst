@@ -40,3 +40,12 @@ that of the Exomiser YAML format, but some fields, such as negated HPO terms, as
     Running LIRICAL with a YAML file (VCF and HPO data) <yaml-vcf>
 
 
+Choosing between YAML and Phenopacket input formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+How should users choose between YAML and Phenopackets as an input format?
+
+.. toctree::
+    :maxdepth: 1
+
+    yaml-or-phenopacket

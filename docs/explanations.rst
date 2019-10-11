@@ -26,6 +26,7 @@ The following pages explain the algorithmic details.
    :caption: Contents:
 
    phenotype-score
+   genotype-score
 
 
 
