@@ -2,6 +2,11 @@
 Changelog
 =========
 -------
+v0.9.24
+-------
+- fixed bug in accessing the background data files within the JAR resource
+-------
+
 v0.9.23
 -------
 - update to phenopacket-schema version 1.0.0-RC3

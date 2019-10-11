@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -49,8 +48,6 @@ public class LiricalFactory {
     private final String geneInfoPath;
     /** Path to the mimgene/medgen file with MIM to gene associations. */
     private final String mim2genemedgenPath;
-    /** Path to the file that we create with background frequencies for predicted pathogenic variants in genes. */
-    private final String backgroundFrequencyPath;
     /** Path to the VCF file that is be evaluated. */
     private final String vcfPath;
     /** List of HPO terms (phenotypic abnormalities) observed in the person being evaluated. */
@@ -59,8 +56,6 @@ public class LiricalFactory {
     private final List<TermId> negatedHpoIdList;
     /** The directory in which several files are stored. */
     private final String datadir;
-    /** THe default data directory */
-    private final static String DEFAULT_DATA_DIRECTORY="data";
     /** The directory with the Exomiser database and Jannovar transcript files. */
     private String exomiserPath;
     /** Number of variants that were not removed because of the quality filter. */
@@ -87,6 +82,9 @@ public class LiricalFactory {
     private Multimap<TermId,TermId> gene2diseaseMultiMap=null;
     private Multimap<TermId,TermId> disease2geneIdMultiMap=null;
     private Map<TermId,String> geneId2SymbolMap=null;
+    /** Key: the TermId of a gene. Value. Its background frequency in the current genome build. This variable
+     * is only initialized for runs with a VCF file. */
+    private Map<TermId, Double> gene2backgroundFrequency = null;
     /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
      * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
      * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
@@ -127,7 +125,6 @@ public class LiricalFactory {
             this.vcfPath = null;
             this.datadir= builder.liricalDataDir;
             this.strict = false;
-            backgroundFrequencyPath = null;
             hpoIdList = ImmutableList.of();
             negatedHpoIdList = ImmutableList.of();
     }
@@ -143,26 +140,21 @@ public class LiricalFactory {
             initializeExomiserPaths();
         }
         this.assembly=builder.getAssembly();
-        if (builder.backgroundFrequencyPath!=null && !builder.backgroundFrequencyPath.isEmpty()) {
-            this.backgroundFrequencyPath=builder.backgroundFrequencyPath;
+        if (builder.backgroundFrequencyPath!=null
+                && !builder.backgroundFrequencyPath.isEmpty()) {
+            this.gene2backgroundFrequency = GenotypeDataIngestor.fromPath(builder.backgroundFrequencyPath);
         } else {
             // Note-- background files for hg19 and hg38 are stored in src/main/resources/background
             // and are included in the resources by the maven resource plugin
-            ClassLoader classLoader = LiricalFactory.class.getClassLoader();
-            URL resource;
             if (assembly.equals(GenomeAssembly.HG19)) {
-                resource = classLoader.getResource("background/background-hg19.tsv");
+                this.gene2backgroundFrequency = GenotypeDataIngestor.fromResource("background/background-hg19.tsv");
             } else if (assembly.equals(GenomeAssembly.HG38)) {
-                resource = classLoader.getResource("background/background-hg38.tsv");
+                this.gene2backgroundFrequency = GenotypeDataIngestor.fromResource("background/background-hg38.tsv");
             } else {
                 logger.error("Did not recognize genome assembly: {}",assembly);
                 throw new LiricalRuntimeException("Did not recognize genome assembly: "+assembly);
             }
-            if (resource==null) {
-                logger.error("Could not find resource for background file");
-                throw new LiricalRuntimeException("Could not find resource for background file");
-            }
-            this.backgroundFrequencyPath=resource.getFile();
+
         }
 
         this.geneInfoPath=builder.geneInfoPath;
@@ -236,10 +228,6 @@ public class LiricalFactory {
     /** returns "n/a if {@link #transcriptdatabase} was not initialized (should not happen). */
     public String transcriptdb() {
             return this.transcriptdatabase!=null?this.transcriptdatabase.toString():"n/a";
-    }
-
-    public String getBackgroundFrequencyPath() {
-        return backgroundFrequencyPath;
     }
 
     public String getSampleName() {
@@ -351,15 +339,6 @@ public class LiricalFactory {
         return this.geneId2SymbolMap;
     }
 
-    /** @return Map with key: geneId, value: corresponding background frequency of bin P variants. */
-    public Map<TermId, Double> gene2backgroundFrequency() {
-        if (this.backgroundFrequencyPath==null) {
-            throw new LiricalRuntimeException("Path to background-freq.txt file not found");
-        }
-        GenotypeDataIngestor gdingestor = new GenotypeDataIngestor(this.backgroundFrequencyPath);
-        return gdingestor.parse();
-    }
-
 
     private static String getPathWithoutTrailingSeparatorIfPresent(String path) {
         String sep = File.separator;
@@ -377,13 +356,7 @@ public class LiricalFactory {
      * @return a {@link GenotypeLikelihoodRatio} object
      */
     public GenotypeLikelihoodRatio getGenotypeLR() {
-        File f = new File(backgroundFrequencyPath);
-        if (!f.exists()) {
-            throw new LiricalRuntimeException(String.format("Could not find background frequency file at %s",this.backgroundFrequencyPath));
-        }
-        GenotypeDataIngestor ingestor = new GenotypeDataIngestor(this.backgroundFrequencyPath);
-        Map<TermId,Double> gene2back = ingestor.parse();
-        return new GenotypeLikelihoodRatio(gene2back,this.strict);
+        return new GenotypeLikelihoodRatio(this.gene2backgroundFrequency,this.strict);
     }
 
 
@@ -545,15 +518,15 @@ public class LiricalFactory {
     }
 
     /**
-     * This method checks whether the background freqeuncy file can be found.
+     * This method checks whether the background frequency data was initialized
      */
-    private void qcBackgroundFreqFile() {
-        File bgf = new File(this.backgroundFrequencyPath);
-        if (! bgf.exists()) {
-            logger.error("Could not find background frequency file at {}",this.backgroundFrequencyPath);
-            throw new LiricalRuntimeException(String.format("Could not find background frequency file at %s",this.backgroundFrequencyPath));
+    private void qcBackgroundFrequency() {
+
+        if (! this.gene2backgroundFrequency.isEmpty()) {
+            logger.error("background frequency was not initialized ");
+            throw new LiricalRuntimeException("background frequency was not initialized ");
         } else {
-            logger.trace("Background frequency file: {}", this.backgroundFrequencyPath);
+            logger.trace("Background frequency initialized for {} genes", this.gene2backgroundFrequency.size());
         }
     }
 
@@ -563,7 +536,7 @@ public class LiricalFactory {
         qcHumanPhenotypeOntologyFiles();
         qcExternalFilesInDataDir();
         qcExomiserFiles();
-        qcBackgroundFreqFile();
+        qcBackgroundFrequency();
     }
 
     /**
