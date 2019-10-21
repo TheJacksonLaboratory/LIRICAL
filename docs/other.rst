@@ -58,7 +58,7 @@ The grid command
 ~~~~~~~~~~~~~~~~
 
 We developed code to perform simulations that we used to produce some of the results in the manuscript. This
-code is not needed to run LR2PG, but is left here for users who may wish to reproduce or extend the simulation
+code is not needed to run LIRICAL, but is left here for users who may wish to reproduce or extend the simulation
 results.
 
 To see the options available for this command, enter ::
@@ -142,13 +142,13 @@ Generating the ClinVar score distribution
 .. _clinvar:
 
 This step is only needed for those who desire to reproduce or extend the data in the original publication,
-and it is not needed to run LR2PG.
+and it is not needed to run LIRICAL.
 
 
-LR2PG uses a cutoff Exomiser pathogenicity score of 0.8, which offers a good, if imperfect,
+LIRICAL uses a cutoff Exomiser pathogenicity score of 0.8, which offers a good, if imperfect,
 separation between variants called pathogenic by ClinVar and those that are not so called.
 
-To get the exomiser pathogenicity scores for all ClinVar variants, we can run LR2PG as follows. ::
+To get the exomiser pathogenicity scores for all ClinVar variants, we can run LIRICAL as follows. ::
 
     $ java -jar target/Lr2pg.jar gt2git \
         -j /home/peter/data/exomiser/1802_hg19/1802_hg19_transcripts_refseq.ser \

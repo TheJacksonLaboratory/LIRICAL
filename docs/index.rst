@@ -17,7 +17,7 @@ as `Human Phenotype Ontology (HPO) <http://www.human-phenotype-ontology.org>`_ t
 
    setup
    running
-   LR2PG output files <output>
+   LIRICAL output files <output>
    explanations
    options
    other commands <other>
