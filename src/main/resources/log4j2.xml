@@ -4,7 +4,7 @@
         <Console name="Console" target="SYSTEM_OUT" follow="true">
             <PatternLayout pattern="[%-5p] %c{1} - %F%l - %m%n" />
         </Console>
-        <RollingFile name="File" fileName="lr2pg.log" filePattern="${sys:LOG_PATH}/$${date:yyyy-MM}/app-%d{yyyy-MM-dd-HH}-%i.log.gz">
+        <RollingFile name="File" fileName="lirical.log" filePattern="${sys:LOG_PATH}/$${date:yyyy-MM}/app-%d{yyyy-MM-dd-HH}-%i.log.gz">
             <PatternLayout pattern="[%-5p] %c{1} - %m%n" />
             <Policies>
                 <SizeBasedTriggeringPolicy size="10 MB" />
