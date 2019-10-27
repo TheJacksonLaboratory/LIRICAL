@@ -60,10 +60,10 @@ The ``phenopacket`` command runs LIRICAL from a :ref:`rstyaml` configuration fil
       - ``--download``
       - data
       - diretory that contains the downloaded data
-    * - ``-k``
-      - ``--keep``
+    * - ``-g``
+      - ``--global``
       - false
-      - retain candidate diseases even if no candidate variant is found in VCF file. This option causes LIRICAL to list good phenotype candidates even if there is no supporting variant
+      - retain candidate diseases even if no candidate gene is known or no candidate variant is found in VCF file.
     * - ``-m``
       - ``--mindiff``
       - 10
