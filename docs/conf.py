@@ -45,7 +45,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'LR2PG'
+project = u'LIRICAL'
 copyright = u'2019'
 author = u'Peter Robinson'
 
