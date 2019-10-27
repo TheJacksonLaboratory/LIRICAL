@@ -36,9 +36,11 @@ Finally, we use the maven system to install the Exomiser library locally so that
     $ mvn install
 
 This command will install the library in the ``.m2`` directory located in your home directory. If you like, explore
-``.m2/repository/org/monarchinitiative/exomiser/`` to see how maven structures the repository.
+``.m2/repository/org/monarchinitiative/exomiser/`` to see how maven structures the repository. Occasionally,
+we have seen that an error occurs in the installation under some flavors of linux, which appears to be due to
+concurrency issues engendered by the unit tests. If you observe this error, try to install Exomiser without tests. ::
 
-
+    $ mvn install -DskipTests=true
 
 
 Installation
@@ -60,9 +62,14 @@ Build the executable from source with maven, and then test the build. ::
 
 
 
-LIRICAL requires `maven <https://maven.apache.org/>`_ version 3.5.3. Alternatively, go to the Releases section of the
-`LIRICAL <https://github.com/TheJacksonLaboratory/LIRICAL>`_, GitHub page and download the latest precompiled version
-of LIRICAL.
+LIRICAL requires `maven <https://maven.apache.org/>`_ version 3.5.3.
+
+
+Prebuilt LIRICAL executable
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Alternatively, go to the `Releases section <https://github.com/TheJacksonLaboratory/LIRICAL/releases>`_ on the
+LIRICAL GitHub page and download the latest precompiled version of LIRICAL.
 
 
 
@@ -106,20 +113,18 @@ The download command
 
 .. _rstdownload:
 
-LIRICAL requires four additional files to run. It offers a convenience function to download all four files
-to a local directory.
-
+LIRICAL requires four additional files to run.
 
 1. ``hp.obo``. The main Human Phenotype Ontology file
 2. ``phenotype.hpoa`` The main annotation file with all HPO disease models
 3. ``Homo_sapiens_gene_info.gz`` A file from NCBI Entrez Gene with information about human genes
 4. ``mim2gene_medgen`` A file from the NCBI medgen project with OMIM-derived links between genes and diseases
 
-By default, LIRICAL will download all four files into a newly created subdirectory called ``data`` in the
-current working directory. You can change this default with the ``-d`` or ``--data`` options (If you change
-this, then you will need to pass the location of your directory to all other LIRICAL commands
-using the ``-d`` flag). Download the
-files automatically as follows. ::
+LIRICAL offers a convenience function to download all four files
+to a local directory. By default, LIRICAL will download all four files into a newly created subdirectory
+called ``data`` in the current working directory. You can change this default with the ``-d`` or ``--data`` options
+(If you change this, then you will need to pass the location of your directory to all other LIRICAL commands
+using the ``-d`` flag). Download the files automatically as follows. ::
 
     $ java -jar LIRICAL.jar download
 

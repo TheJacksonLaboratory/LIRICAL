@@ -687,6 +687,7 @@ public class LiricalFactory {
                 switch (genomeAssembly.toLowerCase()) {
                     case "hg19":
                     case "hg37":
+                    case "grch19": // not a correct acronym, but seems to be used occasionally to mean hg19
                     case "grch37":
                     case "grch_37":
                         return GenomeAssembly.HG19;

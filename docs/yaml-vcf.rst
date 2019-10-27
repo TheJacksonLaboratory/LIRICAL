@@ -40,6 +40,7 @@ other three entries if the user does not proviude values.
 4. ``datadir`` The path with LIRICAL data that should be downloaded before running LIRICAL (see :ref:`rstsetup` for details). This option should not be used if the default data location (``data``) is used.
 5. ``background_freq`` Most users will want to use the precomputed background files provided by LIRICAL. In this case, the correct background file (for hg19 or hg38) is determined automatically on the basis of the genomeAssembly. This option should be used to have LIRICAL ingest a custom background file
 6. ``transcriptdb``. This determines the set of transcripts used to call variants. Valid values are UCSC, ensembl, or RefSeq, and the default is UCSC (optional)
+7. ``global``. If the YAML file contains the line ``global: true`` then it will not discard candidate diseases with no known disease gene or candidatesfor which no predicted pathogenic variant was found in the VCF.
 
 Any of the options described in :ref:`rstyaml-hpo` can also be used here.
 

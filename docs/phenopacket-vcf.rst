@@ -39,14 +39,14 @@ the path to a file located on your system). ::
         }
         }]
     },
-        "htsFiles": [{
-            "htsFormat": "VCF",
-            "individualToSampleIdentifiers": {
-                "example-1": "example-1"
-        },
-        "genomeAssembly": "GRCH_37",
-        "file": {
-            "path": "/path/to/data/Pfeiffer.vcf"
+    "htsFiles":
+    [{
+        "uri": "file://path/to/data/example.vcf",
+        "description": "test",
+        "htsFormat": "VCF",
+        "genomeAssembly": "GRCh19",
+        "individualToSampleIdentifiers": {
+          "patient1": "NA12345"
         }
     }],
     "metaData": {
@@ -102,15 +102,6 @@ then indicate the path to a non-default background frequency file.
 
 Path to the Exomiser data directory (required for VCF-based analysis).
 
-
-::
-
-     --strict
-
-By default, LIRICAL will include good matches to diseases that do not have a known disease gene, or
-that have a known disease gene but for which no predicted pathogenic variants were found. If you use the
-``--strict`` option, then LIRICAL will only report matches with a predicted pathogenic variant (Default: false).
-
 ::
 
      --transcriptdb
@@ -119,6 +110,14 @@ LIRICAL can use transcript data from UCSC, Ensembl, or RefSeq. The default is
 `RefSeq <https://www.ncbi.nlm.nih.gov/refseq/>`_, but transcript definitions from
 `UCSC <http://genome.ucsc.edu/>`_ and `Ensembl <http://genome.ucsc.edu/>`_ can also be used
 (e.g., ``--transcriptdb USCS`` or ``--transcriptdb ensembl``).
+
+::
+
+    --global
+
+By default,  LIRICAL's default mode, which only ranks candidate genes for which at least one pathogenic allele is
+present in the VCF file. LIRICAL can also be run in a ```--global`` mode in which diseases are ranked irrespective of
+whether a disease gene is known for a disease or whether the gene is found to have a pathogenic allele or not.
 
 
 

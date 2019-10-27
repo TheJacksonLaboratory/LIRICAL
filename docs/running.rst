@@ -4,7 +4,7 @@
 Running LIRICAL
 ===============
 
-LIRICAL is a command-line Java tool that runs with Java versions 8 or higher. LIRICAL
+LIRICAL is a command-line Java tool that runs with Java version 8 or higher. LIRICAL
 can be run both with and without genomic data in form of a VCF file from genome, exome,
 or NGS gene-panel sequencing.
 
