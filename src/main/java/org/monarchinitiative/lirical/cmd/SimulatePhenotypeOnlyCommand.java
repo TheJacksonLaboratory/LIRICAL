@@ -5,7 +5,7 @@ import com.beust.jcommander.Parameters;
 
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.exception.LiricalException;
-import org.monarchinitiative.lirical.hpo.PhenotypeOnlyHpoCaseSimulator;
+import org.monarchinitiative.lirical.simulation.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -19,8 +19,8 @@ import java.util.Map;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Simulate phenotype-only cases",hidden = true)
-public class SimulatePhenotypesCommand extends LiricalCommand {
-    private static final Logger logger = LoggerFactory.getLogger(SimulatePhenotypesCommand.class);
+public class SimulatePhenotypeOnlyCommand extends LiricalCommand {
+    private static final Logger logger = LoggerFactory.getLogger(SimulatePhenotypeOnlyCommand.class);
     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
     @Parameter(names={"-d","--data"}, description ="directory to download data" )
     private String datadir="data";
@@ -37,7 +37,7 @@ public class SimulatePhenotypesCommand extends LiricalCommand {
     /** No-op constructor meant to demo the phenotype LIRICAL algorithm by simulating some case based on
      * randomly chosen diseases and HPO terms.
      */
-    public SimulatePhenotypesCommand(){
+    public SimulatePhenotypeOnlyCommand(){
     }
 
 

@@ -3,7 +3,6 @@ package org.monarchinitiative.lirical.io;
 import com.google.protobuf.util.JsonFormat;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -83,7 +82,8 @@ class BBS1Test {
 
     @Test
     void testGetVcfPhenopacket() {
-        assertEquals(expectedVcf,phenopacketimporter.getVcfPath());
+        String vcfpath = phenopacketimporter.getVcfPath();
+        assertEquals(expectedVcf, vcfpath);
     }
 
     @Test

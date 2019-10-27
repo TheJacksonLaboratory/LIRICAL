@@ -33,7 +33,7 @@ import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySourc
  * the population background from the Exomiser database (gnomAD, TOPMed, others, but filtering out variants that are listed
  * in ClinVar).
  *
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author <a href="mailto:j.jacobsen@qmul.ac.uk>Jules Jacobsen</a>
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class GenicIntoleranceCalculator {
@@ -62,14 +62,14 @@ public class GenicIntoleranceCalculator {
     private final VariantAnnotator variantAnnotator;
     /** Exomiser data store. */
     private final MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap;
-
+    /** If true, calculate the distribution of ClinVar pathogenicity scores. */
     private final boolean doClinvar;
 
     /**
-     *
      * @param variantAnnotator Object to annotate an arbitrary variant
      * @param alleleStore Exomiser data resource
-     * @param fname name of org.monarchinitiative.lirical.output file (background-hg38.txt or background-hg19.txt).
+     * @param fname name of org.monarchinitiative.lirical.output file (background-hg38.txt or background-hg19.tsv).
+     * @param doClinvar flag that if true will cause the analysis to calculate the distribution of Clinvar pathogenicity scores
      */
     public GenicIntoleranceCalculator(VariantAnnotator variantAnnotator, MVStore alleleStore, String fname, boolean doClinvar) {
         this.variantAnnotator = variantAnnotator;

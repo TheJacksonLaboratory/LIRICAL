@@ -1,6 +1,32 @@
 =========
 Changelog
 =========
+-------
+v0.9.24
+-------
+- fixed bug in accessing the background data files within the JAR resource
+-------
+
+v0.9.23
+-------
+- update to phenopacket-schema version 1.0.0-RC3
+- update to Exomiser 12.1.0
+- revisions to phenotype likelihood ratio algorithm for non-exact matching
+- more documentation
+
+-------
+v0.9.22
+-------
+- update to phenol-1.4.1
+- Scoring for features excluded in query and disease.
+- Adding option to use Orphanet annotations
+
+-------
+v0.9.21
+-------
+- ClinVar now requires assessment to be counted
+- bug-fix of "missing" genes
+- fixing SVG format for excluded phenotypes
 
 -------
 v0.9.20

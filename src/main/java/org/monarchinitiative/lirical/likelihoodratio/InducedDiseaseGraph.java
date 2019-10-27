@@ -9,10 +9,6 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.*;
 
-
-import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getAncestorTerms;
-import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getParentTerms;
-
 /**
  * For some calculations of the phenotype likelihood ratio, we need to traverse the graph induced by the HPO terms to
  * which a disease is annotated. It is cheaper to create this graph once and reuse it for each of the query terms. This
@@ -25,17 +21,27 @@ public class InducedDiseaseGraph {
     private final HpoDisease disease;
     /** reference to HPO ontology object. */
     private final Ontology ontology;
-    private Map<TermId,Double> term2frequencyMap;
+    private final Map<TermId,Double> term2frequencyMap;
     private final static TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
+    /**
+     * If a disease is negative for say Abnormal serum creatinine kinase level
+     * and the parent term Elevated serum creatinine kinase, was excluded in
+     * the patient, then we can say that the patient must be negative for all of the
+     * children of Abnormal serum creatinine kinase. We can therefore tak the induced
+     * ancestor graph of Abnormal serum creatinine kinase level (which includes
+     * Abnormal serum creatinine kinase), and if any of the patient negated terms are
+     * in this graph, then they are excluded both in the patient and in the disease.
+     */
+    private final Set<TermId> inducedNegativeGraph;
 
     /**
      * An inner class that represents a term together with the minimum path length to any
      * term that directly annotates {@link #disease}.
      */
     static class CandidateMatch {
-        int distance;
+        final int distance;
         double frequency;
-        TermId termId;
+        final TermId termId;
 
         CandidateMatch(TermId tid, double f) {
             this.termId=tid;
@@ -89,7 +95,15 @@ public class InducedDiseaseGraph {
                 }
             }
         }
+        this.inducedNegativeGraph = OntologyAlgorithm.getAncestorTerms(ontology,new HashSet<>(disease.getNegativeAnnotations()),true);
     }
+
+    /**
+     * See comments about {@link #inducedNegativeGraph}.
+     * @param tid A term that was negated in a patient
+     * @return true if the term is also negated in the disease.
+     */
+    public boolean isExactExcludedMatch(TermId tid) { return this.inducedNegativeGraph.contains(tid); }
 
     public HpoDisease getDisease() {
         return disease;
@@ -103,7 +117,7 @@ public class InducedDiseaseGraph {
      * @param tid a query term
      * @return The best hit
      */
-    public Term2Freq getClosestAncestor(TermId tid) {
+    Term2Freq getClosestAncestor(TermId tid) {
         Queue<TermId> queue = new LinkedList<>();
         queue.add(tid);
 
@@ -124,7 +138,6 @@ public class InducedDiseaseGraph {
         // The frequency of the root is taken to be 1.0
 
         return new Term2Freq(PHENOTYPIC_ABNORMALITY,1.0);
-
     }
 
 

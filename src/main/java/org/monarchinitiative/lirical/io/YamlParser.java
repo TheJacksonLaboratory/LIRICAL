@@ -26,7 +26,7 @@ public class YamlParser {
     private static final Logger logger = LoggerFactory.getLogger(YamlParser.class);
     private YamlConfig yconfig;
     /** THe path to which LIRICAL will download data such as hp.obo by default. */
-    private final String DEFAULT_DATA_PATH="data";
+    private static final String DEFAULT_DATA_PATH="data";
 
 
 
@@ -148,20 +148,24 @@ public class YamlParser {
         }
     }
 
+    public String getHpoPath() {
+        String ddir = getDataDir();
+        return String.format("%s%s%s",ddir,File.separator,"hp.obo");
+    }
+
     /**
-     * The Yaml file should have an entry {@code mode: phenotype} in the analysis
-     * section if the user wants to run a phenotype only analysis. If there is
+     * The Yaml file should have an entry {@code exomiser: /some/path/} in the analysis
+     * section if the user wants to run a VCF-based analysis (this requires the Exomiser database). If there is
      * {@code mode: vcf} or if there is no entry, we will run a VCF analysis
      * @return true if phenotype only analysis should be performed.
      */
     public boolean phenotypeOnlyMode() {
-        if (yconfig.getAnalysis().containsKey("mode")) {
-            String mode = yconfig.getAnalysis().get("mode");
-            if (mode.equalsIgnoreCase("phenotype")) {
-                return true;
-            }
+        if (yconfig.getAnalysis().containsKey("exomiser")) {
+            return false; // exomiser is only to be used for VCF analysis
+        } else if (yconfig.getAnalysis().containsKey("vcf")) {
+            return false;
         }
-        return false;
+        return true;
     }
 
 
@@ -256,7 +260,7 @@ public class YamlParser {
     }
 
 
-    public String getSampleId() {
+    String getSampleId() {
         if (yconfig==null || yconfig.getSampleId() == null) {
             throw new LiricalRuntimeException("YAML file does not contain required sampleId element");
         }
@@ -271,12 +275,15 @@ public class YamlParser {
         else return Optional.of(yconfig.getOutdir());
     }
 
-    public boolean keep() {
-        if (yconfig.getAnalysis().containsKey("keep")) {
-            String k = yconfig.getAnalysis().get("keep");
-            return  k.equalsIgnoreCase("true");
-        }
-        return false;// no keep entry in YAML file
+    /** @return true if the YAML analysis section contains a KV pair keep:true */
+    public boolean global() {
+        String v = yconfig.getAnalysis().getOrDefault("global","notfound");
+        return  v.equalsIgnoreCase("true");
+    }
+
+    public boolean orphanet() {
+        String v = yconfig.getAnalysis().getOrDefault("orphanet","notfound");
+        return v.equalsIgnoreCase("true");
     }
 
     public Optional<Integer> mindiff() {
@@ -307,7 +314,7 @@ public class YamlParser {
         return Optional.empty();
     }
 
-    public boolean doTsv() {
+    boolean doTsv() {
         if (yconfig.getAnalysis().containsKey("tsv")) {
             String k = yconfig.getAnalysis().get("tsv");
             return k.equalsIgnoreCase("true");

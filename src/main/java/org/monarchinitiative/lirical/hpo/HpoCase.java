@@ -68,25 +68,40 @@ public final class HpoCase {
     }
 
     /**
+     * The argument to the function is the TermId (e.g., OMIM:600100) of a disease. This function checks to
+     * see what rank the disease was assigned by LIRICAL; the ranks are stored in {@link #disease2resultMap}.
+     * Note that in some cases, the correct disease may be completely removed from the list of results. This can
+     * be the case, fo instance, if we are using the {@code strict} option and only return diseases for which
+     * LIRICAL finds a predicted pathogenic variant in a gene associated with the disease.
+     * Therefore, we return an Optional. If it is not-present, then the disease was not found.
      * @param diseaseId CURIE (e.g., OMIM:600100) of the disease whose rank we want to know
-     * @return the rank of the disease within all of the test results
+     * @return the rank of the disease within all of the test results.
+     *
      */
-    public int getRank(TermId diseaseId){
+    public Optional<Integer> getRank(TermId diseaseId){
         TestResult result = this.disease2resultMap.get(diseaseId);
-        return result==null?Integer.MAX_VALUE : result.getRank();
-    }
-
-
-    private String niceFormat(double d) {
-        DecimalFormat df = new DecimalFormat("0.000E0");
-        if (d > 1.0) {
-            return String.format("%.2f", d);
-        } else if (d > 0.005) {
-            return String.format("%.4f", d);
-        } else {
-            return df.format(d);
+        if (result==null) {
+            return Optional.empty();
         }
+        return Optional.of(result.getRank());
     }
+
+    public double getPosttestProbability(TermId diseaseId) {
+        TestResult result = this.disease2resultMap.get(diseaseId);
+        if (result==null) {
+            return 0.0;
+        }
+        return result.getPosttestProbability();
+    }
+
+    /**
+     * If a disease is unranked, then it is tied for the rank after the last rank of the ranked diseases
+     * @return (tied) rank of an unranked disease
+     */
+    public int getRankOfUnrankedDisease() {
+        return 1 + this.disease2resultMap.size();
+    }
+
 
     @Override
     public String toString() {

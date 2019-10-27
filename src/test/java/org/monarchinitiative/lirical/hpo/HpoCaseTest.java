@@ -39,15 +39,14 @@ class HpoCaseTest {
 
 
     @BeforeAll
-    static void setup() throws PhenolException,NullPointerException {
+    static void setup() throws NullPointerException {
         ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
         String hpoPath = Objects.requireNonNull(classLoader.getResource("hp.small.obo").getFile());
         String annotationPath = Objects.requireNonNull(classLoader.getResource("small.hpoa").getFile());
         /* parse ontology */
         // The HPO is in the default  curie map and only contains known relationships / HP terms
         ontology = OntologyLoader.loadOntology(new File(hpoPath));
-        HpoDiseaseAnnotationParser annotationParser = new HpoDiseaseAnnotationParser(annotationPath, ontology);
-        Map<TermId, HpoDisease> diseaseMap = annotationParser.parse();
+        Map<TermId, HpoDisease> diseaseMap = HpoDiseaseAnnotationParser.loadDiseaseMap(annotationPath, ontology);
         backforeFreq = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
 
         /* these are the phenotypic abnormalties of our "case" */

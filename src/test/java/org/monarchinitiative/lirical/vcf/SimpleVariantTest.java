@@ -133,16 +133,16 @@ class SimpleVariantTest {
         // rare variant; path=0.9, freq = 0
         // frequency score should be 1 * 0.9
         double expected = 0.9;
-        assertEquals(expected,svRareVariant.getPathogenicity(),EPSILON);
+        assertEquals(expected,svRareVariant.getPathogenicityScore(),EPSILON);
         // medium variant path=0.9, frequency = 1%
         // frequency score is 1.13533f - (0.13533f * (float) Math.exp(frequency));
         //10.9*(1.13533 - (0.13533 * exp(1.0)))
         //[1] 0.6907184
         expected = 0.6907184;
-        assertEquals(expected,svMediumRareVariant.getPathogenicity(),EPSILON);
+        assertEquals(expected,svMediumRareVariant.getPathogenicityScore(),EPSILON);
         // high frequency variant
         expected = 0.0; // because frequency is 5%
-        assertEquals(expected,svCommonVariant.getPathogenicity(),EPSILON);
+        assertEquals(expected,svCommonVariant.getPathogenicityScore(),EPSILON);
     }
 
     @Test

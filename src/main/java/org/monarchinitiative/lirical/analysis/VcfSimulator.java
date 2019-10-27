@@ -162,8 +162,10 @@ public class VcfSimulator {
         }
 
         // we create a temporary VCF file for LIRICAL analysis
-        final File outPath = File.createTempFile("single-vcf-simulator-" + subjectId + "-", ".vcf");
+        final File outPath = File.createTempFile("single-vcf-simulator-" + subjectId.replaceAll(" ","_") + "-", ".vcf");
         outPath.deleteOnExit();
+
+
 
         try (VCFFileReader reader = new VCFFileReader(templateVcfPath, false);
              VariantContextWriter writer = new VariantContextWriterBuilder()
@@ -196,10 +198,12 @@ public class VcfSimulator {
                 .setGenomeAssembly(genomeAssembly)
 //                 individual_to_sample_identifiers not set here, this is a naive thing for now
 //                .putAllIndividualToSampleIdentifiers()
-                .setFile(org.phenopackets.schema.v1.core.File.newBuilder()
-                        .setPath(outPath.getAbsolutePath())
-                        .setDescription(description)
-                        .build())
+              //  .setFile(org.phenopackets.schema.v1.core.File.newBuilder()
+              //          .setPath(outPath.getAbsolutePath())
+               //         .setDescription(description)
+               //         .build())
+                .setUri(outPath.getAbsolutePath())
+                .setDescription(description)
                 .build();
     }
 }

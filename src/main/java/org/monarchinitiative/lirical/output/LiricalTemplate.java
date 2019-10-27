@@ -35,7 +35,7 @@ public abstract class LiricalTemplate {
 
     protected static final String EMPTY_STRING="";
 
-    protected  String outpath;
+    protected String outpath;
 
 
     /** This map contains the names of the top differential diagnoses that we will show as a list at the
@@ -70,17 +70,6 @@ public abstract class LiricalTemplate {
         initTemplateData(hcase,ontology,metadat);
     }
 
-
-
-
-
-
-    /**
-     * output a file (HTML or TSV)
-//     * @param prefix -- prefix for the file, (e.g., sample would become sample.html or sample.tsv)
-//     * @param directory -- directory to which to write the output file. Created automatically if it does not exist
-//     */
-//    abstract public void outputFile(String prefix, String directory);
     abstract public void outputFile();
     abstract public void outputFile(String fname);
 
@@ -107,10 +96,6 @@ public abstract class LiricalTemplate {
         if (excludedHpos.size()>0) {
             this.templateData.put("hasExcludedHPOs","true");
         }
-
-
-
-
     }
 
     /** Some of our name strings contain multiple synonyms. This function removes all but the first.*/

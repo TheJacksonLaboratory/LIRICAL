@@ -1,13 +1,7 @@
-.. _rstyaml:
+.. _rstyaml-vcf:
 
-Running LIRICAL with a YAML file
-================================
-
-
-The recommended input format for running LIRICAL is the `Phenopacket <https://github.com/phenopackets>`_, but
-LIRICAL also supports `YAML <https://en.wikipedia.org/wiki/YAML>`_, which is a simple, human readable format that
-is commonly used for configuration files.
-
+Running LIRICAL with a YAML file (HPO and VCF data)
+===================================================
 
 
 YAML
@@ -41,12 +35,14 @@ other three entries if the user does not proviude values.
 
 
 1. ``vcf`` is the path to the file we want to analyze (required).
-2. ``exomiser`` is the path to the Exomiser data directory (see :ref:`exomiserdata` for details) (required)
+2. ``exomiser`` is the path to the Exomiser data directory (see :ref:`rstexomiserdatadir` for details) (required)
 3. ``genomeAssembly`` This should be either hg19 (or hg37, which is synonymous) or hg38 (required)
 4. ``datadir`` The path with LIRICAL data that should be downloaded before running LIRICAL (see :ref:`rstsetup` for details). This option should not be used if the default data location (``data``) is used.
 5. ``background_freq`` Most users will want to use the precomputed background files provided by LIRICAL. In this case, the correct background file (for hg19 or hg38) is determined automatically on the basis of the genomeAssembly. This option should be used to have LIRICAL ingest a custom background file
 6. ``transcriptdb``. This determines the set of transcripts used to call variants. Valid values are UCSC, ensembl, or RefSeq, and the default is UCSC (optional)
+7. ``global``. If the YAML file contains the line ``global: true`` then it will not discard candidate diseases with no known disease gene or candidatesfor which no predicted pathogenic variant was found in the VCF.
 
+Any of the options described in :ref:`rstyaml-hpo` can also be used here.
 
 Additionally, ``hpoIds`` is a list of HPO term representing the clinical manifestations observed in the individual being analyzed.
 Finally,  ``prefix`` is the prefix of the output file (optional, default: lirical) For instance, if the prefix is ``example1``, then the HTML output file will be

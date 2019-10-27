@@ -183,17 +183,17 @@ class YamlParserTest {
     }
 
     @Test
-    void testKeep1() {
+    void testGlobal1() {
         // example 1 does not have a keep entry
         YamlParser yparser = new YamlParser(example1path);
-        assertFalse(yparser.keep());
+        assertFalse(yparser.global());
     }
 
     @Test
-    void testKeep2() {
+    void testGlobal2() {
         // example 2 has keep=true
         YamlParser yparser = new YamlParser(example2path);
-        assertTrue(yparser.keep());
+        assertTrue(yparser.global());
     }
 
 

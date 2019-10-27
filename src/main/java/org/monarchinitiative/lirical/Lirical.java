@@ -7,6 +7,7 @@ import com.beust.jcommander.ParameterException;
 import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.lirical.cmd.*;
 import org.monarchinitiative.lirical.exception.LiricalException;
+import org.monarchinitiative.lirical.simulation.NotCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,7 @@ public class Lirical {
     @Parameter(names = {"-h", "--help"}, help = true, arity = 0,description = "display this help message")
     private boolean usageHelpRequested;
 
-    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","simulate","grid","gt2git","yaml","simulate-vcf","phenopacket");
+    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","yaml","phenopacket","simulate","grid","gt2git","simulate-vcf","not");
 
 
     static public void main(String [] args) {
@@ -33,21 +34,23 @@ public class Lirical {
 
         Lirical lirical = new Lirical();
         DownloadCommand download = new DownloadCommand();
-        SimulatePhenotypesCommand simulate = new SimulatePhenotypesCommand();
+        SimulatePhenotypeOnlyCommand simulate = new SimulatePhenotypeOnlyCommand();
         GridSearchCommand grid = new GridSearchCommand();
         Gt2GitCommand gt2git = new Gt2GitCommand();
         YamlCommand yaml = new YamlCommand();
         PhenopacketCommand phenopacket = new PhenopacketCommand();
-        SimulateVcfCommand simvcf = new SimulateVcfCommand();
+        SimulatePhenopacketCommand simvcf = new SimulatePhenopacketCommand();
+        NotCommand not = new NotCommand();
         JCommander jc = JCommander.newBuilder()
                 .addObject(lirical)
                 .addCommand("download", download)
+                .addCommand("phenopacket",phenopacket)
+                .addCommand("yaml",yaml)
+                .addCommand("gt2git",gt2git)
                 .addCommand("simulate", simulate)
                 .addCommand("grid", grid)
-                .addCommand("gt2git",gt2git)
-                .addCommand("yaml",yaml)
                 .addCommand("simulate-vcf",simvcf)
-                .addCommand("phenopacket",phenopacket)
+                .addCommand("not",not)
                 .build();
         jc.setProgramName("java -jar LIRICAL.jar");
         try {
@@ -71,17 +74,13 @@ public class Lirical {
                     System.exit(1);
                 }
             }
-            if (commandstring==null) { // user ran without any command
-                jc.usage();
-                System.exit(0);
-            }
             System.err.println("[ERROR] "+e.getMessage());
             System.err.println("[ERROR] your command: "+commandstring);
             System.err.println("[ERROR] enter java -jar LIRICAL.jar -h for more information.");
             System.exit(1);
         }
         String parsedCommand = jc.getParsedCommand();
-        if (parsedCommand==null) {
+        if (parsedCommand==null || parsedCommand.isEmpty()) {
             jc.usage(); // user ran program with no arguments, probably help is want is wanted.
             System.exit(0);
         }
@@ -137,6 +136,9 @@ public class Lirical {
            case "phenopacket":
                 liricalCommand =phenopacket;
                 break;
+           case "not":
+                liricalCommand =not;
+                break;
            default:
                System.err.println(String.format("[ERROR] command \"%s\" not recognized",command));
                jc.usage();
@@ -149,7 +151,20 @@ public class Lirical {
             e.printStackTrace();
         }
         long stopTime = System.currentTimeMillis();
-        System.out.println("LRPG: Elapsed time was " + (stopTime - startTime)*(1.0)/1000 + " seconds.");
+        int elapsedTime = (int)((stopTime - startTime)*(1.0)/1000);
+        if (elapsedTime > 3599) {
+            int elapsedSeconds = elapsedTime % 60;
+            int elapsedMinutes = (elapsedTime/60) % 60;
+            int elapsedHours = elapsedTime/3600;
+            System.out.println(String.format("LIRICAL: Elapsed time was %d:%2d%2d",elapsedHours,elapsedMinutes,elapsedSeconds));
+        }
+        else if (elapsedTime>59) {
+            int elapsedSeconds = elapsedTime % 60;
+            int elapsedMinutes = (elapsedTime/60) % 60;
+            System.out.println(String.format("LIRICAL: Elapsed time was %d min, %d sec",elapsedMinutes,elapsedSeconds));
+        } else {
+            System.out.println("LIRICAL: Elapsed time was " + (stopTime - startTime) * (1.0) / 1000 + " seconds.");
+        }
     }
 
 

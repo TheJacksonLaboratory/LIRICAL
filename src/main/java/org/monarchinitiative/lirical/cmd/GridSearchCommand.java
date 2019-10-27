@@ -2,11 +2,10 @@ package org.monarchinitiative.lirical.cmd;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import org.monarchinitiative.lirical.analysis.GridSearch;
+import org.monarchinitiative.lirical.simulation.GridSearch;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,11 +38,10 @@ public class GridSearchCommand extends LiricalCommand {
                 .datadir(this.datadir)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
-        Ontology ontology = factory.hpoOntology();
         logger.trace("Grid search: Simulating {} cases. imprecision={}",
                 n_cases_to_simulate,imprecise_phenotype?"yes":"no");
-        Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
-        GridSearch gridSearch = new GridSearch(ontology,diseaseMap, n_cases_to_simulate, imprecise_phenotype);
+        Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(factory.hpoOntology());
+        GridSearch gridSearch = new GridSearch(factory.hpoOntology(),diseaseMap, n_cases_to_simulate, imprecise_phenotype);
         gridSearch.gridsearch();
     }
 }

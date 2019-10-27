@@ -10,7 +10,7 @@ analysis:
   datadir: /path/to/custom_location1/
   background: /path/to/custom_location2
   transcriptdb: ensembl
-  keep: true
+  global: true
   strict: true
   mindiff: 50
   threshold: 0.05

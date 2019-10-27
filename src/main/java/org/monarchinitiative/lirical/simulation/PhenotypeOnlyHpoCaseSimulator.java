@@ -1,8 +1,9 @@
-package org.monarchinitiative.lirical.hpo;
+package org.monarchinitiative.lirical.simulation;
 
 
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.lirical.exception.LiricalException;
+import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
@@ -128,6 +129,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
     public void simulateCases() throws LiricalException {
         int c=0;
         Map<Integer,Integer> ranks=new HashMap<>();
+        List<TermId> notRanked = new ArrayList<>();
         logger.trace(String.format("Simulating n=%d HPO cases with %d random terms and %d noise terms per case.",n_cases_to_simulate,n_terms_per_case,n_noise_terms));
         int size = diseaseMap.size();
 
@@ -145,15 +147,19 @@ public class PhenotypeOnlyHpoCaseSimulator {
                         disease.getDiseaseDatabaseId()));
                 continue;
             }
-            int rank = simulateCase(disease);
-            if (verbose) {
-                System.err.println(String.format("%s: rank=%d", disease.getName(), rank));
+            Optional<Integer> optionalRank = simulateCase(disease);
+            if (optionalRank.isPresent()) {
+                int rank = optionalRank.get();
+                if (verbose) {
+                    System.err.println(String.format("%s: rank=%d", disease.getName(), rank));
+                }
+                ranks.putIfAbsent(rank,0);
+                ranks.put(rank, ranks.get(rank) + 1);
+            } else {
+                notRanked.add(diseaseToSimulate);
             }
-            ranks.putIfAbsent(rank,0);
-            ranks.put(rank, ranks.get(rank) + 1);
-            if (++c>n_cases_to_simulate) {
-                break; // finished!
-            }
+
+
         }
         if (ranks.containsKey(1)) {
             proportionAtRank1 = ranks.get(1) / (double) n_cases_to_simulate;
@@ -162,6 +168,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
         }
         if (verbose) {
             dump2shell(ranks);
+            System.out.println("Could not rank " + notRanked.size() + " diseases");
         }
 
 
@@ -279,7 +286,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
 
 
 
-    public int simulateCase(HpoDisease disease) throws LiricalException {
+    private Optional<Integer> simulateCase(HpoDisease disease) throws LiricalException {
         if (disease == null) {
             // should never happen!
             throw new LiricalException("Attempt to create case from Null-value for disease");
@@ -293,7 +300,6 @@ public class PhenotypeOnlyHpoCaseSimulator {
         // the following evaluates the case for each disease with equal pretest probabilities.
         // Object to evaluate the results of differential diagnosis by LR analysis.
         CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
-        evaluator.setVerbosity(this.verbose);
         HpoCase hpocase = evaluator.evaluate();
         if (verbose)
             System.err.println(hpocase.toString());

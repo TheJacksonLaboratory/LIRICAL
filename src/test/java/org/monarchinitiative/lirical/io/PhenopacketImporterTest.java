@@ -4,7 +4,6 @@ package org.monarchinitiative.lirical.io;
 
 import com.google.protobuf.util.JsonFormat;
 
-import org.mockito.Mockito;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -14,7 +13,7 @@ import org.phenopackets.schema.v1.core.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.phenopackets.schema.v1.core.File;
+import org.phenopackets.schema.v1.core.HtsFile;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -92,7 +91,8 @@ class PhenopacketImporterTest {
                 setAlt("A").
                 build();
         HtsFile vcfFile = HtsFile.newBuilder().
-                setFile(File.newBuilder().setPath(fakeVcfPath).build())
+               // setFile(File.newBuilder().setPath(fakeVcfPath).build())
+                setUri(fakeVcfPath)
                 .setHtsFormat(HtsFile.HtsFormat.VCF)
                 .setGenomeAssembly(fakeGenomeAssembly)
                 .build();

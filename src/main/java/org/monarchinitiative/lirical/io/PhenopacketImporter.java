@@ -43,28 +43,30 @@ public class PhenopacketImporter {
      * Factory method to obtain a PhenopacketImporter object starting from a phenopacket in Json format
      * @param pathToJsonPhenopacketFile -- path to the phenopacket
      * @return {@link PhenopacketImporter} object corresponding to the PhenoPacket
-     * @throws ParseException if the JSON code cannot be parsed
-     * @throws IOException if the File cannot be found
      */
-    public static PhenopacketImporter fromJson(String pathToJsonPhenopacketFile, Ontology ontology) throws ParseException,IOException {
+    public static PhenopacketImporter fromJson(String pathToJsonPhenopacketFile, Ontology ontology)  {
         JSONParser parser = new JSONParser();
         logger.trace("Importing Phenopacket: " + pathToJsonPhenopacketFile);
-        Object obj = parser.parse(new FileReader(pathToJsonPhenopacketFile));
-        JSONObject jsonObject = (JSONObject) obj;
-        String phenopacketJsonString = jsonObject.toJSONString();
-        Phenopacket phenopacket;
+        java.io.File tmp = new java.io.File(pathToJsonPhenopacketFile);
+        if (! tmp.exists() ) {
+            System.err.println("[ERROR] Could not find phenopacket file at " + pathToJsonPhenopacketFile);
+            throw new LiricalRuntimeException("[ERROR] Could not find phenopacket file at " + pathToJsonPhenopacketFile);
+        }
         try {
+            Object obj = parser.parse(new FileReader(pathToJsonPhenopacketFile));
+            JSONObject jsonObject = (JSONObject) obj;
+            String phenopacketJsonString = jsonObject.toJSONString();
             Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
             JsonFormat.parser().merge(phenopacketJsonString, phenoPacketBuilder);
-            phenopacket = phenoPacketBuilder.build();
-        } catch (IOException e1) {
+            Phenopacket phenopacket = phenoPacketBuilder.build();
+            return new PhenopacketImporter(phenopacket,ontology);
+        } catch (IOException | ParseException e1) {
             e1.printStackTrace();
             throw new LiricalRuntimeException("Could not load phenopacket at " + pathToJsonPhenopacketFile);
         }
-        return new PhenopacketImporter(phenopacket,ontology);
     }
 
-    public PhenopacketImporter(Phenopacket ppack, Ontology ontology){
+    PhenopacketImporter(Phenopacket ppack, Ontology ontology){
         this.phenoPacket=ppack;
         this.samplename = this.phenoPacket.getSubject().getId();
         this.hpo=ontology;
@@ -96,6 +98,12 @@ public class PhenopacketImporter {
         return builder.build();
     }
 
+    public String getGene() {
+        if (phenoPacket.getGenesCount()==0) return null;
+        Gene g = phenoPacket.getGenes(0);
+        return g.getId();
+    }
+
 
 
 
@@ -122,10 +130,18 @@ public class PhenopacketImporter {
         return builder.build();
     }
 
+    /**
+     * The path to the VCF file may be a string such as file:/path/to/examples/BBS1.vcf
+     * In this case, remove the prefix 'path:', otherwise return the original URI
+     * @return URI of VCF file mentioned in the Phenopacket
+     */
     public String getVcfPath() {
-        return this.vcfFile!=null ?
-                this.vcfFile.getFile().getPath() :
-                null;
+        if (this.vcfFile == null) {
+            return null;
+        }
+        return this.vcfFile.getUri().startsWith("file:") ?
+                this.vcfFile.getUri().substring(5) :
+                this.vcfFile.getUri();
     }
 
     public HtsFile getVcfFile() {
