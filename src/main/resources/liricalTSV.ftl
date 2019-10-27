@@ -1,4 +1,4 @@
-! LR2PG TSV Output
+! LIRICAL TSV Output
 ! Sample: ${sample_name!"n/a"}
 ! Observed HPO terms
 <#assign tab="\t">
