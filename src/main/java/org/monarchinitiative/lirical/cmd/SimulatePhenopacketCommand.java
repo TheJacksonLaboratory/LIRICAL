@@ -36,7 +36,7 @@ import static java.util.Map.Entry.comparingByKey;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 
-@Parameters(commandDescription = "Simulate analysis from phenopacket (with or without VCF)", hidden = false)
+@Parameters(commandDescription = "Simulate analysis from phenopacket (with or without VCF)", hidden = true)
 public class SimulatePhenopacketCommand extends PhenopacketCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulatePhenopacketCommand.class);
     @Parameter(names = {"-a","--assembly"})
@@ -77,31 +77,25 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
     }
 
     /**
-     * This method coordinates
+     * This method coordinates the analysis for VCF files.
      * @param phenopacketFile File with the Phenopacket we are currently analyzing
      */
-    private void runOneVcfAnalysis(File phenopacketFile) throws IOException, ParseException {
+    private void runOneVcfAnalysis(File phenopacketFile) {
         PhenoGenoCaseSimulator simulator = new PhenoGenoCaseSimulator(phenopacketFile, this.templateVcfPath, this.factory, this.randomize);
         simulator.run();
         int diseaseRank = simulator.getRank_of_disease();
         int geneRank    = simulator.getRank_of_gene();
-        String diseaseLabel = simulator.getDiagnosisLabel();
         detailedResultLineList.add(simulator.getDetails());
         System.out.println(simulator.getDetails());
-        //disease2rankMap.put(diseaseLabel,diseaseRank);
-        rank2countMap.putIfAbsent(diseaseRank,0); // create key if needed.
-        rank2countMap.merge(diseaseRank,1,Integer::sum); // increment count
-
+        rank2countMap.putIfAbsent(diseaseRank,0);
+        rank2countMap.merge(diseaseRank,1, Integer::sum); // increment count
         geneRank2CountMap.putIfAbsent(geneRank,0);
-        geneRank2CountMap.merge(geneRank,1,Integer::sum); // increment count
-
-
+        geneRank2CountMap.merge(geneRank,1, Integer::sum); // increment count
         if (outputTSV) {
             simulator.outputTsv(outfilePrefix,LR_THRESHOLD,minDifferentialsToShow,outdir);
         } else {
             simulator.outputHtml(outfilePrefix,LR_THRESHOLD,minDifferentialsToShow,outdir);
         }
-
     }
 
 
@@ -134,8 +128,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
                 .exomiser(this.exomiserDataDirectory)
                 .transcriptdatabase(this.transcriptDb)
                 .backgroundFrequency(this.backgroundFrequencyFile)
-                .keep(this.keepIfNoCandidateVariant)
-                .strict(this.strict)
+                .global(this.globalAnalysisMode)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
         factory.qcExternalFilesInDataDir();
@@ -145,11 +138,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
 
         if (this.phenopacketPath != null) {
             logger.info("Running single file Phenopacket/VCF simulation at {}", phenopacketPath);
-            try {
-                runOneVcfAnalysis(new File(this.phenopacketPath));
-            } catch (IOException | ParseException e) {
-                e.printStackTrace();
-            }
+            runOneVcfAnalysis(new File(this.phenopacketPath));
         } else if (this.phenopacketDir != null) {
             outputTSV=true; // needed so that we can capture the results of the simulations across all cases
             logger.info("Running Phenopacket/VCF simulations at {}", phenopacketDir);
@@ -162,11 +151,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
                 if (fileEntry.isFile() && fileEntry.getAbsolutePath().endsWith(".json")) {
                     logger.info("\tPhenopacket: \"{}\"", fileEntry.getAbsolutePath());
                     System.out.println(++counter + ") "+ fileEntry.getName());
-                    try {
-                        runOneVcfAnalysis(fileEntry);
-                    } catch (IOException | ParseException e) {
-                        e.printStackTrace();
-                    }
+                    runOneVcfAnalysis(fileEntry);
                 }
             }
         } else {
@@ -180,7 +165,8 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
 
         this.factory = new LiricalFactory.Builder()
                 .datadir(this.datadir)
-                .strict(this.strict)
+               // .strict(this.strict)
+                .global(this.globalAnalysisMode)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
         factory.qcExternalFilesInDataDir();
@@ -226,7 +212,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         List<String> settings= new ArrayList<>();
         settings.add("phenopacket-dir: "+phenopacketDir!=null?phenopacketDir:"n/a");
         settings.add("phenopackets: n=" + this.rankingsList.size());
-        settings.add("string: " + (strict ? "true" : "false"));
+        settings.add("keep: " + (globalAnalysisMode ? "true" : "false"));
         settings.add("random: " + (randomize ?  "true" : "false"));
         settings.add("phenotypeOnly: "+ (phenotypeOnly? "true":"false"));
         settings.add("transcriptDb: " + this.transcriptDb);

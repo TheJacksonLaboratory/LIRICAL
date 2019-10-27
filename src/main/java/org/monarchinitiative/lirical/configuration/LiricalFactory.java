@@ -70,8 +70,9 @@ public class LiricalFactory {
     private String mvStorePath=null;
     /** genotype matching for likelihood ratio calculation". */
     private boolean strict;
-    /** retain candidates even if no candidate variant is found */
-    private final boolean keepIfNoCandidateVariant;
+    /** If global is set to true, then LIRICAL will not discard candidate diseases with no known disease gene or
+     * candidatesfor which no predicted pathogenic variant was found in the VCF. */
+    private final boolean globalAnalysisMode;
 
     private String hpoVersion="n/a";
 
@@ -110,7 +111,7 @@ public class LiricalFactory {
      */
     private LiricalFactory(Builder builder, BuildType bt){
             filterOnFILTER = false;
-            keepIfNoCandidateVariant = false;
+            globalAnalysisMode = false;
             ontology = null;
             assembly = builder.getAssembly();
             this.exomiserPath = builder.exomiserDataDir;
@@ -179,7 +180,7 @@ public class LiricalFactory {
         }
         this.negatedHpoIdList = listbuilder.build();
         this.filterOnFILTER=builder.filterFILTER;
-        this.keepIfNoCandidateVariant = builder.keep;
+        this.globalAnalysisMode = builder.global;
         if (builder.useOrphanet) {
             this.desiredDatabasePrefixes=ImmutableList.of("ORPHA");
         } else {
@@ -451,9 +452,9 @@ public class LiricalFactory {
     public int getN_filtered_variants() {
         return n_filtered_variants;
     }
-
-    public boolean keepIfNoCandidateVariant() { return  keepIfNoCandidateVariant; }
-
+    /** If true, then LIRICAL will not discard candidate diseases with no known disease gene or
+     * candidatesfor which no predicted pathogenic variant was found in the VCF.*/
+    public boolean global() { return globalAnalysisMode; }
     /**
      * This is used by the Builder to check that all of the necessary files in the Data directory are present.
      * It writes one line to the logger for each file it checks, and throws a RunTime exception if a file is
@@ -583,7 +584,7 @@ public class LiricalFactory {
         private String genomeAssembly = null;
         private boolean filterFILTER = true;
         private boolean strict = false;
-        private boolean keep = false;
+        private boolean global = false;
         private boolean useOrphanet = false;
         /** The default transcript database is UCSC> */
         private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
@@ -652,8 +653,8 @@ public class LiricalFactory {
             return this;
         }
 
-        public Builder keep(boolean b) {
-            this.keep = b;
+        public Builder global(boolean b) {
+            this.global = b;
             return this;
         }
 

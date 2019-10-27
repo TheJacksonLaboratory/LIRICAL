@@ -80,7 +80,7 @@ public class YamlCommand extends PrioritizeCommand {
                 .disease2geneMultimap(disease2geneMultimap)
                 .genotypeMap(genotypeMap)
                 .phenotypeLr(phenoLr)
-                .keepCandidates(keepIfNoCandidateVariant)
+                .global(globalAnalysisMode)
                 .gene2idMap(geneId2symbol)
                 .genotypeLr(genoLr);
         this.metadata.put("transcriptDatabase", factory.transcriptdb());

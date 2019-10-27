@@ -38,7 +38,7 @@ public class Gt2GitCommand extends LiricalCommand {
      * {@code exomiser/1802_hg19/1802_hg19_transcripts_refseq.ser}. */
     @Parameter(names={"-e","--exomiser"}, description = "path to Exomiser database directory", required = true)
     private String exomiser;
-    /** SHould be one of hg19 or hg38. */
+    /** Should be one of hg19 or hg38. */
     @Parameter(names={"-g", "--genome"}, description = "string representing the genome assembly (hg19,hg38)")
     private String genomeAssemblyString="hg38";
     @Parameter(names={"--transcriptdb"}, description = "Jannovar transcript database (UCSC, Ensembl, RefSeq)")

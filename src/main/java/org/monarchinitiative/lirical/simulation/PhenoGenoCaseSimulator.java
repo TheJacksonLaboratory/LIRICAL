@@ -195,7 +195,7 @@ public class PhenoGenoCaseSimulator {
                 .genotypeMap(genotypemap)
                 .phenotypeLr(phenoLr)
                 .gene2idMap(factory.geneId2symbolMap())
-                .keepCandidates(factory.keepIfNoCandidateVariant())
+                .global(factory.global())
                 .genotypeLr(genoLr);
 
         CaseEvaluator evaluator = caseBuilder.build();

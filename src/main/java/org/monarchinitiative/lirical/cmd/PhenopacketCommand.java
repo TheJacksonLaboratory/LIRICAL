@@ -78,7 +78,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
                 .exomiser(this.exomiserDataDirectory)
                 .vcf(this.vcfPath)
                 .backgroundFrequency(this.backgroundFrequencyFile)
-                .strict(this.strict)
+                .global(this.globalAnalysisMode)
                 .orphanet(this.useOrphanet)
                 .transcriptdatabase(this.transcriptDb)
                 .build();

@@ -15,14 +15,14 @@ public abstract class PrioritizeCommand extends LiricalCommand {
     /** Directory where various files are downloaded/created. */
     @Parameter(names={"-d","--data"}, description ="directory to download data" )
     protected String datadir="data";
-    /** Discard any candidate disease with no known disease gene or for which no predicted pathogenic variant
-     * was found in the corresponding disease gene. */
-    @Parameter(names={"-k","--keep"}, description = "retain candidates even if no candidate variant is found")
-    protected boolean keepIfNoCandidateVariant=false;
+    /** If global is set to true, then LIRICAL will not discard candidate diseases with no known disease gene or
+     * candidatesfor which no predicted pathogenic variant was found in the VCF. */
+    @Parameter(names={"-g","--global"}, description = "global analysis")
+    protected boolean globalAnalysisMode = false;
     @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
     protected int minDifferentialsToShow=10;
-    @Parameter(names={"--strict"},description="use strict genotype matching for likelihood ratio calculation")
-    boolean strict=false;
+    //@Parameter(names={"--strict"},description="use strict genotype matching for likelihood ratio calculation")
+    //boolean strict=false;
     @Parameter(names={"-o","--output-directory"}, description = "directory into which to write output file(s).")
     protected String outdir=null;
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/

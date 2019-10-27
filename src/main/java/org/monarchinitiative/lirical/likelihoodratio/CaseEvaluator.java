@@ -24,41 +24,24 @@ import java.util.*;
 public class CaseEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(CaseEvaluator.class);
     private final static String EMPTY_STRING = "";
-    /**
-     * List of abnormalities seen in the person being evaluated.
-     */
+    /** List of abnormalities (HPO terms) observed in the person being evaluated.   */
     private final List<TermId> phenotypicAbnormalities;
-    /**
-     * Map of the observed genotypes in the VCF file. Key is an EntrezGene is, and the value is the average pathogenicity score times the
-     * count of all variants in the pathogenic bin.
-     */
+    /** Map of the observed genotypes in the VCF file. Key: an EntrezGene id; value is a {@link Gene2Genotype} object */
     private final Map<TermId, Gene2Genotype> genotypeMap;
-    /**
-     * key: a disease CURIE, e.g., OMIM:600100; value-corresponding disease object.
-     */
+    /** key: a disease CURIE, e.g., OMIM:600100; value-corresponding disease object.  */
     private final Map<TermId, HpoDisease> diseaseMap;
     /* key: a gene CURIE such as NCBIGene:123; value: a collection of disease CURIEs such as OMIM:600123; */
     private final Multimap<TermId, TermId> disease2geneMultimap;
-    /**
-     * Probability of diseases before testing (e.g., prevalence or 1/N).
-     */
+    /**Probability of diseases before testing (e.g., prevalence or 1/N).      */
     private final Map<TermId, Double> pretestProbabilityMap;
-    /**
-     * Object used to calculate phenotype likelihood ratios.
-     */
+    /**  Object used to calculate phenotype likelihood ratios.  */
     private final PhenotypeLikelihoodRatio phenotypeLRevaluator;
-    /**
-     * Object used to calculate genotype-based likelihood ratio.
-     */
+    /** Object used to calculate genotype-based likelihood ratio. */
     private final GenotypeLikelihoodRatio genotypeLrEvalutator;
-    /**
-     * Reference to the Human Phenotype Ontology object.
-     */
+    /** Reference to the Human Phenotype Ontology object.    */
     private final Ontology ontology;
-    /**
-     * retain candidates even if no candidate variant is found
-     */
-    private final boolean keepIfNoCandidateVariant;
+    /** retain candidates even if no candidate variant is found  */
+    private final boolean globalAnalysisMode;
     /**
      * If true, then genotype information is available for the analysis. Otherwise, skip it.
      */
@@ -103,7 +86,7 @@ public class CaseEvaluator {
             pretestProbabilityMap.put(tid, prob);
         }
         this.useGenotypeAnalysis = false;
-        this.keepIfNoCandidateVariant = true; // needs to be true for phenotype-only analysis!
+        this.globalAnalysisMode = true; // needs to be true for phenotype-only analysis!
         this.errors = new ArrayList<>();
     }
 
@@ -119,7 +102,7 @@ public class CaseEvaluator {
      * @param phenotypeLrEvaluator reference to object that evaluates the phenotype LR
      * @param genotypeLrEvalutator reference to object that evaluates the genotype LR
      * @param genotypeMap          Map of gene symbol to genotype evaluations
-     * @param keep                 if true, do not discard candidates if they do not have a candidate variant
+     * @param global                 if true, do not discard candidates if they do not have a candidate variant
      */
     private CaseEvaluator(List<TermId> hpoTerms,
                           List<TermId> negatedHpoTerms,
@@ -129,7 +112,7 @@ public class CaseEvaluator {
                           PhenotypeLikelihoodRatio phenotypeLrEvaluator,
                           GenotypeLikelihoodRatio genotypeLrEvalutator,
                           Map<TermId, Gene2Genotype> genotypeMap,
-                          boolean keep,
+                          boolean global,
                           Map<TermId, String> geneId2symbol) {
         this.phenotypicAbnormalities = hpoTerms;
         this.negatedPhenotypicAbnormalities = negatedHpoTerms;
@@ -138,7 +121,7 @@ public class CaseEvaluator {
         this.phenotypeLRevaluator = phenotypeLrEvaluator;
         this.genotypeLrEvalutator = genotypeLrEvalutator;
         this.ontology = ontology;
-        this.keepIfNoCandidateVariant = keep;
+        this.globalAnalysisMode = global;
         this.geneId2symbol = geneId2symbol;
         // For now, assume equal pretest probabilities
         this.pretestProbabilityMap = new HashMap<>();
@@ -237,7 +220,7 @@ public class CaseEvaluator {
      * @param diseaseId The disease being tested
      * @return The corresponding TestResult.
      */
-    private Optional<TestResult> evaluateDiseaseKeepingAllCandidates(TermId diseaseId) {
+    private Optional<TestResult> evaluateDiseaseWithGlobalAnalysisMode(TermId diseaseId) {
         HpoDisease disease = this.diseaseMap.get(diseaseId);
         double pretest = pretestProbabilityMap.get(diseaseId);
         List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
@@ -343,7 +326,7 @@ public class CaseEvaluator {
         Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
         if (associatedGenes.isEmpty()) {
             // this is a disease with no known disease gene
-            if (keepIfNoCandidateVariant) {
+            if (globalAnalysisMode) {
                 // if keepIfNoCandidateVariant is true then the user wants to
                 // keep differentials with no associated gene
                 // we create the TestResult based solely on the Phenotype data.
@@ -410,7 +393,7 @@ public class CaseEvaluator {
 
     /**
      * Perform the evaluation of the current case based on phenotype and genotype evidence
-     * If {@link #keepIfNoCandidateVariant} is true, then we also rank differential diagnoses even
+     * If {@link #globalAnalysisMode} is true, then we also rank differential diagnoses even
      * if (i) no disease gene is known or (ii) the disease gene is known but we did not find a
      * pathogenic variant. In the latter case, the candidate will be downranked, but can still score
      * highly if the phenotype evidence is very strong.
@@ -425,8 +408,8 @@ public class CaseEvaluator {
             Optional<TestResult> optionalTestResult;
             this.currentPhenotypeExplanation = new ArrayList<>();
             if (useGenotypeAnalysis) {
-                if (keepIfNoCandidateVariant) {
-                    optionalTestResult = evaluateDiseaseKeepingAllCandidates(diseaseId);
+                if (globalAnalysisMode) {
+                    optionalTestResult = evaluateDiseaseWithGlobalAnalysisMode(diseaseId);
                 } else {
                     optionalTestResult = evaluateDisease(diseaseId);
                 }
@@ -514,7 +497,7 @@ public class CaseEvaluator {
         /**
          * retain candidates even if no candidate variant is found (default: false)
          */
-        private boolean keepIfNoCandidateVariant = false;
+        private boolean globalAnalysisMode = false;
         /**
          * Key: an EntrezGene id; value: corresponding gene symbol.
          */
@@ -554,8 +537,8 @@ public class CaseEvaluator {
             return this;
         }
 
-        public Builder keepCandidates(boolean keep) {
-            this.keepIfNoCandidateVariant = keep;
+        public Builder global(boolean gl) {
+            this.globalAnalysisMode = gl;
             return this;
         }
 
@@ -589,7 +572,7 @@ public class CaseEvaluator {
                     phenotypeLR,
                     genotypeLR,
                     genotypeMap,
-                    keepIfNoCandidateVariant,
+                    globalAnalysisMode,
                     this.geneId2symbol);
         }
 

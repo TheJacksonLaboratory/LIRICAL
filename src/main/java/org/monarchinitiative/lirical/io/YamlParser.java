@@ -277,7 +277,7 @@ public class YamlParser {
 
     /** @return true if the YAML analysis section contains a KV pair keep:true */
     public boolean keep() {
-        String v = yconfig.getAnalysis().getOrDefault("keep","notfound");
+        String v = yconfig.getAnalysis().getOrDefault("global","notfound");
         return  v.equalsIgnoreCase("true");
     }
 
