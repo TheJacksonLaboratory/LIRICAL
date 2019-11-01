@@ -89,7 +89,7 @@ Running LIRICAL with clinical data
 LIRICAL will perform phenotype-only analysis if the Phenopacket does not contain a ``htsFiles`` element.
 In this case, the only required argument is the phenopacket. ::
 
-    $ java -jar LIRICAL.java phenopacket -p /path/to/example.json
+    $ java -jar LIRICAL.jar phenopacket -p /path/to/example.json
 
 
 
@@ -121,7 +121,7 @@ want LIRICAL to show details about more differentials, set this option to the de
     -t, --threshold
 
 This option controls the minimum post-test probability to show a differential diagnosis in HTML output.
-By default, LIRICAL shows all differnetials with a posterior probability of 1% or greater.
+By default, LIRICAL shows all differentials with a posterior probability of 1% or greater.
 
 
 ::

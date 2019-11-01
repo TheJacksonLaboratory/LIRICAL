@@ -7,8 +7,8 @@ Running LIRICAL with a YAML file (HPO and VCF data)
 YAML
 ----
 Before running LIRICAL, download and built it and set it up according to the instructions on the :ref:`rstsetup` page.
-LIRICAL uses default values for many configuration options (see below), and so the simplest possible YAML configuration
-file must include the following information. ::
+LIRICAL uses default values for many configuration options (see below), and a simple YAML configuration file would
+include the following information. ::
 
     ## LIRICAL Analysis Template.
     # These are all the possible options for running LIRICAL. Use this as a template for
@@ -23,7 +23,7 @@ file must include the following information. ::
     prefix: example
 
 
-This file can be found at ``src/test/resources/yaml/example1.yaml``.
+This file can be found at ``src/test/resources/yaml/hpo_and_vcf.yml``.
 
 
 
@@ -68,7 +68,7 @@ The following YAML file contains values for all of the options. ::
     prefix: example2
 
 
-This file can be found at ``src/test/resources/yaml/example2.yaml``. This YAML file additionally has a list
+This file can be found at ``src/test/resources/yaml/hpo_and_vcf_mult.yml``. This YAML file additionally has a list
 of HPO terms that represent abnormalities that were **excluded** in the proband (``negatedHpoIds``).
 
 You can use either example file as a starting point for your own configuration file.

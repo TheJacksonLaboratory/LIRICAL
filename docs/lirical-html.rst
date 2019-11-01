@@ -12,9 +12,9 @@ Sample information and list of differentials
 The HTML output page begins with a summary of the sample name and a list of
 the `HPO <http:\\www.human-phenotype-ontology.org>`_ terms
 used to run the program. By default, LIRICAL shows a detailed output only for the top 10 differential
-diagnoses (or more if more diagnoses have a posterior probability above the default threshold of 1%
-(The minimum number of differential diagnoses to show can be changed with the ``-m`` option, and
-the probability threshold can be changed with the ``-t`` option).
+diagnoses (or more if more diagnoses have a posterior probability above the default threshold of 1%).
+The minimum number of differential diagnoses to show can be changed with the ``-m`` option, and
+the probability threshold can be changed with the ``-t`` option.
 
 
 
@@ -33,9 +33,9 @@ report of an individual with pure hair and nail ectodermal dysplasia (ECTD9) rel
 in the *HOXC13* gene
 (`Khan et al., 2017 <https://www.ncbi.nlm.nih.gov/pubmed/28403827>`_).
 
-LIRICAL has estimate the composite likelihood ratio score at 8.951 (note that this is displayed
+LIRICAL has estimate the composite likelihood ratio score at 8.951 (note that this is expressed
 on a log\ :subscript:`10` scale, so that the likelihood ratio is actually 10\ :superscript:`8.951`). The
-posttestprobability is close to 100%.
+posttest probability is close to 100%.
 
 The contribution of each of the HPO terms entered for the proband is shown. In this case,
 `Nail dystrophy <https://hpo.jax.org/app/browse/term/HP:0008404>`_ makes the largest contribution, and a number
