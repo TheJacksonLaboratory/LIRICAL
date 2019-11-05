@@ -148,7 +148,7 @@ Use TSV instead of HTML output (Default: false).
 
 ::
 
-    --orphanet
+    --orpha
 
 Use annotation data from `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>`_.
 
