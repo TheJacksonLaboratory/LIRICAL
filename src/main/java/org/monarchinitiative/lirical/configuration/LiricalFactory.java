@@ -69,7 +69,7 @@ public class LiricalFactory {
     /** The path to the Exomiser database file, e.g., {@code 1811_hg19_variants.mv.db}. */
     private String mvStorePath=null;
     /** genotype matching for likelihood ratio calculation". */
-    private boolean strict;
+    //private boolean strict;
     /** If global is set to true, then LIRICAL will not discard candidate diseases with no known disease gene or
      * candidatesfor which no predicted pathogenic variant was found in the VCF. */
     private final boolean globalAnalysisMode;
@@ -127,7 +127,7 @@ public class LiricalFactory {
             this.transcriptdatabase = builder.transcriptdatabase;
             this.vcfPath = null;
             this.datadir= builder.liricalDataDir;
-            this.strict = false;
+           // this.strict = false;
             hpoIdList = ImmutableList.of();
             negatedHpoIdList = ImmutableList.of();
     }
@@ -157,7 +157,6 @@ public class LiricalFactory {
                 logger.error("Did not recognize genome assembly: {}",assembly);
                 throw new LiricalRuntimeException("Did not recognize genome assembly: "+assembly);
             }
-
         }
 
         this.geneInfoPath=builder.geneInfoPath;
@@ -167,7 +166,7 @@ public class LiricalFactory {
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
         this.datadir=builder.liricalDataDir;
-        this.strict = builder.strict;
+       // this.strict = builder.strict;
 
         ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
         for (String id : builder.observedHpoTerms) {
@@ -359,7 +358,8 @@ public class LiricalFactory {
      * @return a {@link GenotypeLikelihoodRatio} object
      */
     public GenotypeLikelihoodRatio getGenotypeLR() {
-        return new GenotypeLikelihoodRatio(this.gene2backgroundFrequency,this.strict);
+        boolean strict = ! globalAnalysisMode;
+        return new GenotypeLikelihoodRatio(this.gene2backgroundFrequency,strict);
     }
 
 
@@ -585,7 +585,7 @@ public class LiricalFactory {
         private String vcfPath = null;
         private String genomeAssembly = null;
         private boolean filterFILTER = true;
-        private boolean strict = false;
+       // private boolean strict = false;
         private boolean global = false;
         private boolean useOrphanet = false;
         /** The default transcript database is UCSC> */
@@ -645,10 +645,10 @@ public class LiricalFactory {
         }
 
 
-        public Builder strict(boolean b) {
-            this.strict = b;
-            return this;
-        }
+//        public Builder strict(boolean b) {
+//            this.strict = b;
+//            return this;
+//        }
 
         public Builder orphanet(boolean b) {
             this.useOrphanet = b;

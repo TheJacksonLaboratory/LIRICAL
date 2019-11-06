@@ -66,13 +66,14 @@ public class YamlCommand extends PrioritizeCommand {
     }
 
     private HpoCase runVcf() throws LiricalException {
+        this.geneId2symbol = factory.geneId2symbolMap();
         Map<TermId, Gene2Genotype> genotypeMap = factory.getGene2GenotypeMap();
         this.metadata.put("vcf_file", factory.getVcfPath());
         this.metadata.put("n_filtered_variants", String.valueOf(factory.getN_filtered_variants()));
         this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
         Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
-        this.geneId2symbol = factory.geneId2symbolMap();
+
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
                 .negated(factory.negatedHpoTerms())
                 .ontology(ontology)
@@ -97,7 +98,7 @@ public class YamlCommand extends PrioritizeCommand {
     @Override
     public void run() throws LiricalException {
         this.factory = deYamylate(this.yamlPath);
-        this.factory.qcExomiserFiles();
+
         this.ontology =  factory.hpoOntology();
         this.diseaseMap = factory.diseaseMap(ontology);
         this.phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
@@ -116,6 +117,7 @@ public class YamlCommand extends PrioritizeCommand {
         if (this.phenotypeOnly) {
             hcase =runPhenotypeOnly();
         } else {
+            this.factory.qcExomiserFiles();
             hcase=runVcf();
         }
 

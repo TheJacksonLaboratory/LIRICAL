@@ -142,9 +142,6 @@ public class PhenoGenoCaseSimulator {
         this.disease2geneMultimap = factory.disease2geneMultimap();
         this.gene2diseaseMultimap = factory.gene2diseaseMultimap();
 
-
-
-
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
         this.metadata.put("analysis_date", dateFormat.format(date));
