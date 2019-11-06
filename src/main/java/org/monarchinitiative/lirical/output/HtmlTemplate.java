@@ -6,6 +6,7 @@ import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.lirical.svg.Lr2Svg;
+import org.monarchinitiative.lirical.svg.Posttest2Svg;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -65,6 +66,12 @@ public class HtmlTemplate extends LiricalTemplate {
         ClassLoader classLoader = HtmlTemplate.class.getClassLoader();
         cfg.setClassLoaderForTemplateLoading(classLoader,"");
         templateData.put("postprobthreshold",String.format("%.1f%%",100*THRESHOLD));
+        // Get SVG for post-test probability list
+        int N = totalDetailedDiagnosesToShow(hcase.getResults());
+        Posttest2Svg pt2svg = new Posttest2Svg(hcase.getResults(), THRESHOLD, N);
+        String posttestSVG = pt2svg.getSvgString();
+        this.templateData.put("posttestSVG",posttestSVG);
+
         int counter=0;
         for (TestResult result : hcase.getResults()) {
             String symbol=EMPTY_STRING;
@@ -157,6 +164,11 @@ public class HtmlTemplate extends LiricalTemplate {
         ClassLoader classLoader = HtmlTemplate.class.getClassLoader();
         cfg.setClassLoaderForTemplateLoading(classLoader,"");
         templateData.put("postprobthreshold",String.format("%.1f%%",100*THRESHOLD));
+        // Get SVG for post-test probability list
+        int N = totalDetailedDiagnosesToShow(hcase.getResults());
+        Posttest2Svg pt2svg = new Posttest2Svg(hcase.getResults(), THRESHOLD, N);
+        String posttestSVG = pt2svg.getSvgString();
+        this.templateData.put("posttestSVG",posttestSVG);
         int counter=0;
         for (TestResult result : hcase.getResults()) {
             String symbol=EMPTY_STRING;
@@ -216,7 +228,22 @@ public class HtmlTemplate extends LiricalTemplate {
         }
     }
 
-
+    /**
+     * Return the total number of diseases that we will show in detail in the HTML output.
+     * @param results a sorted list of results
+     * @return number of diseases to show
+     */
+    private int totalDetailedDiagnosesToShow(List<TestResult> results) {
+        int n = 0;
+        for (TestResult res : results) {
+            if (res.getPosttestProbability() > THRESHOLD) {
+                n++;
+            } else {
+                break;
+            }
+        }
+        return Math.max(n, MIN_DIAGNOSES_TO_SHOW);
+    }
 
 
 

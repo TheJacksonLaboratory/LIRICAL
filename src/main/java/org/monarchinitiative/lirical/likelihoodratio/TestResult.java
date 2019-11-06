@@ -46,22 +46,22 @@ public class TestResult implements Comparable<TestResult> {
     /** The overall rank of the the result withint the differential diagnosis. */
     private int rank;
     /** An optional setGenotypeExplanation of the genotype result, intended for display */
-    private String genotypeExplanation =EMPTY_STRING;
+    private String genotypeExplanation = EMPTY_STRING;
     /** An setGenotypeExplanation of the phenotype score. */
-    private String phenotypeExplanation=EMPTY_STRING;
+    private String phenotypeExplanation = EMPTY_STRING;
 
     /**
      * The constructor initializes the variables and calculates {@link #compositeLR}
      *
      * @param reslist list of individual test results for observed phenotypes
      * @param excllist list of individual test results for excluded phenotypes
-     * @param diseaseId name of the disease being tested
+     * @param disease name of the disease being tested
      * @param pretest pretest probability of the disease
      */
-    public TestResult(List<Double> reslist, List<Double> excllist, HpoDisease diseaseId, double pretest) {
+    public TestResult(List<Double> reslist, List<Double> excllist, HpoDisease disease, double pretest) {
         this.results = reslist;
         this.excludedResults=excllist;
-        this.hpoDisease = diseaseId;
+        this.hpoDisease = disease;
         this.pretestProbability = pretest;
         // the composite LR is the product of the individual LR's
         double observed=reslist.stream().reduce(1.0, (a, b) -> a * b);

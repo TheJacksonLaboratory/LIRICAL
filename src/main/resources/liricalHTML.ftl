@@ -277,7 +277,22 @@ footer {
 	color: white;
 	padding: 1rem 2rem;
 }
-  </style>
+
+/* The following links are in the SVG for the differentials */
+a.svg:link, a.svg:visited {
+  cursor: pointer;
+}
+
+a.svg text,
+text a.svg {
+  fill: blue; /* Even for text, SVG uses fill over color */
+  text-decoration: underline;
+}
+
+a.svg:hover, a.svg:active {
+  outline: dotted 1px blue;
+}
+</style>
 </head>
 
 <body>
@@ -361,11 +376,7 @@ footer {
     <h2>Differential diagnosis: posterior probability above ${postprobthreshold}</h2>
 
     <p>Top differential diagnoses:
-    <ol>
-    <#list diff as dd>
-        <li><a href="#${dd.anchor}">${dd.diseaseName}</a></li>
-     </#list>
-    </ol>
+    ${posttestSVG}
     </p>
     </article>
     </section>
