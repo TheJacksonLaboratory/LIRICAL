@@ -86,12 +86,6 @@ public class LiricalFactory {
     /** Key: the TermId of a gene. Value. Its background frequency in the current genome build. This variable
      * is only initialized for runs with a VCF file. */
     private Map<TermId, Double> gene2backgroundFrequency = null;
-    /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
-     * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
-     * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
-     * can be turned off by entering {@code -q false} or {@code --quality} false. */
-    private final boolean filterOnFILTER;
-
     /** Path of the Jannovar UCSC transcript file (from the Exomiser distribution) */
     private String jannovarUcscPath=null;
     /** Path of the Jannovar Ensembl transcript file (from the Exomiser distribution) */
@@ -112,7 +106,6 @@ public class LiricalFactory {
      * This constructor is used to build Gt2Git. The BuildType argument is used as a flag.
      */
     private LiricalFactory(Builder builder, BuildType bt){
-            filterOnFILTER = false;
             globalAnalysisMode = false;
             ontology = null;
             assembly = builder.getAssembly();
@@ -180,7 +173,6 @@ public class LiricalFactory {
             listbuilder.add(negatedId);
         }
         this.negatedHpoIdList = listbuilder.build();
-        this.filterOnFILTER=builder.filterFILTER;
         this.globalAnalysisMode = builder.global;
         if (builder.useOrphanet) {
             this.desiredDatabasePrefixes=ImmutableList.of("ORPHA");
@@ -431,8 +423,7 @@ public class LiricalFactory {
         Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath,
                 jannovarData(),
                 mvStore(),
-                getAssembly(),
-                this.filterOnFILTER);
+                getAssembly());
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
         this.sampleName=vcf2geno.getSamplename();
         this.n_filtered_variants=vcf2geno.getN_filtered_variants();
@@ -584,8 +575,6 @@ public class LiricalFactory {
         private String backgroundFrequencyPath = null;
         private String vcfPath = null;
         private String genomeAssembly = null;
-        private boolean filterFILTER = true;
-       // private boolean strict = false;
         private boolean global = false;
         private boolean useOrphanet = false;
         /** The default transcript database is UCSC> */
@@ -615,8 +604,10 @@ public class LiricalFactory {
             switch (yp.transcriptdb().toUpperCase()) {
                 case "ENSEMBL" :
                     this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
+                    break;
                 case "REFSEQ":
                     this.transcriptdatabase=TranscriptDatabase.REFSEQ;
+                    break;
                 case "UCSC":
                 default:
                     this.transcriptdatabase=TranscriptDatabase.UCSC;

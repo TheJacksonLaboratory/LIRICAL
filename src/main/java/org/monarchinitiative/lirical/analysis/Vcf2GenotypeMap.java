@@ -108,7 +108,7 @@ public class Vcf2GenotypeMap {
                     ClinVarData.ClinSig.LIKELY_PATHOGENIC);
 
 
-    public Vcf2GenotypeMap(String vcf, JannovarData jannovar, MVStore mvs, GenomeAssembly ga, boolean filter) {
+    public Vcf2GenotypeMap(String vcf, JannovarData jannovar, MVStore mvs, GenomeAssembly ga) {
         this.vcfPath = vcf;
         this.jannovarData = jannovar;
         this.alleleMap = MvStoreUtil.openAlleleMVMap(mvs);
