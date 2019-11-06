@@ -103,6 +103,8 @@ public class LiricalFactory {
 
 
     private JannovarData jannovarData=null;
+
+
     /** Used as a flag to pick the right constructor in {@link Builder#buildForGt2Git()}. */
     private enum BuildType { GT2GIT}
 

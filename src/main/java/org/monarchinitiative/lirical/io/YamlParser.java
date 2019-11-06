@@ -117,6 +117,7 @@ public class YamlParser {
                 case "ENSEMBL": return "ENSEMBL";
                 case "REFSEQ": return "REFSEQ";
             }
+            logger.error("Did not recognize transcript database {}, switching to default UCSC", trdb);
         }
         // default
         return "UCSC";

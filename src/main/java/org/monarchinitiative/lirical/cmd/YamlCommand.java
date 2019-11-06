@@ -97,6 +97,7 @@ public class YamlCommand extends PrioritizeCommand {
     @Override
     public void run() throws LiricalException {
         this.factory = deYamylate(this.yamlPath);
+        this.factory.qcExomiserFiles();
         this.ontology =  factory.hpoOntology();
         this.diseaseMap = factory.diseaseMap(ontology);
         this.phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
@@ -105,8 +106,8 @@ public class YamlCommand extends PrioritizeCommand {
         this.metadata.put("analysis_date", factory.getTodaysDate());
         this.metadata.put("yaml", this.yamlPath);
         Ontology ontology = factory.hpoOntology();
-        Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
-        PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
+        //Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
+       // PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
         Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
         if (ontologyMetainfo.containsKey("data-version")) {
             this.metadata.put("hpoVersion",ontologyMetainfo.get("data-version"));

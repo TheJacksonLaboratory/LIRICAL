@@ -252,17 +252,14 @@ public class HtmlTemplate extends LiricalTemplate {
     private void initializeTopDifferentialCount(int N) {
         if (N==0) {
             String message = String.format("No diseases had an above threshold (&gt; %.2f) post-test probability.", THRESHOLD);
-            this.templateData.put("topdifferentialcount","No diseases had an above threshold (&gt; .2f)post-test probability.");
+            this.templateData.put("topdifferentialcount",message);
         } else if (N == 1) {
-            String message = String.format("One diseas had an above threshold (&gt; %.2f) post-test probability.", THRESHOLD);
-            this.templateData.put("topdifferentialcount","One disease had an above threshold (&gt; .2f)post-test probability.");
+            String message = String.format("One disease had an above threshold (&gt; %.2f) post-test probability.", THRESHOLD);
+            this.templateData.put("topdifferentialcount",message);
         } else {
             String message = String.format("%d diseases had an above threshold (&gt; %.2f) post-test probability.", N, THRESHOLD);
             this.templateData.put("topdifferentialcount",message);
         }
-
     }
-
-
 
 }
