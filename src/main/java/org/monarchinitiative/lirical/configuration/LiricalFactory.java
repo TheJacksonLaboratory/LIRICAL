@@ -494,6 +494,10 @@ public class LiricalFactory {
     }
 
     public void qcExomiserFiles() {
+        if (exomiserPath == null) {
+            logger.error("Exomiser data directory is not set");
+            throw new LiricalRuntimeException(String.format("Exomiser data directory is not set"));
+        }
         File exomiserDir = new File(exomiserPath);
         if (!exomiserDir.exists()) {
             logger.error("Could not find Exomiser data directory at {}",exomiserPath);
