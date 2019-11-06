@@ -277,7 +277,22 @@ footer {
 	color: white;
 	padding: 1rem 2rem;
 }
-  </style>
+
+/* The following links are in the SVG for the differentials */
+a.svg:link, a.svg:visited {
+  cursor: pointer;
+}
+
+a.svg text,
+text a.svg {
+  fill: blue; /* Even for text, SVG uses fill over color */
+  text-decoration: underline;
+}
+
+a.svg:hover, a.svg:active {
+  outline: dotted 1px blue;
+}
+</style>
 </head>
 
 <body>
@@ -297,6 +312,7 @@ footer {
             <li><a href="#diff">Differential diagnosis</a></li>
             <li><a href="#othergenes">Remaining genes</a></li>
             <li><a href="#settings">Settings</a></li>
+            <li><a href="#explain">Explanations</a></li>
             <li><a href="#about">About</a></li>
         </ul>
     </div>
@@ -358,15 +374,11 @@ footer {
   <section>
    <article>
     <a name="diff"></a>
-    <h2>Differential diagnosis: posterior probability above ${postprobthreshold}</h2>
-
-    <p>Top differential diagnoses:
-    <ol>
-    <#list diff as dd>
-        <li><a href="#${dd.anchor}">${dd.diseaseName}</a></li>
-     </#list>
-    </ol>
-    </p>
+    <h2>Top differential diagnoses</h2>
+    <p>${topdifferentialcount}</p>
+    <div style="border:1px solid black; text-align:center;">
+        ${posttestSVG}
+    </div>
     </article>
     </section>
 
@@ -503,6 +515,32 @@ footer {
 
       </article>
     </section>
+
+    <section>
+        <a name="explain"></a>
+
+        <article>
+           <h2>Explanations</h2>
+           <p>LIRICAL calculates likelihood ratios for each HPO feature and for the genotype (if applicable).
+           It displays detailed information for the top differential diagnoses (by default all diseases
+           with a posttest probability above ${postprobthreshold} and at least 5; these thresholds can be
+           adjusted if desired). The following text provides brief explanations of the symbols used by
+           LIRICAL to explain how phenotype likelihood ratio scores were generaed.</p>
+           <p><ul>
+             <li><b>E</b>: Exact match between query term and disease term.</li>
+             <li><b>Q&lt;D</b>: Query term is a child of disease term.</li>
+             <li><b>D&lt;Q</b>: Disease term is child of query term.</li>
+             <li><b>Q~D</b>: Query term and disease term are related but are separated by more than one edge.</li>
+             <li><b>NM</b>: No common ancestor match besides the root of the ontology.</li>
+             <li><b>X</b>: Query term is explicitly annotated as being not present in disease</li>
+             <li><b>XX</b>: Term excluded by query and explicitly annotated as being not present in disease</li>
+             <li><b>XA</b>: Term excluded by query and not explicitly annotated as being present in disease</li>
+             <li><b>XP:</b>: Term excluded by query but is explictly annotated as being present in disease</li>
+             <li><b>U</b>: Flag for unusual background query (please report to developers)</li>
+            </ul>
+            </p>
+        </article>
+    <section>
 
 
 </main>
