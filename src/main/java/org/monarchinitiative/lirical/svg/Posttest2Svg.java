@@ -25,6 +25,10 @@ public class Posttest2Svg extends Lirical2Svg {
     private final int width;
     /** Coordinate of leftmost part of the 0-100% scale. */
     private final int XSTART = 0;
+    /** Starting x position for the bars representing post-test probability. */
+    private int minX;
+    /**rightmost location of scale/bars representing post-test probability. */
+    private int maxX;
     /** Width of the graphic we will show (scaling*width) */
     private final int scaledWidth;
     /** Proportion of SVG to fill with scale/bars */
@@ -63,8 +67,14 @@ public class Posttest2Svg extends Lirical2Svg {
         scaledWidth = (int) (width * scaling);
         this.totalDetailedToShowText = totalDetailedToShowText;
         height = calculateHeight();
+        this.minX = 0;
+        this.maxX = scaledWidth;
     }
 
+    /**
+     * Add up all of the height adjustments used to get the total height needed for the SVG document
+     * @return total height of the SVG
+     */
     private int calculateHeight() {
         int y = Ybaseline + 15;
         y += 2 * MIN_VERTICAL_OFFSET;
@@ -73,6 +83,7 @@ public class Posttest2Svg extends Lirical2Svg {
         if (totalDetailedToShowText > numDifferentialsToShowSVG) {
             y += MIN_VERTICAL_OFFSET + TEXTHEIGHT + BOX_HEIGHT + BOX_OFFSET;
         }
+        y += 20;
         return y;
     }
 
@@ -88,6 +99,7 @@ public class Posttest2Svg extends Lirical2Svg {
         writeHeader(writer);
         writeScale(writer);
         writePosttestBoxes(writer);
+       // writeVerticalLines(writer);
         writeFooter(writer);
     }
 
@@ -124,22 +136,22 @@ public class Posttest2Svg extends Lirical2Svg {
      */
     private void writeScale(Writer writer) throws IOException {
         this.currentY = Ybaseline;
-        int minX = 0;
-        int maxX = scaledWidth;
         writer.write("<line fill=\"none\" stroke=\"midnightblue\" stroke-width=\"2\" " +
                 "x1=\"" + minX + "\" y1=\"" + currentY + "\" x2=\"" + maxX + "\" y2=\"" + currentY + "\"/>\n");
-        int block = scaledWidth / 10;
+        int block = (scaledWidth - minX) / 10;
         currentY += 5;
         for (int i = 0; i <= 10; ++i) {
             int offset = block * i;
+            if (offset==0) offset = 1; // adjustment to show tick at 0% fully.
             String percentage = String.format("%d%%", i * 10);
             writer.write("<line fill=\"none\" stroke=\"midnightblue\" stroke-width=\"2\" " +
                     "x1=\"" + (offset) + "\" y1=\"" + (currentY+5) + "\" x2=\"" + (offset) + "\" y2=\"" + (currentY-5) + "\"/>\n");
             writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
                     (offset),
-                    currentY + 10,
+                    currentY + 20,
                     percentage));
         }
+        currentY += 20;
     }
 
     private void writePosttestBoxes(Writer writer) throws IOException {
@@ -187,6 +199,12 @@ public class Posttest2Svg extends Lirical2Svg {
                     message));
             writer.write("</a>\n");
         }
+    }
+
+    private void writeVerticalLines(Writer writer) throws IOException {
+        int x = minX + (int)(thresholdPostTestProb * scaledWidth);
+        writer.write("<line fill=\"none\" stroke=\"midnightblue\" stroke-width=\"1\" " +
+                "x1=\"" + x + "\" y1=\"" + Ybaseline + "\" x2=\"" + x + "\" y2=\"" + height + "\"/>\n");
 
     }
 

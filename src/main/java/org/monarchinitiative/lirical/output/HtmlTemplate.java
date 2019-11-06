@@ -34,7 +34,6 @@ public class HtmlTemplate extends LiricalTemplate {
     private final int MIN_DIAGNOSES_TO_SHOW;
 
 
-
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
      * @param hcase The individual (case) represented in the VCF file
@@ -242,7 +241,26 @@ public class HtmlTemplate extends LiricalTemplate {
                 break;
             }
         }
+        initializeTopDifferentialCount(n);
         return Math.max(n, MIN_DIAGNOSES_TO_SHOW);
+    }
+
+    /**
+     * Add a message to the template for display in the HTML output
+     * @param N Total count of above-threshold diseases
+     */
+    private void initializeTopDifferentialCount(int N) {
+        if (N==0) {
+            String message = String.format("No diseases had an above threshold (&gt; %.2f) post-test probability.", THRESHOLD);
+            this.templateData.put("topdifferentialcount","No diseases had an above threshold (&gt; .2f)post-test probability.");
+        } else if (N == 1) {
+            String message = String.format("One diseas had an above threshold (&gt; %.2f) post-test probability.", THRESHOLD);
+            this.templateData.put("topdifferentialcount","One disease had an above threshold (&gt; .2f)post-test probability.");
+        } else {
+            String message = String.format("%d diseases had an above threshold (&gt; %.2f) post-test probability.", N, THRESHOLD);
+            this.templateData.put("topdifferentialcount",message);
+        }
+
     }
 
 
