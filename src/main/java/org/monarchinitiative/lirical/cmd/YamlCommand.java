@@ -67,7 +67,7 @@ public class YamlCommand extends PrioritizeCommand {
 
     private HpoCase runVcf() throws LiricalException {
         this.geneId2symbol = factory.geneId2symbolMap();
-        Map<TermId, Gene2Genotype> genotypeMap = factory.getGene2GenotypeMap();
+        this.genotypeMap = factory.getGene2GenotypeMap();
         this.metadata.put("vcf_file", factory.getVcfPath());
         this.metadata.put("n_filtered_variants", String.valueOf(factory.getN_filtered_variants()));
         this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
@@ -121,16 +121,35 @@ public class YamlCommand extends PrioritizeCommand {
             hcase=runVcf();
         }
 
-        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
-                .prefix(this.outfilePrefix)
-                .outdirectory(this.outdir)
-                .threshold(this.LR_THRESHOLD)
-                .mindiff(this.minDifferentialsToShow);
-        LiricalTemplate template = outputTSV ?
-                builder.buildPhenotypeTsvTemplate() :
-                builder.buildPhenotypeHtmlTemplate();
+        LiricalTemplate template;
+        if (this.phenotypeOnly) { // pheno only
+            LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                    .prefix(this.outfilePrefix)
+                    .outdirectory(this.outdir)
+                    .threshold(this.LR_THRESHOLD)
+                    .mindiff(this.minDifferentialsToShow);
+            if (outputTSV) {
+                template = builder.buildPhenotypeTsvTemplate();
+            } else {
+                template = builder.buildPhenotypeHtmlTemplate();
+            }
+        } else { // pheno + geno
+            LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                    .prefix(this.outfilePrefix)
+                    .outdirectory(this.outdir)
+                    .threshold(this.LR_THRESHOLD)
+                    .mindiff(this.minDifferentialsToShow)
+                    .geneid2symMap(this.geneId2symbol)
+                    .genotypeMap(this.genotypeMap);
+            if (outputTSV) {
+                template = builder.buildGenoPhenoTsvTemplate();
+            } else {
+                template = builder.buildGenoPhenoHtmlTemplate();
+            }
+        }
         template.outputFile();
-        logger.error("Done analysis of " + outfilePrefix);
+
+        logger.info("Done analysis of " + outfilePrefix);
     }
 
     /**
