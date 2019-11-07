@@ -122,30 +122,22 @@ public class YamlCommand extends PrioritizeCommand {
         }
 
         LiricalTemplate template;
+        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                .prefix(this.outfilePrefix)
+                .outdirectory(this.outdir)
+                .threshold(this.LR_THRESHOLD)
+                .mindiff(this.minDifferentialsToShow);
         if (this.phenotypeOnly) { // pheno only
-            LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
-                    .prefix(this.outfilePrefix)
-                    .outdirectory(this.outdir)
-                    .threshold(this.LR_THRESHOLD)
-                    .mindiff(this.minDifferentialsToShow);
-            if (outputTSV) {
-                template = builder.buildPhenotypeTsvTemplate();
-            } else {
-                template = builder.buildPhenotypeHtmlTemplate();
-            }
-        } else { // pheno + geno
-            LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
-                    .prefix(this.outfilePrefix)
-                    .outdirectory(this.outdir)
-                    .threshold(this.LR_THRESHOLD)
-                    .mindiff(this.minDifferentialsToShow)
-                    .geneid2symMap(this.geneId2symbol)
+            template = outputTSV ?
+                    builder.buildPhenotypeTsvTemplate() :
+                    builder.buildPhenotypeHtmlTemplate();
+        } else { // geno + pheno
+            builder.geneid2symMap(this.geneId2symbol)
                     .genotypeMap(this.genotypeMap);
-            if (outputTSV) {
-                template = builder.buildGenoPhenoTsvTemplate();
-            } else {
-                template = builder.buildGenoPhenoHtmlTemplate();
-            }
+
+            template = outputTSV ?
+                    builder.buildGenoPhenoTsvTemplate() :
+                    builder.buildGenoPhenoHtmlTemplate();
         }
         template.outputFile();
 
