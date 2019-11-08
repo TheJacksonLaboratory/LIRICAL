@@ -362,11 +362,14 @@ a.svg:hover, a.svg:active {
 
 
       <#if vcf_file?has_content>
-          <p>VCF file: ${vcf_file}</p>
+         <p>VCF file: ${vcf_file}</p>
       </#if>
       <#if phenopacket_file?has_content>
-                <p>Phenopacket file: ${phenopacket_file}</p>
-            </#if>
+          <p>Phenopacket file: ${phenopacket_file}</p>
+      </#if>
+       <#if yaml?has_content>
+           <p>YAML configuration file: ${yaml}</p>
+       </#if>
       <p>LIRICAL analysis performed on ${analysis_date}.</p>
     </article>
   </section>
@@ -503,13 +506,10 @@ a.svg:hover, a.svg:active {
            <#if genesWithVar?has_content>
                <li>Genes found to have at least one variant: ${genesWithVar}</li>
            </#if>
-           <#if yaml?has_content>
-             <li>YAML configuration file: ${yaml}</li>
-           </#if>
             <#if exomiserPath?has_content>
              <li>Path to Exomiser database: ${exomiserPath}</li>
            </#if>
-
+             <li>Global analysis mode: ${global_mode}</li>
         </ul>
         </p>
 

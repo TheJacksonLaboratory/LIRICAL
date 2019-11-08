@@ -129,6 +129,11 @@ public class YamlCommand extends PrioritizeCommand {
         this.metadata.put("sample_name", factory.getSampleName());
         this.metadata.put("analysis_date", factory.getTodaysDate());
         this.metadata.put("yaml", this.yamlPath);
+        if (globalAnalysisMode) {
+            this.metadata.put("global_mode", "true");
+        } else {
+            this.metadata.put("global_mode", "false");
+        }
         Ontology ontology = factory.hpoOntology();
         //Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
        // PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
