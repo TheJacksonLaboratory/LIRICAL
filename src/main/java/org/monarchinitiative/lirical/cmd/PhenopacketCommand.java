@@ -116,6 +116,11 @@ public class PhenopacketCommand extends PrioritizeCommand {
         this.metadata.put("exomiserPath", factory.getExomiserPath());
         this.metadata.put("hpoVersion", factory.getHpoVersion());
         this.metadata.put("sample_name", factory.getSampleName());
+        if (globalAnalysisMode) {
+            this.metadata.put("global_mode", "true");
+        } else {
+            this.metadata.put("global_mode", "false");
+        }
         this.geneId2symbol = factory.geneId2symbolMap();
         List<String> errors = evaluator.getErrors();
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)

@@ -55,24 +55,35 @@ public class YamlCommand extends PrioritizeCommand {
 
 
 
-    private HpoCase runPhenotypeOnly() throws LiricalException {
+    private void runPhenotypeOnly() throws LiricalException {
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
                 .negated(factory.negatedHpoTerms())
                 .ontology(ontology)
                 .diseaseMap(diseaseMap)
                 .phenotypeLr(phenoLr);
         CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
-        return evaluator.evaluate();
+        HpoCase hcase = evaluator.evaluate();
+        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                .prefix(this.outfilePrefix)
+                .outdirectory(this.outdir)
+                .threshold(this.LR_THRESHOLD)
+                .mindiff(this.minDifferentialsToShow);
+        LiricalTemplate template = outputTSV ?
+                builder.buildGenoPhenoTsvTemplate() :
+                builder.buildGenoPhenoHtmlTemplate();
+        template.outputFile();
+        logger.error("Done analysis of " + outfilePrefix);
     }
 
-    private HpoCase runVcf() throws LiricalException {
+    private void runVcf() throws LiricalException {
+        this.geneId2symbol = factory.geneId2symbolMap();
         Map<TermId, Gene2Genotype> genotypeMap = factory.getGene2GenotypeMap();
         this.metadata.put("vcf_file", factory.getVcfPath());
         this.metadata.put("n_filtered_variants", String.valueOf(factory.getN_filtered_variants()));
         this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
         Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
-        this.geneId2symbol = factory.geneId2symbolMap();
+
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
                 .negated(factory.negatedHpoTerms())
                 .ontology(ontology)
@@ -88,7 +99,20 @@ public class YamlCommand extends PrioritizeCommand {
         this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
         this.metadata.put("exomiserPath",factory.getExomiserPath());
         CaseEvaluator evaluator = caseBuilder.build();
-        return evaluator.evaluate();
+        HpoCase hcase = evaluator.evaluate();
+        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                .prefix(this.outfilePrefix)
+                .genotypeMap(genotypeMap)
+                .outdirectory(this.outdir)
+                .geneid2symMap(geneId2symbol)
+                .threshold(this.LR_THRESHOLD)
+                .errors(evaluator.getErrors())
+                .mindiff(this.minDifferentialsToShow);
+        LiricalTemplate template = outputTSV ?
+                builder.buildGenoPhenoTsvTemplate() :
+                builder.buildGenoPhenoHtmlTemplate();
+        template.outputFile();
+        logger.error("Wrote output file to " + template.getOutPath());
     }
 
 
@@ -97,6 +121,7 @@ public class YamlCommand extends PrioritizeCommand {
     @Override
     public void run() throws LiricalException {
         this.factory = deYamylate(this.yamlPath);
+
         this.ontology =  factory.hpoOntology();
         this.diseaseMap = factory.diseaseMap(ontology);
         this.phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
@@ -104,30 +129,30 @@ public class YamlCommand extends PrioritizeCommand {
         this.metadata.put("sample_name", factory.getSampleName());
         this.metadata.put("analysis_date", factory.getTodaysDate());
         this.metadata.put("yaml", this.yamlPath);
+        if (globalAnalysisMode) {
+            this.metadata.put("global_mode", "true");
+        } else {
+            this.metadata.put("global_mode", "false");
+        }
         Ontology ontology = factory.hpoOntology();
-        Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
-        PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
+        //Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
+       // PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
         Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
         if (ontologyMetainfo.containsKey("data-version")) {
             this.metadata.put("hpoVersion",ontologyMetainfo.get("data-version"));
         }
-        HpoCase hcase;
-        if (this.phenotypeOnly) {
-            hcase =runPhenotypeOnly();
-        } else {
-            hcase=runVcf();
-        }
 
-        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
-                .prefix(this.outfilePrefix)
-                .outdirectory(this.outdir)
-                .threshold(this.LR_THRESHOLD)
-                .mindiff(this.minDifferentialsToShow);
-        LiricalTemplate template = outputTSV ?
-                builder.buildPhenotypeTsvTemplate() :
-                builder.buildPhenotypeHtmlTemplate();
-        template.outputFile();
-        logger.error("Done analysis of " + outfilePrefix);
+        if (this.phenotypeOnly) {
+            runPhenotypeOnly();
+        } else {
+            this.factory.qcExomiserFiles();
+            factory.qcHumanPhenotypeOntologyFiles();
+            factory.qcExternalFilesInDataDir();
+            factory.qcExomiserFiles();
+            factory.qcGenomeBuild();
+            factory.qcVcfFile();
+            runVcf();
+        }
     }
 
     /**

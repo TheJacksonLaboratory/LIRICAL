@@ -1,6 +1,17 @@
 =========
 Changelog
 =========
+----------
+v1.0.0-RC2
+----------
+- fixed bug in YAML output
+
+----------
+v1.0.0-RC1
+----------
+- Preparing first release
+- Adding posttest probability SVG to HTML output
+
 -------
 v0.9.24
 -------

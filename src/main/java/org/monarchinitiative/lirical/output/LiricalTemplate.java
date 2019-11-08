@@ -60,6 +60,11 @@ public abstract class LiricalTemplate {
         initTemplateData(hcase,ontology,metadat);
     }
 
+    /** This version of the constructor should be used for cases without genotype data
+     * @param hcase Data representing the case
+     * @param ontology reference to HP ontology
+     * @param metadat Metadata about the analysis
+     */
     public LiricalTemplate(HpoCase hcase,
                            Ontology ontology,
                            Map<String,String> metadat){
@@ -106,6 +111,8 @@ public abstract class LiricalTemplate {
         else
             return name;
     }
+
+    public String getOutPath() { return outpath;}
 
 
     protected File mkdirIfNotExist(String dir) {

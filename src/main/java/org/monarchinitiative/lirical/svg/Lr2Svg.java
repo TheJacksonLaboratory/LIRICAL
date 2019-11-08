@@ -11,14 +11,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * This class creates an SVG file representing the results of likelihood ratio analysis of an HPO case.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class Lr2Svg {
+public class Lr2Svg extends Lirical2Svg {
     private static final Logger logger = LoggerFactory.getLogger(Lr2Svg.class);
     /** An object representing the Human Phenotype Ontology */
     private final Ontology ontology;
@@ -38,16 +36,7 @@ public class Lr2Svg {
     private final int WIDTH=500;
     /** additional width of the text part of the image in px */
     private final static int TEXTPART_WIDTH=500;
-    /** minimum distance to top of image of graphic elements */
-    private final static int MIN_VERTICAL_OFFSET=10;
-    /** distance between two adjacent "boxes" */
-    private final static int BOX_OFFSET=10;
 
-    private final static int BOX_HEIGHT=15;
-
-    private final static String BLUE ="#4dbbd5";
-    private final static String RED ="#e64b35";
-    private final static String BROWN="#7e6148";
     /** The middle line is the central line around which the likelihood ratio 'bars' will be drawn. This
      * variable is calculated as the height that this bar will need to have in order to show all of the
      * likelihood ratio bars.
@@ -70,29 +59,6 @@ public class Lr2Svg {
         this.geneSymbol = symbol;
         this.ontology=ont;
         determineTotalHeightOfSvg();
-    }
-
-    /**
-     * This method shortens items such as #101200 APERT SYNDROME;;ACROCEPHALOSYNDACTYLY, TYPE I; ACS1;;ACS IAPERT-CROUZON DISEASE, INCLUDED;;
-     * to simply APERT SYNDROME
-     * @param originalDiseaseName original String from HPO database, derived from OMIM and potentially historic
-     * @return simplified and prettified name
-     */
-    private String prettifyDiseaseName(String originalDiseaseName) {
-        // shorten the name to everything up to the first semicolon
-        int i = originalDiseaseName.indexOf(";");
-        if (i>0) {
-            originalDiseaseName = originalDiseaseName.substring(0,i);
-        }
-        originalDiseaseName=originalDiseaseName.trim();
-        final Pattern omimid = Pattern.compile("#?\\d{6}");
-        Matcher m = omimid.matcher(originalDiseaseName);
-        if (m.find(0)) {
-            // last position of match
-            i = m.end() + 1;
-            originalDiseaseName = originalDiseaseName.substring(i).trim();
-        }
-        return originalDiseaseName;
     }
 
 
@@ -190,22 +156,6 @@ public class Lr2Svg {
 
     }
 
-    /** If the LR score is 1, then we draw a diamond around the middle axis. */
-    private void writeDiamond(Writer writer,int X, int Y) throws IOException
-    {
-        int diamondsize=6;
-        writer.write(String.format("<polygon " +
-                        "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:lime;stroke:%s;stroke-width:1\" />\n",
-                X,
-                Y,
-                X+diamondsize,
-                Y+diamondsize,
-                X,
-                Y+2*diamondsize,
-                X-diamondsize,
-                Y+diamondsize,
-                BROWN));
-    }
 
 
     /**
@@ -398,9 +348,6 @@ public class Lr2Svg {
         writer.write("<g>\n");
     }
 
-    private void writeFooter(Writer writer) throws IOException {
-        writer.write("</g>\n</svg>\n");
-    }
 
 
     private static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {

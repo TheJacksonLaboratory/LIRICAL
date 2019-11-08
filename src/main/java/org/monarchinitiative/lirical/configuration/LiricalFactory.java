@@ -69,7 +69,7 @@ public class LiricalFactory {
     /** The path to the Exomiser database file, e.g., {@code 1811_hg19_variants.mv.db}. */
     private String mvStorePath=null;
     /** genotype matching for likelihood ratio calculation". */
-    private boolean strict;
+    //private boolean strict;
     /** If global is set to true, then LIRICAL will not discard candidate diseases with no known disease gene or
      * candidatesfor which no predicted pathogenic variant was found in the VCF. */
     private final boolean globalAnalysisMode;
@@ -86,12 +86,6 @@ public class LiricalFactory {
     /** Key: the TermId of a gene. Value. Its background frequency in the current genome build. This variable
      * is only initialized for runs with a VCF file. */
     private Map<TermId, Double> gene2backgroundFrequency = null;
-    /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
-     * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
-     * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
-     * can be turned off by entering {@code -q false} or {@code --quality} false. */
-    private final boolean filterOnFILTER;
-
     /** Path of the Jannovar UCSC transcript file (from the Exomiser distribution) */
     private String jannovarUcscPath=null;
     /** Path of the Jannovar Ensembl transcript file (from the Exomiser distribution) */
@@ -103,6 +97,8 @@ public class LiricalFactory {
 
 
     private JannovarData jannovarData=null;
+
+
     /** Used as a flag to pick the right constructor in {@link Builder#buildForGt2Git()}. */
     private enum BuildType { GT2GIT}
 
@@ -110,7 +106,6 @@ public class LiricalFactory {
      * This constructor is used to build Gt2Git. The BuildType argument is used as a flag.
      */
     private LiricalFactory(Builder builder, BuildType bt){
-            filterOnFILTER = false;
             globalAnalysisMode = false;
             ontology = null;
             assembly = builder.getAssembly();
@@ -125,7 +120,7 @@ public class LiricalFactory {
             this.transcriptdatabase = builder.transcriptdatabase;
             this.vcfPath = null;
             this.datadir= builder.liricalDataDir;
-            this.strict = false;
+           // this.strict = false;
             hpoIdList = ImmutableList.of();
             negatedHpoIdList = ImmutableList.of();
     }
@@ -155,7 +150,6 @@ public class LiricalFactory {
                 logger.error("Did not recognize genome assembly: {}",assembly);
                 throw new LiricalRuntimeException("Did not recognize genome assembly: "+assembly);
             }
-
         }
 
         this.geneInfoPath=builder.geneInfoPath;
@@ -165,7 +159,7 @@ public class LiricalFactory {
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
         this.datadir=builder.liricalDataDir;
-        this.strict = builder.strict;
+       // this.strict = builder.strict;
 
         ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
         for (String id : builder.observedHpoTerms) {
@@ -179,7 +173,6 @@ public class LiricalFactory {
             listbuilder.add(negatedId);
         }
         this.negatedHpoIdList = listbuilder.build();
-        this.filterOnFILTER=builder.filterFILTER;
         this.globalAnalysisMode = builder.global;
         if (builder.useOrphanet) {
             this.desiredDatabasePrefixes=ImmutableList.of("ORPHA");
@@ -357,7 +350,8 @@ public class LiricalFactory {
      * @return a {@link GenotypeLikelihoodRatio} object
      */
     public GenotypeLikelihoodRatio getGenotypeLR() {
-        return new GenotypeLikelihoodRatio(this.gene2backgroundFrequency,this.strict);
+        boolean strict = ! globalAnalysisMode;
+        return new GenotypeLikelihoodRatio(this.gene2backgroundFrequency,strict);
     }
 
 
@@ -429,8 +423,7 @@ public class LiricalFactory {
         Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath,
                 jannovarData(),
                 mvStore(),
-                getAssembly(),
-                this.filterOnFILTER);
+                getAssembly());
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
         this.sampleName=vcf2geno.getSamplename();
         this.n_filtered_variants=vcf2geno.getN_filtered_variants();
@@ -501,6 +494,10 @@ public class LiricalFactory {
     }
 
     public void qcExomiserFiles() {
+        if (exomiserPath == null) {
+            logger.error("Exomiser data directory is not set");
+            throw new LiricalRuntimeException(String.format("Exomiser data directory is not set"));
+        }
         File exomiserDir = new File(exomiserPath);
         if (!exomiserDir.exists()) {
             logger.error("Could not find Exomiser data directory at {}",exomiserPath);
@@ -582,8 +579,6 @@ public class LiricalFactory {
         private String backgroundFrequencyPath = null;
         private String vcfPath = null;
         private String genomeAssembly = null;
-        private boolean filterFILTER = true;
-        private boolean strict = false;
         private boolean global = false;
         private boolean useOrphanet = false;
         /** The default transcript database is UCSC> */
@@ -613,8 +608,10 @@ public class LiricalFactory {
             switch (yp.transcriptdb().toUpperCase()) {
                 case "ENSEMBL" :
                     this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
+                    break;
                 case "REFSEQ":
                     this.transcriptdatabase=TranscriptDatabase.REFSEQ;
+                    break;
                 case "UCSC":
                 default:
                     this.transcriptdatabase=TranscriptDatabase.UCSC;
@@ -627,6 +624,7 @@ public class LiricalFactory {
             }
             Optional<String> backgroundOpt = yp.getBackgroundPath();
             backgroundOpt.ifPresent(s -> this.backgroundFrequencyPath = s);
+            this.global = yp.global();
             return this;
         }
 
@@ -635,18 +633,27 @@ public class LiricalFactory {
             if (!phenotypeOnly) return yaml(yp);
             this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(yp.getDataDir());
             initDatadirFiles();
-            this.observedHpoTerms=new ArrayList<>();
-            this.negatedHpoTerms=new ArrayList<>();
             this.observedHpoTerms=yp.getHpoTermList();
             this.negatedHpoTerms=yp.getNegatedHpoTermList();
+            switch (yp.transcriptdb().toUpperCase()) {
+                case "REFSEQ":
+                    this.transcriptdatabase = TranscriptDatabase.REFSEQ;
+                    break;
+                case "ENSEMBL":
+                    this.transcriptdatabase = TranscriptDatabase.ENSEMBL;
+                    break;
+                case "UCSC":
+                default:
+                    this.transcriptdatabase = TranscriptDatabase.UCSC;
+            }
             return this;
         }
 
 
-        public Builder strict(boolean b) {
-            this.strict = b;
-            return this;
-        }
+//        public Builder strict(boolean b) {
+//            this.strict = b;
+//            return this;
+//        }
 
         public Builder orphanet(boolean b) {
             this.useOrphanet = b;
