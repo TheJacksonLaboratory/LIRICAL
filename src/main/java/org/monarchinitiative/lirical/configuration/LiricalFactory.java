@@ -624,6 +624,7 @@ public class LiricalFactory {
             }
             Optional<String> backgroundOpt = yp.getBackgroundPath();
             backgroundOpt.ifPresent(s -> this.backgroundFrequencyPath = s);
+            this.global = yp.global();
             return this;
         }
 
@@ -632,10 +633,19 @@ public class LiricalFactory {
             if (!phenotypeOnly) return yaml(yp);
             this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(yp.getDataDir());
             initDatadirFiles();
-            this.observedHpoTerms=new ArrayList<>();
-            this.negatedHpoTerms=new ArrayList<>();
             this.observedHpoTerms=yp.getHpoTermList();
             this.negatedHpoTerms=yp.getNegatedHpoTermList();
+            switch (yp.transcriptdb().toUpperCase()) {
+                case "REFSEQ":
+                    this.transcriptdatabase = TranscriptDatabase.REFSEQ;
+                    break;
+                case "ENSEMBL":
+                    this.transcriptdatabase = TranscriptDatabase.ENSEMBL;
+                    break;
+                case "UCSC":
+                default:
+                    this.transcriptdatabase = TranscriptDatabase.UCSC;
+            }
             return this;
         }
 
