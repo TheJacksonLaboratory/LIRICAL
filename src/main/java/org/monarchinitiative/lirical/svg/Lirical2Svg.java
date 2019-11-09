@@ -19,6 +19,7 @@ public class Lirical2Svg {
     protected final static String RED ="#e64b35";
     protected final static String BROWN="#7e6148";
     protected final static String DARKBLUE = "#3c5488";
+    protected final static String VIOLET = "#8491b4";
 
 
     protected void writeFooter(Writer writer) throws IOException {
