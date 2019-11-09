@@ -207,7 +207,7 @@ public class Lr2Svg extends Lirical2Svg {
             double xstart = midline;
             if (ratio<0) {
                 boxwidth=Math.abs(boxwidth);
-                xstart = 1+ midline - boxwidth;
+                xstart = midline - boxwidth;
             }
             if ((int)boxwidth==0) {
                 int X=(int)xstart;
