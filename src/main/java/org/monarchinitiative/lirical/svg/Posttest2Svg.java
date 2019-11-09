@@ -132,7 +132,8 @@ public class Posttest2Svg extends Lirical2Svg {
     private void writeTitle(Writer writer) throws IOException {
         this.currentY = 30;
         int xpos = 10;
-        writer.write("<text x=\"" + xpos + "\" y=\"" + this.currentY + "\" font-size=\"26\" font-family=\"Montserrat\" fill=\"" + DARKBLUE + "\">Post-test probability</text>\n");
+        //font-family="Montserrat"
+        writer.write("<text x=\"" + xpos + "\" y=\"" + this.currentY + "\" font-size=\"26\"  fill=\"" + DARKBLUE + "\">Post-test probability</text>\n");
         this.currentY += TITLE_HEIGHT;
     }
 
