@@ -31,7 +31,7 @@ import java.util.Optional;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Run LIRICAL from YAML file")
-public class YamlCommand extends PrioritizeCommand {
+public class YamlCommand extends LiricalCommand {
     private static final Logger logger = LoggerFactory.getLogger(YamlCommand.class);
     @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
     private String yamlPath;
@@ -44,8 +44,14 @@ public class YamlCommand extends PrioritizeCommand {
 
     private PhenotypeLikelihoodRatio phenoLr;
 
-    /** If true, run with VCF file, otherwise, perform phenotype-only analysis. */
-    private boolean hasVcf;
+    /** An object that contains parameters from the YAML file for configuration. */
+    protected LiricalFactory factory;
+    /** Key: an EntrezGene id; value: corresponding gene symbol. */
+    protected Map<TermId,String> geneId2symbol;
+    /** Various metadata that will be used for the HTML org.monarchinitiative.lirical.output. */
+    protected Map<String,String> metadata;
+    /** If true, output TSV and not HTML. */
+    private boolean outputTSV = false;
 
     /**
      * Command pattern to coordinate analysis of a VCF file with LIRICAL.
@@ -64,15 +70,15 @@ public class YamlCommand extends PrioritizeCommand {
         CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
         HpoCase hcase = evaluator.evaluate();
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
-                .prefix(this.outfilePrefix)
-                .outdirectory(this.outdir)
-                .threshold(this.LR_THRESHOLD)
-                .mindiff(this.minDifferentialsToShow);
+                .prefix(this.factory.getOutfilePrefix())
+                .outdirectory(this.factory.getOutdir())
+                .threshold(this.factory.getLrThreshold())
+                .mindiff(this.factory.getMinDifferentials());
         LiricalTemplate template = outputTSV ?
                 builder.buildGenoPhenoTsvTemplate() :
                 builder.buildGenoPhenoHtmlTemplate();
         template.outputFile();
-        logger.error("Done analysis of " + outfilePrefix);
+        logger.error("Done analysis of " + template.getOutPath());
     }
 
     private void runVcf() throws LiricalException {
@@ -91,7 +97,7 @@ public class YamlCommand extends PrioritizeCommand {
                 .disease2geneMultimap(disease2geneMultimap)
                 .genotypeMap(genotypeMap)
                 .phenotypeLr(phenoLr)
-                .global(globalAnalysisMode)
+                .global(factory.global())
                 .gene2idMap(geneId2symbol)
                 .genotypeLr(genoLr);
         this.metadata.put("transcriptDatabase", factory.transcriptdb());
@@ -101,13 +107,13 @@ public class YamlCommand extends PrioritizeCommand {
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
-                .prefix(this.outfilePrefix)
+                .prefix(this.factory.getOutfilePrefix())
                 .genotypeMap(genotypeMap)
-                .outdirectory(this.outdir)
+                .outdirectory(this.factory.getOutdir())
                 .geneid2symMap(geneId2symbol)
-                .threshold(this.LR_THRESHOLD)
+                .threshold(this.factory.getLrThreshold())
                 .errors(evaluator.getErrors())
-                .mindiff(this.minDifferentialsToShow);
+                .mindiff(this.factory.getMinDifferentials());
         LiricalTemplate template = outputTSV ?
                 builder.buildGenoPhenoTsvTemplate() :
                 builder.buildGenoPhenoHtmlTemplate();
@@ -129,15 +135,12 @@ public class YamlCommand extends PrioritizeCommand {
         this.metadata.put("sample_name", factory.getSampleName());
         this.metadata.put("analysis_date", factory.getTodaysDate());
         this.metadata.put("yaml", this.yamlPath);
-        if (globalAnalysisMode) {
+        if (factory.global()) {
             this.metadata.put("global_mode", "true");
         } else {
             this.metadata.put("global_mode", "false");
         }
-        Ontology ontology = factory.hpoOntology();
-        //Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
-       // PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
-        Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
+        Map<String,String> ontologyMetainfo = factory.hpoOntology().getMetaInfo();
         if (ontologyMetainfo.containsKey("data-version")) {
             this.metadata.put("hpoVersion",ontologyMetainfo.get("data-version"));
         }
@@ -163,22 +166,12 @@ public class YamlCommand extends PrioritizeCommand {
      */
     private LiricalFactory deYamylate(String yamlPath) {
         YamlParser yparser = new YamlParser(yamlPath);
-        Optional<Integer> mindiff = yparser.mindiff();
-        mindiff.ifPresent(i -> this.minDifferentialsToShow = i);
-        Optional<Double> threshold = yparser.threshold();
-        threshold.ifPresent(d -> this.LR_THRESHOLD = d);
-        this.outfilePrefix = yparser.getPrefix();
-
+        this.outputTSV = yparser.doTsv();
         String hpoPath = yparser.getHpoPath();
         if (hpoPath == null || !(new File(hpoPath).exists())) {
             throw new PhenolRuntimeException("Could not find hp.obo file. Consider running download command first");
         }
         Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));
-
-        if (yparser.getOutDirectory().isPresent()) {
-            this.outdir=yparser.getOutDirectory().get();
-        }
-
         if (yparser.phenotypeOnlyMode()) {
             phenotypeOnly=true;
             LiricalFactory.Builder builder = new LiricalFactory.Builder(ontology).
@@ -190,6 +183,5 @@ public class YamlCommand extends PrioritizeCommand {
                     yaml(yparser);
             return builder.buildForGenomicDiagnostics();
         }
-
     }
 }

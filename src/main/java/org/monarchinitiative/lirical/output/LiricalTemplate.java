@@ -143,8 +143,8 @@ public abstract class LiricalTemplate {
 
         double thres=0.01;
         int minDifferentials=10;
-        String outfileprefix="lirical";
-        String outdir=null;
+        String outfileprefix = "lirical";
+        String outdir = null;
 
 
         public Builder(HpoCase hcase,Ontology ont,Map<String,String> mdata){

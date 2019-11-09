@@ -315,7 +315,7 @@ public class YamlParser {
         return Optional.empty();
     }
 
-    boolean doTsv() {
+    public boolean doTsv() {
         if (yconfig.getAnalysis().containsKey("tsv")) {
             String k = yconfig.getAnalysis().get("tsv");
             return k.equalsIgnoreCase("true");

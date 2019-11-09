@@ -61,7 +61,7 @@ class Posttest2SvgTest {
         int numtoshow = 3;
         Posttest2Svg p2svg = new Posttest2Svg(results, threshold,numtoshow);
         assertEquals(3, p2svg.getNumDifferentialsToShowSVG());
-        String svg = p2svg.getSvgString();
-        System.out.println(svg);
+       //  String svg = p2svg.getSvgString();
+        //System.out.println(svg);
     }
 }
