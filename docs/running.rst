@@ -37,9 +37,6 @@ links detailed phenotype descriptions with disease, patient, and genetic informa
 
 
 
-
-
-
 Running LIRICAL with a YAML file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
