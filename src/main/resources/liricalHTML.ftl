@@ -338,9 +338,15 @@ a.svg:hover, a.svg:active {
     <a name="sample"></a>
     <h2>Sample name: ${sample_name!"n/a"}</h2>
     <article>
-      <div class="row">
-        <div class="column" style="background-color:#aaa;">
+      <div class="row" style="background-color:#ddd;">
+        <div class="column" style="background-color:#bbb;">
           <h2>Observed Phenotypic Features</h2>
+        </div>
+        <div class="column" style="background-color:#bbb;">
+            <h2>Excluded Phenotypic Features</h2>
+        </div>
+      </div>
+       <div class="row" style="background-color:#ddd;">
           <p>
             <ul>
             <#list  observedHPOs as hpo>
@@ -357,9 +363,8 @@ a.svg:hover, a.svg:active {
             </ul>
           </#if>
         </div>
-        <div class="column" style="background-color:#bbb;">
+        <div class="column" >
            <p>
-              <h2> Excluded phenotypic features:</h2>
               <#if excludedHPOs?has_content>
                  <ul>
                  <#list excludedHPOs as hpo>
