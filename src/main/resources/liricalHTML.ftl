@@ -211,6 +211,22 @@ table.redTable td {
 	background-color:#f0f3fa;
 }
 
+table.posttest {
+	width:auto;
+	min-width:50%;
+	margin-left:auto;
+    margin-right:auto;
+}
+
+table.posttest td {
+    line-height: 40px;
+}
+
+table.posttest th  {font-size:1.5rem;}
+
+table.posttest tr:nth-child(even) {background: #F5F5F5}
+table.posttest tr:nth-child(odd) {background: #FFF}
+
 table.minimalistBlack th,
 table.minimalistBlack td {
 	border:2px solid #e0e3ea;
@@ -332,7 +348,6 @@ a.svg:hover, a.svg:active {
             </#list>
             </ul>
           </p>
-          <p>
           <#if errorlist?has_content>
             <p>The following errors were encountered while processing the Phenopacket.</p>
             <ul>
@@ -380,10 +395,16 @@ a.svg:hover, a.svg:active {
     <h2>Top differential diagnoses</h2>
     <p>${topdifferentialcount}</p>
     <div style="border:1px solid black; text-align:center;">
-        ${posttestSVG}
+         <table class="posttest">
+             <tr><th>Rank</th><th>Post-test probability</th><th>Disease</th><th>Profile match</th><th>Composite LR (log)</th><th>Gene</th></tr>
+                 <#list sparkline as sprk>
+                 <tr><td>${sprk.rank}</td><td>${sprk.posttestBarSvg}</td><td><a href="#diagnosis${sprk.rank}">${sprk.diseaseName}</a></td><td>${sprk.sparklineSvg}</td><td>${sprk.compositeLikelihoodRatio}</td><td>${sprk.geneSymbol}</td></tr>
+             </#list>
+         </table>
     </div>
     </article>
     </section>
+
 
 
     <#list diff as dd>

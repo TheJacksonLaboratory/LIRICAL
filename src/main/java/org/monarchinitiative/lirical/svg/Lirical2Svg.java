@@ -2,6 +2,10 @@ package org.monarchinitiative.lirical.svg;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +24,9 @@ public class Lirical2Svg {
     protected final static String BROWN="#7e6148";
     protected final static String DARKBLUE = "#3c5488";
     protected final static String VIOLET = "#8491b4";
+    protected final static String ORANGE = "#ff9900";
+    protected final static String BLACK = "#000000";
+    protected final static String GREEN = "#00A087";
 
 
     protected void writeFooter(Writer writer) throws IOException {
@@ -67,6 +74,19 @@ public class Lirical2Svg {
                 X-diamondsize,
                 Y+diamondsize,
                 BROWN));
+    }
+
+
+
+    protected static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
+        // sort list according to value, i.e., the magnitude of the likelihood ratio.
+        list.sort( (e1,e2) -> (e2.getValue()).compareTo(e1.getValue()) );
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+        return result;
     }
 
 }
