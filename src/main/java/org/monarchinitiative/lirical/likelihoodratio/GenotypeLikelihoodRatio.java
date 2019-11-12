@@ -97,7 +97,7 @@ public class GenotypeLikelihoodRatio {
      * @param opt Optional that may or may not already have a value
      * @return an optional with val or with the max of val and opt.get() if opt has a value
      */
-    Optional<Double> updateMax(double val, Optional<Double> opt) {
+    private Optional<Double> updateMax(double val, Optional<Double> opt) {
         if (!opt.isPresent()) {
             return Optional.of(val);
         } else if (val > opt.get()){
@@ -241,8 +241,8 @@ public class GenotypeLikelihoodRatio {
             }
         }
         double lambda_background = this.gene2backgroundFrequency.getOrDefault(geneId, DEFAULT_LAMBDA_BACKGROUND);
-        sb.append(String.format("Observed weighted pathogenic variant count: %.2f. &lambda;<sub>disease</sub>=%d. &lambda;<sub>background</sub>=%.4f. ",
-                observedWeightedPathogenicVariantCount, (int) lambda_disease, lambda_background));
+        sb.append(String.format("%s: Observed weighted pathogenic variant count: %.2f. &lambda;<sub>disease</sub>=%d. &lambda;<sub>background</sub>=%.4f. ",
+               g2g.getSymbol(), observedWeightedPathogenicVariantCount, (int) lambda_disease, lambda_background));
         if (g2g.hasPathogenicClinvarVar()) {
             int count = g2g.pathogenicClinVarCount();
             if (inheritancemodes.contains(AUTOSOMAL_RECESSIVE)) {
