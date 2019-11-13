@@ -42,7 +42,7 @@ public class LiricalFactory {
     private static final Logger logger = LoggerFactory.getLogger(LiricalFactory.class);
     /** Path to the {@code phenotype.hpoa} file. */
     private final String phenotypeAnnotationPath;
-    /** UCSC, RefSeq, Ensembl. */
+    /** UCSC or RefSeq. */
     private final TranscriptDatabase transcriptdatabase;
     /** Path to the {@code Homo_sapiens_gene_info.gz} file. */
     private final String geneInfoPath;
@@ -101,8 +101,6 @@ public class LiricalFactory {
     private Map<TermId, Double> gene2backgroundFrequency = null;
     /** Path of the Jannovar UCSC transcript file (from the Exomiser distribution) */
     private String jannovarUcscPath=null;
-    /** Path of the Jannovar Ensembl transcript file (from the Exomiser distribution) */
-    private String jannovarEnsemblPath=null;
     /** Path of the Jannovar RefSeq transcript file (from the Exomiser distribution) */
     private String jannovarRefSeqPath=null;
     /** Name of sample in VCF file, if any. The default value is n/a to indicate this field has not been initiatilized. */
@@ -287,8 +285,6 @@ public class LiricalFactory {
         this.mvStorePath=String.format("%s%s%s", exomiserPath,File.separator,filename);
         filename=String.format("%s_transcripts_ucsc.ser", basename);
         this.jannovarUcscPath=filename;
-        filename=String.format("%s_transcripts_ensembl.ser", basename);
-        this.jannovarEnsemblPath=filename;
         filename=String.format("%s_transcripts_refseq.ser", basename);
         this.jannovarRefSeqPath=filename;
 
@@ -405,10 +401,6 @@ public class LiricalFactory {
             case REFSEQ:
                 String refseqfilename=String.format("%s_transcripts_refseq.ser", basename);
                 fullpath=String.format("%s%s%s", exomiserPath,File.separator,refseqfilename);
-                break;
-            case ENSEMBL:
-                String ensemblfilename=String.format("%s_transcripts_ensembl.ser", basename);
-                fullpath=String.format("%s%s%s", exomiserPath,File.separator,ensemblfilename);
                 break;
             case UCSC:
             default:
@@ -655,9 +647,6 @@ public class LiricalFactory {
                 case "REFSEQ":
                     this.transcriptdatabase = TranscriptDatabase.REFSEQ;
                     break;
-                case "ENSEMBL":
-                    this.transcriptdatabase = TranscriptDatabase.ENSEMBL;
-                    break;
                 case "UCSC":
                 default:
                     this.transcriptdatabase = TranscriptDatabase.UCSC;
@@ -673,17 +662,6 @@ public class LiricalFactory {
             // if we get here, then we add stuff that is relevant to VCF analysis
             this.exomiserDataDir=yp.getExomiserDataDir();
             this.genomeAssembly=yp.getGenomeAssembly();
-            switch (yp.transcriptdb().toUpperCase()) {
-                case "ENSEMBL" :
-                    this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
-                    break;
-                case "REFSEQ":
-                    this.transcriptdatabase=TranscriptDatabase.REFSEQ;
-                    break;
-                case "UCSC":
-                default:
-                    this.transcriptdatabase=TranscriptDatabase.UCSC;
-            }
             Optional<String> vcfOpt=yp.getOptionalVcfPath();
             if (vcfOpt.isPresent()) {
                 this.vcfPath=vcfOpt.get();
@@ -716,9 +694,6 @@ public class LiricalFactory {
 
         public Builder transcriptdatabase(String tdb) {
             switch (tdb.toUpperCase()) {
-                case "ENSEMBL" :
-                    this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
-                    break;
                 case "REFSEQ":
                     this.transcriptdatabase=TranscriptDatabase.REFSEQ;
                     break;

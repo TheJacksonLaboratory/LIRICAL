@@ -39,7 +39,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
     protected String phenopacketPath = null;
     @Parameter(names = {"-e", "--exomiser"}, description = "path to the Exomiser data directory")
     protected String exomiserDataDirectory = null;
-    @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC, Ensembl, RefSeq)")
+    @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC or RefSeq)")
     protected String transcriptDb="refseq";
     /** Reference to HPO object. */
     private Ontology ontology;

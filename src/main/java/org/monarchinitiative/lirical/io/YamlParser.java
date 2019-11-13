@@ -95,14 +95,13 @@ public class YamlParser {
 
 
     /**
-     * @return path to the approprioate Jannovar transcript file (UCSC, Ensembl, or RefSeq).
+     * @return path to the approprioate Jannovar transcript file (UCSC or RefSeq).
      * @throws LiricalException if there is an error retrieving the Jannovar data object
      */
     String jannovarFile() throws LiricalException {
         String tdb = transcriptdb();
         switch (tdb) {
             case "UCSC": return jannovarFileUCSC();
-            case "ENSEMBL": return jannovarFileEnsembl();
             case "REFSEQ": return jannovarFileRefSeq();
         }
         return jannovarFileUCSC();
@@ -114,7 +113,6 @@ public class YamlParser {
             String trdb = yconfig.getAnalysis().get("transcriptdb");
             switch (trdb.toUpperCase()) {
                 case "UCSC": return "UCSC";
-                case "ENSEMBL": return "ENSEMBL";
                 case "REFSEQ": return "REFSEQ";
             }
             logger.error("Did not recognize transcript database {}, switching to default UCSC", trdb);
@@ -178,19 +176,6 @@ public class YamlParser {
             exomiserPath=FilenameUtils.getFullPathNoEndSeparator(exomiserPath);
             String basename=FilenameUtils.getBaseName(exomiserPath);
             String filename=String.format("%s_transcripts_ucsc.ser", basename);
-            return String.format("%s%s%s", exomiserPath,File.separator,filename);
-        }  else {
-            throw new LiricalException("No jannovar UCSC transcript file path found in YAML configuration file");
-        }
-    }
-
-    private String jannovarFileEnsembl() throws LiricalException {
-        if (yconfig.getAnalysis().containsKey("exomiser")) {
-            String exomiserPath = yconfig.getAnalysis().get("exomiser");
-            // Remove the trailing directory slash if any
-            exomiserPath=FilenameUtils.getFullPathNoEndSeparator(exomiserPath);
-            String basename=FilenameUtils.getBaseName(exomiserPath);
-            String filename=String.format("%s_transcripts_ensembl.ser", basename);
             return String.format("%s%s%s", exomiserPath,File.separator,filename);
         }  else {
             throw new LiricalException("No jannovar UCSC transcript file path found in YAML configuration file");

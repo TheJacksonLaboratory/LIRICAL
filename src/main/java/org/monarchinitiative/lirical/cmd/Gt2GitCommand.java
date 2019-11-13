@@ -41,7 +41,7 @@ public class Gt2GitCommand extends LiricalCommand {
     /** Should be one of hg19 or hg38. */
     @Parameter(names={"-g", "--genome"}, description = "string representing the genome assembly (hg19,hg38)")
     private String genomeAssemblyString="hg38";
-    @Parameter(names={"--transcriptdb"}, description = "Jannovar transcript database (UCSC, Ensembl, RefSeq)")
+    @Parameter(names={"--transcriptdb"}, description = "Jannovar transcript database (UCSC, RefSeq)")
     private String transcriptdatabase="UCSC";
     /** If true, calculate the distribution of ClinVar pathogenicity scores. */
     @Parameter(names="--clinvar", description = "determine distribution of ClinVar pathogenicity scores")
