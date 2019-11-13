@@ -534,7 +534,9 @@ a.svg:hover, a.svg:active {
             <#if exomiserPath?has_content>
              <li>Path to Exomiser database: ${exomiserPath}</li>
            </#if>
+             <#if global_mode?has_content>
              <li>Global analysis mode: ${global_mode}</li>
+             </#if>
         </ul>
         </p>
 

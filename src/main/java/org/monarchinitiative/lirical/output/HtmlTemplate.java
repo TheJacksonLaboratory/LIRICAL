@@ -67,9 +67,9 @@ public class HtmlTemplate extends LiricalTemplate {
         templateData.put("postprobthreshold",String.format("%.1f%%",100*THRESHOLD));
         // Get SVG for post-test probability list
         int N = totalDetailedDiagnosesToShow(hcase.getResults());
-        Posttest2Svg pt2svg = new Posttest2Svg(hcase.getResults(), THRESHOLD, N);
-        String posttestSVG = pt2svg.getSvgString();
-        this.templateData.put("posttestSVG",posttestSVG);
+       // Posttest2Svg pt2svg = new Posttest2Svg(hcase.getResults(), THRESHOLD, N);
+        //String posttestSVG = pt2svg.getSvgString();
+        //this.templateData.put("posttestSVG",posttestSVG);
         List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N, geneid2sym);
         this.templateData.put("sparkline", sparklinePackets);
         int counter=0;
@@ -169,6 +169,11 @@ public class HtmlTemplate extends LiricalTemplate {
         Posttest2Svg pt2svg = new Posttest2Svg(hcase.getResults(), THRESHOLD, N);
         String posttestSVG = pt2svg.getSvgString();
         this.templateData.put("posttestSVG",posttestSVG);
+        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N);
+        this.templateData.put("sparkline", sparklinePackets);
+
+
+
         int counter=0;
         for (TestResult result : hcase.getResults()) {
             String symbol=EMPTY_STRING;

@@ -5,6 +5,9 @@ Changelog
 v1.0.0-RC2
 ----------
 - fixed bug in YAML output
+- removing Ensembl option
+- Adding sparkline graphic to show posttest probability
+- various bug fixes
 
 ----------
 v1.0.0-RC1

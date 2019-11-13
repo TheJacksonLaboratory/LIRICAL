@@ -27,7 +27,7 @@ public class SparklinePacket {
 
     private final static String EMPTY_STRING ="";
 
-
+    /** Factory method for genotype-phenotype analysis.*/
     public static List<SparklinePacket> sparklineFactory(HpoCase hcase, int N, Map<TermId,String> geneid2sym) {
         ImmutableList.Builder<SparklinePacket> builder = new ImmutableList.Builder<>();
         List<TestResult> results = hcase.getResults(); // this is a sorted list!
@@ -52,6 +52,31 @@ public class SparklinePacket {
             String sparkSVG = sparkline2Svg.getSparklineSvg(hcase, diseaseId);
             String disname = prettifyDiseaseName(result.getDiseaseName());
             SparklinePacket sp = new SparklinePacket(rank, posttestSVG, sparkSVG, compositeLR, geneSymbol, disname);
+            builder.add(sp);
+        }
+        return builder.build();
+    }
+
+    /** Factory method for phenotype only analysis.*/
+    public static List<SparklinePacket> sparklineFactory(HpoCase hcase, int N) {
+        ImmutableList.Builder<SparklinePacket> builder = new ImmutableList.Builder<>();
+        List<TestResult> results = hcase.getResults(); // this is a sorted list!
+        if (results.isEmpty()) {
+            return builder.build();
+        }
+        TermId topCandidateId = results.get(0).getDiseaseCurie();
+        int rank = 0;
+        Sparkline2Svg sparkline2Svg = new Sparkline2Svg(hcase,topCandidateId, false);
+        while (rank < N && rank < results.size()) {
+            TestResult result = results.get(rank);
+            rank++;
+            TermId diseaseId = result.getDiseaseCurie();
+            double compositeLR = result.getCompositeLR();
+            double posttestProb = result.getPosttestProbability();
+            String posttestSVG = sparkline2Svg.getPosttestBar(posttestProb);
+            String sparkSVG = sparkline2Svg.getSparklineSvg(hcase, diseaseId);
+            String disname = prettifyDiseaseName(result.getDiseaseName());
+            SparklinePacket sp = new SparklinePacket(rank, posttestSVG, sparkSVG, compositeLR, EMPTY_STRING, disname);
             builder.add(sp);
         }
         return builder.build();
