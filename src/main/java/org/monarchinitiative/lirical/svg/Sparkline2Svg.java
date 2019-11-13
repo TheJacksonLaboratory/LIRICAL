@@ -1,8 +1,6 @@
 package org.monarchinitiative.lirical.svg;
 
 import com.google.common.collect.ImmutableList;
-import com.google.protobuf.util.JsonFormat;
-import org.antlr.v4.runtime.atn.SemanticContext;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -169,7 +167,7 @@ public class Sparkline2Svg extends Lirical2Svg {
             linewidth += BAR_WIDTH + INTERBAR_WIDTH;
         }
         int currentX = xstart + PERCENTAGE_WIDTH + SPACING_WIDTH;
-        swriter.write("<line fill=\"none\" stroke=\"" + RED + "\" stroke-width=\"2\" " +
+        swriter.write("<line fill=\"none\" stroke=\"" + BLACK + "\" stroke-width=\"1\" " +
                 "x1=\"" + currentX + "\" y1=\"" + ybaseline + "\" x2=\"" + (currentX+linewidth) +
                 "\" y2=\"" + ybaseline + "\"/>\n");
         for (int i=0; i<indicesObserved.size(); i++) {
@@ -179,12 +177,12 @@ public class Sparkline2Svg extends Lirical2Svg {
                 int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
                 int ypos = ybaseline - height;
                 swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos +"\" x=\"" + currentX + "\" " +
-                                "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + BLACK + "\"/>\n");
+                                "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\"/>\n");
             } else {
                 logratio = Math.max((-1)*MAX_LOG_LR, logratio);
                 int height = (int)((-1)*logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
                 swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline +"\" x=\"" + currentX + "\" " +
-                        "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + BLACK + "\"/>\n");
+                        "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + RED + "\"/>\n");
             }
             currentX += BAR_WIDTH + INTERBAR_WIDTH;
         }
@@ -195,12 +193,12 @@ public class Sparkline2Svg extends Lirical2Svg {
                 int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
                 int ypos = ybaseline - height;
                 swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos +"\" x=\"" + currentX + "\" " +
-                        "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + BLACK + "\"/>\n");
+                        "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\"/>\n");
             } else {
                 logratio = Math.max((-1)*MAX_LOG_LR, logratio);
                 int height = (int)((-1)*logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
                 swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline +"\" x=\"" + currentX + "\" " +
-                        "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + BLACK + "\"/>\n");
+                        "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + RED + "\"/>\n");
             }
             currentX += BAR_WIDTH + INTERBAR_WIDTH;
         }
@@ -211,12 +209,12 @@ public class Sparkline2Svg extends Lirical2Svg {
                 int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
                 int ypos = ybaseline - height;
                 swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos +"\" x=\"" + currentX + "\" " +
-                        "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + GREEN + "\"/>\n");
+                        "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\"/>\n");
             } else {
                 logratio = Math.max((-1)*MAX_LOG_LR, logratio);
                 int height = (int)((-1)*logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
                 swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline +"\" x=\"" + currentX + "\" " +
-                        "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + GREEN + "\"/>\n");
+                        "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + RED + "\"/>\n");
             }
         }
 
@@ -264,7 +262,7 @@ public class Sparkline2Svg extends Lirical2Svg {
                         "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
                 BOX_HEIGHT,
                 barwidth,
-                ORANGE));
+                BRIGHT_GREEN));
     }
 
 }

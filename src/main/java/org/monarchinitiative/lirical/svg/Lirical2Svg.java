@@ -27,7 +27,7 @@ public class Lirical2Svg {
     protected final static String ORANGE = "#ff9900";
     protected final static String BLACK = "#000000";
     protected final static String GREEN = "#00A087";
-
+    protected final static String BRIGHT_GREEN = "#19a000";
 
     protected void writeFooter(Writer writer) throws IOException {
         writer.write("</g>\n</svg>\n");
@@ -64,7 +64,7 @@ public class Lirical2Svg {
     {
         int diamondsize=6;
         writer.write(String.format("<polygon " +
-                        "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:lime;stroke:%s;stroke-width:1\" />\n",
+                        "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:grey;stroke:%s;stroke-width:1\" />\n",
                 X,
                 Y,
                 X+diamondsize,
