@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.cmd;
 
 import com.beust.jcommander.Parameter;
+import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -40,6 +41,7 @@ public abstract class PrioritizeCommand extends LiricalCommand {
     protected LiricalFactory factory;
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
     protected Map<TermId,String> geneId2symbol;
+    protected Map<TermId, Gene2Genotype> genotypeMap;
     /** Various metadata that will be used for the HTML org.monarchinitiative.lirical.output. */
     protected Map<String,String> metadata;
 
