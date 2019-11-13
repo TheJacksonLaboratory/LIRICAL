@@ -26,7 +26,7 @@ public abstract class PrioritizeCommand extends LiricalCommand {
     protected String outdir=null;
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 5%).*/
     @Parameter(names= {"-t","--threshold"}, description = "minimum post-test prob. to show diagnosis in HTML output")
-    protected double LR_THRESHOLD=0.05;
+    protected double LR_THRESHOLD = LiricalFactory.DEFAULT_LR_THRESHOLD;
     /** If true, the program will not output an HTML file but will output a Tab Separated Values file instead.*/
     @Parameter(names="--tsv",description = "Use TSV instead of HTML output")
     protected boolean outputTSV=false;

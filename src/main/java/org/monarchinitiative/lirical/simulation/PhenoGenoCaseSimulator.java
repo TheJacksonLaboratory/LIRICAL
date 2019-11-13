@@ -209,12 +209,14 @@ public class PhenoGenoCaseSimulator {
                 rank_of_gene = r;
             }
         }
-
-
         this.metadata.put("genesWithVar", String.valueOf(genotypemap.size()));
         this.metadata.put("exomiserPath", factory.getExomiserPath());
         this.metadata.put("hpoVersion", factory.getHpoVersion());
-
+        if (factory.global()) {
+            this.metadata.put("global_mode", "true");
+        } else {
+            this.metadata.put("global_mode", "false");
+        }
     }
 
 

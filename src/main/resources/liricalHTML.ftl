@@ -211,6 +211,22 @@ table.redTable td {
 	background-color:#f0f3fa;
 }
 
+table.posttest {
+	width:auto;
+	min-width:50%;
+	margin-left:auto;
+    margin-right:auto;
+}
+
+table.posttest td {
+    line-height: 40px;
+}
+
+table.posttest th  {font-size:1.5rem;}
+
+table.posttest tr:nth-child(even) {background: #F5F5F5}
+table.posttest tr:nth-child(odd) {background: #FFF}
+
 table.minimalistBlack th,
 table.minimalistBlack td {
 	border:2px solid #e0e3ea;
@@ -322,9 +338,16 @@ a.svg:hover, a.svg:active {
     <a name="sample"></a>
     <h2>Sample name: ${sample_name!"n/a"}</h2>
     <article>
-      <div class="row">
-        <div class="column" style="background-color:#aaa;">
+      <div class="row" style="background-color:#ddd;">
+        <div class="column" style="background-color:#bbb;">
           <h2>Observed Phenotypic Features</h2>
+        </div>
+        <div class="column" style="background-color:#bbb;">
+            <h2>Excluded Phenotypic Features</h2>
+        </div>
+      </div>
+       <div class="row" style="background-color:#ddd;">
+           <div class="column" style="background-color:#bbb;">
           <p>
             <ul>
             <#list  observedHPOs as hpo>
@@ -332,7 +355,6 @@ a.svg:hover, a.svg:active {
             </#list>
             </ul>
           </p>
-          <p>
           <#if errorlist?has_content>
             <p>The following errors were encountered while processing the Phenopacket.</p>
             <ul>
@@ -341,10 +363,10 @@ a.svg:hover, a.svg:active {
             </#list>
             </ul>
           </#if>
-        </div>
+         </div>
+
         <div class="column" style="background-color:#bbb;">
            <p>
-              <h2> Excluded phenotypic features:</h2>
               <#if excludedHPOs?has_content>
                  <ul>
                  <#list excludedHPOs as hpo>
@@ -358,15 +380,15 @@ a.svg:hover, a.svg:active {
         </div>
       </div>
 
-
-
-
       <#if vcf_file?has_content>
-          <p>VCF file: ${vcf_file}</p>
+         <p>VCF file: ${vcf_file}</p>
       </#if>
       <#if phenopacket_file?has_content>
-                <p>Phenopacket file: ${phenopacket_file}</p>
-            </#if>
+          <p>Phenopacket file: ${phenopacket_file}</p>
+      </#if>
+       <#if yaml?has_content>
+           <p>YAML configuration file: ${yaml}</p>
+       </#if>
       <p>LIRICAL analysis performed on ${analysis_date}.</p>
     </article>
   </section>
@@ -377,10 +399,16 @@ a.svg:hover, a.svg:active {
     <h2>Top differential diagnoses</h2>
     <p>${topdifferentialcount}</p>
     <div style="border:1px solid black; text-align:center;">
-        ${posttestSVG}
+         <table class="posttest">
+             <tr><th>Rank</th><th>Post-test probability</th><th>Disease</th><th>Profile match</th><th>Composite LR (log)</th><th>Gene</th></tr>
+                 <#list sparkline as sprk>
+                 <tr><td>${sprk.rank}</td><td>${sprk.posttestBarSvg}</td><td><a href="#diagnosis${sprk.rank}">${sprk.diseaseName}</a></td><td>${sprk.sparklineSvg}</td><td>${sprk.compositeLikelihoodRatio}</td><td>${sprk.geneSymbol}</td></tr>
+             </#list>
+         </table>
     </div>
     </article>
     </section>
+
 
 
     <#list diff as dd>
@@ -503,13 +531,10 @@ a.svg:hover, a.svg:active {
            <#if genesWithVar?has_content>
                <li>Genes found to have at least one variant: ${genesWithVar}</li>
            </#if>
-           <#if yaml?has_content>
-             <li>YAML configuration file: ${yaml}</li>
-           </#if>
             <#if exomiserPath?has_content>
              <li>Path to Exomiser database: ${exomiserPath}</li>
            </#if>
-
+             <li>Global analysis mode: ${global_mode}</li>
         </ul>
         </p>
 
@@ -540,7 +565,7 @@ a.svg:hover, a.svg:active {
             </ul>
             </p>
         </article>
-    <section>
+    </section>
 
 
 </main>

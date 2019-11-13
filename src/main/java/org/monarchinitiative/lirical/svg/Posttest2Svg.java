@@ -22,13 +22,19 @@ public class Posttest2Svg extends Lirical2Svg {
      */
     private final int numDifferentialsToShowSVG;
 
+    private final int n_belowThresholdDifferentials;
+
     private final int width;
     /** Coordinate of leftmost part of the 0-100% scale. */
-    private final int XSTART = 0;
+    private final int XSTART = 10;
+    /** Height of the 'posttest probability title*/
+    private final int TITLE_HEIGHT = 20;
     /** Starting x position for the bars representing post-test probability. */
     private int minX;
     /**rightmost location of scale/bars representing post-test probability. */
     private int maxX;
+    /** Y position where the probability scale is located. */
+    private int probability_scale_Y_location;
     /** Width of the graphic we will show (scaling*width) */
     private final int scaledWidth;
     /** Proportion of SVG to fill with scale/bars */
@@ -59,6 +65,7 @@ public class Posttest2Svg extends Lirical2Svg {
                 n++;
             }
         }
+        n_belowThresholdDifferentials = n;
         thresholdPostTestProb = threshold;
         n = Math.max(n, MINIMUM_DIFFERENTIALS_TO_SHOW);
         n = Math.min(n, MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW);
@@ -67,7 +74,7 @@ public class Posttest2Svg extends Lirical2Svg {
         scaledWidth = (int) (width * scaling);
         this.totalDetailedToShowText = totalDetailedToShowText;
         height = calculateHeight();
-        this.minX = 0;
+        this.minX = XSTART;
         this.maxX = scaledWidth;
     }
 
@@ -76,7 +83,7 @@ public class Posttest2Svg extends Lirical2Svg {
      * @return total height of the SVG
      */
     private int calculateHeight() {
-        int y = Ybaseline + 15;
+        int y = Ybaseline + TITLE_HEIGHT + 15;
         y += 2 * MIN_VERTICAL_OFFSET;
         y += this.numDifferentialsToShowSVG * MIN_VERTICAL_OFFSET;
         y += this.numDifferentialsToShowSVG * (TEXTHEIGHT + BOX_HEIGHT + BOX_OFFSET);
@@ -96,7 +103,9 @@ public class Posttest2Svg extends Lirical2Svg {
      * @throws IOException If there is an IO error
      */
     private void writeSvg(Writer writer) throws IOException {
+        this.currentY = Ybaseline;
         writeHeader(writer);
+        writeTitle(writer);
         writeScale(writer);
         writePosttestBoxes(writer);
        // writeVerticalLines(writer);
@@ -119,6 +128,15 @@ public class Posttest2Svg extends Lirical2Svg {
         return numDifferentialsToShowSVG;
     }
 
+
+    private void writeTitle(Writer writer) throws IOException {
+        this.currentY = 30;
+        int xpos = 10;
+        //font-family="Montserrat"
+        writer.write("<text x=\"" + xpos + "\" y=\"" + this.currentY + "\" font-size=\"26\"  fill=\"" + DARKBLUE + "\">Post-test probability</text>\n");
+        this.currentY += TITLE_HEIGHT;
+    }
+
     private void writeHeader(Writer writer) throws IOException {
         writer.write("<svg width=\"" + width + "\" height=\"" + height + "\" " +
                 "xmlns=\"http://www.w3.org/2000/svg\" " +
@@ -135,14 +153,14 @@ public class Posttest2Svg extends Lirical2Svg {
      * @throws IOException if there is an issue writing the SVG code
      */
     private void writeScale(Writer writer) throws IOException {
-        this.currentY = Ybaseline;
+
         writer.write("<line fill=\"none\" stroke=\"midnightblue\" stroke-width=\"2\" " +
-                "x1=\"" + minX + "\" y1=\"" + currentY + "\" x2=\"" + maxX + "\" y2=\"" + currentY + "\"/>\n");
+                "x1=\"" + minX + "\" y1=\"" + currentY + "\" x2=\"" + maxX +
+                "\" y2=\"" + currentY + "\"/>\n");
         int block = (scaledWidth - minX) / 10;
         currentY += 5;
         for (int i = 0; i <= 10; ++i) {
-            int offset = block * i;
-            if (offset==0) offset = 1; // adjustment to show tick at 0% fully.
+            int offset = XSTART + block * i;
             String percentage = String.format("%d%%", i * 10);
             writer.write("<line fill=\"none\" stroke=\"midnightblue\" stroke-width=\"2\" " +
                     "x1=\"" + (offset) + "\" y1=\"" + (currentY+5) + "\" x2=\"" + (offset) + "\" y2=\"" + (currentY-5) + "\"/>\n");
@@ -151,16 +169,17 @@ public class Posttest2Svg extends Lirical2Svg {
                     currentY + 20,
                     percentage));
         }
+        probability_scale_Y_location = currentY;
         currentY += 20;
     }
 
     private void writePosttestBoxes(Writer writer) throws IOException {
         currentY += 2 * MIN_VERTICAL_OFFSET;
+        int lastY = currentY;
         int xOffset = 5;
         for (int i = 0; i < numDifferentialsToShowSVG && i < this.testResults.size(); ++i) {
             TestResult result = this.testResults.get(i);
             double postprob = result.getPosttestProbability();
-            String color = BLUE;
             int boxwidth = (int) (scaledWidth * postprob);
             // either show a b ox or (if the post-test prob is less than 2.5%) show a diamond to symbolize
             // a small value
@@ -171,7 +190,7 @@ public class Posttest2Svg extends Lirical2Svg {
                         boxwidth,
                         currentY,
                         XSTART,
-                        color));
+                        BLUE));
             } else {
                 writeDiamond(writer,XSTART,currentY);
             }
@@ -185,11 +204,13 @@ public class Posttest2Svg extends Lirical2Svg {
                     currentY + BOX_HEIGHT + BOX_OFFSET,
                     label));
             writer.write("</a>\n");
+            lastY = currentY;
             currentY += TEXTHEIGHT + BOX_HEIGHT + BOX_OFFSET;
+
         }
-        if (this.totalDetailedToShowText > this.MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW) {
+        if (this.n_belowThresholdDifferentials > this.MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW) {
             String message = String.format("An additional %d diseases were found to have a post-test probability above %.2f",
-                    totalDetailedToShowText - MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW,
+                    n_belowThresholdDifferentials - MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW,
                     thresholdPostTestProb);
             String anchor = String.format("<a class=\"svg\" href=\"#diagnosis%d\">\n", 1+numDifferentialsToShowSVG);
             writer.write(anchor);
@@ -199,6 +220,9 @@ public class Posttest2Svg extends Lirical2Svg {
                     message));
             writer.write("</a>\n");
         }
+        // a line at Y=0% posttest probability from the axis to the last entry
+        writer.write("<line stroke-dasharray=\"1, 5\" x1=\"" + XSTART + "\" y1=\"" + probability_scale_Y_location +
+                "\" x2=\"" + XSTART + "\" y2=\"" + lastY + "\" style=\"stroke:" + VIOLET +";\"></line>\n");
     }
 
     private void writeVerticalLines(Writer writer) throws IOException {

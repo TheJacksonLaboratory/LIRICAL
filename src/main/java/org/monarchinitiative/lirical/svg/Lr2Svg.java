@@ -207,7 +207,7 @@ public class Lr2Svg extends Lirical2Svg {
             double xstart = midline;
             if (ratio<0) {
                 boxwidth=Math.abs(boxwidth);
-                xstart = 1+ midline - boxwidth;
+                xstart = midline - boxwidth;
             }
             if ((int)boxwidth==0) {
                 int X=(int)xstart;
@@ -336,9 +336,6 @@ public class Lr2Svg extends Lirical2Svg {
 
     }
 
-
-
-
     private void writeHeader(Writer writer) throws IOException{
         int total_width=WIDTH+TEXTPART_WIDTH;
         writer.write("<svg width=\""+total_width+"\" height=\""+HEIGHT+"\" " +
@@ -347,19 +344,5 @@ public class Lr2Svg extends Lirical2Svg {
         writer.write("<!-- Created by LIRICAL -->\n");
         writer.write("<g>\n");
     }
-
-
-
-    private static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-        List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
-        // sort list according to value, i.e., the magnitude of the likelihood ratio.
-        list.sort( (e1,e2) -> (e2.getValue()).compareTo(e1.getValue()) );
-        Map<K, V> result = new LinkedHashMap<>();
-        for (Map.Entry<K, V> entry : list) {
-            result.put(entry.getKey(), entry.getValue());
-        }
-        return result;
-    }
-
 
 }

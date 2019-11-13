@@ -62,6 +62,19 @@ public class LiricalFactory {
     private int n_good_quality_variants=0;
     /** Number of variants that were removed because of the quality filter. */
     private int n_filtered_variants=0;
+    /** LR threshold to include/show a candidate in the differential diagnosis. */
+    private double lrThreshold;
+    /** Prefix for output files. For example, if outfilePrefix is ABC, then the HTML outfile would be ABC.html.*/
+    private String outfilePrefix;
+    /** Path to the directory where the output files should be written (by default, this is null and the files are
+     * written to the directory in which LIRICAL is run.
+     */
+    private String outdir = null;
+    /** Default threshold for showing a candidate. */
+    public static final double DEFAULT_LR_THRESHOLD = 0.05;
+    /** Default number of differentials to show on the HTML output. */
+    public static final  int DEFAULT_MIN_DIFFERENTIALS = 10;
+    private static final String DEFAULT_OUTFILE_PREFIX = "lirical";
 
     private final GenomeAssembly assembly;
 
@@ -96,6 +109,10 @@ public class LiricalFactory {
     private String sampleName="n/a";
 
 
+
+    private int minDifferentials;
+
+
     private JannovarData jannovarData=null;
 
 
@@ -120,9 +137,10 @@ public class LiricalFactory {
             this.transcriptdatabase = builder.transcriptdatabase;
             this.vcfPath = null;
             this.datadir= builder.liricalDataDir;
-           // this.strict = false;
+            this.minDifferentials = builder.minDifferentials;
             hpoIdList = ImmutableList.of();
             negatedHpoIdList = ImmutableList.of();
+            this.outfilePrefix = builder.outfilePrefix;
     }
 
     private LiricalFactory(Builder builder) {
@@ -154,12 +172,12 @@ public class LiricalFactory {
 
         this.geneInfoPath=builder.geneInfoPath;
         this.mim2genemedgenPath=builder.mim2genemedgenPath;
-
+        this.minDifferentials = builder.minDifferentials;
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
         this.datadir=builder.liricalDataDir;
-       // this.strict = builder.strict;
+        this.outfilePrefix = builder.outfilePrefix;
 
         ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
         for (String id : builder.observedHpoTerms) {
@@ -179,8 +197,20 @@ public class LiricalFactory {
         } else {
             this.desiredDatabasePrefixes=ImmutableList.of("OMIM","DECIPHER");
         }
+        this.lrThreshold = builder.lrThreshold;
     }
 
+    public String getOutfilePrefix() {
+        return outfilePrefix;
+    }
+
+    public String getOutdir() {
+        return outdir;
+    }
+
+    public double getLrThreshold() {
+        return lrThreshold;
+    }
 
     /**
      * @return a list of observed HPO terms (from the YAML/Phenopacket file)
@@ -231,6 +261,8 @@ public class LiricalFactory {
     public String getExomiserPath() { return this.exomiserPath;}
 
     public String getHpoVersion() { return hpoVersion; }
+
+    public int getMinDifferentials() { return this.minDifferentials; }
 
     public String getVcfPath() {
         if (this.vcfPath==null) {
@@ -585,6 +617,9 @@ public class LiricalFactory {
         private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
         private List<String> observedHpoTerms=ImmutableList.of();
         private List<String> negatedHpoTerms=ImmutableList.of();
+        private String outfilePrefix = DEFAULT_OUTFILE_PREFIX;
+        private double lrThreshold = DEFAULT_LR_THRESHOLD;
+        private int minDifferentials = DEFAULT_MIN_DIFFERENTIALS;
 
         /** If this constructor is used, the the build method will attempt to load the HPO
          * based on its file location in datadir. If it is not possible, we will die gracefully.
@@ -596,15 +631,48 @@ public class LiricalFactory {
             ontology = hpo;
         }
 
+        /**
+         * Create a Builder object from the YAML Parser. By default, phenotypeOnly mode is set to false
+         * @param yp YamlParser
+         * @return a Builder object
+         */
         public Builder yaml(YamlParser yp) {
+            return yaml(yp,false);
+        }
+
+        /**
+         * Create a Builder object from the YAML Parser.
+         * @param yp YamlParser
+         * @param phenotypeOnly If false, expect to see information about the VCF file and Exomiser build.
+         * @return
+         */
+        public Builder yaml(YamlParser yp, boolean phenotypeOnly) {
             this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(yp.getDataDir());
             initDatadirFiles();
-            this.exomiserDataDir=yp.getExomiserDataDir();
-            this.genomeAssembly=yp.getGenomeAssembly();
-            this.observedHpoTerms=new ArrayList<>();
-            this.negatedHpoTerms=new ArrayList<>();
             this.observedHpoTerms=yp.getHpoTermList();
             this.negatedHpoTerms=yp.getNegatedHpoTermList();
+            switch (yp.transcriptdb().toUpperCase()) {
+                case "REFSEQ":
+                    this.transcriptdatabase = TranscriptDatabase.REFSEQ;
+                    break;
+                case "ENSEMBL":
+                    this.transcriptdatabase = TranscriptDatabase.ENSEMBL;
+                    break;
+                case "UCSC":
+                default:
+                    this.transcriptdatabase = TranscriptDatabase.UCSC;
+            }
+            this.outfilePrefix = yp.getPrefix();
+            Optional<Double> threshold = yp.threshold();
+            threshold.ifPresent(d -> this.lrThreshold = d);
+            this.outfilePrefix = yp.getPrefix();
+            if (yp.mindiff().isPresent()) {
+                this.minDifferentials = yp.mindiff().get();
+            }
+            if (phenotypeOnly) return this;
+            // if we get here, then we add stuff that is relevant to VCF analysis
+            this.exomiserDataDir=yp.getExomiserDataDir();
+            this.genomeAssembly=yp.getGenomeAssembly();
             switch (yp.transcriptdb().toUpperCase()) {
                 case "ENSEMBL" :
                     this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
@@ -624,26 +692,11 @@ public class LiricalFactory {
             }
             Optional<String> backgroundOpt = yp.getBackgroundPath();
             backgroundOpt.ifPresent(s -> this.backgroundFrequencyPath = s);
+            this.global = yp.global();
+
+
             return this;
         }
-
-
-        public Builder yaml(YamlParser yp, boolean phenotypeOnly) {
-            if (!phenotypeOnly) return yaml(yp);
-            this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(yp.getDataDir());
-            initDatadirFiles();
-            this.observedHpoTerms=new ArrayList<>();
-            this.negatedHpoTerms=new ArrayList<>();
-            this.observedHpoTerms=yp.getHpoTermList();
-            this.negatedHpoTerms=yp.getNegatedHpoTermList();
-            return this;
-        }
-
-
-//        public Builder strict(boolean b) {
-//            this.strict = b;
-//            return this;
-//        }
 
         public Builder orphanet(boolean b) {
             this.useOrphanet = b;
