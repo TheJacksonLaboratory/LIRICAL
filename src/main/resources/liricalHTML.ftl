@@ -347,6 +347,7 @@ a.svg:hover, a.svg:active {
         </div>
       </div>
        <div class="row" style="background-color:#ddd;">
+           <div class="column" style="background-color:#bbb;">
           <p>
             <ul>
             <#list  observedHPOs as hpo>
@@ -362,8 +363,9 @@ a.svg:hover, a.svg:active {
             </#list>
             </ul>
           </#if>
-        </div>
-        <div class="column" >
+         </div>
+
+        <div class="column" style="background-color:#bbb;">
            <p>
               <#if excludedHPOs?has_content>
                  <ul>
@@ -377,9 +379,6 @@ a.svg:hover, a.svg:active {
            </p>
         </div>
       </div>
-
-
-
 
       <#if vcf_file?has_content>
          <p>VCF file: ${vcf_file}</p>
@@ -566,7 +565,7 @@ a.svg:hover, a.svg:active {
             </ul>
             </p>
         </article>
-    <section>
+    </section>
 
 
 </main>
