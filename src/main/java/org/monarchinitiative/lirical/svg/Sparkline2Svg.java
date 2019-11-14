@@ -115,7 +115,7 @@ public class Sparkline2Svg extends Lirical2Svg {
         return ""; // return empty string upon failure
     }
 
-    private void writeSparkline(HpoCase hcase, TermId diseaseId, StringWriter swriter) {
+    private void writeSparkline(HpoCase hcase, TermId diseaseId, StringWriter swriter) throws IOException {
         final int MAX_LOG_LR = 4;
         // get the posttest probability
         TestResult result = hcase.getResult(diseaseId);
@@ -138,13 +138,21 @@ public class Sparkline2Svg extends Lirical2Svg {
                 logratio = Math.min(MAX_LOG_LR, logratio);
                 int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
                 int ypos = ybaseline - height;
-                swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos +"\" x=\"" + currentX + "\" " +
-                                "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\"/>\n");
+                if (height == 0) {
+                    writeSmallDiamond(swriter,currentX,ypos);
+                } else {
+                    swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos + "\" x=\"" + currentX + "\" " +
+                            "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\"/>\n");
+                }
             } else {
                 logratio = Math.max((-1)*MAX_LOG_LR, logratio);
                 int height = (int)((-1)*logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
-                swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline +"\" x=\"" + currentX + "\" " +
-                        "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + RED + "\"/>\n");
+                if (height == 0) {
+                    writeSmallDiamond(swriter,currentX,ybaseline);
+                } else {
+                    swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline + "\" x=\"" + currentX + "\" " +
+                            "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + RED + "\"/>\n");
+                }
             }
             currentX += BAR_WIDTH + INTERBAR_WIDTH;
         }
@@ -180,9 +188,29 @@ public class Sparkline2Svg extends Lirical2Svg {
                         "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + RED + "\"/>\n");
             }
         }
-
-
     }
+
+    /**
+     * We use a diamond symbol to show a value that would be too small to appear as a visible box.
+     * We do this bothfor the likelihood ratio as well as for the post-test probability
+     */
+    private void writeSmallDiamond(Writer writer,int X, int Y) throws IOException
+    {
+        int diamondsize=4;
+        Y -= diamondsize;
+        writer.write(String.format("<polygon " +
+                        "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:grey;stroke:%s;stroke-width:1\" />\n",
+                X,
+                Y,
+                X+diamondsize,
+                Y+diamondsize,
+                X,
+                Y+2*diamondsize,
+                X-diamondsize,
+                Y+diamondsize,
+                BROWN));
+    }
+
 
 
     private void writeHeader(Writer writer) throws IOException {
