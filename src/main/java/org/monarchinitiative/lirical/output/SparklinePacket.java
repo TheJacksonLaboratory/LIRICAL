@@ -24,6 +24,7 @@ public class SparklinePacket {
     private final double compositeLikelihoodRatio;
     private final String geneSymbol;
     private final String diseaseName;
+    private final String diseaseAnchor;
 
     private final static String EMPTY_STRING ="";
 
@@ -51,7 +52,8 @@ public class SparklinePacket {
             String posttestSVG = sparkline2Svg.getPosttestBar(posttestProb);
             String sparkSVG = sparkline2Svg.getSparklineSvg(hcase, diseaseId);
             String disname = prettifyDiseaseName(result.getDiseaseName());
-            SparklinePacket sp = new SparklinePacket(rank, posttestSVG, sparkSVG, compositeLR, geneSymbol, disname);
+            String diseaseAnchor = getDiseaseAnchor(diseaseId);
+            SparklinePacket sp = new SparklinePacket(rank, posttestSVG, sparkSVG, compositeLR, geneSymbol, disname, diseaseAnchor);
             builder.add(sp);
         }
         return builder.build();
@@ -76,11 +78,18 @@ public class SparklinePacket {
             String posttestSVG = sparkline2Svg.getPosttestBar(posttestProb);
             String sparkSVG = sparkline2Svg.getSparklineSvg(hcase, diseaseId);
             String disname = prettifyDiseaseName(result.getDiseaseName());
-            SparklinePacket sp = new SparklinePacket(rank, posttestSVG, sparkSVG, compositeLR, EMPTY_STRING, disname);
+            String diseaseAnchor = getDiseaseAnchor(diseaseId);
+            SparklinePacket sp = new SparklinePacket(rank, posttestSVG, sparkSVG, compositeLR, EMPTY_STRING, disname, diseaseAnchor);
             builder.add(sp);
         }
         return builder.build();
     }
+
+    private static String getDiseaseAnchor(TermId diseaseId) {
+        String diseaseURI = String.format("https://hpo.jax.org/app/browse/disease/%s",diseaseId.getValue());
+        return String.format("<a href=\"%s\" target=\"_blank\">%s</a>",diseaseURI, diseaseId.getValue() );
+    }
+
 
 
     /**
@@ -103,18 +112,22 @@ public class SparklinePacket {
             i = m.end() + 1;
             originalDiseaseName = originalDiseaseName.substring(i).trim();
         }
+        if (originalDiseaseName.length()>60) {
+            originalDiseaseName = String.format("%s (...)", originalDiseaseName.substring(0,55) );
+        }
         return originalDiseaseName;
     }
 
 
 
-    private SparklinePacket(int rank, String posttest, String spark, double compLR, String sym, String disname){
+    private SparklinePacket(int rank, String posttest, String spark, double compLR, String sym, String disname, String diseaseAnchor){
         this.rank = rank;
         this.posttestBarSvg = posttest;
         this.sparklineSvg = spark;
         this.compositeLikelihoodRatio = Math.log10(compLR);
         this.geneSymbol = sym;
         this.diseaseName = disname;
+        this.diseaseAnchor = diseaseAnchor;
     }
 
     public int getRank() {
@@ -139,5 +152,9 @@ public class SparklinePacket {
 
     public String getDiseaseName() {
         return diseaseName;
+    }
+
+    public String getDiseaseAnchor() {
+        return diseaseAnchor;
     }
 }

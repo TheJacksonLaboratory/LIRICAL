@@ -400,9 +400,9 @@ a.svg:hover, a.svg:active {
     <p>${topdifferentialcount}</p>
     <div style="border:1px solid black; text-align:center;">
          <table class="posttest">
-             <tr><th>Rank</th><th>Post-test probability</th><th>Disease</th><th>Profile match</th><th>Composite LR (log)</th><th>Gene</th></tr>
+             <tr><th>Rank</th><th>Post-test probability</th><th>Disease</th><th>ID</th><th>Profile match</th><th>Composite LR (log)</th><th>Gene</th></tr>
                  <#list sparkline as sprk>
-                 <tr><td>${sprk.rank}</td><td>${sprk.posttestBarSvg}</td><td><a href="#diagnosis${sprk.rank}">${sprk.diseaseName}</a></td><td>${sprk.sparklineSvg}</td><td>${sprk.compositeLikelihoodRatio}</td><td>${sprk.geneSymbol}</td></tr>
+                 <tr><td>${sprk.rank}</td><td>${sprk.posttestBarSvg}</td><td><a href="#diagnosis${sprk.rank}">${sprk.diseaseName}</a></td><td>${sprk.diseaseAnchor}</td><td>${sprk.sparklineSvg}</td><td>${sprk.compositeLikelihoodRatio}</td><td>${sprk.geneSymbol}</td></tr>
              </#list>
          </table>
     </div>

@@ -6,6 +6,7 @@ import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sonumina.math.combinatorics.IMultisetCallback;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -46,10 +47,7 @@ public class Sparkline2Svg extends Lirical2Svg {
 
     private final boolean hasGenotype;
 
-
-    private final List<TermId> originalTerms;
-    /** The HPO terms (observed and excluded) in the order we will use them for all sparklines. */
-    private final List<TermId> orderedTerms;
+    private final int n_hpo_terms;
     /** The indices of the original terms according to ordered terms. */
     private final List<Integer> indicesObserved;
     private final List<Integer> indicesExcluded;
@@ -63,82 +61,45 @@ public class Sparkline2Svg extends Lirical2Svg {
     public Sparkline2Svg(HpoCase hcase, TermId diseaseId, boolean useGenotype) {
         this.termIdList = hcase.getObservedAbnormalities();
         this.excludedTermIdList = hcase.getExcludedAbnormalities();
-        Map<TermId, Double> unsortedmap = new HashMap<>();
-        Map<TermId, Double> unsortedexcludedmap = new HashMap<>();
         TestResult result = hcase.getResult(diseaseId);
         this.hasGenotype = useGenotype;
-        double max=0;
-        ImmutableList.Builder<TermId> bilder = new ImmutableList.Builder<>();
+        // Sort the HPO findings according to lieklihood ratio.
+        // use the internal valss Value2Index to keep track of the original index
+        // after sorting, put the sorted original indices (i.e., as a sorted permutation) into
+        // the list "indicesObserved"
+        List<Value2Index> observedIndexList = new ArrayList<>();
         for (int i=0;i<termIdList.size();i++) {
-            TermId tid = termIdList.get(i);
-            bilder.add(tid);
             double ratio = result.getObservedPhenotypeRatio(i);
-            if (max < Math.abs(ratio)) { max = Math.abs(ratio); }
-            double lgratio = Math.log10(ratio);
-            unsortedmap.put(tid,lgratio);
+            observedIndexList.add(new Value2Index(i,ratio));
         }
+        Collections.sort(observedIndexList);
+        ImmutableList.Builder<Integer> builder = new ImmutableList.Builder<>();
+        for (int i = 0; i<observedIndexList.size(); i++) {
+            builder.add(observedIndexList.get(i).getOriginalIndex());
+        }
+        this.indicesObserved = builder.build();
+        // Now do the same for the excluded HPO terms
+        List<Value2Index> excludedIndexList = new ArrayList<>();
         for (int i=0;i<excludedTermIdList.size();i++) {
-            TermId tid = excludedTermIdList.get(i);
-            bilder.add(tid);
             double ratio = result.getExcludedPhenotypeRatio(i);
-            if (max < Math.abs(ratio)) { max = Math.abs(ratio); }
-            double lgratio = Math.log10(ratio);
-            unsortedexcludedmap.put(tid,lgratio);
+            excludedIndexList.add(new Value2Index(i, ratio));
         }
-        originalTerms = bilder.build();
-        Map<TermId, Double> sortedmap = sortByValue(unsortedmap);
-        Map<TermId, Double> sortedexcludedmap = sortByValue(unsortedexcludedmap);
-        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
-        int i=0;
-        for (TermId tid : sortedmap.keySet()) {
-            builder.add(tid);
+        Collections.sort(excludedIndexList);
+
+        builder = new ImmutableList.Builder<>();
+        for (int i = 0; i<excludedIndexList.size(); i++) {
+            builder.add(excludedIndexList.get(i).getOriginalIndex());
         }
-        for (TermId tid : sortedexcludedmap.keySet()) {
-            builder.add(tid);
-        }
-        orderedTerms = builder.build();
-        ImmutableList.Builder<Integer> bldr = new ImmutableList.Builder<>();
-        for (TermId tid : termIdList) {
-            int idx = getIndexObserved(tid);
-            bldr.add(idx);
-        }
-        this.indicesObserved = bldr.build();
-        bldr = new ImmutableList.Builder<>(); // reset
-        for (TermId tid : excludedTermIdList) {
-            int idx = getIndexExcluded(tid);
-            bldr.add(idx);
-        }
-        this.indicesExcluded = bldr.build();
+        this.indicesExcluded =  builder.build();
+        this.n_hpo_terms = indicesExcluded.size() + indicesObserved.size();
         // calculate total width of the SVG
         int genotypeWidth = 0;
         if (useGenotype) {
             genotypeWidth += BAR_WIDTH + INTERBAR_WIDTH;
         }
-        total_width = PERCENTAGE_WIDTH + SPACING_WIDTH + orderedTerms.size() * (BAR_WIDTH + INTERBAR_WIDTH) + genotypeWidth;
+        total_width = PERCENTAGE_WIDTH + SPACING_WIDTH + n_hpo_terms * (BAR_WIDTH + INTERBAR_WIDTH) + genotypeWidth;
         total_height = 2*MAXIMUM_BAR_HEIGHT + 10;
     }
-    /** Not pretty but it works for now */
-    private int getIndexObserved(TermId tid) {
-        for (int i=0; i< this.termIdList.size(); i++) {
-            if (tid.equals(this.termIdList.get(i)))
-                return i;
-        }
-        // should never reach here
-        logger.error("Could not find index of TermId {}", tid.getValue());
-        return -1; // should never happen
-    }
-
-    /** Not pretty but it works for now */
-    private int getIndexExcluded(TermId tid) {
-        for (int i=0; i< this.excludedTermIdList.size(); i++) {
-            if (tid.equals(this.excludedTermIdList.get(i)))
-                return i;
-        }
-        // should never reach here
-        logger.error("Could not find index of TermId {}", tid.getValue());
-        return -1; // should never happen
-    }
-
 
 
     public String getSparklineSvg(HpoCase hcase, TermId diseaseId) {
@@ -162,7 +123,7 @@ public class Sparkline2Svg extends Lirical2Svg {
         String posttestPercentage = String.format("%.0f%%", ptprob);
         int ybaseline = total_height / 2; // put everything right in the middle
         int xstart = 5;
-        int linewidth = this.orderedTerms.size() * (BAR_WIDTH + INTERBAR_WIDTH) - INTERBAR_WIDTH;
+        int linewidth =  n_hpo_terms * (BAR_WIDTH + INTERBAR_WIDTH) - INTERBAR_WIDTH;
         if (hasGenotype) {
             linewidth += BAR_WIDTH + INTERBAR_WIDTH;
         }
@@ -171,7 +132,8 @@ public class Sparkline2Svg extends Lirical2Svg {
                 "x1=\"" + currentX + "\" y1=\"" + ybaseline + "\" x2=\"" + (currentX+linewidth) +
                 "\" y2=\"" + ybaseline + "\"/>\n");
         for (int i=0; i<indicesObserved.size(); i++) {
-            double logratio = Math.log10(result.getObservedPhenotypeRatio(i));
+            int originalIndex = indicesObserved.get(i);
+            double logratio = Math.log10(result.getObservedPhenotypeRatio(originalIndex));
             if (logratio > 0) {
                 logratio = Math.min(MAX_LOG_LR, logratio);
                 int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
@@ -187,7 +149,8 @@ public class Sparkline2Svg extends Lirical2Svg {
             currentX += BAR_WIDTH + INTERBAR_WIDTH;
         }
         for (int i=0; i<indicesExcluded.size(); i++) {
-            double logratio = Math.log10(result.getExcludedPhenotypeRatio(i));
+            int originalIndex = indicesExcluded.get(i);
+            double logratio = Math.log10(result.getExcludedPhenotypeRatio(originalIndex));
             if (logratio > 0) {
                 logratio = Math.min(MAX_LOG_LR, logratio);
                 int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
@@ -263,6 +226,30 @@ public class Sparkline2Svg extends Lirical2Svg {
                 BOX_HEIGHT,
                 barwidth,
                 BRIGHT_GREEN));
+    }
+
+    /**
+     * A convenience class to allow us to keep track of the indices of the observed and excluded HPO terms. We want
+     * to sort each class from highest to lowest likelihood ratio for the top candidate and maintain this ordering
+     * for all sparklines. The order of the HPO terms in a TestResult is fixed and identical for all TestResult objects.
+     * We need to sort these to get the desired order.
+     */
+    private static class Value2Index implements Comparable<Value2Index> {
+        private final int originalIndex;
+        private final double LR;
+        Value2Index(int originalIndex, double LR) {
+            this.originalIndex = originalIndex;
+            this.LR = LR;
+        }
+
+        int getOriginalIndex() {
+            return originalIndex;
+        }
+
+        @Override
+        public int compareTo(Value2Index other) {
+            return this.LR < other.LR ? 1 : this.LR == other.LR ? 0 : -1;
+        }
     }
 
 }
