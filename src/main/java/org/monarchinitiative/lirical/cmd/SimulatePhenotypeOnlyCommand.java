@@ -19,7 +19,7 @@ import java.util.Map;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Simulate phenotype-only cases",hidden = true)
-public class SimulatePhenotypeOnlyCommand extends LiricalCommand {
+public class SimulatePhenotypeOnlyCommand extends PhenopacketCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulatePhenotypeOnlyCommand.class);
     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
     @Parameter(names={"-d","--data"}, description ="directory to download data" )
@@ -42,11 +42,12 @@ public class SimulatePhenotypeOnlyCommand extends LiricalCommand {
 
 
     @Override
-    public void run() throws LiricalException {
+    public void run()  {
         LiricalFactory factory = new LiricalFactory.Builder()
                 .datadir(this.datadir)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
+        checkThresholds();
         logger.trace("Running simulation with {} cases, {} terms/case, {} noise terms/case. Imprecision: {}",
                 n_cases_to_simulate,n_terms_per_case,n_noise_terms,imprecise_phenotype?"yes":"no");
         Ontology ontology = factory.hpoOntology();
@@ -60,6 +61,10 @@ public class SimulatePhenotypeOnlyCommand extends LiricalCommand {
                 imprecise_phenotype);
         logger.info("Simulating {} cases with {} terms each, {} noise terms. imprecision={}",
             n_cases_to_simulate,n_terms_per_case,n_noise_terms,imprecise_phenotype);
-        phenotypeOnlyHpoCaseSimulator.simulateCases();
+        try {
+            phenotypeOnlyHpoCaseSimulator.simulateCases();
+        } catch (LiricalException e) {
+            e.printStackTrace(); // should never happen, but nothing we can do about it
+        }
     }
 }

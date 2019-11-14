@@ -29,9 +29,9 @@ import java.util.Map;
 public class HtmlTemplate extends LiricalTemplate {
     private static final Logger logger = LoggerFactory.getLogger(HtmlTemplate.class);
     /** Threshold posterior probability to show a differential diagnosis in detail. */
-    private final double THRESHOLD;
+    private final Double THRESHOLD;
     /** Have the HTML output show at least this many differntials (default: 5). */
-    private final int MIN_DIAGNOSES_TO_SHOW;
+    private final Integer MIN_DIAGNOSES_TO_SHOW;
 
 
     /**
@@ -75,7 +75,7 @@ public class HtmlTemplate extends LiricalTemplate {
         int counter=0;
         for (TestResult result : hcase.getResults()) {
             String symbol=EMPTY_STRING;
-            if (result.getPosttestProbability() > THRESHOLD || counter < MIN_DIAGNOSES_TO_SHOW) {
+            if (passesThreshold(counter, result.getPosttestProbability())) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.trace("Diff diag for " + result.getDiseaseName());
                 if (result.hasGenotype()) {
@@ -134,6 +134,26 @@ public class HtmlTemplate extends LiricalTemplate {
         }
     }
 
+    /**
+     * Does the current entry pass the threshold for being shown in detail?
+     * Note that EITHER we are looking to show a minimum number of differentials and we ask if k<=m
+     * OR we show candidates with a likelihood ratio that is >= THRESHOLD.
+     * @param k Current count of this diagnosis
+     * @param lr likelihood ratio of this diagnosis
+     * @return True if we pass the appropriate threshold
+     */
+    private boolean passesThreshold(int k, double lr) {
+        if (this.MIN_DIAGNOSES_TO_SHOW != null) {
+            return k <= MIN_DIAGNOSES_TO_SHOW;
+        }
+        if (this.THRESHOLD != null) {
+            return lr <= THRESHOLD;
+        }
+        // we should never get here
+        logger.error("Both MIN_DIAGNOSES_TO_SHOW and THRESHOLD were null");
+        return false;
+    }
+
 
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
@@ -177,7 +197,7 @@ public class HtmlTemplate extends LiricalTemplate {
         int counter=0;
         for (TestResult result : hcase.getResults()) {
             String symbol=EMPTY_STRING;
-            if (result.getPosttestProbability() > THRESHOLD || counter < MIN_DIAGNOSES_TO_SHOW) {
+            if (passesThreshold(counter, result.getPosttestProbability())) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.trace("Diff diag for " + result.getDiseaseName());
                 ddx.setGenotypeExplanation("Genetic data not available");

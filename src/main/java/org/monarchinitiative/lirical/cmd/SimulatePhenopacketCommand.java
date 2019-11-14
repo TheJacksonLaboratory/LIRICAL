@@ -300,6 +300,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         detailedResultLineList = new ArrayList<>();
         rank2countMap=new HashMap<>();
         geneRank2CountMap = new HashMap<>();
+        checkThresholds();
         if (phenotypeOnly) {
             runPhenotypeOnly();
         } else {

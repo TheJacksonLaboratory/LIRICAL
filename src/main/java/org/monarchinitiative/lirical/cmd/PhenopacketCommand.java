@@ -179,6 +179,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
             logger.error("-p option (phenopacket) is required");
             return;
         }
+        checkThresholds();
         this.metadata = new HashMap<>();
         String hpoPath = String.format("%s%s%s",this.datadir, File.separator,"hp.obo");
         Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));
