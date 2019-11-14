@@ -214,9 +214,9 @@ public class Lr2Svg extends Lirical2Svg {
                 writeDiamond(writer,X,currentY);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
-                String color = xstart<midline ? RED : BLUE;
+                String color = xstart<midline ? RED : BRIGHT_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
-                                "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
+                                "stroke-width=\"0\" stroke=\"#000000\" fill=\"%s\"/>\n",
                         BOX_HEIGHT,
                         (int) boxwidth,
                         currentY,
@@ -249,9 +249,9 @@ public class Lr2Svg extends Lirical2Svg {
                 writeDiamond(writer,X,currentY);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
-                String color = xstart<midline ? RED : BLUE;
+                String color = xstart<midline ? RED : BRIGHT_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
-                                "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
+                                "stroke-width=\"0\" stroke=\"#000000\" fill=\"%s\"/>\n",
                         BOX_HEIGHT,
                         (int) boxwidth,
                         currentY,
@@ -287,7 +287,7 @@ public class Lr2Svg extends Lirical2Svg {
                 writeDiamond(writer,X,currentY);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
-                String color = xstart<midline ? RED : BLUE;
+                String color = xstart<midline ? RED : BRIGHT_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
                                 "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
                         BOX_HEIGHT,
