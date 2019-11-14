@@ -163,13 +163,21 @@ public class Sparkline2Svg extends Lirical2Svg {
                 logratio = Math.min(MAX_LOG_LR, logratio);
                 int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
                 int ypos = ybaseline - height;
-                swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos +"\" x=\"" + currentX + "\" " +
-                        "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\"/>\n");
+                if (height == 0) {
+                    writeSmallDiamond(swriter, currentX, ybaseline);
+                } else {
+                    swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos + "\" x=\"" + currentX + "\" " +
+                            "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\"/>\n");
+                }
             } else {
                 logratio = Math.max((-1)*MAX_LOG_LR, logratio);
                 int height = (int)((-1)*logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
-                swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline +"\" x=\"" + currentX + "\" " +
-                        "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + RED + "\"/>\n");
+                if (height == 0) {
+                    writeSmallDiamond(swriter, currentX, ybaseline);
+                } else {
+                    swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline + "\" x=\"" + currentX + "\" " +
+                            "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + RED + "\"/>\n");
+                }
             }
             currentX += BAR_WIDTH + INTERBAR_WIDTH;
         }
@@ -179,13 +187,21 @@ public class Sparkline2Svg extends Lirical2Svg {
                 logratio = Math.min(MAX_LOG_LR, logratio);
                 int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
                 int ypos = ybaseline - height;
-                swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos +"\" x=\"" + currentX + "\" " +
-                        "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\"/>\n");
+                if (height == 0) {
+                    writeSmallDiamond(swriter, currentX, ybaseline);
+                } else {
+                    swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos + "\" x=\"" + currentX + "\" " +
+                            "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\"/>\n");
+                }
             } else {
                 logratio = Math.max((-1)*MAX_LOG_LR, logratio);
                 int height = (int)((-1)*logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
-                swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline +"\" x=\"" + currentX + "\" " +
-                        "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + RED + "\"/>\n");
+                if (height == 0) {
+                    writeSmallDiamond(swriter, currentX, ybaseline);
+                } else {
+                    swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline + "\" x=\"" + currentX + "\" " +
+                            "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + RED + "\"/>\n");
+                }
             }
         }
     }
