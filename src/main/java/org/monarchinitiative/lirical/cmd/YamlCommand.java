@@ -127,7 +127,6 @@ public class YamlCommand extends LiricalCommand {
     @Override
     public void run() throws LiricalException {
         this.factory = deYamylate(this.yamlPath);
-
         this.ontology =  factory.hpoOntology();
         this.diseaseMap = factory.diseaseMap(ontology);
         this.phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);

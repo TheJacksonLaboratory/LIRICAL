@@ -62,8 +62,7 @@ public class LiricalFactory {
     private int n_good_quality_variants=0;
     /** Number of variants that were removed because of the quality filter. */
     private int n_filtered_variants=0;
-    /** LR threshold to include/show a candidate in the differential diagnosis. */
-    private double lrThreshold;
+
     /** Prefix for output files. For example, if outfilePrefix is ABC, then the HTML outfile would be ABC.html.*/
     private String outfilePrefix;
     /** Path to the directory where the output files should be written (by default, this is null and the files are
@@ -73,7 +72,14 @@ public class LiricalFactory {
     /** Default threshold for showing a candidate. */
     public static final double DEFAULT_LR_THRESHOLD = 0.05;
     /** Default number of differentials to show on the HTML output. */
-    public static final  int DEFAULT_MIN_DIFFERENTIALS = 10;
+    public static final int DEFAULT_MIN_DIFFERENTIALS = 10;
+    /** LR threshold to include/show a candidate in the differential diagnosis. This option is incompatible with the
+     * {@link #minDifferentials} option, at most one can be non-null*/
+    private Double lrThreshold;
+    /** Minimum number of differentials to show in detail in the HTML output. This option is incompatible with the
+     * {@link #lrThreshold} option, at most one can be non-null */
+    private Integer minDifferentials;
+
     private static final String DEFAULT_OUTFILE_PREFIX = "lirical";
 
     private final GenomeAssembly assembly;
@@ -107,8 +113,6 @@ public class LiricalFactory {
     private String sampleName="n/a";
 
 
-
-    private int minDifferentials;
 
 
     private JannovarData jannovarData=null;
@@ -170,7 +174,18 @@ public class LiricalFactory {
 
         this.geneInfoPath=builder.geneInfoPath;
         this.mim2genemedgenPath=builder.mim2genemedgenPath;
+        // by the time we get here, we are guaranteed that at once one of the following two
+        // thresholds are non-null (see checkThresholds function in PrioritizeCommand.java).
+        // We have also checked that if present, the threshold is in [0,1]
+        // the YAML parser performs analogous checks.
         this.minDifferentials = builder.minDifferentials;
+        this.lrThreshold = builder.lrThreshold;
+        // By default, output everything down to a threshold of 5%.
+        // this will happen if the user does not pass either the -m or the -t option
+        if (minDifferentials == null && lrThreshold == null) {
+            lrThreshold = DEFAULT_LR_THRESHOLD;
+        }
+
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
@@ -195,7 +210,7 @@ public class LiricalFactory {
         } else {
             this.desiredDatabasePrefixes=ImmutableList.of("OMIM","DECIPHER");
         }
-        this.lrThreshold = builder.lrThreshold;
+
     }
 
     public String getOutfilePrefix() {
