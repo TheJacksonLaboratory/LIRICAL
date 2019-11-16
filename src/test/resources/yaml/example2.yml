@@ -12,7 +12,6 @@ analysis:
   transcriptdb: ensembl
   global: true
   strict: true
-  mindiff: 50
   threshold: 0.05
   tsv: true
 hpoIds: [ 'HP:0001363', 'HP:0011304', 'HP:0010055']
