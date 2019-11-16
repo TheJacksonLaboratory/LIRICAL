@@ -32,11 +32,11 @@ public class HtmlTemplate extends LiricalTemplate {
     /**
      * Threshold posterior probability to show a differential diagnosis in detail.
      */
-    private final double THRESHOLD;
+    private final Double THRESHOLD;
     /**
      * Have the HTML output show at least this many differntials (default: 5).
      */
-    private final int MIN_DIAGNOSES_TO_SHOW;
+    private final Integer MIN_DIAGNOSES_TO_SHOW;
 
 
     /**
@@ -49,7 +49,7 @@ public class HtmlTemplate extends LiricalTemplate {
      * @param metadat     Metadata about the analysis.
      * @param thres       threshold posterior probability to show differential in detail
      */
-    public HtmlTemplate(HpoCase hcase, Ontology ontology, Map<TermId, Gene2Genotype> genotypeMap, Map<TermId, String> geneid2sym, Map<String, String> metadat, double thres, int minDifferentials, String prefix, String outdir, List<String> errs) {
+    public HtmlTemplate(HpoCase hcase, Ontology ontology, Map<TermId, Gene2Genotype> genotypeMap, Map<TermId, String> geneid2sym, Map<String, String> metadat, Double thres, Integer minDifferentials, String prefix, String outdir, List<String> errs) {
         super(hcase, ontology, genotypeMap, geneid2sym, metadat);
         initpath(prefix, outdir);
         this.THRESHOLD = thres;
@@ -62,17 +62,13 @@ public class HtmlTemplate extends LiricalTemplate {
         ClassLoader classLoader = HtmlTemplate.class.getClassLoader();
         cfg.setClassLoaderForTemplateLoading(classLoader, "");
         templateData.put("postprobthreshold", String.format("%.1f%%", 100 * THRESHOLD));
-        // Get SVG for post-test probability list
         int N = totalDetailedDiagnosesToShow(hcase.getResults());
-        // Posttest2Svg pt2svg = new Posttest2Svg(hcase.getResults(), THRESHOLD, N);
-        //String posttestSVG = pt2svg.getSvgString();
-        //this.templateData.put("posttestSVG",posttestSVG);
         List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N, geneid2sym);
         this.templateData.put("sparkline", sparklinePackets);
         int counter = 0;
         for (TestResult result : hcase.getResults()) {
             String symbol = EMPTY_STRING;
-            if (result.getPosttestProbability() > THRESHOLD || counter < MIN_DIAGNOSES_TO_SHOW) {
+            if (passesThreshold(counter, result.getPosttestProbability())) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.trace("Diff diag for " + result.getDiseaseName());
                 if (result.hasGenotype()) {
@@ -166,7 +162,7 @@ public class HtmlTemplate extends LiricalTemplate {
         int counter = 0;
         for (TestResult result : hcase.getResults()) {
             String symbol = EMPTY_STRING;
-            if (result.getPosttestProbability() > THRESHOLD || counter < MIN_DIAGNOSES_TO_SHOW) {
+            if (passesThreshold(counter, result.getPosttestProbability())) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.trace("Diff diag for " + result.getDiseaseName());
                 ddx.setGenotypeExplanation("Genetic data not available");
@@ -258,5 +254,27 @@ public class HtmlTemplate extends LiricalTemplate {
             this.templateData.put("topdifferentialcount", message);
         }
     }
+
+    /**
+     * Does the current entry pass the threshold for being shown in detail?
+     * Note that EITHER we are looking to show a minimum number of differentials and we ask if k<=m
+     * OR we show candidates with a likelihood ratio that is >= THRESHOLD.
+     * @param k Current count of this diagnosis
+     * @param lr likelihood ratio of this diagnosis
+     * @return True if we pass the appropriate threshold
+     */
+    private boolean passesThreshold(int k, double lr) {
+        if (this.MIN_DIAGNOSES_TO_SHOW != null) {
+            return k <= MIN_DIAGNOSES_TO_SHOW;
+        }
+        if (this.THRESHOLD != null) {
+            return lr <= THRESHOLD;
+        }
+        // we should never get here
+        logger.error("Both MIN_DIAGNOSES_TO_SHOW and THRESHOLD were null");
+        return false;
+    }
+
+
 
 }

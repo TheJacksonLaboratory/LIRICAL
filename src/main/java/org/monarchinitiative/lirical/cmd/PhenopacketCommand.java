@@ -126,11 +126,14 @@ public class PhenopacketCommand extends PrioritizeCommand {
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
                 .genotypeMap(genotypemap)
                 .geneid2symMap(this.geneId2symbol)
-                .threshold(this.LR_THRESHOLD)
-                .mindiff(minDifferentialsToShow)
                 .errors(errors)
                 .outdirectory(this.outdir)
                 .prefix(this.outfilePrefix);
+        if (this.LR_THRESHOLD != null) {
+            builder = builder.threshold(this.LR_THRESHOLD);
+        } else if (this.minDifferentialsToShow != null) {
+            builder = builder.mindiff(this.minDifferentialsToShow);
+        }
         LiricalTemplate template = outputTSV ?
                 builder.buildGenoPhenoTsvTemplate() :
                 builder.buildGenoPhenoHtmlTemplate();
@@ -162,9 +165,13 @@ public class PhenopacketCommand extends PrioritizeCommand {
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
                 .prefix(this.outfilePrefix)
                 .outdirectory(this.outdir)
-                .errors(errors)
-                .threshold(this.LR_THRESHOLD)
-                .mindiff(this.minDifferentialsToShow);
+                .errors(errors);
+        if (this.LR_THRESHOLD != null) {
+            builder = builder.threshold(this.LR_THRESHOLD);
+        } else if (this.minDifferentialsToShow != null) {
+            builder = builder.mindiff(this.minDifferentialsToShow);
+        }
+
         LiricalTemplate template = outputTSV ?
                 builder.buildPhenotypeTsvTemplate() :
                 builder.buildPhenotypeHtmlTemplate();
