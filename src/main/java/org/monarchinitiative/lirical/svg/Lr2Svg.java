@@ -214,7 +214,7 @@ public class Lr2Svg extends Lirical2Svg {
         // and so we calculate a factor
         double scaling = (0.4 * WIDTH) / maxAmp;
         Map<TermId, Double> sortedmap = sortByValue(unsortedmap);
-        String[] explanation = result.getPhenotypeExplanation().split("\\* ");
+        List<String> explanation = result.getPhenotypeExplanation();
         int explanationIndex = 0;
         for (Map.Entry<TermId, Double> entry : sortedmap.entrySet()) {
             TermId tid = entry.getKey();
@@ -227,13 +227,13 @@ public class Lr2Svg extends Lirical2Svg {
             }
             if ((int) boxwidth == 0) {
                 int X = (int) xstart;
-                writeDiamond(writer, X, currentY, explanation[explanationIndex]);
+                writeDiamond(writer, X, currentY, explanation.get(explanationIndex));
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " + "stroke-width=\"0\" " +
                         "stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
-                        "onmouseover=\"showTooltip(evt,\'%s\')\"/>\n", BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanation[explanationIndex]));
+                        "onmouseover=\"showTooltip(evt,\'%s\')\"/>\n", BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanation.get(explanationIndex)));
             }
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);
@@ -246,7 +246,6 @@ public class Lr2Svg extends Lirical2Svg {
         // Now add negated terms if any
         Map<TermId, Double> sortedexcludedmap = sortByValue(unsortedexcludedmap);
         for (Map.Entry<TermId, Double> entry : sortedexcludedmap.entrySet()) {
-            explanationIndex++;
             TermId tid = entry.getKey();
             double ratio = entry.getValue();
             double boxwidth = ratio * scaling;
@@ -257,14 +256,14 @@ public class Lr2Svg extends Lirical2Svg {
             }
             if ((int) boxwidth == 0) {
                 int X = (int) xstart;
-                writeDiamond(writer, X, currentY, explanation[explanationIndex]);
+                writeDiamond(writer, X, currentY, explanation.get(explanationIndex));
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
                         "stroke-width=\"0\" stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
                                 "onmouseover=\"showTooltip(evt,\'%s\')\"/>\n",
-                        BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanation[explanationIndex]));
+                        BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanation.get(explanationIndex)));
             }
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);
@@ -272,6 +271,7 @@ public class Lr2Svg extends Lirical2Svg {
             //writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
             writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n", WIDTH, currentY + BOX_HEIGHT, label));
             currentY += BOX_HEIGHT + BOX_OFFSET;
+            explanationIndex++;
         }
 
 
@@ -280,6 +280,7 @@ public class Lr2Svg extends Lirical2Svg {
 
             double ratio = result.getGenotypeLR();
             double lgratio = Math.log10(ratio);
+            String lrstring = String.format("LR: %.3f",lgratio);
             double boxwidth = lgratio * scaling;
             double xstart = midline;
             if (lgratio < 0) {
@@ -288,14 +289,14 @@ public class Lr2Svg extends Lirical2Svg {
             }
             if ((int) boxwidth == 0) {
                 int X = (int) xstart;
-                writeDiamond(writer, X, currentY, geneSymbol);
+                writeDiamond(writer, X, currentY, lrstring);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
                         "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
                                 "onmouseover=\"showTooltip(evt,\'%s\')\"/>\n",
-                        BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, Double.toString(lgratio)));
+                        BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, lrstring));
             }
             // add label of Genotype
             writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"italic\">%s</text>\n", WIDTH, currentY + BOX_HEIGHT, geneSymbol));

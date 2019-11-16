@@ -7,6 +7,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,7 +49,9 @@ public class TestResult implements Comparable<TestResult> {
     /** An optional genotypeExplanation of the genotype result, intended for display */
     private String genotypeExplanation = EMPTY_STRING;
     /** An Explanation of the phenotype score. */
-    private String phenotypeExplanation = EMPTY_STRING;
+    //private String phenotypeExplanation = EMPTY_STRING;
+
+    private List<String> explanations = null;
 
     /**
      * The constructor initializes the variables and calculates {@link #compositeLR}
@@ -199,10 +202,13 @@ public class TestResult implements Comparable<TestResult> {
 
     public void setGenotypeExplanation(String text) { this.genotypeExplanation = this.genotypeExplanation + text; }
     public String getGenotypeExplanation() { return this.genotypeExplanation; }
-    public void setPhenotypeExplanation(String text) { this.phenotypeExplanation=text;}
-    public String getPhenotypeExplanation() { return phenotypeExplanation;}
+    //public void setPhenotypeExplanation(String text) { this.phenotypeExplanation=text;}
+    public void setPhenotypeExplanation(List<String> lst) { this.explanations = lst; }
+    public List<String> getPhenotypeExplanation() {
+        return explanations == null ? new ArrayList<>() : explanations;
+    }
 
 
     public boolean hasGenotypeExplanation() { return ! this.genotypeExplanation.isEmpty();}
-    public boolean hasPhenotypeExplanation() { return  ! this.phenotypeExplanation.isEmpty();}
+    public boolean hasPhenotypeExplanation() { return  this.explanations != null && ! explanations.isEmpty();}
 }

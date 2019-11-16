@@ -205,7 +205,7 @@ public class CaseEvaluator {
         List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
         List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
         TestResult result = new TestResult(observedLR, excludedLR, disease, pretest);
-        String phenoExp = getPhenotypeExplanation();
+        List<String> phenoExp = getPhenotypeExplanation();
         result.setPhenotypeExplanation(phenoExp);
         return Optional.of(result);
     }
@@ -280,7 +280,7 @@ public class CaseEvaluator {
             String exp = getGenotypeScoreExplanation(g2g, inheritancemodes, geneId);
             result.setGenotypeExplanation(exp);
         }
-        String phenoExp = getPhenotypeExplanation();
+        List<String> phenoExp = getPhenotypeExplanation();
         result.setPhenotypeExplanation(phenoExp);
         return Optional.of(result);
     }
@@ -298,15 +298,14 @@ public class CaseEvaluator {
     }
 
 
-    private String getPhenotypeExplanation() {
+    private List<String> getPhenotypeExplanation() {
         ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
         Collections.sort(this.currentPhenotypeExplanation, Collections.reverseOrder());
         for (LrWithExplanation lrwe : this.currentPhenotypeExplanation) {
             String e = lrwe.getEscapedExplanation(this.ontology);
             builder.add(e);
         }
-        List<String> l = builder.build();
-        return String.join("* ", l);
+        return builder.build();
     }
 
     /**
@@ -321,7 +320,11 @@ public class CaseEvaluator {
         double pretest = pretestProbabilityMap.get(diseaseId);
         List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
         List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
-        String phenoExp = getPhenotypeExplanation();
+        List<String> phenoExp = getPhenotypeExplanation();
+        if (phenoExp.size() != observedLR.size() + excludedLR.size()) {
+            logger.error("phenotype explanations had wrong size: {}, while observed = {} and excluded = {}",
+                    phenoExp.size(), observedLR.size(), excludedLR.size());
+        }
         TestResult result;
         Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
         if (associatedGenes.isEmpty()) {

@@ -221,6 +221,7 @@ table.posttest th  {font-size:1.5rem;}
 
 table.posttest tr:nth-child(even) {background: #F5F5F5}
 table.posttest tr:nth-child(odd) {background: #FFF}
+td.posttest {font-size:1.3rem;}
 
 table.minimalistBlack th,
 table.minimalistBlack td {
@@ -435,9 +436,9 @@ a.svg:hover, a.svg:active {
         <p>${topdifferentialcount}</p>
         <div style="border:1px solid black; text-align:center;">
             <table class="posttest">
-                <tr><th>Rank</th><th>Post-test probability</th><th>Disease</th><th>ID</th><th>Profile match</th><th>Composite LR (log)</th><th>Gene</th></tr>
+                <tr><th>Rank</th><th>Post-test probability</th><th>Disease</th><th>ID</th><th>Profile match</th><th>LR (log)</th><th>Gene</th></tr>
                     <#list sparkline as sprk>
-                    <tr><td>${sprk.rank}</td><td>${sprk.posttestBarSvg}</td><td><a href="#diagnosis${sprk.rank}">${sprk.diseaseName}</a></td><td>${sprk.diseaseAnchor}</td><td>${sprk.sparklineSvg}</td><td>${sprk.compositeLikelihoodRatio}</td><td>${sprk.geneSymbol}</td></tr>
+                    <tr><td class="posttest">${sprk.rank}</td><td>${sprk.posttestBarSvg}</td><td><a href="#diagnosis${sprk.rank}">${sprk.diseaseName}</a></td><td>${sprk.diseaseAnchor}</td><td>${sprk.sparklineSvg}</td><td class="posttest">${sprk.compositeLikelihoodRatio}</td><td class="posttest">${sprk.geneSymbol}</td></tr>
                 </#list>
             </table>
         </div>
@@ -460,7 +461,7 @@ a.svg:hover, a.svg:active {
             <table class="minimalistBlack">
             <thead>
             <tr>
-            <th>Positiion</th>
+            <th>Position</th>
             <th>Pathogenicity score</th>
             <th>Max. pop. frequency</th>
             <th>Genotype</th>
