@@ -79,8 +79,7 @@ public class Lr2Svg extends Lirical2Svg {
         this.result = hpocase.getResult(diseaseId);
         this.geneSymbol = symbol;
         this.ontology = ont;
-        this.
-                determineTotalHeightOfSvg();
+        this.determineTotalHeightOfSvg();
     }
 
 
@@ -228,7 +227,7 @@ public class Lr2Svg extends Lirical2Svg {
             }
             if ((int) boxwidth == 0) {
                 int X = (int) xstart;
-                writeDiamond(writer, X, currentY);
+                writeDiamond(writer, X, currentY, explanation[explanationIndex]);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
@@ -258,7 +257,7 @@ public class Lr2Svg extends Lirical2Svg {
             }
             if ((int) boxwidth == 0) {
                 int X = (int) xstart;
-                writeDiamond(writer, X, currentY);
+                writeDiamond(writer, X, currentY, explanation[explanationIndex]);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
@@ -289,7 +288,7 @@ public class Lr2Svg extends Lirical2Svg {
             }
             if ((int) boxwidth == 0) {
                 int X = (int) xstart;
-                writeDiamond(writer, X, currentY);
+                writeDiamond(writer, X, currentY, geneSymbol);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;

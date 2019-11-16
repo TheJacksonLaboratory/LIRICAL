@@ -60,6 +60,28 @@ public class Lirical2Svg {
      * We use a diamond symbol to show a value that would be too small to appear as a visible box.
      * We do this bothfor the likelihood ratio as well as for the post-test probability
      */
+    protected void writeDiamond(Writer writer,int X, int Y, String msg) throws IOException
+    {
+        int diamondsize=6;
+        writer.write(String.format("<polygon " +
+                        "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:grey;stroke:%s;stroke-width:1\" onmouseout=\"hideTooltip();\" "  +
+                            "\"onmouseover=\"showTooltip(evt,'%s')\"/>\n",
+                X,
+                Y,
+                X+diamondsize,
+                Y+diamondsize,
+                X,
+                Y+2*diamondsize,
+                X-diamondsize,
+                Y+diamondsize,
+                BROWN,
+                msg));
+    }
+
+    /**
+     * We use a diamond symbol to show a value that would be too small to appear as a visible box.
+     * We do this bothfor the likelihood ratio as well as for the post-test probability
+     */
     protected void writeDiamond(Writer writer,int X, int Y) throws IOException
     {
         int diamondsize=6;
