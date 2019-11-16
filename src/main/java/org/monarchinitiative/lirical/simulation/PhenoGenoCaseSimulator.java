@@ -220,28 +220,35 @@ public class PhenoGenoCaseSimulator {
     }
 
 
-    public void outputHtml(String prefix, double lrThreshold,int minDiff, String outdir) {
+    public void outputHtml(String prefix, Double lrThreshold, Integer minDiff, String outdir) {
+        System.out.println("OUTPUT HTML");
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hpocase,ontology,metadata)
                 .genotypeMap(genotypemap)
                 .geneid2symMap(factory.geneId2symbolMap())
-                .threshold(lrThreshold)
-                .mindiff(minDiff)
                 .outdirectory(outdir)
                 .prefix(prefix);
+        if (lrThreshold != null) {
+            builder = builder.threshold(lrThreshold);
+        } else if (minDiff != null) {
+            builder = builder.mindiff(minDiff);
+        }
         HtmlTemplate htemplate = builder.buildGenoPhenoHtmlTemplate();
         htemplate.outputFile();
     }
 
 
-    public void outputTsv(String prefix, double lrThreshold,int minDiff, String outdir) {
+    public void outputTsv(String prefix, Double lrThreshold, Integer minDiff, String outdir) {
         String outname=String.format("%s.tsv",prefix);
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(this.hpocase,ontology,metadata)
                 .genotypeMap(genotypemap)
                 .geneid2symMap(factory.geneId2symbolMap())
-                .threshold(lrThreshold)
-                .mindiff(minDiff)
                 .outdirectory(outdir)
                 .prefix(prefix);
+        if (lrThreshold != null) {
+            builder = builder.threshold(lrThreshold);
+        } else if (minDiff != null) {
+            builder = builder.mindiff(minDiff);
+        }
         TsvTemplate tsvtemplate = builder.buildGenoPhenoTsvTemplate();
         tsvtemplate.outputFile(outname);
 

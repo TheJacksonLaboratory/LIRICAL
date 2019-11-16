@@ -42,7 +42,7 @@ public class LiricalFactory {
     private static final Logger logger = LoggerFactory.getLogger(LiricalFactory.class);
     /** Path to the {@code phenotype.hpoa} file. */
     private final String phenotypeAnnotationPath;
-    /** UCSC, RefSeq, Ensembl. */
+    /** UCSC or RefSeq. */
     private final TranscriptDatabase transcriptdatabase;
     /** Path to the {@code Homo_sapiens_gene_info.gz} file. */
     private final String geneInfoPath;
@@ -62,8 +62,7 @@ public class LiricalFactory {
     private int n_good_quality_variants=0;
     /** Number of variants that were removed because of the quality filter. */
     private int n_filtered_variants=0;
-    /** LR threshold to include/show a candidate in the differential diagnosis. */
-    private double lrThreshold;
+
     /** Prefix for output files. For example, if outfilePrefix is ABC, then the HTML outfile would be ABC.html.*/
     private String outfilePrefix;
     /** Path to the directory where the output files should be written (by default, this is null and the files are
@@ -73,7 +72,14 @@ public class LiricalFactory {
     /** Default threshold for showing a candidate. */
     public static final double DEFAULT_LR_THRESHOLD = 0.05;
     /** Default number of differentials to show on the HTML output. */
-    public static final  int DEFAULT_MIN_DIFFERENTIALS = 10;
+    public static final int DEFAULT_MIN_DIFFERENTIALS = 10;
+    /** LR threshold to include/show a candidate in the differential diagnosis. This option is incompatible with the
+     * {@link #minDifferentials} option, at most one can be non-null*/
+    private Double lrThreshold;
+    /** Minimum number of differentials to show in detail in the HTML output. This option is incompatible with the
+     * {@link #lrThreshold} option, at most one can be non-null */
+    private Integer minDifferentials;
+
     private static final String DEFAULT_OUTFILE_PREFIX = "lirical";
 
     private final GenomeAssembly assembly;
@@ -101,16 +107,12 @@ public class LiricalFactory {
     private Map<TermId, Double> gene2backgroundFrequency = null;
     /** Path of the Jannovar UCSC transcript file (from the Exomiser distribution) */
     private String jannovarUcscPath=null;
-    /** Path of the Jannovar Ensembl transcript file (from the Exomiser distribution) */
-    private String jannovarEnsemblPath=null;
     /** Path of the Jannovar RefSeq transcript file (from the Exomiser distribution) */
     private String jannovarRefSeqPath=null;
     /** Name of sample in VCF file, if any. The default value is n/a to indicate this field has not been initiatilized. */
     private String sampleName="n/a";
 
 
-
-    private int minDifferentials;
 
 
     private JannovarData jannovarData=null;
@@ -172,7 +174,18 @@ public class LiricalFactory {
 
         this.geneInfoPath=builder.geneInfoPath;
         this.mim2genemedgenPath=builder.mim2genemedgenPath;
+        // by the time we get here, we are guaranteed that at once one of the following two
+        // thresholds are non-null (see checkThresholds function in PrioritizeCommand.java).
+        // We have also checked that if present, the threshold is in [0,1]
+        // the YAML parser performs analogous checks.
         this.minDifferentials = builder.minDifferentials;
+        this.lrThreshold = builder.lrThreshold;
+        // By default, output everything down to a threshold of 5%.
+        // this will happen if the user does not pass either the -m or the -t option
+        if (minDifferentials == null && lrThreshold == null) {
+            lrThreshold = DEFAULT_LR_THRESHOLD;
+        }
+
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
@@ -197,7 +210,7 @@ public class LiricalFactory {
         } else {
             this.desiredDatabasePrefixes=ImmutableList.of("OMIM","DECIPHER");
         }
-        this.lrThreshold = builder.lrThreshold;
+
     }
 
     public String getOutfilePrefix() {
@@ -287,8 +300,6 @@ public class LiricalFactory {
         this.mvStorePath=String.format("%s%s%s", exomiserPath,File.separator,filename);
         filename=String.format("%s_transcripts_ucsc.ser", basename);
         this.jannovarUcscPath=filename;
-        filename=String.format("%s_transcripts_ensembl.ser", basename);
-        this.jannovarEnsemblPath=filename;
         filename=String.format("%s_transcripts_refseq.ser", basename);
         this.jannovarRefSeqPath=filename;
 
@@ -405,10 +416,6 @@ public class LiricalFactory {
             case REFSEQ:
                 String refseqfilename=String.format("%s_transcripts_refseq.ser", basename);
                 fullpath=String.format("%s%s%s", exomiserPath,File.separator,refseqfilename);
-                break;
-            case ENSEMBL:
-                String ensemblfilename=String.format("%s_transcripts_ensembl.ser", basename);
-                fullpath=String.format("%s%s%s", exomiserPath,File.separator,ensemblfilename);
                 break;
             case UCSC:
             default:
@@ -655,9 +662,6 @@ public class LiricalFactory {
                 case "REFSEQ":
                     this.transcriptdatabase = TranscriptDatabase.REFSEQ;
                     break;
-                case "ENSEMBL":
-                    this.transcriptdatabase = TranscriptDatabase.ENSEMBL;
-                    break;
                 case "UCSC":
                 default:
                     this.transcriptdatabase = TranscriptDatabase.UCSC;
@@ -673,17 +677,6 @@ public class LiricalFactory {
             // if we get here, then we add stuff that is relevant to VCF analysis
             this.exomiserDataDir=yp.getExomiserDataDir();
             this.genomeAssembly=yp.getGenomeAssembly();
-            switch (yp.transcriptdb().toUpperCase()) {
-                case "ENSEMBL" :
-                    this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
-                    break;
-                case "REFSEQ":
-                    this.transcriptdatabase=TranscriptDatabase.REFSEQ;
-                    break;
-                case "UCSC":
-                default:
-                    this.transcriptdatabase=TranscriptDatabase.UCSC;
-            }
             Optional<String> vcfOpt=yp.getOptionalVcfPath();
             if (vcfOpt.isPresent()) {
                 this.vcfPath=vcfOpt.get();
@@ -716,9 +709,6 @@ public class LiricalFactory {
 
         public Builder transcriptdatabase(String tdb) {
             switch (tdb.toUpperCase()) {
-                case "ENSEMBL" :
-                    this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
-                    break;
                 case "REFSEQ":
                     this.transcriptdatabase=TranscriptDatabase.REFSEQ;
                     break;

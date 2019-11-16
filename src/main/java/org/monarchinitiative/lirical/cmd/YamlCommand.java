@@ -75,8 +75,8 @@ public class YamlCommand extends LiricalCommand {
                 .threshold(this.factory.getLrThreshold())
                 .mindiff(this.factory.getMinDifferentials());
         LiricalTemplate template = outputTSV ?
-                builder.buildGenoPhenoTsvTemplate() :
-                builder.buildGenoPhenoHtmlTemplate();
+                builder.buildPhenotypeTsvTemplate():
+                builder.buildPhenotypeHtmlTemplate();
         template.outputFile();
         logger.error("Done analysis of " + template.getOutPath());
     }
@@ -127,7 +127,6 @@ public class YamlCommand extends LiricalCommand {
     @Override
     public void run() throws LiricalException {
         this.factory = deYamylate(this.yamlPath);
-
         this.ontology =  factory.hpoOntology();
         this.diseaseMap = factory.diseaseMap(ontology);
         this.phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
@@ -135,11 +134,7 @@ public class YamlCommand extends LiricalCommand {
         this.metadata.put("sample_name", factory.getSampleName());
         this.metadata.put("analysis_date", factory.getTodaysDate());
         this.metadata.put("yaml", this.yamlPath);
-        if (factory.global()) {
-            this.metadata.put("global_mode", "true");
-        } else {
-            this.metadata.put("global_mode", "false");
-        }
+
         Map<String,String> ontologyMetainfo = factory.hpoOntology().getMetaInfo();
         if (ontologyMetainfo.containsKey("data-version")) {
             this.metadata.put("hpoVersion",ontologyMetainfo.get("data-version"));
@@ -148,6 +143,11 @@ public class YamlCommand extends LiricalCommand {
         if (this.phenotypeOnly) {
             runPhenotypeOnly();
         } else {
+            if (factory.global()) { // global mode only makes sense for genomic analysis
+                this.metadata.put("global_mode", "true");
+            } else {
+                this.metadata.put("global_mode", "false");
+            }
             this.factory.qcExomiserFiles();
             factory.qcHumanPhenotypeOntologyFiles();
             factory.qcExternalFilesInDataDir();

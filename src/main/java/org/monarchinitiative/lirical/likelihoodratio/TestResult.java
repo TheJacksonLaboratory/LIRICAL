@@ -45,9 +45,9 @@ public class TestResult implements Comparable<TestResult> {
     private final double posttestProbability;
     /** The overall rank of the the result withint the differential diagnosis. */
     private int rank;
-    /** An optional setGenotypeExplanation of the genotype result, intended for display */
+    /** An optional genotypeExplanation of the genotype result, intended for display */
     private String genotypeExplanation = EMPTY_STRING;
-    /** An setGenotypeExplanation of the phenotype score. */
+    /** An Explanation of the phenotype score. */
     private String phenotypeExplanation = EMPTY_STRING;
 
     /**

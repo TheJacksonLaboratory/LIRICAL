@@ -39,7 +39,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
     protected String phenopacketPath = null;
     @Parameter(names = {"-e", "--exomiser"}, description = "path to the Exomiser data directory")
     protected String exomiserDataDirectory = null;
-    @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC, Ensembl, RefSeq)")
+    @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC or RefSeq)")
     protected String transcriptDb="refseq";
     /** Reference to HPO object. */
     private Ontology ontology;
@@ -126,11 +126,14 @@ public class PhenopacketCommand extends PrioritizeCommand {
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
                 .genotypeMap(genotypemap)
                 .geneid2symMap(this.geneId2symbol)
-                .threshold(this.LR_THRESHOLD)
-                .mindiff(minDifferentialsToShow)
                 .errors(errors)
                 .outdirectory(this.outdir)
                 .prefix(this.outfilePrefix);
+        if (this.LR_THRESHOLD != null) {
+            builder = builder.threshold(this.LR_THRESHOLD);
+        } else if (this.minDifferentialsToShow != null) {
+            builder = builder.mindiff(this.minDifferentialsToShow);
+        }
         LiricalTemplate template = outputTSV ?
                 builder.buildGenoPhenoTsvTemplate() :
                 builder.buildGenoPhenoHtmlTemplate();
@@ -162,9 +165,13 @@ public class PhenopacketCommand extends PrioritizeCommand {
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
                 .prefix(this.outfilePrefix)
                 .outdirectory(this.outdir)
-                .errors(errors)
-                .threshold(this.LR_THRESHOLD)
-                .mindiff(this.minDifferentialsToShow);
+                .errors(errors);
+        if (this.LR_THRESHOLD != null) {
+            builder = builder.threshold(this.LR_THRESHOLD);
+        } else if (this.minDifferentialsToShow != null) {
+            builder = builder.mindiff(this.minDifferentialsToShow);
+        }
+
         LiricalTemplate template = outputTSV ?
                 builder.buildPhenotypeTsvTemplate() :
                 builder.buildPhenotypeHtmlTemplate();
@@ -179,6 +186,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
             logger.error("-p option (phenopacket) is required");
             return;
         }
+        checkThresholds();
         this.metadata = new HashMap<>();
         String hpoPath = String.format("%s%s%s",this.datadir, File.separator,"hp.obo");
         Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));

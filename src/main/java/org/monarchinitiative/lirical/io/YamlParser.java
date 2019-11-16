@@ -46,10 +46,25 @@ public class YamlParser {
             yconfig=null;
             throw new LiricalRuntimeException("Could not find YAML file: "+ e.getMessage());
         }
+        checkThresholds();
     }
 
-
-
+    /** At most one option can be used. If the threshold option is used, it must be between 0 and 1. */
+    private void checkThresholds() {
+        Optional<Integer>  midopt = mindiff();
+        Optional<Double> thopt = threshold();
+        if (midopt.isPresent() && thopt.isPresent()) {
+            System.err.println("[ERROR] Only one of the options -t/--threshold and -m/--mindiff can be used at once.");
+            throw new LiricalRuntimeException("Only one of the options -t/--threshold and -m/--mindiff can be used at once.");
+        }
+        if (thopt.isPresent()) {
+            double LR_THRESHOLD = thopt.get();
+            if (LR_THRESHOLD < 0.0 || LR_THRESHOLD > 1.0) {
+                System.err.println("[ERROR] Post-test probability (-t/--threshold) must be between 0.0 and 1.0.");
+                throw new LiricalRuntimeException("Post-test probability (-t/--threshold) must be between 0.0 and 1.0.");
+            }
+        }
+    }
 
 
     String getMvStorePath()  {
@@ -95,14 +110,13 @@ public class YamlParser {
 
 
     /**
-     * @return path to the approprioate Jannovar transcript file (UCSC, Ensembl, or RefSeq).
+     * @return path to the approprioate Jannovar transcript file (UCSC or RefSeq).
      * @throws LiricalException if there is an error retrieving the Jannovar data object
      */
     String jannovarFile() throws LiricalException {
         String tdb = transcriptdb();
         switch (tdb) {
             case "UCSC": return jannovarFileUCSC();
-            case "ENSEMBL": return jannovarFileEnsembl();
             case "REFSEQ": return jannovarFileRefSeq();
         }
         return jannovarFileUCSC();
@@ -114,7 +128,6 @@ public class YamlParser {
             String trdb = yconfig.getAnalysis().get("transcriptdb");
             switch (trdb.toUpperCase()) {
                 case "UCSC": return "UCSC";
-                case "ENSEMBL": return "ENSEMBL";
                 case "REFSEQ": return "REFSEQ";
             }
             logger.error("Did not recognize transcript database {}, switching to default UCSC", trdb);
@@ -178,19 +191,6 @@ public class YamlParser {
             exomiserPath=FilenameUtils.getFullPathNoEndSeparator(exomiserPath);
             String basename=FilenameUtils.getBaseName(exomiserPath);
             String filename=String.format("%s_transcripts_ucsc.ser", basename);
-            return String.format("%s%s%s", exomiserPath,File.separator,filename);
-        }  else {
-            throw new LiricalException("No jannovar UCSC transcript file path found in YAML configuration file");
-        }
-    }
-
-    private String jannovarFileEnsembl() throws LiricalException {
-        if (yconfig.getAnalysis().containsKey("exomiser")) {
-            String exomiserPath = yconfig.getAnalysis().get("exomiser");
-            // Remove the trailing directory slash if any
-            exomiserPath=FilenameUtils.getFullPathNoEndSeparator(exomiserPath);
-            String basename=FilenameUtils.getBaseName(exomiserPath);
-            String filename=String.format("%s_transcripts_ensembl.ser", basename);
             return String.format("%s%s%s", exomiserPath,File.separator,filename);
         }  else {
             throw new LiricalException("No jannovar UCSC transcript file path found in YAML configuration file");

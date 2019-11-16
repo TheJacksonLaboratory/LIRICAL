@@ -190,7 +190,7 @@ public class Posttest2Svg extends Lirical2Svg {
                         boxwidth,
                         currentY,
                         XSTART,
-                        BLUE));
+                        BRIGHT_GREEN));
             } else {
                 writeDiamond(writer,XSTART,currentY);
             }

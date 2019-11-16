@@ -2,6 +2,10 @@ package org.monarchinitiative.lirical.svg;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,11 +20,14 @@ public class Lirical2Svg {
     protected final static int BOX_HEIGHT=15;
 
     protected final static String BLUE ="#4dbbd5";
-    protected final static String RED ="#e64b35";
+    protected final static String RED ="#e64b35ff";
     protected final static String BROWN="#7e6148";
     protected final static String DARKBLUE = "#3c5488";
     protected final static String VIOLET = "#8491b4";
-
+    protected final static String ORANGE = "#ff9900";
+    protected final static String BLACK = "#000000";
+    protected final static String GREEN = "#00A087";
+    protected final static String BRIGHT_GREEN = "#00a087ff";
 
     protected void writeFooter(Writer writer) throws IOException {
         writer.write("</g>\n</svg>\n");
@@ -53,11 +60,33 @@ public class Lirical2Svg {
      * We use a diamond symbol to show a value that would be too small to appear as a visible box.
      * We do this bothfor the likelihood ratio as well as for the post-test probability
      */
+    protected void writeDiamond(Writer writer,int X, int Y, String msg) throws IOException
+    {
+        int diamondsize=6;
+        writer.write(String.format("<polygon " +
+                        "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:grey;stroke:%s;stroke-width:1\" onmouseout=\"hideTooltip();\" "  +
+                            "\"onmouseover=\"showTooltip(evt,'%s')\"/>\n",
+                X,
+                Y,
+                X+diamondsize,
+                Y+diamondsize,
+                X,
+                Y+2*diamondsize,
+                X-diamondsize,
+                Y+diamondsize,
+                BROWN,
+                msg));
+    }
+
+    /**
+     * We use a diamond symbol to show a value that would be too small to appear as a visible box.
+     * We do this bothfor the likelihood ratio as well as for the post-test probability
+     */
     protected void writeDiamond(Writer writer,int X, int Y) throws IOException
     {
         int diamondsize=6;
         writer.write(String.format("<polygon " +
-                        "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:lime;stroke:%s;stroke-width:1\" />\n",
+                        "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:grey;stroke:%s;stroke-width:1\" />\n",
                 X,
                 Y,
                 X+diamondsize,
@@ -67,6 +96,19 @@ public class Lirical2Svg {
                 X-diamondsize,
                 Y+diamondsize,
                 BROWN));
+    }
+
+
+
+    protected static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
+        // sort list according to value, i.e., the magnitude of the likelihood ratio.
+        list.sort( (e1,e2) -> (e2.getValue()).compareTo(e1.getValue()) );
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+        return result;
     }
 
 }
