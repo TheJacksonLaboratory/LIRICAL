@@ -376,7 +376,7 @@ a.svg:hover, a.svg:active {
       <article>
         <div class="row">
           <div class="column features-title center">
-            <h3>Observed Phenotypic Features</h2>
+            <h3>Observed Phenotypic Features</h3>
           </div>
           <div class="column features-title center">
               <h3>Excluded Phenotypic Features</h3>

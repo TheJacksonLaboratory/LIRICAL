@@ -6,6 +6,7 @@ import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.lirical.svg.Sparkline2Svg;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;
@@ -29,7 +30,7 @@ public class SparklinePacket {
     private final static String EMPTY_STRING ="";
 
     /** Factory method for genotype-phenotype analysis.*/
-    public static List<SparklinePacket> sparklineFactory(HpoCase hcase, int N, Map<TermId,String> geneid2sym) {
+    public static List<SparklinePacket> sparklineFactory(HpoCase hcase, int N, Map<TermId,String> geneid2sym, Ontology ontology) {
         ImmutableList.Builder<SparklinePacket> builder = new ImmutableList.Builder<>();
         List<TestResult> results = hcase.getResults(); // this is a sorted list!
         if (results.isEmpty()) {
@@ -37,7 +38,7 @@ public class SparklinePacket {
         }
         TermId topCandidateId = results.get(0).getDiseaseCurie();
         int rank = 0;
-        Sparkline2Svg sparkline2Svg = new Sparkline2Svg(hcase,topCandidateId, true);
+        Sparkline2Svg sparkline2Svg = new Sparkline2Svg(hcase,topCandidateId, true, ontology);
         while (rank < N && rank < results.size()) {
             TestResult result = results.get(rank);
             rank++;
@@ -50,7 +51,7 @@ public class SparklinePacket {
             double compositeLR = result.getCompositeLR();
             double posttestProb = result.getPosttestProbability();
             String posttestSVG = sparkline2Svg.getPosttestBar(posttestProb);
-            String sparkSVG = sparkline2Svg.getSparklineSvg(hcase, diseaseId);
+            String sparkSVG = sparkline2Svg.getSparklineSvg(hcase, diseaseId, geneSymbol);
             String disname = prettifyDiseaseName(result.getDiseaseName());
             String diseaseAnchor = getDiseaseAnchor(diseaseId);
             SparklinePacket sp = new SparklinePacket(rank, posttestSVG, sparkSVG, compositeLR, geneSymbol, disname, diseaseAnchor);
@@ -60,7 +61,7 @@ public class SparklinePacket {
     }
 
     /** Factory method for phenotype only analysis.*/
-    public static List<SparklinePacket> sparklineFactory(HpoCase hcase, int N) {
+    public static List<SparklinePacket> sparklineFactory(HpoCase hcase, int N, Ontology ontology) {
         ImmutableList.Builder<SparklinePacket> builder = new ImmutableList.Builder<>();
         List<TestResult> results = hcase.getResults(); // this is a sorted list!
         if (results.isEmpty()) {
@@ -68,7 +69,7 @@ public class SparklinePacket {
         }
         TermId topCandidateId = results.get(0).getDiseaseCurie();
         int rank = 0;
-        Sparkline2Svg sparkline2Svg = new Sparkline2Svg(hcase,topCandidateId, false);
+        Sparkline2Svg sparkline2Svg = new Sparkline2Svg(hcase,topCandidateId, false, ontology);
         while (rank < N && rank < results.size()) {
             TestResult result = results.get(rank);
             rank++;

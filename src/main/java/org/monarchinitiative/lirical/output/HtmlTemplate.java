@@ -63,7 +63,7 @@ public class HtmlTemplate extends LiricalTemplate {
         cfg.setClassLoaderForTemplateLoading(classLoader, "");
         templateData.put("postprobthreshold", String.format("%.1f%%", 100 * THRESHOLD));
         int N = totalDetailedDiagnosesToShow(hcase.getResults());
-        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N, geneid2sym);
+        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N, geneid2sym, ontology);
         this.templateData.put("sparkline", sparklinePackets);
         int counter = 0;
         for (TestResult result : hcase.getResults()) {
@@ -155,7 +155,7 @@ public class HtmlTemplate extends LiricalTemplate {
         Posttest2Svg pt2svg = new Posttest2Svg(hcase.getResults(), THRESHOLD, N);
         String posttestSVG = pt2svg.getSvgString();
         this.templateData.put("posttestSVG", posttestSVG);
-        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N);
+        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N, ontology);
         this.templateData.put("sparkline", sparklinePackets);
 
 
