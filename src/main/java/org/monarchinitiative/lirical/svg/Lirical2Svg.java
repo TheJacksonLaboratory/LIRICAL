@@ -65,7 +65,7 @@ public class Lirical2Svg {
         int diamondsize=6;
         writer.write(String.format("<polygon " +
                         "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:grey;stroke:%s;stroke-width:1\" onmouseout=\"hideTooltip();\" "  +
-                            "\"onmouseover=\"showTooltip(evt,'%s')\"/>\n",
+                            "onmouseover=\"showTooltip(evt,'%s')\"/>\n",
                 X,
                 Y,
                 X+diamondsize,

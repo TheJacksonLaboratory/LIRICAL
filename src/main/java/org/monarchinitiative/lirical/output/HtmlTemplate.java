@@ -175,7 +175,6 @@ public class HtmlTemplate extends LiricalTemplate {
                 String counterString = String.format("diagnosis%d", counter);
                 this.topDiagnosisAnchors.add(counterString);
                 ddx.setAnchor(counterString);
-               // ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
                 this.topDiagnosisMap.put(counterString, ddx.getDiseaseName());
             } else {
                 TermId geneId = result.getEntrezGeneId();
