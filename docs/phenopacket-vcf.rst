@@ -18,7 +18,8 @@ the path to a file located on your system). ::
 
     {
         "subject": {
-        "id": "example-1",
+            "id": "example-1"
+        },
         "phenotypicFeatures": [{
             "type": {
                 "id": "HP:0000244",
@@ -37,29 +38,28 @@ the path to a file located on your system). ::
                 "id": "HP:0003577",
                 "label": "Congenital onset"
         }
-        }]
-    },
-    "htsFiles":
-    [{
-        "uri": "file://path/to/data/example.vcf",
-        "description": "test",
-        "htsFormat": "VCF",
-        "genomeAssembly": "GRCh19",
-        "individualToSampleIdentifiers": {
-          "patient1": "NA12345"
+        }],
+        "htsFiles":
+        [{
+            "uri": "file://path/to/data/example.vcf",
+            "description": "test",
+            "htsFormat": "VCF",
+            "genomeAssembly": "GRCh19",
+            "individualToSampleIdentifiers": {
+                "patient1": "NA12345"
+            }
+        }],
+        "metaData": {
+            "createdBy": "Peter R.",
+            "resources": [{
+                "id": "hp",
+                "name": "human phenotype ontology",
+                "namespacePrefix": "HP",
+                "url": "http://purl.obolibrary.org/obo/hp.owl",
+                "version": "2018-03-08",
+                "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
+            }]
         }
-    }],
-    "metaData": {
-        "createdBy": "Peter R.",
-        "resources": [{
-        "id": "hp",
-        "name": "human phenotype ontology",
-        "namespacePrefix": "HP",
-        "url": "http://purl.obolibrary.org/obo/hp.owl",
-        "version": "2018-03-08",
-        "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
-        }]
-     }
     }
 
 
