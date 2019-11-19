@@ -279,7 +279,7 @@ public class Lr2Svg extends Lirical2Svg {
             currentY += 0.5 * (BOX_HEIGHT + BOX_OFFSET);
 
             double ratio = result.getGenotypeLR();
-            double lgratio = Math.log10(ratio);
+             double lgratio = Math.log10(ratio);
             String lrstring = String.format("LR: %.3f",lgratio);
             double boxwidth = lgratio * scaling;
             double xstart = midline;
