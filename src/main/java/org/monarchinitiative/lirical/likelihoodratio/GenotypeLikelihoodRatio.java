@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation.noVariantsDetectedAutosomalRecessive;
 import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.*;
 
 /**
@@ -26,6 +27,11 @@ public class GenotypeLikelihoodRatio {
      * data was not available.
      */
     private static final double DEFAULT_LAMBDA_BACKGROUND = 0.1;
+    /** A heuristic to downweight an autosomal recessive disease by a factor of 1/10 if we only find one pathogenic allele. */
+    final double HEURISTIC_ONE_ALLELE_FOR_AR_DISEASE = 0.10;
+    /** A heuristic to downweight an  disease by a factor of 1/10 if the number of predicted pathogenic alleles in
+     * the VCF file is above lambda_d. */
+    final double HEURISTIC_PATH_ALLELE_COUNT_ABOVE_LAMBDA_D = 0.10;
     /** A small-ish number to avoid dividing by zero. */
     private static final double EPSILON = 1e-5;
     /** Use strict penalties if the genotype does not match the disease model in terms of number of called
@@ -80,15 +86,15 @@ public class GenotypeLikelihoodRatio {
      * @param inheritancemodes List of all inheritance modes associated with this disease (usually a single one)
      * @return genotype likelihood ratio for situation where no variant at all was found in a gene
      */
-    private double getLRifNoVariantAtAllWasIdentified(List<TermId> inheritancemodes) {
+    private GenotypeLrWithExplanation getLRifNoVariantAtAllWasIdentified(List<TermId> inheritancemodes, Gene2Genotype g2g) {
         final TermId autosomalRecessiveInheritance = TermId.of("HP:0000007");
         final double ESTIMATED_PROB = 0.05d;
         for (TermId tid : inheritancemodes) {
             if (tid.equals(autosomalRecessiveInheritance)) {
-                return ESTIMATED_PROB * ESTIMATED_PROB;
+                return GenotypeLrWithExplanation.noVariantsDetectedAutosomalRecessive(ESTIMATED_PROB * ESTIMATED_PROB, g2g.getSymbol());
             }
         }
-        return ESTIMATED_PROB;
+        return GenotypeLrWithExplanation.noVariantsDetectedAutosomalDominant(ESTIMATED_PROB, g2g.getSymbol());
     }
 
     /**
@@ -117,10 +123,10 @@ public class GenotypeLikelihoodRatio {
      * @param geneId           EntrezGene id of the gene we are investigating.
      * @return likelihood ratio of the genotype given the disease/geniId combination
      */
-    double evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
+    GenotypeLrWithExplanation evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
         // special case 1: No variant found in this gene
         if (g2g.equals(Gene2Genotype.NO_IDENTIFIED_VARIANT)) {
-            return getLRifNoVariantAtAllWasIdentified(inheritancemodes);
+            return getLRifNoVariantAtAllWasIdentified(inheritancemodes, g2g);
         }
         // special case 2: Clinvar-pathogenic variant(s) found in this gene.
         // The likelihood ratio is defined as 1000**count, where 1 for autosomal dominant and
@@ -131,17 +137,17 @@ public class GenotypeLikelihoodRatio {
             int count = g2g.pathogenicClinVarCount();
             if (inheritancemodes.contains(AUTOSOMAL_RECESSIVE)) {
                 if (count == 2) {
-                    return Math.pow(1000d, 2);
+                    return GenotypeLrWithExplanation.twoPathClinVarAllelesRecessive(Math.pow(1000d, 2), g2g.getSymbol());
                 }
             } else { // for all other MoI, including AD, assume that only one ClinVar allele is pathogenic
-                return Math.pow(1000d, 1d);
+                return GenotypeLrWithExplanation.pathClinVar(Math.pow(1000d, 1d), g2g.getSymbol());
             }
         }
         double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
         if (!g2g.hasPredictedPathogenicVar() || observedWeightedPathogenicVariantCount < EPSILON) {
             // no identified variant or the pathogenicity score of identified variant is close to zero
             // essentially sam as no identified variant, this should happen rarely if ever.
-            return getLRifNoVariantAtAllWasIdentified(inheritancemodes);
+            return getLRifNoVariantAtAllWasIdentified(inheritancemodes, g2g);
         }
 
         // if we get here then
@@ -163,8 +169,17 @@ public class GenotypeLikelihoodRatio {
         if (lambda_background > 1.0) {
             lambda_background = Math.min(lambda_background, g2g.pathogenicAlleleCount());
         }
-
+        // Use the following four vars to keep track of which option was the max.
         Optional<Double> max = Optional.empty();
+        TermId maxInheritanceMode = INHERITANCE_ROOT; // MoI associated with the maximum pathogenicity
+        boolean heuristicOneAlleleAR = false;
+        boolean heuristicPathCountAboveLambda = false;
+        // If these variables are used, they will be specifically initialized.
+        // we start them off at 1.0/1.0, which would lead to a zero-effect likelihood ratio of 1
+        // if for whatever reason they are not set, which should never happen if we get to the
+        //last if/else
+        double B = 1.0; // background
+        double D = 1.0; // disease
         for (TermId inheritanceId : inheritancemodes) {
             double lambda_disease = 1.0;
             PoissonDistribution pdDisease;
@@ -182,22 +197,31 @@ public class GenotypeLikelihoodRatio {
 
 
             if (strict && inheritanceId.equals(AUTOSOMAL_RECESSIVE) && g2g.pathogenicAlleleCount() < 2) {
-                final double HEURISTIC_ONE_ALLELE_FOR_AR_DISEASE = -0.5;
                 max = updateMax(HEURISTIC_ONE_ALLELE_FOR_AR_DISEASE, max);
+                maxInheritanceMode = inheritanceId;
+                heuristicOneAlleleAR = true;
+                heuristicPathCountAboveLambda = false;
             } else if (strict && g2g.pathogenicAlleleCount() > (lambda_disease + EPSILON)) {
-                double HEURISTIC = -0.5 * (g2g.pathogenicAlleleCount() - lambda_disease);
+                double HEURISTIC = HEURISTIC_PATH_ALLELE_COUNT_ABOVE_LAMBDA_D * (g2g.pathogenicAlleleCount() - lambda_disease);
                 max = updateMax(HEURISTIC, max);
+                maxInheritanceMode = inheritanceId;
+                heuristicOneAlleleAR = false;
+                heuristicPathCountAboveLambda = true;
             } else { // the following is the general case, where either the variant count
                 // matches or we are not using the strict option.
-                double D = pdDisease.probability(observedWeightedPathogenicVariantCount);
+                D = pdDisease.probability(observedWeightedPathogenicVariantCount);
                 PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
-                double B = pdBackground.probability(observedWeightedPathogenicVariantCount);
+                B = pdBackground.probability(observedWeightedPathogenicVariantCount);
                 if (B > 0 && D > 0) {
+                    heuristicOneAlleleAR = false;
+                    heuristicPathCountAboveLambda = false;
                     double ratio = D / B;
                     if (max.isPresent() && ratio > max.get()) {
                         max = Optional.of(ratio);
+                        maxInheritanceMode = inheritanceId;
                     } else if (!max.isPresent()) {
                         max = Optional.of(ratio);
+                        maxInheritanceMode = inheritanceId;
                     }
                 }
             }
@@ -206,7 +230,14 @@ public class GenotypeLikelihoodRatio {
         // there is a default value of 0.05 to avoid null errors so that
         // we do not crash if something unexpected occurs. (Should actually never be used)
         final double DEFAULTVAL = 0.05;
-        return max.orElse(DEFAULTVAL);
+        double returnvalue = max.orElse(DEFAULTVAL);
+        if (heuristicOneAlleleAR) {
+            return GenotypeLrWithExplanation.explainOneAlleleRecessive(returnvalue, observedWeightedPathogenicVariantCount, lambda_background, g2g.getSymbol());
+        } else if (heuristicPathCountAboveLambda) {
+            return GenotypeLrWithExplanation.explainPathCountAboveLambdaB(returnvalue, g2g, maxInheritanceMode, lambda_background);
+        } else {
+            return GenotypeLrWithExplanation.explanation(returnvalue, g2g, maxInheritanceMode,lambda_background, B, D);
+        }
     }
 
 
@@ -220,7 +251,7 @@ public class GenotypeLikelihoodRatio {
      * @param geneId                     EntrezGene id of the current gene.
      * @return short summary of the genotype likelihood ratio score.
      */
-    String explainGenotypeScore(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
+    String explainGenotypeScore(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId, double logGenotypeLR) {
         double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
 
         StringBuilder sb = new StringBuilder();

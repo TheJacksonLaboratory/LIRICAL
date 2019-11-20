@@ -239,6 +239,7 @@ public class CaseEvaluator {
         boolean foundPredictedPathogenicVariant = false;
         Double genotypeLR = null;
         TermId geneId = null;
+        String currentExplanation = null;
         // if we get here, then associatedGenes is not empty
         for (TermId entrezGeneId : associatedGenes) {
             // if there is no Gene2Genotype object in the map, then no variant in the gene was found in the VCF
@@ -252,15 +253,21 @@ public class CaseEvaluator {
                     foundPredictedPathogenicVariant = true;
                 }
             }
-            Double score = this.genotypeLrEvalutator.evaluateGenotype(g2g,
+//            Double score = this.genotypeLrEvalutator.evaluateGenotype(g2g,
+//                    inheritancemodes,
+//                    entrezGeneId);
+            GenotypeLrWithExplanation glrwe = this.genotypeLrEvalutator.evaluateGenotype(g2g,
                     inheritancemodes,
                     entrezGeneId);
+            double score = glrwe.getLR();
             if (genotypeLR == null) { // this is the first iteration
                 genotypeLR = score;
                 geneId = entrezGeneId;
+                currentExplanation = glrwe.getExplanation();
             } else if (genotypeLR < score) { // if the new genotype LR is better, replace!
                 genotypeLR = score;
                 geneId = entrezGeneId;
+                currentExplanation = glrwe.getExplanation();
             }
         }
         // when we get here, we have checked for variants in all genes associated with the disease.
@@ -268,34 +275,35 @@ public class CaseEvaluator {
         // no variants in any associated gene were found.
         //when we get here, genotypeLR is not null
         result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
-        if (!foundPredictedPathogenicVariant) {
-            String expl = String.format("No variants found in disease-associated gene%s: %s",
-                    genesWithNoIdentifiedVariant.size() > 1 ? "s" : EMPTY_STRING,
-                    String.join("; ", genesWithNoIdentifiedVariant));
-            result.setGenotypeExplanation(expl);
-
-        } else {
-            // if we get here, then foundPredictedPathogenicVariant is true.
-            Gene2Genotype g2g = this.genotypeMap.get(geneId);
-            String exp = getGenotypeScoreExplanation(g2g, inheritancemodes, geneId);
-            result.setGenotypeExplanation(exp);
-        }
+        result.setGenotypeExplanation(currentExplanation);
+//        if (!foundPredictedPathogenicVariant) {
+//            String expl = String.format("No variants found in disease-associated gene%s: %s",
+//                    genesWithNoIdentifiedVariant.size() > 1 ? "s" : EMPTY_STRING,
+//                    String.join("; ", genesWithNoIdentifiedVariant));
+//            result.setGenotypeExplanation(expl);
+//
+//        } else {
+//            // if we get here, then foundPredictedPathogenicVariant is true.
+//            Gene2Genotype g2g = this.genotypeMap.get(geneId);
+//            String exp = getGenotypeScoreExplanation(g2g, inheritancemodes, geneId);
+//            result.setGenotypeExplanation(exp);
+//        }
         List<String> phenoExp = getPhenotypeExplanation();
         result.setPhenotypeExplanation(phenoExp);
         return Optional.of(result);
     }
 
-    /**
-     * Convenience function to create an explanation for the genotype score that we show in the HTML output
-     *
-     * @param g2g              The gene in question
-     * @param inheritancemodes Modes of inheritance of diseases associated with this gene
-     * @param geneId           The NCBI Gene id
-     * @return the explanation for the score.
-     */
-    private String getGenotypeScoreExplanation(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
-        return this.genotypeLrEvalutator.explainGenotypeScore(g2g, inheritancemodes, geneId);
-    }
+//    /**
+//     * Convenience function to create an explanation for the genotype score that we show in the HTML output
+//     *
+//     * @param g2g              The gene in question
+//     * @param inheritancemodes Modes of inheritance of diseases associated with this gene
+//     * @param geneId           The NCBI Gene id
+//     * @return the explanation for the score.
+//     */
+////    private String getGenotypeScoreExplanation(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
+//        return this.genotypeLrEvalutator.explainGenotypeScore(g2g, inheritancemodes, geneId);
+//    }
 
 
     private List<String> getPhenotypeExplanation() {
@@ -348,6 +356,7 @@ public class CaseEvaluator {
         boolean foundPredictedPathogenicVariant = false;
         Double genotypeLR = null;
         TermId geneId = null;
+        String currentExplanation = null;
         for (TermId entrezGeneId : associatedGenes) {
             // if there is no Gene2Genotype object in the map, then no variant in the gene was found in the VCF
             Gene2Genotype g2g = this.genotypeMap.getOrDefault(entrezGeneId, Gene2Genotype.NO_IDENTIFIED_VARIANT);
@@ -357,15 +366,21 @@ public class CaseEvaluator {
                     (g2g.hasPathogenicClinvarVar() || g2g.hasPredictedPathogenicVar())) {
                 foundPredictedPathogenicVariant = true;
             }
-            double score = this.genotypeLrEvalutator.evaluateGenotype(g2g,
+//            double score = this.genotypeLrEvalutator.evaluateGenotype(g2g,
+//                    inheritancemodes,
+//                    entrezGeneId);
+            GenotypeLrWithExplanation glrwe = this.genotypeLrEvalutator.evaluateGenotype(g2g,
                     inheritancemodes,
                     entrezGeneId);
+            double score = glrwe.getLR();
             if (genotypeLR == null) { // this is the first iteration
                 genotypeLR = score;
                 geneId = entrezGeneId;
+                currentExplanation = glrwe.getExplanation();
             } else if (genotypeLR < score) { // if the new genotype LR is better, replace!
                 genotypeLR = score;
                 geneId = entrezGeneId;
+                currentExplanation = glrwe.getExplanation();
             }
         }
         // when we get here, we have checked for variants in all genes associated with the disease.
@@ -376,18 +391,18 @@ public class CaseEvaluator {
         } else {
             // if we get here, then foundPredictedPathogenicVariant is true.
             result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
-            Gene2Genotype g2g = this.genotypeMap.get(geneId);
-            if (g2g == null) { // in this case, there was no variant in the gene
-                g2g = Gene2Genotype.NO_IDENTIFIED_VARIANT;
-            }
-            if (inheritancemodes == null) {
-                logger.error("inheritancemodes null for geneId: {}", geneId);
-            }
-            if (geneId == null) {
-                logger.error("geneId null for disease {}", disease.getName());
-            }
-            String exp = getGenotypeScoreExplanation(g2g, inheritancemodes, geneId);
-            result.setGenotypeExplanation(exp);
+//            Gene2Genotype g2g = this.genotypeMap.get(geneId);
+//            if (g2g == null) { // in this case, there was no variant in the gene
+//                g2g = Gene2Genotype.NO_IDENTIFIED_VARIANT;
+//            }
+//            if (inheritancemodes == null) {
+//                logger.error("inheritancemodes null for geneId: {}", geneId);
+//            }
+//            if (geneId == null) {
+//                logger.error("geneId null for disease {}", disease.getName());
+//            }
+//            String exp = getGenotypeScoreExplanation(g2g, inheritancemodes, geneId);
+            result.setGenotypeExplanation(currentExplanation);
             result.setPhenotypeExplanation(phenoExp);
             return Optional.of(result);
         }
