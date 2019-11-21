@@ -49,13 +49,15 @@ public class CaseEvaluator {
     /**
      * List of abnormalities excluded in the person being evaluated.
      */
-    private List<TermId> negatedPhenotypicAbnormalities;
+    private final List<TermId> negatedPhenotypicAbnormalities;
     /**
      * Key: an EntrezGene id; value: corresponding gene symbol.
      */
     private Map<TermId, String> geneId2symbol;
-    private List<LrWithExplanation> currentPhenotypeExplanation;
-    private List<String> errors;
+    //private List<LrWithExplanation> currentPhenotypeExplanation;
+    private List<LrWithExplanation> currentObservedPhenotypeExplanation;
+    private List<LrWithExplanation> currentExcludedPhenotypeExplanation;
+    private final List<String> errors;
 
     /**
      * This constructor is used for phenotype-only cases.
@@ -139,20 +141,17 @@ public class CaseEvaluator {
         ImmutableList.Builder<Double> builderObserved = new ImmutableList.Builder<>();
         HpoDisease disease = this.diseaseMap.get(diseaseId);
         InducedDiseaseGraph idg = new InducedDiseaseGraph(disease, ontology);
+        // todo -- this is a bit of a hack, refactor
+        this.currentObservedPhenotypeExplanation = new ArrayList<>();
         for (TermId tid : this.phenotypicAbnormalities) {
             try {
                 LrWithExplanation lrwe = phenotypeLRevaluator.getLikelihoodRatio(tid, idg);
                 builderObserved.add(lrwe.getLR());
-                this.currentPhenotypeExplanation.add(lrwe);
+                this.currentObservedPhenotypeExplanation.add(lrwe);
             } catch (Exception e) {
                 String errormsg = String.format("%s (%s/%s)", e.getMessage(), diseaseMap.get(diseaseId).getName(), tid.getValue());
                 this.errors.add(errormsg);
             }
-            /*logger.error("{}: {} {} [{}]",
-                    ,
-                    ontology.getTermMap().get(tid).getName(),
-                    lrwe.getLR(),
-                    lrwe.getExplanation(ontology));*/
         }
         return builderObserved.build();
     }
@@ -161,9 +160,10 @@ public class CaseEvaluator {
         ImmutableList.Builder<Double> builderExcluded = new ImmutableList.Builder<>();
         HpoDisease disease = this.diseaseMap.get(diseaseId);
         InducedDiseaseGraph idg = new InducedDiseaseGraph(disease, ontology);
+        this.currentExcludedPhenotypeExplanation = new ArrayList<>();
         for (TermId negated : this.negatedPhenotypicAbnormalities) {
             LrWithExplanation lrwe = phenotypeLRevaluator.getLikelihoodRatioForExcludedTerm(negated, idg);
-            this.currentPhenotypeExplanation.add(lrwe);
+            this.currentExcludedPhenotypeExplanation.add(lrwe);
             double LR = lrwe.getLR();
             builderExcluded.add(LR);
         }
@@ -183,7 +183,7 @@ public class CaseEvaluator {
     private Map<TermId, TestResult> phenotypeOnlyEvaluation() {
         ImmutableMap.Builder<TermId, TestResult> mapbuilder = new ImmutableMap.Builder<>();
         for (TermId diseaseId : diseaseMap.keySet()) {
-            this.currentPhenotypeExplanation = new ArrayList<>();
+            // reset the lists of current explanations
             Optional<TestResult> opt = evaluateDiseasePhenotypeOnly(diseaseId);
             opt.ifPresent(testResult -> mapbuilder.put(diseaseId, testResult));
         }
@@ -205,8 +205,10 @@ public class CaseEvaluator {
         List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
         List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
         TestResult result = new TestResult(observedLR, excludedLR, disease, pretest);
-        List<String> phenoExp = getPhenotypeExplanation();
-        result.setPhenotypeExplanation(phenoExp);
+        List<String> phenoExpObserved = getObservedPhenotypeExplanation();
+        List<String> phenoExpExcluded = getExcludedPhenotypeExplanation();
+        result.setObservedPhenotypeExplanation(phenoExpObserved);
+        result.setExcludedPhenotypeExplanation(phenoExpExcluded);
         return Optional.of(result);
     }
 
@@ -239,7 +241,7 @@ public class CaseEvaluator {
         boolean foundPredictedPathogenicVariant = false;
         Double genotypeLR = null;
         TermId geneId = null;
-        String currentExplanation = null;
+        String currentGenotypeExplanation = null;
         // if we get here, then associatedGenes is not empty
         for (TermId entrezGeneId : associatedGenes) {
             // if there is no Gene2Genotype object in the map, then no variant in the gene was found in the VCF
@@ -253,9 +255,6 @@ public class CaseEvaluator {
                     foundPredictedPathogenicVariant = true;
                 }
             }
-//            Double score = this.genotypeLrEvalutator.evaluateGenotype(g2g,
-//                    inheritancemodes,
-//                    entrezGeneId);
             GenotypeLrWithExplanation glrwe = this.genotypeLrEvalutator.evaluateGenotype(g2g,
                     inheritancemodes,
                     entrezGeneId);
@@ -263,11 +262,11 @@ public class CaseEvaluator {
             if (genotypeLR == null) { // this is the first iteration
                 genotypeLR = score;
                 geneId = entrezGeneId;
-                currentExplanation = glrwe.getExplanation();
+                currentGenotypeExplanation = glrwe.getExplanation();
             } else if (genotypeLR < score) { // if the new genotype LR is better, replace!
                 genotypeLR = score;
                 geneId = entrezGeneId;
-                currentExplanation = glrwe.getExplanation();
+                currentGenotypeExplanation = glrwe.getExplanation();
             }
         }
         // when we get here, we have checked for variants in all genes associated with the disease.
@@ -275,41 +274,28 @@ public class CaseEvaluator {
         // no variants in any associated gene were found.
         //when we get here, genotypeLR is not null
         result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
-        result.setGenotypeExplanation(currentExplanation);
-//        if (!foundPredictedPathogenicVariant) {
-//            String expl = String.format("No variants found in disease-associated gene%s: %s",
-//                    genesWithNoIdentifiedVariant.size() > 1 ? "s" : EMPTY_STRING,
-//                    String.join("; ", genesWithNoIdentifiedVariant));
-//            result.setGenotypeExplanation(expl);
-//
-//        } else {
-//            // if we get here, then foundPredictedPathogenicVariant is true.
-//            Gene2Genotype g2g = this.genotypeMap.get(geneId);
-//            String exp = getGenotypeScoreExplanation(g2g, inheritancemodes, geneId);
-//            result.setGenotypeExplanation(exp);
-//        }
-        List<String> phenoExp = getPhenotypeExplanation();
-        result.setPhenotypeExplanation(phenoExp);
+        result.setGenotypeExplanation(currentGenotypeExplanation);
+        List<String> phenoExpObserved = getObservedPhenotypeExplanation();
+        List<String> phenoExpExcluded = getExcludedPhenotypeExplanation();
+        result.setObservedPhenotypeExplanation(phenoExpObserved);
+        result.setExcludedPhenotypeExplanation(phenoExpExcluded);
         return Optional.of(result);
     }
 
-//    /**
-//     * Convenience function to create an explanation for the genotype score that we show in the HTML output
-//     *
-//     * @param g2g              The gene in question
-//     * @param inheritancemodes Modes of inheritance of diseases associated with this gene
-//     * @param geneId           The NCBI Gene id
-//     * @return the explanation for the score.
-//     */
-////    private String getGenotypeScoreExplanation(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
-//        return this.genotypeLrEvalutator.explainGenotypeScore(g2g, inheritancemodes, geneId);
-//    }
-
-
-    private List<String> getPhenotypeExplanation() {
+    private List<String> getObservedPhenotypeExplanation() {
         ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
-        Collections.sort(this.currentPhenotypeExplanation, Collections.reverseOrder());
-        for (LrWithExplanation lrwe : this.currentPhenotypeExplanation) {
+        Collections.sort(this.currentObservedPhenotypeExplanation, Collections.reverseOrder());
+        for (LrWithExplanation lrwe : this.currentObservedPhenotypeExplanation) {
+            String e = lrwe.getEscapedExplanation(this.ontology);
+            builder.add(e);
+        }
+        return builder.build();
+    }
+
+    private List<String> getExcludedPhenotypeExplanation() {
+        ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
+        Collections.sort(this.currentExcludedPhenotypeExplanation, Collections.reverseOrder());
+        for (LrWithExplanation lrwe : this.currentExcludedPhenotypeExplanation) {
             String e = lrwe.getEscapedExplanation(this.ontology);
             builder.add(e);
         }
@@ -328,10 +314,11 @@ public class CaseEvaluator {
         double pretest = pretestProbabilityMap.get(diseaseId);
         List<Double> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
         List<Double> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
-        List<String> phenoExp = getPhenotypeExplanation();
-        if (phenoExp.size() != observedLR.size() + excludedLR.size()) {
-            logger.error("phenotype explanations had wrong size: {}, while observed = {} and excluded = {}",
-                    phenoExp.size(), observedLR.size(), excludedLR.size());
+        List<String> phenoExpObserved = getObservedPhenotypeExplanation();
+        List<String> phenoExpExcluded = getExcludedPhenotypeExplanation();
+        if (phenoExpObserved.size() != observedLR.size() ) {
+            logger.error("phenotype explanations had wrong size: {}, while observed = {}",
+                    phenoExpObserved.size(), observedLR.size());
         }
         TestResult result;
         Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
@@ -342,7 +329,7 @@ public class CaseEvaluator {
                 // keep differentials with no associated gene
                 // we create the TestResult based solely on the Phenotype data.
                 result = new TestResult(observedLR, excludedLR, disease, pretest);
-                result.setPhenotypeExplanation(phenoExp);
+                result.setObservedPhenotypeExplanation(phenoExpObserved);
                 return Optional.of(result);
             } else {
                 // we skip this differential because there is no associated gene
@@ -356,7 +343,7 @@ public class CaseEvaluator {
         boolean foundPredictedPathogenicVariant = false;
         Double genotypeLR = null;
         TermId geneId = null;
-        String currentExplanation = null;
+        String currentGenotypeExplanation = null;
         for (TermId entrezGeneId : associatedGenes) {
             // if there is no Gene2Genotype object in the map, then no variant in the gene was found in the VCF
             Gene2Genotype g2g = this.genotypeMap.getOrDefault(entrezGeneId, Gene2Genotype.NO_IDENTIFIED_VARIANT);
@@ -366,9 +353,6 @@ public class CaseEvaluator {
                     (g2g.hasPathogenicClinvarVar() || g2g.hasPredictedPathogenicVar())) {
                 foundPredictedPathogenicVariant = true;
             }
-//            double score = this.genotypeLrEvalutator.evaluateGenotype(g2g,
-//                    inheritancemodes,
-//                    entrezGeneId);
             GenotypeLrWithExplanation glrwe = this.genotypeLrEvalutator.evaluateGenotype(g2g,
                     inheritancemodes,
                     entrezGeneId);
@@ -376,11 +360,11 @@ public class CaseEvaluator {
             if (genotypeLR == null) { // this is the first iteration
                 genotypeLR = score;
                 geneId = entrezGeneId;
-                currentExplanation = glrwe.getExplanation();
+                currentGenotypeExplanation = glrwe.getExplanation();
             } else if (genotypeLR < score) { // if the new genotype LR is better, replace!
                 genotypeLR = score;
                 geneId = entrezGeneId;
-                currentExplanation = glrwe.getExplanation();
+                currentGenotypeExplanation = glrwe.getExplanation();
             }
         }
         // when we get here, we have checked for variants in all genes associated with the disease.
@@ -391,19 +375,9 @@ public class CaseEvaluator {
         } else {
             // if we get here, then foundPredictedPathogenicVariant is true.
             result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
-//            Gene2Genotype g2g = this.genotypeMap.get(geneId);
-//            if (g2g == null) { // in this case, there was no variant in the gene
-//                g2g = Gene2Genotype.NO_IDENTIFIED_VARIANT;
-//            }
-//            if (inheritancemodes == null) {
-//                logger.error("inheritancemodes null for geneId: {}", geneId);
-//            }
-//            if (geneId == null) {
-//                logger.error("geneId null for disease {}", disease.getName());
-//            }
-//            String exp = getGenotypeScoreExplanation(g2g, inheritancemodes, geneId);
-            result.setGenotypeExplanation(currentExplanation);
-            result.setPhenotypeExplanation(phenoExp);
+            result.setGenotypeExplanation(currentGenotypeExplanation);
+            result.setObservedPhenotypeExplanation(phenoExpObserved);
+            result.setExcludedPhenotypeExplanation(phenoExpExcluded);
             return Optional.of(result);
         }
     }
@@ -421,10 +395,7 @@ public class CaseEvaluator {
     private Map<TermId, TestResult> phenoGenoEvaluation() {
         ImmutableMap.Builder<TermId, TestResult> mapbuilder = new ImmutableMap.Builder<>();
         for (TermId diseaseId : diseaseMap.keySet()) {
-//            String idd = diseaseId.getValue();
-//            System.out.print(idd);
             Optional<TestResult> optionalTestResult;
-            this.currentPhenotypeExplanation = new ArrayList<>();
             if (useGenotypeAnalysis) {
                 if (globalAnalysisMode) {
                     optionalTestResult = evaluateDiseaseWithGlobalAnalysisMode(diseaseId);

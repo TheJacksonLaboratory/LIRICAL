@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,10 +49,10 @@ public class TestResult implements Comparable<TestResult> {
     private int rank;
     /** An optional genotypeExplanation of the genotype result, intended for display */
     private String genotypeExplanation = EMPTY_STRING;
-    /** An Explanation of the phenotype score. */
-    //private String phenotypeExplanation = EMPTY_STRING;
-
-    private List<String> explanations = null;
+    /** Explanations of the phenotype score for observed HPOs. */
+    private List<String> explanationsObservedPhenotypes = null;
+    /**Explanations of the phenotype score for excluded HPOs. */
+    private List<String> explanationsExcludedPhenotypes = null;
 
     /**
      * The constructor initializes the variables and calculates {@link #compositeLR}
@@ -203,12 +204,28 @@ public class TestResult implements Comparable<TestResult> {
     public void setGenotypeExplanation(String text) { this.genotypeExplanation = this.genotypeExplanation + text; }
     public String getGenotypeExplanation() { return this.genotypeExplanation; }
     //public void setPhenotypeExplanation(String text) { this.phenotypeExplanation=text;}
-    public void setPhenotypeExplanation(List<String> lst) { this.explanations = lst; }
-    public List<String> getPhenotypeExplanation() {
-        return explanations == null ? new ArrayList<>() : explanations;
+    public void setObservedPhenotypeExplanation(List<String> lst) { this.explanationsObservedPhenotypes = lst; }
+    public void setExcludedPhenotypeExplanation(List<String> lst) { this.explanationsExcludedPhenotypes = lst; }
+    public List<String> getObservedPhenotypeExplanation() {
+        return explanationsObservedPhenotypes == null ? new ArrayList<>() : explanationsObservedPhenotypes;
+    }
+    public List<String> getExcludedPhenotypeExplanation() {
+        return explanationsExcludedPhenotypes == null ? new ArrayList<>() : explanationsExcludedPhenotypes;
     }
 
 
     public boolean hasGenotypeExplanation() { return ! this.genotypeExplanation.isEmpty();}
-    public boolean hasPhenotypeExplanation() { return  this.explanations != null && ! explanations.isEmpty();}
+
+    /**
+     * Calculate the maximum absolute value of any individual likelihood ratio. This is used to help layout the SVG
+     * @return maximum abs(LR)
+     */
+    public double getMaximumIndividualLR() {
+        double m1 = this.results.stream().map(Math::abs).max(Comparator.comparing( Double::doubleValue )).orElse(0.0);
+        double m2 = this.excludedResults.stream().map(Math::abs).max(Comparator.comparing( Double::doubleValue )).orElse(0.0);
+        double m3 = this.genotypeLR != null ? Math.abs(this.genotypeLR) : 0.0;
+        return Math.max(m1, Math.max(m2, m3));
+    }
+
+
 }
