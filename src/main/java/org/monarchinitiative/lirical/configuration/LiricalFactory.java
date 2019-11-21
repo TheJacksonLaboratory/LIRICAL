@@ -666,10 +666,11 @@ public class LiricalFactory {
                 default:
                     this.transcriptdatabase = TranscriptDatabase.UCSC;
             }
-            this.outfilePrefix = yp.getPrefix();
+            if (yp.getPrefix() != null) {
+                this.outfilePrefix = yp.getPrefix();
+            }
             Optional<Double> threshold = yp.threshold();
             threshold.ifPresent(d -> this.lrThreshold = d);
-            this.outfilePrefix = yp.getPrefix();
             if (yp.mindiff().isPresent()) {
                 this.minDifferentials = yp.mindiff().get();
             }
