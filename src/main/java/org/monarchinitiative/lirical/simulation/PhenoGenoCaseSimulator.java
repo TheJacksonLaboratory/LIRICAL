@@ -221,7 +221,6 @@ public class PhenoGenoCaseSimulator {
 
 
     public void outputHtml(String prefix, Double lrThreshold, Integer minDiff, String outdir) {
-        System.out.println("OUTPUT HTML");
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hpocase,ontology,metadata)
                 .genotypeMap(genotypemap)
                 .geneid2symMap(factory.geneId2symbolMap())
