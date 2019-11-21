@@ -42,7 +42,7 @@ other three entries if the user does not proviude values.
 6. ``transcriptdb``. This determines the set of transcripts used to call variants. Valid values are UCSC or RefSeq, and the default is UCSC (optional)
 7. ``global``. If the YAML file contains the line ``global: true`` then it will not discard candidate diseases with no known disease gene or candidatesfor which no predicted pathogenic variant was found in the VCF.
 
-Any of the options described in :ref:`rstyaml-hpo` can also be used here.
+Any of the options described in :ref:`rstyamlhpo` can also be used here.
 
 Additionally, ``hpoIds`` is a list of HPO term representing the clinical manifestations observed in the individual being analyzed.
 Finally,  ``prefix`` is the prefix of the output file (optional, default: lirical) For instance, if the prefix is ``example1``, then the HTML output file will be

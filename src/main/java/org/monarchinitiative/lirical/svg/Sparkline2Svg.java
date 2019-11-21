@@ -120,7 +120,6 @@ public class Sparkline2Svg extends Lirical2Svg {
     /**
      * This is used by Phenotype only output. We supply an empty string instead of a gene symbol. Note that
      * because the test results know that they do not have a genotype, this will not affect the output.
-     * TODO -- ugly hack, refactor me
      * @param hcase The case we are writing output for
      * @param diseaseId ID of the current disease
      * @return an SVG string
