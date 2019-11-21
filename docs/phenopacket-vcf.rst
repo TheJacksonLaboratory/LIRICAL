@@ -70,7 +70,7 @@ Running LIRICAL with clinical and genomic data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 LIRICAL will perform combined phenotye and variant analysis if the Phenopacket contains an ``htsFiles`` element. In this
-case, you need to indicate the path to the VCF file on your system as shown above (``/path/to/data/Pfeiffer.vcf``).
+case, you need to indicate the path to the VCF file on your system as shown above (``/example/path/Pfeiffer.vcf``).
 
 
 The ``-p`` option is used to indicate the Phenopacket, and the -e option is used to indicate the location of
