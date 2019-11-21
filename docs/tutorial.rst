@@ -41,7 +41,9 @@ Here is an excerpt of the text that described patient 4 in the above cited artic
     patient include   bifid   uvula,   malar   hypoplasia,   and   micrognathia.
 
 Use the `PhenopacketGenerator <https://github.com/TheJacksonLaboratory/PhenopacketGenerator>`_
-to create a Phenopacket. Enter the corresponding data (you can use arbitrary Phenopacket and proband IDs)
+to create a Phenopacket. To set up PhenopacketGenerator, you will need to set the location of
+the hp.obo file (available from the `Download page <https://hpo.jax.org/app/download/ontology>`_ of the HPO website,
+and also need to enter your Biocurator id. Enter the corresponding data (you can use arbitrary Phenopacket and proband IDs)
 and paste the clinical description into the text-mining window of PhenopacketGenerator.
 
 
