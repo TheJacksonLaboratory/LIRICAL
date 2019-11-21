@@ -10,9 +10,10 @@ Preparing Phenopacket-formated data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows a phenopacket
-representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_. THe file
+representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_. The file
 is adapted from the phenopacket on :ref"`rstphenopackethpo`. We have removed several of the
 phenotypic features, and added an **HtsFiles* element that contains the path of the VCF file
+
 (in our exmaple, the path is ``/example/path/Pfeiffer.vcf``, but obviously you need to adjust
 the path to a file located on your system). ::
 
@@ -41,7 +42,7 @@ the path to a file located on your system). ::
         }],
         "htsFiles":
         [{
-            "uri": "file://path/to/data/example.vcf",
+            "uri": "file://example/path/example.vcf",
             "description": "test",
             "htsFormat": "VCF",
             "genomeAssembly": "GRCh19",
