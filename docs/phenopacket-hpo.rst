@@ -10,18 +10,18 @@ links detailed phenotype descriptions with disease, patient, and genetic informa
 other allowed input format is YAML. See :ref:`rstyaml`).
 
 
-Preparing Phenopacket-formated data
+Preparing Phenopacket-formatted data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 See the `Phenopackets <https://phenopackets-schema.readthedocs.io/en/latest/>`_ website for details on the format. LIRICAL expects
 the Phenopacket to be in JSON format. The following example shows a phenopacket
-representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_ in whom exome sequencing has
-been performed, whereby the corresponding VCF file is available at ``/path/to/data/Pfeiffer.vcf``. ::
+representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`. ::
 
     {
         "subject": {
-        "id": "example-1",
+            "id": "example-1"
+        },
         "phenotypicFeatures": [{
             "type": {
                 "id": "HP:0000244",
@@ -67,19 +67,18 @@ been performed, whereby the corresponding VCF file is available at ``/path/to/da
                 "id": "HP:0003577",
                 "label": "Congenital onset"
         }
-        }]
-    },
-    "metaData": {
-        "createdBy": "Peter R.",
-        "resources": [{
-        "id": "hp",
-        "name": "human phenotype ontology",
-        "namespacePrefix": "HP",
-        "url": "http://purl.obolibrary.org/obo/hp.owl",
-        "version": "2018-03-08",
-        "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
-        }]
-     }
+        }],
+        "metaData": {
+            "createdBy": "Peter R.",
+            "resources": [{
+                "id": "hp",
+                "name": "human phenotype ontology",
+                "namespacePrefix": "HP",
+                "url": "http://purl.obolibrary.org/obo/hp.owl",
+                "version": "2018-03-08",
+                "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
+            }]
+        }
     }
 
 

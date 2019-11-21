@@ -250,6 +250,7 @@ public class Sparkline2Svg extends Lirical2Svg {
     {
         int diamondsize=4;
         Y -= diamondsize;
+        X += diamondsize;
         writer.write(String.format("<polygon " +
                         "points=\"%d,%d %d,%d %d,%d %d,%d\" style=\"fill:grey;stroke:%s;stroke-width:1\"  onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + msg + "')\"/>\n",
                 X,

@@ -90,5 +90,5 @@ Running LIRICAL
 
 A typical command that runs LIRICAL using settings shown in the YAML file with the default data directory would be simply ::
 
-    $ java -jar LIRICAL.jar vcf -y example.yml
+    $ java -jar LIRICAL.jar yaml -y example.yml
 

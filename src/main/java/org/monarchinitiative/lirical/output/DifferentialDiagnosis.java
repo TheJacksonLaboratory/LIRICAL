@@ -60,7 +60,7 @@ public class DifferentialDiagnosis {
             this.entrezGeneId=null;
         }
         url=String.format("https://hpo.jax.org/app/browse/disease/%s",result.getDiseaseCurie().getValue());
-        setPhenotypeExplanation(result.getPhenotypeExplanation());
+        //setPhenotypeExplanation(result.getPhenotypeExplanation());
     }
 
     void addG2G(Gene2Genotype g2g) {

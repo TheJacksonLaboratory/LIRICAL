@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.svg;
 
 
+import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -63,6 +64,14 @@ public class Lr2Svg extends Lirical2Svg {
      */
     private int heightOfMiddleLine;
 
+    /** The indices of the original terms according to ordered terms. */
+    private final List<Integer> indicesObserved;
+    private final List<Integer> indicesExcluded;
+    private final List<TermId> termIdList;
+    private final List<TermId> excludedTermIdList;
+
+    private final double maximumIndividualLR;
+
     /**
      * Constructor to draw an SVG representation of the phenotype and genotype likelihood ratios
      *
@@ -80,6 +89,38 @@ public class Lr2Svg extends Lirical2Svg {
         this.geneSymbol = symbol;
         this.ontology = ont;
         this.determineTotalHeightOfSvg();
+
+        // Sort the HPO findings according to lieklihood ratio.
+        // use the internal valss Value2Index to keep track of the original index
+        // after sorting, put the sorted original indices (i.e., as a sorted permutation) into
+        // the list "indicesObserved"
+        List<Value2Index> observedIndexList = new ArrayList<>();
+        this.termIdList = hcase.getObservedAbnormalities();
+        for (int i=0;i<termIdList.size();i++) {
+            double ratio = result.getObservedPhenotypeRatio(i);
+            observedIndexList.add(new Value2Index(i,ratio));
+        }
+        Collections.sort(observedIndexList);
+        ImmutableList.Builder<Integer> builder = new ImmutableList.Builder<>();
+        for (Value2Index value2Index : observedIndexList) {
+            builder.add(value2Index.getOriginalIndex());
+        }
+        this.indicesObserved = builder.build();
+        // Now do the same for the excluded HPO terms
+        this.excludedTermIdList = hcase.getExcludedAbnormalities();
+        List<Value2Index> excludedIndexList = new ArrayList<>();
+        for (int i=0;i<excludedTermIdList.size();i++) {
+            double ratio = result.getExcludedPhenotypeRatio(i);
+            excludedIndexList.add(new Value2Index(i, ratio));
+        }
+        Collections.sort(excludedIndexList);
+
+        builder = new ImmutableList.Builder<>();
+        for (Value2Index value2Index : excludedIndexList) {
+            builder.add(value2Index.getOriginalIndex());
+        }
+        this.indicesExcluded =  builder.build();
+        this.maximumIndividualLR = result.getMaximumIndividualLR();
     }
 
 
@@ -175,50 +216,21 @@ public class Lr2Svg extends Lirical2Svg {
     private void writeLrBoxes(Writer writer) throws IOException {
         int currentY = MIN_VERTICAL_OFFSET + BOX_OFFSET * 2;
         int midline = WIDTH / 2;
-        List<TermId> termIdList = hpocase.getObservedAbnormalities();
-        List<TermId> excludedTermIdList = hpocase.getExcludedAbnormalities();
-        Map<TermId, Double> unsortedmap = new HashMap<>();
-        Map<TermId, Double> unsortedexcludedmap = new HashMap<>();
-        double max = 0;
-        for (int i = 0; i < termIdList.size(); i++) {
-            TermId tid = termIdList.get(i);
-            double ratio = result.getObservedPhenotypeRatio(i);
-            if (max < Math.abs(ratio)) {
-                max = Math.abs(ratio);
-            }
-            double lgratio = Math.log10(ratio);
-            unsortedmap.put(tid, lgratio);
-        }
-        for (int i = 0; i < excludedTermIdList.size(); i++) {
-            TermId tid = excludedTermIdList.get(i);
-            double ratio = result.getExcludedPhenotypeRatio(i);
-            if (max < Math.abs(ratio)) {
-                max = Math.abs(ratio);
-            }
-            double lgratio = Math.log10(ratio);
-            unsortedexcludedmap.put(tid, lgratio);
-        }
-        // also check if the genotype LR is better than any of the phenotype LR's, so that max will be
-        // correctly calculated!
-        if (result.hasGenotype()) {
-            double ratio = result.getGenotypeLR();
-            if (max < Math.abs(ratio)) {
-                max = Math.abs(ratio);
-            }
-        }
         // maximum amplitude of the bars
         // we want it to be at least 10_000
-        double maxAmp = Math.max(4.0, Math.log10(max));
+        double maxAmp = Math.max(4.0, Math.log10(this.maximumIndividualLR));
         // we want the maximum amplitude to take up 80% of the space
         // the available space starting from the center line is WIDTH/2
         // and so we calculate a factor
         double scaling = (0.4 * WIDTH) / maxAmp;
-        Map<TermId, Double> sortedmap = sortByValue(unsortedmap);
-        String[] explanation = result.getPhenotypeExplanation().split("\\* ");
+        List<String> explanationObserved = result.getObservedPhenotypeExplanation();
+        List<String> explanationExcluded = result.getExcludedPhenotypeExplanation();
         int explanationIndex = 0;
-        for (Map.Entry<TermId, Double> entry : sortedmap.entrySet()) {
-            TermId tid = entry.getKey();
-            double ratio = entry.getValue();
+        for (int i=0; i<indicesObserved.size(); i++) {
+            int originalIndex = indicesObserved.get(i);
+            TermId tid = this.termIdList.get(originalIndex);
+            double ratio = result.getObservedPhenotypeRatio(originalIndex);
+            ratio = Math.log10(ratio);
             double boxwidth = ratio * scaling;
             double xstart = midline;
             if (ratio < 0) {
@@ -227,28 +239,28 @@ public class Lr2Svg extends Lirical2Svg {
             }
             if ((int) boxwidth == 0) {
                 int X = (int) xstart;
-                writeDiamond(writer, X, currentY, explanation[explanationIndex]);
+                writeDiamond(writer, X, currentY, explanationObserved.get(explanationIndex));
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " + "stroke-width=\"0\" " +
                         "stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
-                        "onmouseover=\"showTooltip(evt,\'%s\')\"/>\n", BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanation[explanationIndex]));
+                        "onmouseover=\"showTooltip(evt,\'%s\')\"/>\n", BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanationObserved.get(explanationIndex)));
             }
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);
             String label = String.format("%s [%s]", term.getName(), tid.getValue());
-            //writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
             writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n", WIDTH, currentY + BOX_HEIGHT, label));
             currentY += BOX_HEIGHT + BOX_OFFSET;
             explanationIndex++;
         }
         // Now add negated terms if any
-        Map<TermId, Double> sortedexcludedmap = sortByValue(unsortedexcludedmap);
-        for (Map.Entry<TermId, Double> entry : sortedexcludedmap.entrySet()) {
-            explanationIndex++;
-            TermId tid = entry.getKey();
-            double ratio = entry.getValue();
+        explanationIndex = 0;
+        for (int i=0; i<indicesExcluded.size(); i++) {
+            int originalIndex = indicesExcluded.get(i);
+            TermId tid = this.excludedTermIdList.get(originalIndex);
+            double ratio = result.getExcludedPhenotypeRatio(originalIndex);
+            ratio = Math.log10(ratio);
             double boxwidth = ratio * scaling;
             double xstart = midline;
             if (ratio < 0) {
@@ -257,21 +269,21 @@ public class Lr2Svg extends Lirical2Svg {
             }
             if ((int) boxwidth == 0) {
                 int X = (int) xstart;
-                writeDiamond(writer, X, currentY, explanation[explanationIndex]);
+                writeDiamond(writer, X, currentY, explanationExcluded.get(explanationIndex));
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
                         "stroke-width=\"0\" stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
                                 "onmouseover=\"showTooltip(evt,\'%s\')\"/>\n",
-                        BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanation[explanationIndex]));
+                        BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanationExcluded.get(explanationIndex)));
             }
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);
             String label = String.format("Excluded: %s [%s]", term.getName(), tid.getValue());
-            //writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">%s</text>\n",
             writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n", WIDTH, currentY + BOX_HEIGHT, label));
             currentY += BOX_HEIGHT + BOX_OFFSET;
+            explanationIndex++;
         }
 
 
@@ -279,7 +291,8 @@ public class Lr2Svg extends Lirical2Svg {
             currentY += 0.5 * (BOX_HEIGHT + BOX_OFFSET);
 
             double ratio = result.getGenotypeLR();
-            double lgratio = Math.log10(ratio);
+             double lgratio = Math.log10(ratio);
+            String lrstring = String.format("LR: %.3f",lgratio);
             double boxwidth = lgratio * scaling;
             double xstart = midline;
             if (lgratio < 0) {
@@ -288,14 +301,15 @@ public class Lr2Svg extends Lirical2Svg {
             }
             if ((int) boxwidth == 0) {
                 int X = (int) xstart;
-                writeDiamond(writer, X, currentY, geneSymbol);
+                writeDiamond(writer, X, currentY, lrstring);
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
+                int X = (int) xstart - 1;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
                         "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
                                 "onmouseover=\"showTooltip(evt,\'%s\')\"/>\n",
-                        BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, Double.toString(lgratio)));
+                        BOX_HEIGHT, (int) boxwidth, currentY, X, color, lrstring));
             }
             // add label of Genotype
             writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"italic\">%s</text>\n", WIDTH, currentY + BOX_HEIGHT, geneSymbol));
@@ -339,6 +353,30 @@ public class Lr2Svg extends Lirical2Svg {
         writer.write("<svg width=\"" + total_width + "\" height=\"" + HEIGHT + "\" " + "xmlns=\"http://www.w3.org/2000/svg\" " + "xmlns:svg=\"http://www.w3.org/2000/svg\">\n");
         writer.write("<!-- Created by LIRICAL -->\n");
         writer.write("<g>\n");
+    }
+
+    /**
+     * A convenience class to allow us to keep track of the indices of the observed and excluded HPO terms. We want
+     * to sort each class from highest to lowest likelihood ratio for the top candidate and maintain this ordering
+     * for all sparklines. The order of the HPO terms in a TestResult is fixed and identical for all TestResult objects.
+     * We need to sort these to get the desired order.
+     */
+    private static class Value2Index implements Comparable<Value2Index> {
+        private final int originalIndex;
+        private final double LR;
+        Value2Index(int originalIndex, double LR) {
+            this.originalIndex = originalIndex;
+            this.LR = LR;
+        }
+
+        int getOriginalIndex() {
+            return originalIndex;
+        }
+
+        @Override
+        public int compareTo(Value2Index other) {
+            return this.LR < other.LR ? 1 : this.LR == other.LR ? 0 : -1;
+        }
     }
 
 }

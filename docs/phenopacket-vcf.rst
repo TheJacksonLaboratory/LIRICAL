@@ -13,12 +13,14 @@ The following example shows a phenopacket
 representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_. The file
 is adapted from the phenopacket on :ref"`rstphenopackethpo`. We have removed several of the
 phenotypic features, and added an **HtsFiles* element that contains the path of the VCF file
-(in our example, the path is ``/path/to/data/Pfeiffer.vcf``, but obviously you need to adjust
+
+(in our exmaple, the path is ``/example/path/Pfeiffer.vcf``, but obviously you need to adjust
 the path to a file located on your system). ::
 
     {
         "subject": {
-        "id": "example-1",
+            "id": "example-1"
+        },
         "phenotypicFeatures": [{
             "type": {
                 "id": "HP:0000244",
@@ -37,29 +39,28 @@ the path to a file located on your system). ::
                 "id": "HP:0003577",
                 "label": "Congenital onset"
         }
-        }]
-    },
-    "htsFiles":
-    [{
-        "uri": "file://path/to/data/example.vcf",
-        "description": "test",
-        "htsFormat": "VCF",
-        "genomeAssembly": "GRCh19",
-        "individualToSampleIdentifiers": {
-          "patient1": "NA12345"
+        }],
+        "htsFiles":
+        [{
+            "uri": "file://example/path/example.vcf",
+            "description": "test",
+            "htsFormat": "VCF",
+            "genomeAssembly": "GRCh19",
+            "individualToSampleIdentifiers": {
+                "patient1": "NA12345"
+            }
+        }],
+        "metaData": {
+            "createdBy": "Peter R.",
+            "resources": [{
+                "id": "hp",
+                "name": "human phenotype ontology",
+                "namespacePrefix": "HP",
+                "url": "http://purl.obolibrary.org/obo/hp.owl",
+                "version": "2018-03-08",
+                "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
+            }]
         }
-    }],
-    "metaData": {
-        "createdBy": "Peter R.",
-        "resources": [{
-        "id": "hp",
-        "name": "human phenotype ontology",
-        "namespacePrefix": "HP",
-        "url": "http://purl.obolibrary.org/obo/hp.owl",
-        "version": "2018-03-08",
-        "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
-        }]
-     }
     }
 
 
