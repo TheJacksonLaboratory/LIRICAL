@@ -9,12 +9,21 @@ LIRICAL also supports `YAML <https://en.wikipedia.org/wiki/YAML>`_, which is a s
 is commonly used for configuration files.
 
 
-
 YAML
 ----
 Before running LIRICAL, download and built it and set it up according to the instructions on the :ref:`rstsetup` page.
-LIRICAL uses default values for many configuration options (see below), and so the simplest possible YAML configuration
-file must include the following information. ::
+LIRICAL uses default values for many configuration options (see below). An example of the simplest possible YAML
+configuration file is shown:
+
+    ---
+    analysis:
+      # hg19 or hg38 is supported
+      genomeAssembly: hg19
+    hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
+
+This file can be found at ``src/test/resources/yaml/simple.yml``.
+
+An example YAML file that uses several parameters is shown below.::
 
     ## LIRICAL Analysis Template.
     # These are all the possible options for running LIRICAL. Use this as a template for
@@ -24,15 +33,14 @@ file must include the following information. ::
     # hg19 or hg38 is supported
         mindiff: 50
         threshold: 0.05
-        tsv: true
-        datadir: mydata
-        orphanet: true
+        tsv: false
+        datadir: data
+        orphanet: false
     hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
     negatedHpoIds: ['HP:0001328']
     prefix: example
 
-
-This file can be found at ``src/test/resources/yaml/example1.yaml``.
+This file can be found at ``src/test/resources/yaml/multiple_params.yml``.
 
 
 
