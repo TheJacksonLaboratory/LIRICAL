@@ -9,8 +9,10 @@ This tutorial shows how to use LIRICAL to evaluate an exome.
 
 Setup
 ~~~~~
-Follow the instructions in :ref:`rstsetup` to install the Exomiser database and set up LIRICAL. Note the location
-of the Exomiser database (it will be needed to run LIRICAL, see below).
+Follow the instructions in :ref:`rstsetup` to install the Exomiser database.
+Note the location of the Exomiser database (it will be needed to run LIRICAL, see below).
+Most users should download the pre-built version of LIRICAL available on the `Releases <https://github.com/TheJacksonLaboratory/LIRICAL/releases>`_ page.
+Instructions are also offered for building LIRICAL from source if desired.
 
 
 The data
@@ -81,7 +83,7 @@ Running LIRICAL
 Run LIRICAL as follows.
 ::
 
-    $ java -jar LIRICAL.java phenopacket -p LDS2.json  -e /path/to/exomiser-data/ -x LDS2
+    $ java -jar LIRICAL.jar phenopacket -p LDS2.json  -e /path/to/exomiser-data/ -x LDS2
 
 Viewing the results
 ~~~~~~~~~~~~~~~~~~~
