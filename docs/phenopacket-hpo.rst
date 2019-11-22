@@ -7,7 +7,7 @@ results of gene panel, exome, or genome sequencing. The prefered input format is
 `Phenopackets <https://github.com/phenopackets>`_, an open standard for sharing disease and phenotype information.
 This is a new standard of the `Global Alliance for Genomics and Health <https://www.ga4gh.org/>`_ that
 links detailed phenotype descriptions with disease, patient, and genetic information (The
-other allowed input format is YAML. See :ref:`rstyaml`).
+other allowed input format is YAML. See :ref:`rstyaml-vcf`).
 
 
 Preparing Phenopacket-formatted data
@@ -16,7 +16,7 @@ Preparing Phenopacket-formatted data
 
 See the `Phenopackets <https://phenopackets-schema.readthedocs.io/en/latest/>`_ website for details on the format. LIRICAL expects
 the Phenopacket to be in JSON format. The following example shows a phenopacket
-representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`. ::
+representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_. ::
 
     {
         "subject": {

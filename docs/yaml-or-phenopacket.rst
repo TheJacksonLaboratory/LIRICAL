@@ -7,7 +7,7 @@ How should users choose between YAML and Phenopackets as an input format? In gen
 users choose `Phenopackets <https://phenopackets-schema.readthedocs.io/en/latest/>`_ as the input format.
 YAML is a simple format that can easily be edited by hand in a text editor and is suitable for testing and
 demonstration, but is not as flexible or robust as Phenopackets. We have provided a simple tool that
-creates Pjhenopackets for use by LIRICAL and other similar software
+creates Phenopackets for use by LIRICAL and other similar software
 (`PhenopacketGenerator <https://github.com/TheJacksonLaboratory/PhenopacketGenerator>`_).
 As a convenience, we present
 the same simple case in first YAML and then Phenopacket format.
@@ -18,7 +18,7 @@ YAML version
 
 The data represents an individual with some characteristic manifestations of
 `neurofibromatosis type 2 <https://hpo.jax.org/app/browse/disease/OMIM:101000>`_, in whom
-`Tibial pseudoarthrosis <https://hpo.jax.org/app/browse/term/HP:0009736>`_, a characteristic feature of
+`Tibial pseudoarthrosis <https://hpo.jax.org/app/browse/term/HP:0009736>`_ (``HP:0009736``), a characteristic feature of
 neurofibromatosis type 1, has been ruled out. ::
 
     analysis:
@@ -30,7 +30,7 @@ neurofibromatosis type 1, has been ruled out. ::
     negatedHpoIds: ['HP:0009736']
     prefix: NF2-example
 
-Save this file as example.yml and then run LIRICAL as ::
+Save this file as ``example.yml`` and then run LIRICAL as ::
 
      $ java -jar LIRICAL.jar yaml -y example.yml
 
@@ -90,7 +90,7 @@ The identical data can be represented in Phenopacket format (in which only requi
         }
     }
 
-Save this file as example.json and then run LIRICAL as ::
+Save this file as ``example.json`` and then run LIRICAL as ::
 
     $ java -jar LIRICAL.jar phenopacket -p example.json
 

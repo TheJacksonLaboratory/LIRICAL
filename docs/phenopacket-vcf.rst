@@ -11,8 +11,8 @@ Preparing Phenopacket-formated data
 
 The following example shows a phenopacket
 representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_. The file
-is adapted from the phenopacket on :ref"`rstphenopackethpo`. We have removed several of the
-phenotypic features, and added an **HtsFiles* element that contains the path of the VCF file
+is adapted from the phenopacket on :ref:`rstphenopackethpo`. We have removed several of the
+phenotypic features, and added an **HtsFiles** element that contains the path of the VCF file
 
 (in our exmaple, the path is ``/example/path/Pfeiffer.vcf``, but obviously you need to adjust
 the path to a file located on your system). ::
@@ -117,7 +117,7 @@ LIRICAL can use transcript data from UCSC, Ensembl, or RefSeq. The default is
     --global
 
 By default,  LIRICAL's default mode, which only ranks candidate genes for which at least one pathogenic allele is
-present in the VCF file. LIRICAL can also be run in a ```--global`` mode in which diseases are ranked irrespective of
+present in the VCF file. LIRICAL can also be run in a ``--global`` mode in which diseases are ranked irrespective of
 whether a disease gene is known for a disease or whether the gene is found to have a pathogenic allele or not.
 
 

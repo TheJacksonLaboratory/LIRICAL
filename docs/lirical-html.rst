@@ -46,7 +46,7 @@ of other features make more modest contributions (as indicated by the length of 
 
 
 The user should inspect the top differentials. In this case, the posterior probability of the remaining differentials
-drops off quickly. For instance, the throd best hit, Nicolaides Baraitser syndrome, has a posttest probability of
+drops off quickly. For instance, the third best hit, Nicolaides Baraitser syndrome, has a posttest probability of
 only 3.6% and several of the observed phenotypes are not characteristic of this syndrome and thus reduce the match score
 (indicated as red bars).
 
