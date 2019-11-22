@@ -48,7 +48,7 @@ In YAML, lines that begin with ``#`` are comments, and the three dashes
 indicate the start of the contents of the file. The ``analysis`` element is used to hold a dictionary with options for
 running the program. The items in ``analysis`` refer to the genome assembly and to the paths of files required to run LIRICAL.
 Users must provide values for ``genomeAssembly``, ``vcf``, and ``exomiser``. Default values will be use for the
-other three entries if the user does not proviude values.
+other three entries if the user does not provide values.
 
 
 1. ``mindiff``
@@ -61,7 +61,7 @@ This option controls the minimum post-test probability to show a differential di
 By default, LIRICAL shows all differnetials with a posterior probability of 1% or greater.
 
 
-3. ``tsv`` T
+3. ``tsv``
 Use TSV instead of HTML output (Default: false).
 
 4. ``datadir``
@@ -69,7 +69,7 @@ The path with LIRICAL data that should be downloaded before running LIRICAL
 (see :ref:`rstsetup` for details). This option should not be used if the default data location (``data``) is used.
 
 5. ``orphanet``
-If true, use annotation data from `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>_`.
+If true, use annotation data from `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>`_.
 
 Additionally, ``hpoIds`` is a list of HPO term representing the clinical manifestations
 observed in the individual being analyzed. In contrast, ``negatedHpoIds`` represents
@@ -77,8 +77,7 @@ phenotypic abnormalities (HPO terms) that were explicitly excluded in the proban
 
 
 Finally,  ``prefix`` is the prefix of the output file (optional, default: lirical).
- For instance, if the prefix is ``example1``, then the HTML output file will be
-``example1.html``.
+For instance, if the prefix is ``example1``, then the HTML output file will be ``example1.html``.
 
 
 
