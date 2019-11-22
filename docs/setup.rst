@@ -59,7 +59,6 @@ Build the executable from source with maven, and then test the build. ::
 
     $ git clone https://github.com/TheJacksonLaboratory/LIRICAL.git
     $ cd LIRICAL
-    $ mvn compile
     $ mvn package
     $ java -jar target/LIRICAL.jar
     $ Usage: <main class> [options] [command] [command options]
