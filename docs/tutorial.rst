@@ -27,24 +27,31 @@ Download the VCF file (LDS2.vcf) from `Figshare <https://figshare.com/account/ar
 Creating a phenopacket
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Here is an excerpt of the text that described patient 4 in the above cited article.
+Here is an excerpt of the text that described patient 4 in the above cited article:
 ::
 
     Patient  4  is  a  9-year-old  girl.  She  was  clinically  diagnosed  with  suspected
     Marfan syndrome  according  to  the  first  impression.  She  was  144  cm  tall and
     weighed  24  kg.  Her  father  was  176  cm  tall  and  weighed53  kg.  The  phenotypes
-    of  this  patient  include strabismus,refractive  error,  pectus  carinatum,  scoliosis,
-    arachnodactyly,  and  camptodactyly. The patient's main cardiovascular abnormalities
-    were  Sinus  of  Valsalva  aneurysm,  aortic  root dilation, aortic regurgitation,
-    atrial septal defect,  patent foramen  ovale,  pulmonary  artery  dilatation,  and
-    tricuspid valve  prolapse  with regurgitation.  Craniofacial  abnormalities  of  the
-    patient include   bifid   uvula,   malar   hypoplasia,   and   micrognathia.
+    of  this  patient  include strabismus, refractive  error, pectus  carinatum,  scoliosis,
+    arachnodactyly, and camptodactyly. The patient's main cardiovascular abnormalities
+    were Sinus of Valsalva aneurysm, aortic root dilation, aortic regurgitation,
+    atrial septal defect, patent foramen ovale, pulmonary artery dilatation, and
+    tricuspid valve prolapse with regurgitation. Craniofacial abnormalities of the
+    patient include bifid uvula, malar hypoplasia, and micrognathia.
 
 Use the `PhenopacketGenerator <https://github.com/TheJacksonLaboratory/PhenopacketGenerator>`_
-to create a Phenopacket. To set up PhenopacketGenerator, you will need to set the location of
-the hp.obo file (available from the `Download page <https://hpo.jax.org/app/download/ontology>`_ of the HPO website,
-and also need to enter your Biocurator id. Enter the corresponding data (you can use arbitrary Phenopacket and proband IDs)
-and paste the clinical description into the text-mining window of PhenopacketGenerator.
+to create a Phenopacket.
+
+To set up PhenopacketGenerator, you will first need to set the location of the hp.obo file. Download hpo.obo
+from the `Download page <https://hpo.jax.org/app/download/ontology>`_ of the HPO website. Enter your Biocurator id by
+selecting "Set biocurator id" from the edit menu, and enter an an arbitrary Phenopacket ID and proband ID.
+Use the dropdown menus to enter "9 years" for Age and "Female" for sex.
+
+From the edit menu, select "Set path to hp.obo file", then select the location of the hpo.obo on your computer.
+After a moment, the ontology will load and "Enter HPO terms" will be clickable. Load HPO terms for this case by
+clicking "Enter HPO term". Paste the clinical description above into the text-mining window of PhenopacketGenerator,
+click "Analyze", select HPO terms, click "Add selected terms", then "Confirm and Close".
 
 
 .. figure:: _static/hpo-textmining-lds.png
@@ -54,8 +61,7 @@ and paste the clinical description into the text-mining window of PhenopacketGen
 
     Textmining of clinical data by `PhenopacketGenerator <https://github.com/TheJacksonLaboratory/PhenopacketGenerator>`_.
 
-Then, select the
-location of the VCF file that you saved in the previous step, and enter the Genome assembly (``hg19``).
+Then, select the location of the VCF file that you saved in the previous step, and enter the Genome assembly (``hg19``).
 
 
 .. figure:: _static/phenopacketgenerator.png
