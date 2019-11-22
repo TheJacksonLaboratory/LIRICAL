@@ -190,8 +190,8 @@ public class Sparkline2Svg extends Lirical2Svg {
                         "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + RED + "\"  onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + geneSymbol + "')\"/>\n");
             }
         }
-        currentX += linewidth/2 + BAR_WIDTH;
-        swriter.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"18px\" font-style=\"normal\">%s</text>\n",
+        currentX += linewidth/2 + 2*BAR_WIDTH;
+        swriter.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"18px\" font-style=\"italic\">%s</text>\n",
                 currentX,
                 ybaseline,
                 geneSymbol));
@@ -213,9 +213,9 @@ public class Sparkline2Svg extends Lirical2Svg {
         int ybaseline = total_height / 2; // put everything right in the middle
         int xstart = 5;
         int linewidth =  n_hpo_terms * (BAR_WIDTH + INTERBAR_WIDTH) - INTERBAR_WIDTH;
-        if (hasGenotype) {
-            linewidth += BAR_WIDTH + INTERBAR_WIDTH;
-        }
+//        if (hasGenotype) {
+//            linewidth += BAR_WIDTH + INTERBAR_WIDTH;
+//        }
         int currentX = xstart + PERCENTAGE_WIDTH + SPACING_WIDTH;
         swriter.write("<line fill=\"none\" stroke=\"" + BLACK + "\" stroke-width=\"1\" " +
                 "x1=\"" + currentX + "\" y1=\"" + ybaseline + "\" x2=\"" + (currentX+linewidth) +
@@ -272,29 +272,29 @@ public class Sparkline2Svg extends Lirical2Svg {
             }
             currentX += BAR_WIDTH + INTERBAR_WIDTH;
         }
-        if (result.hasGenotype()) {
-            double logratio = Math.log10(result.getGenotypeLR());
-            if (logratio > 0) {
-                logratio = Math.min(MAX_LOG_LR, logratio);
-                int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
-                int ypos = ybaseline - height;
-                if (height == 0) {
-                    writeSmallDiamond(swriter, currentX, ybaseline,geneSymbol);
-                } else {
-                    swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos + "\" x=\"" + currentX + "\" " +
-                            "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\" onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + geneSymbol + "')\"/>\n");
-                }
-            } else {
-                logratio = Math.max((-1)*MAX_LOG_LR, logratio);
-                int height = (int)((-1)*logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
-                if (height == 0) {
-                    writeSmallDiamond(swriter, currentX, ybaseline, geneSymbol);
-                } else {
-                    swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline + "\" x=\"" + currentX + "\" " +
-                            "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + RED + "\"  onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + geneSymbol + "')\"/>\n");
-                }
-            }
-        }
+//        if (result.hasGenotype()) {
+//            double logratio = Math.log10(result.getGenotypeLR());
+//            if (logratio > 0) {
+//                logratio = Math.min(MAX_LOG_LR, logratio);
+//                int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
+//                int ypos = ybaseline - height;
+//                if (height == 0) {
+//                    writeSmallDiamond(swriter, currentX, ybaseline,geneSymbol);
+//                } else {
+//                    swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos + "\" x=\"" + currentX + "\" " +
+//                            "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\" onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + geneSymbol + "')\"/>\n");
+//                }
+//            } else {
+//                logratio = Math.max((-1)*MAX_LOG_LR, logratio);
+//                int height = (int)((-1)*logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
+//                if (height == 0) {
+//                    writeSmallDiamond(swriter, currentX, ybaseline, geneSymbol);
+//                } else {
+//                    swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline + "\" x=\"" + currentX + "\" " +
+//                            "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + RED + "\"  onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + geneSymbol + "')\"/>\n");
+//                }
+//            }
+//        }
     }
 
     /**
