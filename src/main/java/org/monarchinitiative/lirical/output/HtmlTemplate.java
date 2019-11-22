@@ -65,6 +65,7 @@ public class HtmlTemplate extends LiricalTemplate {
         int N = totalDetailedDiagnosesToShow(hcase.getResults());
         List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N, geneid2sym, ontology);
         this.templateData.put("sparkline", sparklinePackets);
+        this.templateData.put("hasGenotypes", "true");
         int counter = 0;
         for (TestResult result : hcase.getResults()) {
             String symbol = EMPTY_STRING;
