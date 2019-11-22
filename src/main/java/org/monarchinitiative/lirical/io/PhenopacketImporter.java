@@ -1,7 +1,6 @@
 package org.monarchinitiative.lirical.io;
 
 import com.google.common.collect.ImmutableList;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
 import org.json.simple.JSONObject;
