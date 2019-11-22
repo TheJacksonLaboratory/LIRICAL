@@ -23,7 +23,7 @@ configuration file is shown::
 
 This file can be found at ``src/test/resources/yaml/simple.yml``.
 
-An example YAML file that uses several parameters is shown below.::
+An example YAML file that uses several parameters is shown below::
 
     ## LIRICAL Analysis Template.
     # These are all the possible options for running LIRICAL. Use this as a template for
