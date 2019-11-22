@@ -22,6 +22,7 @@ public class SparklinePacket {
     private final int rank;
     private final String posttestBarSvg;
     private final String sparklineSvg;
+    private final String geneSparklineSvg;
     private final double compositeLikelihoodRatio;
     private final String geneSymbol;
     private final String diseaseName;
@@ -52,9 +53,10 @@ public class SparklinePacket {
             double posttestProb = result.getPosttestProbability();
             String posttestSVG = sparkline2Svg.getPosttestBar(posttestProb);
             String sparkSVG = sparkline2Svg.getSparklineSvg(hcase, diseaseId, geneSymbol);
+            String geneSparkSvg = sparkline2Svg.getGeneSparklineSvg(hcase, diseaseId, geneSymbol);
             String disname = prettifyDiseaseName(result.getDiseaseName());
             String diseaseAnchor = getDiseaseAnchor(diseaseId);
-            SparklinePacket sp = new SparklinePacket(rank, posttestSVG, sparkSVG, compositeLR, geneSymbol, disname, diseaseAnchor);
+            SparklinePacket sp = new SparklinePacket(rank, posttestSVG, sparkSVG, geneSparkSvg, compositeLR, geneSymbol, disname, diseaseAnchor);
             builder.add(sp);
         }
         return builder.build();
@@ -125,6 +127,18 @@ public class SparklinePacket {
         this.rank = rank;
         this.posttestBarSvg = posttest;
         this.sparklineSvg = spark;
+        this.geneSparklineSvg = EMPTY_STRING;
+        this.compositeLikelihoodRatio = Math.log10(compLR);
+        this.geneSymbol = sym;
+        this.diseaseName = disname;
+        this.diseaseAnchor = diseaseAnchor;
+    }
+
+    private SparklinePacket(int rank, String posttest, String spark, String geneSpark, double compLR, String sym, String disname, String diseaseAnchor){
+        this.rank = rank;
+        this.posttestBarSvg = posttest;
+        this.sparklineSvg = spark;
+        this.geneSparklineSvg = geneSpark;
         this.compositeLikelihoodRatio = Math.log10(compLR);
         this.geneSymbol = sym;
         this.diseaseName = disname;
@@ -157,5 +171,9 @@ public class SparklinePacket {
 
     public String getDiseaseAnchor() {
         return diseaseAnchor;
+    }
+
+    public String getGeneSparklineSvg() {
+        return geneSparklineSvg;
     }
 }
