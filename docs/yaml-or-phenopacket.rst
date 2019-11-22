@@ -7,7 +7,7 @@ How should users choose between YAML and Phenopackets as an input format? In gen
 users choose `Phenopackets <https://phenopackets-schema.readthedocs.io/en/latest/>`_ as the input format.
 YAML is a simple format that can easily be edited by hand in a text editor and is suitable for testing and
 demonstration, but is not as flexible or robust as Phenopackets. We have provided a simple tool that
-creates Pjhenopackets for use by LIRICAL and other similar software
+creates Phenopackets for use by LIRICAL and other similar software
 (`PhenopacketGenerator <https://github.com/TheJacksonLaboratory/PhenopacketGenerator>`_).
 As a convenience, we present
 the same simple case in first YAML and then Phenopacket format.
