@@ -18,7 +18,7 @@ YAML version
 
 The data represents an individual with some characteristic manifestations of
 `neurofibromatosis type 2 <https://hpo.jax.org/app/browse/disease/OMIM:101000>`_, in whom
-`Tibial pseudoarthrosis <https://hpo.jax.org/app/browse/term/HP:0009736>`_, a characteristic feature of
+`Tibial pseudoarthrosis <https://hpo.jax.org/app/browse/term/HP:0009736>`_ (``HP:0009736``), a characteristic feature of
 neurofibromatosis type 1, has been ruled out. ::
 
     analysis:
