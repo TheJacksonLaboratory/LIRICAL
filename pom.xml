@@ -241,6 +241,11 @@
             <artifactId>protobuf-java</artifactId>
             <version>3.8.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java-util</artifactId>
+            <version>3.8.0</version>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.tukaani/xz
           XZ data compression in pure Java. We just use this (indirectly) in some test cases.

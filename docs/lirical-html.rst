@@ -37,16 +37,17 @@ LIRICAL has estimate the composite likelihood ratio score at 8.951 (note that th
 on a log\ :subscript:`10` scale, so that the likelihood ratio is actually 10\ :superscript:`8.951`). The
 posttest probability is close to 100%.
 
-The contribution of each of the HPO terms entered for the proband is shown. In this case,
-`Nail dystrophy <https://hpo.jax.org/app/browse/term/HP:0008404>`_ makes the largest contribution, and a number
-of other features make more modest contributions (as indicated by the length of the blue bar).
+The contribution of each of the HPO terms entered for the proband is shown. The
+contribution of each term is indicated by the length of the blue bar (which shows the decadic logarithm
+of the likelihood ratio for the term. For instance, if the bar is 2 units long, then the
+likelihood ratio is 10<sup>2</sup>=100).
 
 
 .. figure:: _static/hoxc13-output.png
 
 
 The user should inspect the top differentials. In this case, the posterior probability of the remaining differentials
-drops off quickly. For instance, the throd best hit, Nicolaides Baraitser syndrome, has a posttest probability of
+drops off quickly. For instance, the third best hit, Nicolaides Baraitser syndrome, has a posttest probability of
 only 3.6% and several of the observed phenotypes are not characteristic of this syndrome and thus reduce the match score
 (indicated as red bars).
 

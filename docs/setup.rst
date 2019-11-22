@@ -8,6 +8,14 @@ details how to download these files and prepare to run LIRICAL. LIRICAL requires
 as a library before it can be compiled and built.
 
 
+Prerequisites
+~~~~~~~~~~~~~
+
+LIRICAL was written with Java version 8 but will compile under Java 11. If you want to
+build LIRICAL from source, then the build process described below requires
+`Git <https://git-scm.com/book/en/v2>`_ and `maven <https://maven.apache.org/install.html>`_.
+
+
 Installation of Exomiser as a Java library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LIRICAL relies on some classes from the Exomiser. To build LIRICAL, we need to install the Exomiser code base locally.
