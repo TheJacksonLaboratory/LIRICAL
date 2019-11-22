@@ -13,7 +13,7 @@ YAML
 ----
 Before running LIRICAL, download and built it and set it up according to the instructions on the :ref:`rstsetup` page.
 LIRICAL uses default values for many configuration options (see below). An example of the simplest possible YAML
-configuration file is shown:
+configuration file is shown::
 
     ---
     analysis:
