@@ -30,7 +30,7 @@ neurofibromatosis type 1, has been ruled out. ::
     negatedHpoIds: ['HP:0009736']
     prefix: NF2-example
 
-Save this file as example.yml and then run LIRICAL as ::
+Save this file as ``example.yml`` and then run LIRICAL as ::
 
      $ java -jar LIRICAL.jar yaml -y example.yml
 
@@ -90,7 +90,7 @@ The identical data can be represented in Phenopacket format (in which only requi
         }
     }
 
-Save this file as example.json and then run LIRICAL as ::
+Save this file as ``example.json`` and then run LIRICAL as ::
 
     $ java -jar LIRICAL.jar phenopacket -p example.json
 
