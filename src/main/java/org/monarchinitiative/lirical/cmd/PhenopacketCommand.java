@@ -81,6 +81,8 @@ public class PhenopacketCommand extends PrioritizeCommand {
                 .global(this.globalAnalysisMode)
                 .orphanet(this.useOrphanet)
                 .transcriptdatabase(this.transcriptDb)
+                .lrThreshold(this.LR_THRESHOLD)
+                .minDiff(this.minDifferentialsToShow)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
         factory.qcExternalFilesInDataDir();
@@ -128,12 +130,9 @@ public class PhenopacketCommand extends PrioritizeCommand {
                 .geneid2symMap(this.geneId2symbol)
                 .errors(errors)
                 .outdirectory(this.outdir)
+                .threshold(this.factory.getLrThreshold())
+                .mindiff(this.factory.getMinDifferentials())
                 .prefix(this.outfilePrefix);
-        if (this.LR_THRESHOLD != null) {
-            builder = builder.threshold(this.LR_THRESHOLD);
-        } else if (this.minDifferentialsToShow != null) {
-            builder = builder.mindiff(this.minDifferentialsToShow);
-        }
         LiricalTemplate template = outputTSV ?
                 builder.buildGenoPhenoTsvTemplate() :
                 builder.buildGenoPhenoHtmlTemplate();
@@ -165,13 +164,9 @@ public class PhenopacketCommand extends PrioritizeCommand {
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
                 .prefix(this.outfilePrefix)
                 .outdirectory(this.outdir)
+                .threshold(this.factory.getLrThreshold())
+                .mindiff(this.factory.getMinDifferentials())
                 .errors(errors);
-        if (this.LR_THRESHOLD != null) {
-            builder = builder.threshold(this.LR_THRESHOLD);
-        } else if (this.minDifferentialsToShow != null) {
-            builder = builder.mindiff(this.minDifferentialsToShow);
-        }
-
         LiricalTemplate template = outputTSV ?
                 builder.buildPhenotypeTsvTemplate() :
                 builder.buildPhenotypeHtmlTemplate();

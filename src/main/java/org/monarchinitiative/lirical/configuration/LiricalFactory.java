@@ -75,10 +75,10 @@ public class LiricalFactory {
     public static final int DEFAULT_MIN_DIFFERENTIALS = 10;
     /** LR threshold to include/show a candidate in the differential diagnosis. This option is incompatible with the
      * {@link #minDifferentials} option, at most one can be non-null*/
-    private Double lrThreshold;
+    private LrThreshold lrThreshold;
     /** Minimum number of differentials to show in detail in the HTML output. This option is incompatible with the
      * {@link #lrThreshold} option, at most one can be non-null */
-    private Integer minDifferentials;
+    private MinDiagnosisCount minDifferentials;
 
     private static final String DEFAULT_OUTFILE_PREFIX = "lirical";
 
@@ -134,12 +134,10 @@ public class LiricalFactory {
             }
             this.geneInfoPath = null;
             this.mim2genemedgenPath=builder.mim2genemedgenPath;
-
             this.phenotypeAnnotationPath = null;
             this.transcriptdatabase = builder.transcriptdatabase;
             this.vcfPath = null;
             this.datadir= builder.liricalDataDir;
-            this.minDifferentials = builder.minDifferentials;
             hpoIdList = ImmutableList.of();
             negatedHpoIdList = ImmutableList.of();
             this.outfilePrefix = builder.outfilePrefix;
@@ -178,14 +176,16 @@ public class LiricalFactory {
         // thresholds are non-null (see checkThresholds function in PrioritizeCommand.java).
         // We have also checked that if present, the threshold is in [0,1]
         // the YAML parser performs analogous checks.
-        this.minDifferentials = builder.minDifferentials;
-        this.lrThreshold = builder.lrThreshold;
-        // By default, output everything down to a threshold of 5%.
-        // this will happen if the user does not pass either the -m or the -t option
-        if (minDifferentials == null && lrThreshold == null) {
-            lrThreshold = DEFAULT_LR_THRESHOLD;
+        if (builder.minDifferentials == null) {
+            this.minDifferentials = MinDiagnosisCount.notInitialized();
+        } else {
+            this.minDifferentials = MinDiagnosisCount.setToUserDefinedMinCount(builder.minDifferentials);
         }
-
+        if (builder.lrThreshold == null) {
+            this.lrThreshold = LrThreshold.notInitialized();
+        } else {
+            this.lrThreshold = LrThreshold.setToUserDefinedThreshold(builder.lrThreshold);
+        }
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
@@ -221,7 +221,7 @@ public class LiricalFactory {
         return outdir;
     }
 
-    public double getLrThreshold() {
+    public LrThreshold getLrThreshold() {
         return lrThreshold;
     }
 
@@ -275,7 +275,7 @@ public class LiricalFactory {
 
     public String getHpoVersion() { return hpoVersion; }
 
-    public int getMinDifferentials() { return this.minDifferentials; }
+    public MinDiagnosisCount getMinDifferentials() { return this.minDifferentials; }
 
     public String getVcfPath() {
         if (this.vcfPath==null) {
@@ -625,8 +625,8 @@ public class LiricalFactory {
         private List<String> observedHpoTerms=ImmutableList.of();
         private List<String> negatedHpoTerms=ImmutableList.of();
         private String outfilePrefix = DEFAULT_OUTFILE_PREFIX;
-        private double lrThreshold = DEFAULT_LR_THRESHOLD;
-        private int minDifferentials = DEFAULT_MIN_DIFFERENTIALS;
+        private Double lrThreshold = null;
+        private Integer minDifferentials = null;
 
         /** If this constructor is used, the the build method will attempt to load the HPO
          * based on its file location in datadir. If it is not possible, we will die gracefully.
@@ -744,6 +744,16 @@ public class LiricalFactory {
 
         public Builder backgroundFrequency(String bf) {
             this.backgroundFrequencyPath=bf;
+            return this;
+        }
+
+        public Builder lrThreshold(Double d) {
+            this.lrThreshold = d;
+            return this;
+        }
+
+        public Builder minDiff(Integer n) {
+            this.minDifferentials = n;
             return this;
         }
 

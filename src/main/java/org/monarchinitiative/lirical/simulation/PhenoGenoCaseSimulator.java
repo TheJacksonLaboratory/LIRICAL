@@ -6,6 +6,8 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.analysis.VcfSimulator;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.configuration.LrThreshold;
+import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.io.PhenopacketImporter;
@@ -220,11 +222,13 @@ public class PhenoGenoCaseSimulator {
     }
 
 
-    public void outputHtml(String prefix, Double lrThreshold, Integer minDiff, String outdir) {
+    public void outputHtml(String prefix, LrThreshold lrThreshold, MinDiagnosisCount minDiff, String outdir) {
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hpocase,ontology,metadata)
                 .genotypeMap(genotypemap)
                 .geneid2symMap(factory.geneId2symbolMap())
                 .outdirectory(outdir)
+                .threshold(factory.getLrThreshold())
+                .mindiff(factory.getMinDifferentials())
                 .prefix(prefix);
         if (lrThreshold != null) {
             builder = builder.threshold(lrThreshold);
@@ -236,7 +240,7 @@ public class PhenoGenoCaseSimulator {
     }
 
 
-    public void outputTsv(String prefix, Double lrThreshold, Integer minDiff, String outdir) {
+    public void outputTsv(String prefix, LrThreshold lrThreshold, MinDiagnosisCount minDiff, String outdir) {
         String outname=String.format("%s.tsv",prefix);
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(this.hpocase,ontology,metadata)
                 .genotypeMap(genotypemap)
@@ -250,7 +254,6 @@ public class PhenoGenoCaseSimulator {
         }
         TsvTemplate tsvtemplate = builder.buildGenoPhenoTsvTemplate();
         tsvtemplate.outputFile(outname);
-
     }
 
 
