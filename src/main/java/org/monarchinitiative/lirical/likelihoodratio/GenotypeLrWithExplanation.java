@@ -61,7 +61,7 @@ public class GenotypeLrWithExplanation  {
         if (MoI.equals(AUTOSOMAL_RECESSIVE) || MoI.equals(X_LINKED_RECESSIVE)) {
             lambda_disease = 2;
         }
-        String expl = String.format("%s: .%s. Heuristic for high number of observed predicted pathogenic variants. "
+        String expl = String.format("%s: %s. Heuristic for high number of observed predicted pathogenic variants. "
                         + "Observed weighted pathogenic variant count: %.2f. &lambda;<sub>disease</sub>=%d. &lambda;<sub>background</sub>=%.4f. log<sub>10</sub>(LR)=%.3f.",
                 geneSymbol, getMoIString(MoI), observedWeightedPathogenicVariantCount, (int) lambda_disease, lambda_background, Math.log10(ratio));
         return new GenotypeLrWithExplanation(ratio, expl);
@@ -82,15 +82,15 @@ public class GenotypeLrWithExplanation  {
 
     private static String getMoIString(TermId MoI) {
         if (MoI.equals(AUTOSOMAL_DOMINANT)) {
-            return " Mode of inheritance: autosomal dominant. ";
+            return " Mode of inheritance: autosomal dominant";
         } else if (MoI.equals(AUTOSOMAL_RECESSIVE)) {
-            return " Mode of inheritance: autosomal recessive. ";
+            return " Mode of inheritance: autosomal recessive";
         } else if (MoI.equals(X_LINKED_RECESSIVE)) {
-            return " Mode of inheritance: X-chromosomal recessive. ";
+            return " Mode of inheritance: X-chromosomal recessive";
         } else if (MoI.equals(X_LINKED_DOMINANT)) {
-            return " Mode of inheritance: X-chromosomal recessive. ";
+            return " Mode of inheritance: X-chromosomal recessive";
         }
-        return " Mode of inheritance: not available. "; // should never happen
+        return " Mode of inheritance: not available"; // should never happen
     }
 
 
