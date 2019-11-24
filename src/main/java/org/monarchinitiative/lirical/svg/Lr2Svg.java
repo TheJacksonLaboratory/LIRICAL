@@ -305,7 +305,7 @@ public class Lr2Svg extends Lirical2Svg {
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
-                int X = (int) xstart - 1;
+                int X = (int) xstart;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
                         "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
                                 "onmouseover=\"showTooltip(evt,\'%s\')\"/>\n",

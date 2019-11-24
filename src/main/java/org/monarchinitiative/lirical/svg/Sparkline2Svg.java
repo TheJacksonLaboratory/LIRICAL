@@ -35,7 +35,7 @@ public class Sparkline2Svg extends Lirical2Svg {
 
     private final static int MAXIMUM_BAR_HEIGHT = 20;
 
-    private final static int POSTTEST_BAR_HEIGHT = 40;
+    //private final static int POSTTEST_BAR_HEIGHT = 40;
 
     private final List<TermId> termIdList;
     private final List<TermId> excludedTermIdList;
@@ -109,11 +109,7 @@ public class Sparkline2Svg extends Lirical2Svg {
         this.indicesExcluded =  builder.build();
         this.n_hpo_terms = indicesExcluded.size() + indicesObserved.size();
         // calculate total width of the SVG
-        int genotypeWidth = 0;
-        if (useGenotype) {
-            genotypeWidth += BAR_WIDTH + INTERBAR_WIDTH;
-        }
-        total_width = PERCENTAGE_WIDTH + SPACING_WIDTH + n_hpo_terms * (BAR_WIDTH + INTERBAR_WIDTH) + genotypeWidth;
+        total_width = SPACING_WIDTH + n_hpo_terms * (BAR_WIDTH + INTERBAR_WIDTH);
         total_height = 2*MAXIMUM_BAR_HEIGHT + 10;
     }
 
@@ -163,7 +159,7 @@ public class Sparkline2Svg extends Lirical2Svg {
         final int MAX_LOG_LR = 4;
         int ybaseline = total_height / 2; // put everything right in the middle
         int xstart = 5;
-        int GENE_SYMBOL_WIDTH = 40;
+        //int GENE_SYMBOL_WIDTH = 40;
         int linewidth = BAR_WIDTH + 2 * INTERBAR_WIDTH;
         swriter.write("<line fill=\"none\" stroke=\"" + BLACK + "\" stroke-width=\"1\" " +
                 "x1=\"" + xstart + "\" y1=\"" + ybaseline + "\" x2=\"" + (xstart + linewidth) +
@@ -178,7 +174,7 @@ public class Sparkline2Svg extends Lirical2Svg {
                 writeSmallDiamond(swriter, currentX, ybaseline, geneSymbol);
             } else {
                 swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos + "\" x=\"" + currentX + "\" " +
-                        "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\" onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + geneSymbol + "')\"/>\n");
+                        "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\" onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + geneSymbol + "')\"/>\n");
             }
         } else {
             logratio = Math.max((-1) * MAX_LOG_LR, logratio);
@@ -187,7 +183,7 @@ public class Sparkline2Svg extends Lirical2Svg {
                 writeSmallDiamond(swriter, currentX, ybaseline, geneSymbol);
             } else {
                 swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline + "\" x=\"" + currentX + "\" " +
-                        "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + RED + "\"  onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + geneSymbol + "')\"/>\n");
+                        "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + RED + "\"  onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + geneSymbol + "')\"/>\n");
             }
         }
         currentX += linewidth/2 + 2*BAR_WIDTH;
@@ -211,12 +207,9 @@ public class Sparkline2Svg extends Lirical2Svg {
         // get the posttest probability
         TestResult result = hcase.getResult(diseaseId);
         int ybaseline = total_height / 2; // put everything right in the middle
-        int xstart = 5;
+        int xstart = 10;
         int linewidth =  n_hpo_terms * (BAR_WIDTH + INTERBAR_WIDTH) - INTERBAR_WIDTH;
-//        if (hasGenotype) {
-//            linewidth += BAR_WIDTH + INTERBAR_WIDTH;
-//        }
-        int currentX = xstart + PERCENTAGE_WIDTH + SPACING_WIDTH;
+        int currentX = xstart;
         swriter.write("<line fill=\"none\" stroke=\"" + BLACK + "\" stroke-width=\"1\" " +
                 "x1=\"" + currentX + "\" y1=\"" + ybaseline + "\" x2=\"" + (currentX+linewidth) +
                 "\" y2=\"" + ybaseline + "\"/>\n");
@@ -248,7 +241,7 @@ public class Sparkline2Svg extends Lirical2Svg {
         }
         for (int i=0; i<indicesExcluded.size(); i++) {
             int originalIndex = indicesExcluded.get(i);
-            String msg = this.observedTermToolTipLabels.get(originalIndex);
+            String msg = this.excludedTermToolTipLabels.get(originalIndex);
             double logratio = Math.log10(result.getExcludedPhenotypeRatio(originalIndex));
             if (logratio > 0) {
                 logratio = Math.min(MAX_LOG_LR, logratio);
@@ -272,29 +265,6 @@ public class Sparkline2Svg extends Lirical2Svg {
             }
             currentX += BAR_WIDTH + INTERBAR_WIDTH;
         }
-//        if (result.hasGenotype()) {
-//            double logratio = Math.log10(result.getGenotypeLR());
-//            if (logratio > 0) {
-//                logratio = Math.min(MAX_LOG_LR, logratio);
-//                int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
-//                int ypos = ybaseline - height;
-//                if (height == 0) {
-//                    writeSmallDiamond(swriter, currentX, ybaseline,geneSymbol);
-//                } else {
-//                    swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos + "\" x=\"" + currentX + "\" " +
-//                            "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\" onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + geneSymbol + "')\"/>\n");
-//                }
-//            } else {
-//                logratio = Math.max((-1)*MAX_LOG_LR, logratio);
-//                int height = (int)((-1)*logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
-//                if (height == 0) {
-//                    writeSmallDiamond(swriter, currentX, ybaseline, geneSymbol);
-//                } else {
-//                    swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline + "\" x=\"" + currentX + "\" " +
-//                            "stroke-width=\"1\" stroke=\"#000000\" fill=\"" + RED + "\"  onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + geneSymbol + "')\"/>\n");
-//                }
-//            }
-//        }
     }
 
     /**
