@@ -24,7 +24,7 @@ A disease-associated mutation in the TGFBR2 gene (see Patient 4 in
 `Cao et al., 2018 <https://www.ncbi.nlm.nih.gov/pubmed/?term=30101859>`_) was spiked into the VCF file.
 
 
-Download the VCF file (LDS2.vcf) from `Figshare <https://figshare.com/account/articles/10636556>`_.
+Download the VCF file (LDS2.vcf) from `Figshare <https://figshare.com/articles/LDS2_vcf/10636556>`_.
 
 Creating a phenopacket
 ~~~~~~~~~~~~~~~~~~~~~~

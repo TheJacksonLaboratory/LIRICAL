@@ -6,6 +6,8 @@ import freemarker.template.Configuration;
 import freemarker.template.Version;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.configuration.LrThreshold;
+import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -140,14 +142,13 @@ public abstract class LiricalTemplate {
         private Map<TermId, Gene2Genotype> genotypeMap;
         private Map<TermId,String> geneid2sym;
         private List<String> errors= ImmutableList.of();
-
-        double thres=0.01;
-        int minDifferentials=10;
+        private LrThreshold thres;
+        private MinDiagnosisCount minDifferentials;
         String outfileprefix = "lirical";
         String outdir = null;
 
 
-        public Builder(HpoCase hcase,Ontology ont,Map<String,String> mdata){
+        public Builder(HpoCase hcase, Ontology ont, Map<String,String> mdata){
             this.hcase=hcase;
             this.ontology=ont;
             this.metadata=mdata;
@@ -156,8 +157,8 @@ public abstract class LiricalTemplate {
 
         public Builder genotypeMap(Map<TermId, Gene2Genotype> gm){this.genotypeMap=gm;return this;}
         public Builder geneid2symMap(Map<TermId,String> gsm) { this.geneid2sym=gsm;return this;}
-        public Builder threshold(double t) { this.thres=t;return this;}
-        public Builder mindiff(int md){ this.minDifferentials=md; return this;}
+        public Builder threshold(LrThreshold t) { this.thres=t;return this;}
+        public Builder mindiff(MinDiagnosisCount md){ this.minDifferentials=md; return this;}
         public Builder prefix(String p){ this.outfileprefix = p; return this;}
         public Builder outdirectory(String od){ this.outdir=od;return this;}
         public Builder errors(List<String> e) { this.errors = e;return this;}

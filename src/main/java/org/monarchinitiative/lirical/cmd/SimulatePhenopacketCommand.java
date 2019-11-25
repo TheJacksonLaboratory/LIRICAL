@@ -92,9 +92,9 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         geneRank2CountMap.putIfAbsent(geneRank,0);
         geneRank2CountMap.merge(geneRank,1, Integer::sum); // increment count
         if (outputTSV) {
-            simulator.outputTsv(outfilePrefix,LR_THRESHOLD,minDifferentialsToShow,outdir);
+            simulator.outputTsv(outfilePrefix, factory.getLrThreshold(), factory.getMinDifferentials(), outdir);
         } else {
-            simulator.outputHtml(outfilePrefix,LR_THRESHOLD,minDifferentialsToShow,outdir);
+            simulator.outputHtml(outfilePrefix, factory.getLrThreshold(), factory.getMinDifferentials(), outdir);
         }
     }
 
@@ -129,6 +129,8 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
                 .transcriptdatabase(this.transcriptDb)
                 .backgroundFrequency(this.backgroundFrequencyFile)
                 .global(this.globalAnalysisMode)
+                .lrThreshold(this.LR_THRESHOLD)
+                .minDiff(this.minDifferentialsToShow)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
         factory.qcExternalFilesInDataDir();
@@ -165,7 +167,8 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
 
         this.factory = new LiricalFactory.Builder()
                 .datadir(this.datadir)
-               // .strict(this.strict)
+                .minDiff(this.minDifferentialsToShow)
+                .lrThreshold(this.LR_THRESHOLD)
                 .global(this.globalAnalysisMode)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();

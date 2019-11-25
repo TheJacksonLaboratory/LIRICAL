@@ -108,8 +108,8 @@ public class PhenoOnlyCaseSimulator {
 
     public void outputHtml(String prefix, double lrThreshold,int minDiff, String outdir) {
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hpocase,ontology,metadata)
-                .threshold(lrThreshold)
-                .mindiff(minDiff)
+                .threshold(factory.getLrThreshold())
+                .mindiff(factory.getMinDifferentials())
                 .outdirectory(outdir)
                 .prefix(prefix);
         HtmlTemplate htemplate = builder.buildPhenotypeHtmlTemplate();
@@ -120,8 +120,8 @@ public class PhenoOnlyCaseSimulator {
     public void outputTsv(String prefix, double lrThreshold,int minDiff, String outdir) {
         String outname=String.format("%s.tsv",prefix);
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(this.hpocase,ontology,metadata)
-                .threshold(lrThreshold)
-                .mindiff(minDiff)
+                .threshold(factory.getLrThreshold())
+                .mindiff(factory.getMinDifferentials())
                 .outdirectory(outdir)
                 .prefix(prefix);
         TsvTemplate tsvtemplate = builder.buildPhenotypeTsvTemplate();

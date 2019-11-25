@@ -211,6 +211,7 @@ table.posttest {
 	min-width:50%;
 	margin-left:auto;
     margin-right:auto;
+    border: 1px solid black;
 }
 
 table.posttest td {
@@ -434,15 +435,26 @@ a.svg:hover, a.svg:active {
         <a name="diff"></a>
         <h2>Top differential diagnoses</h2>
         <p>${topdifferentialcount}</p>
-        <div style="border:1px solid black; text-align:center;">
+        <div style="text-align:center;">
+        <#if hasGenotypes?has_content>
             <table class="posttest">
-                <tr><th>Rank</th><th>Post-test probability</th><th>Disease</th><th>ID</th><th>Profile match</th><th>LR (log)</th><th>Gene</th></tr>
+                <tr><th>Rank</th><th>Post-test probability</th><th>Disease</th><th>Phenotypes</th><th>Gene</th><th>LR (log<sub>10</sub>)</th></tr>
                     <#list sparkline as sprk>
-                    <tr><td class="posttest">${sprk.rank}</td><td>${sprk.posttestBarSvg}</td><td><a href="#diagnosis${sprk.rank}">${sprk.diseaseName}</a></td><td>${sprk.diseaseAnchor}</td><td>${sprk.sparklineSvg}</td><td class="posttest">${sprk.compositeLikelihoodRatio}</td><td class="posttest">${sprk.geneSymbol}</td></tr>
+                    <tr><td class="posttest">${sprk.rank}</td><td>${sprk.posttestBarSvg}</td><td><a href="#diagnosis${sprk.rank}">${sprk.diseaseName}</a></td><td>${sprk.sparklineSvg}</td><td class="posttest">${sprk.geneSparklineSvg}</td><td class="posttest">${sprk.compositeLikelihoodRatio}</td></tr>
                 </#list>
             </table>
+         <#else>
+            <table class="posttest">
+               <tr><th>Rank</th><th>Post-test probability</th><th>Disease</th><th>ID</th><th>Phenotypes</th><th>LR (log)</th></tr>
+                    <#list sparkline as sprk>
+                        <tr><td class="posttest">${sprk.rank}</td><td>${sprk.posttestBarSvg}</td><td><a href="#diagnosis${sprk.rank}">${sprk.diseaseName}</a></td><td>${sprk.diseaseAnchor}</td><td>${sprk.sparklineSvg}</td><td class="posttest">${sprk.compositeLikelihoodRatio}</td></tr>
+                     </#list>
+           </table>
+           </#if>
         </div>
       </article>
+      </section>
+      <section>
       <#list diff as dd>
           <article>
           <a name="${dd.anchor}"></a>
