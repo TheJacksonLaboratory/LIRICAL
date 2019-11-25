@@ -328,7 +328,7 @@ public class Sparkline2Svg extends Lirical2Svg {
         int barwidth = (int) (total_remaining_width * ptprob);
         // x and y are the left and top of the rectangle
         writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=25 x=\"25%%\" " +
-                        "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
+                        "stroke-width=\"0\" stroke=\"#000000\" fill=\"%s\"/>\n",
                 BOX_HEIGHT,
                 barwidth,
                 BRIGHT_GREEN));

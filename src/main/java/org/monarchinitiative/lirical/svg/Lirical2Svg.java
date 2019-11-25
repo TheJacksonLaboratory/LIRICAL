@@ -20,14 +20,14 @@ public class Lirical2Svg {
     protected final static int BOX_HEIGHT=15;
 
     protected final static String BLUE ="#4dbbd5";
-    protected final static String RED ="#e64b35ff";
+    protected final static String RED ="#e64b35";
     protected final static String BROWN="#7e6148";
     protected final static String DARKBLUE = "#3c5488";
     protected final static String VIOLET = "#8491b4";
     protected final static String ORANGE = "#ff9900";
     protected final static String BLACK = "#000000";
     protected final static String GREEN = "#00A087";
-    protected final static String BRIGHT_GREEN = "#00a087ff";
+    protected final static String BRIGHT_GREEN = "#00a087";
 
     protected void writeFooter(Writer writer) throws IOException {
         writer.write("</g>\n</svg>\n");
