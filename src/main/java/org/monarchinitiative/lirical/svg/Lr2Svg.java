@@ -200,8 +200,10 @@ public class Lr2Svg extends Lirical2Svg {
 
         int rank = hpocase.getResult(diseaseCURIE).getRank();
         double ptp = hpocase.getResult(diseaseCURIE).getPosttestProbability();
-        String diseaseLabel = String.format("%s [%s]: Rank: #%d Posttest probability: %.1f%%", diseaseName, diseaseCURIE.getValue(), rank, (100.0 * ptp));
+        String diseaseLabel = String.format("%s [%s]", diseaseName, diseaseCURIE.getValue());
+        String diseaseResult = String.format("Rank: #%d Posttest probability: %.1f%%", rank, (100.0 * ptp));
         writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"16px\" font-weight=\"bold\">%s</text>\n", (midline - (maxTick - 1) * block), Y + 35, diseaseLabel));
+        writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"16px\" font-weight=\"bold\">%s</text>\n", (midline - (maxTick - 1) * block), Y + 55, diseaseResult));
 
     }
 
@@ -216,6 +218,7 @@ public class Lr2Svg extends Lirical2Svg {
     private void writeLrBoxes(Writer writer) throws IOException {
         int currentY = MIN_VERTICAL_OFFSET + BOX_OFFSET * 2;
         int midline = WIDTH / 2;
+        int XbeginOfText = WIDTH - 30;
         // maximum amplitude of the bars
         // we want it to be at least 10_000
         double maxAmp = Math.max(4.0, Math.log10(this.maximumIndividualLR));
@@ -250,7 +253,7 @@ public class Lr2Svg extends Lirical2Svg {
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);
             String label = String.format("%s [%s]", term.getName(), tid.getValue());
-            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n", WIDTH, currentY + BOX_HEIGHT, label));
+            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n", XbeginOfText, currentY + BOX_HEIGHT, label));
             currentY += BOX_HEIGHT + BOX_OFFSET;
             explanationIndex++;
         }
@@ -281,7 +284,7 @@ public class Lr2Svg extends Lirical2Svg {
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);
             String label = String.format("Excluded: %s [%s]", term.getName(), tid.getValue());
-            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n", WIDTH, currentY + BOX_HEIGHT, label));
+            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n", XbeginOfText, currentY + BOX_HEIGHT, label));
             currentY += BOX_HEIGHT + BOX_OFFSET;
             explanationIndex++;
         }
@@ -312,7 +315,7 @@ public class Lr2Svg extends Lirical2Svg {
                         BOX_HEIGHT, (int) boxwidth, currentY, X, color, lrstring));
             }
             // add label of Genotype
-            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"italic\">%s</text>\n", WIDTH, currentY + BOX_HEIGHT, geneSymbol));
+            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"italic\">%s</text>\n", XbeginOfText, currentY + BOX_HEIGHT, geneSymbol));
         }
         maxAmp = Math.max(4.0, maxAmp); // show at least 10,000!
         writeScale(writer, maxAmp, scaling);
