@@ -1,6 +1,15 @@
 =========
 Changelog
 =========
+
+------
+v1.0.0
+------
+- Update to phenopacket-schema version 1.0.0
+- Improvements to HTML output
+
+
+
 ----------
 v1.0.0-RC2
 ----------
