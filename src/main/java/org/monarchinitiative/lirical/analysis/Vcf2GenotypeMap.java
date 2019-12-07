@@ -119,7 +119,7 @@ public class Vcf2GenotypeMap {
 
     /**
      * Read the VCF file and extract genotype
-     * @return
+     * @return map with key=TermId of a Gene, value corresponding {@link Gene2Genotype} object
      */
     public Map<TermId, Gene2Genotype> vcf2genotypeMap() {
         // whether or not to just look at a specific genomic interval

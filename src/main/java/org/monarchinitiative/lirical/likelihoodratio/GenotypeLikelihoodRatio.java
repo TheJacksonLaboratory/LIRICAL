@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation.noVariantsDetectedAutosomalRecessive;
 import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.*;
 
 /**
@@ -27,8 +26,6 @@ public class GenotypeLikelihoodRatio {
      * data was not available.
      */
     private static final double DEFAULT_LAMBDA_BACKGROUND = 0.1;
-    /** A heuristic to downweight an autosomal recessive disease by a factor of 1/10 if we only find one pathogenic allele. */
-    final double HEURISTIC_ONE_ALLELE_FOR_AR_DISEASE = 0.10;
     /** A heuristic to downweight an  disease by a factor of 1/10 if the number of predicted pathogenic alleles in
      * the VCF file is above lambda_d. */
     final double HEURISTIC_PATH_ALLELE_COUNT_ABOVE_LAMBDA_D = 0.10;
@@ -172,7 +169,6 @@ public class GenotypeLikelihoodRatio {
         // Use the following four vars to keep track of which option was the max.
         Optional<Double> max = Optional.empty();
         TermId maxInheritanceMode = INHERITANCE_ROOT; // MoI associated with the maximum pathogenicity
-        boolean heuristicOneAlleleAR = false;
         boolean heuristicPathCountAboveLambda = false;
         // If these variables are used, they will be specifically initialized.
         // we start them off at 1.0/1.0, which would lead to a zero-effect likelihood ratio of 1
@@ -198,7 +194,6 @@ public class GenotypeLikelihoodRatio {
                 double HEURISTIC = HEURISTIC_PATH_ALLELE_COUNT_ABOVE_LAMBDA_D * (g2g.pathogenicAlleleCount() - lambda_disease);
                 max = updateMax(HEURISTIC, max);
                 maxInheritanceMode = inheritanceId;
-                heuristicOneAlleleAR = false;
                 heuristicPathCountAboveLambda = true;
             } else { // the following is the general case, where either the variant count
                 // matches or we are not using the strict option.
@@ -206,15 +201,15 @@ public class GenotypeLikelihoodRatio {
                 PoissonDistribution pdBackground = new PoissonDistribution(lambda_background);
                 B = pdBackground.probability(observedWeightedPathogenicVariantCount);
                 if (B > 0 && D > 0) {
-                    heuristicOneAlleleAR = false;
-                    heuristicPathCountAboveLambda = false;
                     double ratio = D / B;
                     if (max.isPresent() && ratio > max.get()) {
                         max = Optional.of(ratio);
                         maxInheritanceMode = inheritanceId;
+                        heuristicPathCountAboveLambda = false;
                     } else if (!max.isPresent()) {
                         max = Optional.of(ratio);
                         maxInheritanceMode = inheritanceId;
+                        heuristicPathCountAboveLambda = false;
                     }
                 }
             }
@@ -224,9 +219,7 @@ public class GenotypeLikelihoodRatio {
         // we do not crash if something unexpected occurs. (Should actually never be used)
         final double DEFAULTVAL = 0.05;
         double returnvalue = max.orElse(DEFAULTVAL);
-        if (heuristicOneAlleleAR) {
-            return GenotypeLrWithExplanation.explainOneAlleleRecessive(returnvalue, observedWeightedPathogenicVariantCount, lambda_background, g2g.getSymbol());
-        } else if (heuristicPathCountAboveLambda) {
+        if (heuristicPathCountAboveLambda) {
             return GenotypeLrWithExplanation.explainPathCountAboveLambdaB(returnvalue, g2g, maxInheritanceMode, lambda_background);
         } else {
             return GenotypeLrWithExplanation.explanation(returnvalue, g2g, maxInheritanceMode,lambda_background, B, D);

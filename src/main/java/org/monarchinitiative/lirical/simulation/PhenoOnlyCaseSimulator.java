@@ -1,7 +1,5 @@
 package org.monarchinitiative.lirical.simulation;
 
-import org.json.simple.parser.ParseException;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.io.PhenopacketImporter;
@@ -18,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -28,23 +25,15 @@ public class PhenoOnlyCaseSimulator {
 
     private final File phenopacketFile;
 
-
     private final LiricalFactory factory;
-
-    private final GenomeAssembly genomeAssembly;
 
     private final Disease simulatedDiagnosis;
 
     private final TermId simulatedDiseaseId;
 
-
-    private final String sampleName;
-
-
     private final Ontology ontology;
 
     private final Map<TermId, HpoDisease> diseaseMap;
-
 
     private final List<TermId> hpoIdList;
     // List of excluded HPO terms in the subject.
@@ -59,14 +48,13 @@ public class PhenoOnlyCaseSimulator {
 
 
 
-    public PhenoOnlyCaseSimulator(File phenopacket, LiricalFactory factory) throws IOException, ParseException {
+    public PhenoOnlyCaseSimulator(File phenopacket, LiricalFactory factory) {
         phenopacketFile = phenopacket;
         this.metadata = new HashMap<>();
         this.factory = factory;
-        this.genomeAssembly = factory.getAssembly();
         String phenopacketAbsolutePath = phenopacketFile.getAbsolutePath();
         PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketAbsolutePath,this.factory.hpoOntology());
-        this.sampleName = importer.getSamplename();
+        String sampleName = importer.getSamplename();
         simulatedDiagnosis = importer.getDiagnosis();
         String disId = simulatedDiagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
         this.simulatedDiseaseId = TermId.of(disId);
@@ -78,7 +66,7 @@ public class PhenoOnlyCaseSimulator {
         Date date = new Date();
         this.metadata.put("analysis_date", dateFormat.format(date));
         this.metadata.put("phenopacket_file", phenopacketAbsolutePath);
-        metadata.put("sample_name", this.sampleName);
+        metadata.put("sample_name", sampleName);
         logger.trace("Running phenotype-only simulation from phenopacket {} ",
                 phenopacketFile.getAbsolutePath());
         this.metadata.put("phenopacket.diagnosisId", simulatedDiseaseId.getValue());

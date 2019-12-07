@@ -65,7 +65,7 @@ public class ImprobableDifferential {
 
     private String formatter2(double number) {
         String s = formatter(number);
-        String A[] = s.split("E");
+        String[] A = s.split("E");
         if (A.length!=2) return s;
         return String.format("%s x 10<sup>%s</sup>",A[0],A[1]);
     }

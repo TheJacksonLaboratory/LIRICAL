@@ -1,7 +1,5 @@
 package org.monarchinitiative.lirical.configuration;
 
-import javax.validation.constraints.Min;
-
 /**
  * This class encapsulates the minimum number of diagnoses to show, which is an optional user argument (-m).
  * If the user has set a value, then we show at least this number of diagnoses in the detailed HTML output.
