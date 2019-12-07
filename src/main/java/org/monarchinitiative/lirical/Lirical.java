@@ -7,7 +7,6 @@ import com.beust.jcommander.ParameterException;
 import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.lirical.cmd.*;
 import org.monarchinitiative.lirical.exception.LiricalException;
-import org.monarchinitiative.lirical.simulation.NotCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +39,6 @@ public class Lirical {
         YamlCommand yaml = new YamlCommand();
         PhenopacketCommand phenopacket = new PhenopacketCommand();
         SimulatePhenopacketCommand simvcf = new SimulatePhenopacketCommand();
-        NotCommand not = new NotCommand();
         JCommander jc = JCommander.newBuilder()
                 .addObject(lirical)
                 .addCommand("download", download)
@@ -50,7 +48,6 @@ public class Lirical {
                 .addCommand("simulate", simulate)
                 .addCommand("grid", grid)
                 .addCommand("simulate-vcf",simvcf)
-                .addCommand("not",not)
                 .build();
         jc.setProgramName("java -jar LIRICAL.jar");
         try {
@@ -135,9 +132,6 @@ public class Lirical {
                break;
            case "phenopacket":
                 liricalCommand =phenopacket;
-                break;
-           case "not":
-                liricalCommand =not;
                 break;
            default:
                System.err.println(String.format("[ERROR] command \"%s\" not recognized",command));

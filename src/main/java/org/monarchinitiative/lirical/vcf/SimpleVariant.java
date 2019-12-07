@@ -115,7 +115,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
      * Count the number of pathogenic alleles. If this variant is not in the pathogenic bin, then
      * the count is always zero. If the variant is in the pathogenic bin, then the count is 2
      * if the variant is homozygous, otherwise the count in 1.
-     * @return
+     * @return number of pathogenic alleles
      */
     public int pathogenicAlleleCount() {
         if (this.pathogenicityScore<PATHOGENICITY_THRESHOLD) return 0;
@@ -129,7 +129,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
      * Count the number of ClinVar-pathogenic alleles. If this variant is not called Pathogenic in ClinVar, then
      * the count is always zero. If the variant is ClinVar-pathogenic, then the count is 2
      * if the variant is homozygous, otherwise the count in 1.
-     * @return
+     * @return number of pathogenic alleles that are registered in ClinVar
      */
     public int pathogenicClinVarAlleleCount() {
         if (! isClinVarPathogenic()) return 0;

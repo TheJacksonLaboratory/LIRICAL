@@ -1,10 +1,7 @@
 package org.monarchinitiative.lirical.likelihoodratio;
 
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
-import org.monarchinitiative.lirical.poisson.PoissonDistribution;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-
-import java.util.List;
 
 import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.*;
 

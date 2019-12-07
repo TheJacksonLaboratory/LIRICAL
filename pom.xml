@@ -24,7 +24,7 @@
         <junit.version>5.5.0</junit.version>
         <phenol.version>1.4.1</phenol.version>
         <exomiser.version>12.1.0</exomiser.version>
-        <phenopacket.version>1.0.0-RC4</phenopacket.version>
+        <phenopacket.version>1.0.0</phenopacket.version>
         <slf4j.version>1.7.25</slf4j.version>
     </properties>
 

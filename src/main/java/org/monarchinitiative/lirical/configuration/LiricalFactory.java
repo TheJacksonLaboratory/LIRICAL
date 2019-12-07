@@ -87,8 +87,6 @@ public class LiricalFactory {
     private final Ontology ontology;
     /** The path to the Exomiser database file, e.g., {@code 1811_hg19_variants.mv.db}. */
     private String mvStorePath=null;
-    /** genotype matching for likelihood ratio calculation". */
-    //private boolean strict;
     /** If global is set to true, then LIRICAL will not discard candidate diseases with no known disease gene or
      * candidatesfor which no predicted pathogenic variant was found in the VCF. */
     private final boolean globalAnalysisMode;
@@ -535,7 +533,7 @@ public class LiricalFactory {
     public void qcExomiserFiles() {
         if (exomiserPath == null) {
             logger.error("Exomiser data directory is not set");
-            throw new LiricalRuntimeException(String.format("Exomiser data directory is not set"));
+            throw new LiricalRuntimeException("Exomiser data directory is not set");
         }
         File exomiserDir = new File(exomiserPath);
         if (!exomiserDir.exists()) {
@@ -651,7 +649,7 @@ public class LiricalFactory {
          * Create a Builder object from the YAML Parser.
          * @param yp YamlParser
          * @param phenotypeOnly If false, expect to see information about the VCF file and Exomiser build.
-         * @return
+         * @return Builder object
          */
         public Builder yaml(YamlParser yp, boolean phenotypeOnly) {
             this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(yp.getDataDir());

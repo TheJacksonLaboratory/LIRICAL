@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatioTest;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
-import org.monarchinitiative.phenol.base.PhenolException;
 import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
@@ -34,8 +33,6 @@ class HpoCaseTest {
     /** Name of the disease we are simulating in this test, i.e., OMIM:108500. */
     private static String diseasename="108500";
     private static HpoCase hpocase;
-    private static Ontology ontology;
-    private static PhenotypeLikelihoodRatio backforeFreq;
 
 
     @BeforeAll
@@ -45,9 +42,8 @@ class HpoCaseTest {
         String annotationPath = Objects.requireNonNull(classLoader.getResource("small.hpoa").getFile());
         /* parse ontology */
         // The HPO is in the default  curie map and only contains known relationships / HP terms
-        ontology = OntologyLoader.loadOntology(new File(hpoPath));
+        Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));
         Map<TermId, HpoDisease> diseaseMap = HpoDiseaseAnnotationParser.loadDiseaseMap(annotationPath, ontology);
-        backforeFreq = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
 
         /* these are the phenotypic abnormalties of our "case" */
         String HP_PREFIX = "HP";

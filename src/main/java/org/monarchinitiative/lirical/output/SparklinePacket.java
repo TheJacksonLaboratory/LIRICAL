@@ -2,7 +2,6 @@ package org.monarchinitiative.lirical.output;
 
 
 import com.google.common.collect.ImmutableList;
-import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.lirical.svg.Sparkline2Svg;

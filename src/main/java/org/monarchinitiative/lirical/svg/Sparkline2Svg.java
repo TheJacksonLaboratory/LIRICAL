@@ -1,14 +1,12 @@
 package org.monarchinitiative.lirical.svg;
 
 import com.google.common.collect.ImmutableList;
-import com.google.protobuf.util.JsonFormat;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sonumina.math.combinatorics.IMultisetCallback;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -35,7 +33,6 @@ public class Sparkline2Svg extends Lirical2Svg {
 
     private final static int MAXIMUM_BAR_HEIGHT = 20;
 
-    //private final static int POSTTEST_BAR_HEIGHT = 40;
 
     private final List<TermId> termIdList;
     private final List<TermId> excludedTermIdList;
