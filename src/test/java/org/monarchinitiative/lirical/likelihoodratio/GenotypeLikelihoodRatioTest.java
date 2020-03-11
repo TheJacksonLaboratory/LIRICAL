@@ -13,9 +13,8 @@ import java.util.*;
 import static junit.framework.TestCase.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_DOMINANT;
-import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE;
-
+import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_DOMINANT;
+import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE;
 
 class GenotypeLikelihoodRatioTest {
 

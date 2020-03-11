@@ -5,7 +5,7 @@
 
     <groupId>org.monarchinitiative</groupId>
     <artifactId>LIRICAL</artifactId>
-    <version>1.0.0-RC3</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>LIRICAL</name>
@@ -22,10 +22,10 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <junit.version>5.5.0</junit.version>
-        <phenol.version>1.4.1</phenol.version>
+        <phenol.version>1.4.2</phenol.version>
         <exomiser.version>12.1.0</exomiser.version>
         <phenopacket.version>1.0.0</phenopacket.version>
-        <slf4j.version>1.7.25</slf4j.version>
+        <slf4j.version>1.7.30</slf4j.version>
     </properties>
 
 
@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.28</version>
+            <version>2.3.30</version>
         </dependency>
 
         <dependency>
@@ -120,7 +120,7 @@
         <dependency>
             <groupId>com.github.samtools</groupId>
             <artifactId>htsjdk</artifactId>
-            <version>2.19.0</version>
+            <version>2.21.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.tukaani</groupId>
@@ -140,7 +140,7 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.12.0</version>
+            <version>2.13.1</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -196,11 +196,18 @@
                </exclusion>
            </exclusions>
        </dependency>
+
+        <dependency>
+            <groupId>org.monarchinitiative.phenol</groupId>
+            <artifactId>phenol-annotations</artifactId>
+            <version>${phenol.version}</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/de.charite.compbio/Jannovar -->
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>Jannovar</artifactId>
-            <version>0.28</version>
+            <version>0.34</version>
             <type>pom</type>
         </dependency>
 
@@ -239,12 +246,12 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.8.0</version>
+            <version>3.11.4</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
-            <version>3.8.0</version>
+            <version>3.11.4</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.tukaani/xz
@@ -334,7 +341,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2-mvstore</artifactId>
-            <version>1.4.199</version>
+            <version>1.4.200</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
@@ -366,7 +373,7 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-runner</artifactId>
-            <version>1.5.0</version>
+            <version>1.6.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -387,7 +394,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>3.0.0</version>
+            <version>3.3.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.junit.jupiter</groupId>
@@ -400,7 +407,7 @@
         <dependency>
             <groupId>com.beust</groupId>
             <artifactId>jcommander</artifactId>
-            <version>1.72</version>
+            <version>1.78</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple -->
@@ -414,13 +421,13 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.10.1</version>
+            <version>2.9.10.3</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>28.0-jre</version>
+            <version>28.2-jre</version>
         </dependency>
 
 
