@@ -3,6 +3,12 @@ Changelog
 =========
 
 ------
+v1.0.1
+------
+- updated to phenol 1.4.2
+- updated hpo annotation download URL
+
+------
 v1.0.0
 ------
 - Update to phenopacket-schema version 1.0.0

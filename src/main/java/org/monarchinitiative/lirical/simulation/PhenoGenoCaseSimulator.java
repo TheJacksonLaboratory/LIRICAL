@@ -17,7 +17,7 @@ import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.output.HtmlTemplate;
 import org.monarchinitiative.lirical.output.LiricalTemplate;
 import org.monarchinitiative.lirical.output.TsvTemplate;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.core.Disease;
@@ -32,7 +32,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.monarchinitiative.phenol.formats.hpo.HpoSubOntologyRootTermIds.PHENOTYPIC_ABNORMALITY;
+import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoSubOntologyRootTermIds.PHENOTYPIC_ABNORMALITY;
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
 
 public class PhenoGenoCaseSimulator {
@@ -106,7 +106,7 @@ public class PhenoGenoCaseSimulator {
 
         this.randomize = rand;
         if (randomize) {
-            Set<TermId> descendents=getDescendents(factory.hpoOntology(),PHENOTYPIC_ABNORMALITY);
+            Set<TermId> descendents=getDescendents(factory.hpoOntology(), PHENOTYPIC_ABNORMALITY);
             ImmutableList.Builder<TermId> termbuilder = new ImmutableList.Builder<>();
             for (TermId t: descendents) {
                 termbuilder.add(t);

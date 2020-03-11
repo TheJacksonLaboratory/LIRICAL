@@ -3,7 +3,8 @@ package org.monarchinitiative.lirical.likelihoodratio;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.*;
+import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInheritanceTermIds.*;
+
 
 public class GenotypeLrWithExplanation  {
     /** The likelihood ratio of the genotype. */
@@ -60,7 +61,7 @@ public class GenotypeLrWithExplanation  {
         }
         String expl = String.format("%s: %s. Heuristic for high number of observed predicted pathogenic variants. "
                         + "Observed weighted pathogenic variant count: %.2f. &lambda;<sub>disease</sub>=%d. &lambda;<sub>background</sub>=%.4f. log<sub>10</sub>(LR)=%.3f.",
-                geneSymbol, getMoIString(MoI), observedWeightedPathogenicVariantCount, (int) lambda_disease, lambda_background, Math.log10(ratio));
+                geneSymbol, getMoIString(MoI), observedWeightedPathogenicVariantCount, lambda_disease, lambda_background, Math.log10(ratio));
         return new GenotypeLrWithExplanation(ratio, expl);
     }
 

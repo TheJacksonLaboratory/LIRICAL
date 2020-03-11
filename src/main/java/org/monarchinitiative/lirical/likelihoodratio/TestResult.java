@@ -2,7 +2,7 @@ package org.monarchinitiative.lirical.likelihoodratio;
 
 
 import org.monarchinitiative.lirical.hpo.HpoCase;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +90,7 @@ public class TestResult implements Comparable<TestResult> {
      * @param geneId gene id of the gene being tested
      * @param pretest pretest probability of the disease
      */
-    public TestResult(List<Double> reslist, List<Double> excllist,HpoDisease diseaseId, Double genotypeLr,TermId geneId,double pretest) {
+    public TestResult(List<Double> reslist, List<Double> excllist, HpoDisease diseaseId, Double genotypeLr,TermId geneId,double pretest) {
         this.results = reslist;
         this.excludedResults=excllist;
         this.hpoDisease = diseaseId;

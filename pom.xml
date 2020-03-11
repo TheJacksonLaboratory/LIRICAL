@@ -22,7 +22,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <junit.version>5.5.0</junit.version>
-        <phenol.version>1.4.1</phenol.version>
+        <phenol.version>1.4.2</phenol.version>
         <exomiser.version>12.1.0</exomiser.version>
         <phenopacket.version>1.0.0</phenopacket.version>
         <slf4j.version>1.7.30</slf4j.version>
@@ -196,6 +196,13 @@
                </exclusion>
            </exclusions>
        </dependency>
+
+        <dependency>
+            <groupId>org.monarchinitiative.phenol</groupId>
+            <artifactId>phenol-annotations</artifactId>
+            <version>${phenol.version}</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/de.charite.compbio/Jannovar -->
         <dependency>
             <groupId>de.charite.compbio</groupId>
