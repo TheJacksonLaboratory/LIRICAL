@@ -63,11 +63,7 @@ public class Lirical {
                     mycommand=a;
                 }
                 if (a.equals("h")) {
-                    if (mycommand!=null) {
-                        jc.usage(mycommand);
-                    } else {
-                        jc.usage();
-                    }
+                    jc.usage();
                     System.exit(1);
                 }
             }
@@ -89,11 +85,7 @@ public class Lirical {
         }
 
         if ( lirical.usageHelpRequested) {
-            if (parsedCommand==null) {
-                jc.usage();
-            } else {
-                jc.usage(parsedCommand);
-            }
+            jc.usage();
             System.exit(1);
         }
 
