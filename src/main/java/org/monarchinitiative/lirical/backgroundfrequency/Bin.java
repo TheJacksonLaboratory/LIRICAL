@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.gt2git;
+package org.monarchinitiative.lirical.backgroundfrequency;
 
 /**
  * This class represents one of two bins associated with each gene. Bin A is for the "pathogenic" variants, i.e.,

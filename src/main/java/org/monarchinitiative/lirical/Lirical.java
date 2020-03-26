@@ -25,7 +25,7 @@ public class Lirical {
     @Parameter(names = {"-h", "--help"}, help = true, arity = 0,description = "display this help message")
     private boolean usageHelpRequested;
 
-    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","yaml","phenopacket","simulate","grid","gt2git","simulate-vcf","not");
+    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","yaml","phenopacket","simulate","grid","background","simulate-vcf","not");
 
 
     static public void main(String [] args) {
@@ -35,7 +35,7 @@ public class Lirical {
         DownloadCommand download = new DownloadCommand();
         SimulatePhenotypeOnlyCommand simulate = new SimulatePhenotypeOnlyCommand();
         GridSearchCommand grid = new GridSearchCommand();
-        Gt2GitCommand gt2git = new Gt2GitCommand();
+        BackgroundFrequencyCommand background = new BackgroundFrequencyCommand();
         YamlCommand yaml = new YamlCommand();
         PhenopacketCommand phenopacket = new PhenopacketCommand();
         SimulatePhenopacketCommand simvcf = new SimulatePhenopacketCommand();
@@ -44,7 +44,7 @@ public class Lirical {
                 .addCommand("download", download)
                 .addCommand("phenopacket",phenopacket)
                 .addCommand("yaml",yaml)
-                .addCommand("gt2git",gt2git)
+                .addCommand("background",background)
                 .addCommand("simulate", simulate)
                 .addCommand("grid", grid)
                 .addCommand("simulate-vcf",simvcf)
@@ -62,7 +62,7 @@ public class Lirical {
                 if (commandnames.contains(a)) {
                     mycommand=a;
                 }
-                if (a.equals("h")) {
+                if (a.equals("h") || a.equals("-h") || a.equals("--h")) {
                     jc.usage();
                     System.exit(1);
                 }
@@ -113,8 +113,8 @@ public class Lirical {
            case "grid":
                liricalCommand = grid;
                break;
-           case "gt2git":
-               liricalCommand = gt2git;
+           case "background":
+               liricalCommand = background;
                break;
             case "yaml":
                 liricalCommand = yaml;
@@ -129,7 +129,6 @@ public class Lirical {
                System.err.println(String.format("[ERROR] command \"%s\" not recognized",command));
                jc.usage();
                System.exit(1);
-
         }
         try {
             liricalCommand.run();

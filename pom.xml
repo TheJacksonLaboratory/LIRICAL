@@ -5,7 +5,7 @@
 
     <groupId>org.monarchinitiative</groupId>
     <artifactId>LIRICAL</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
 
     <name>LIRICAL</name>
@@ -22,7 +22,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <junit.version>5.5.0</junit.version>
-        <phenol.version>1.4.2</phenol.version>
+        <phenol.version>1.4.4-SNAPSHOT</phenol.version>
         <exomiser.version>12.1.0</exomiser.version>
         <phenopacket.version>1.0.0</phenopacket.version>
         <slf4j.version>1.7.30</slf4j.version>

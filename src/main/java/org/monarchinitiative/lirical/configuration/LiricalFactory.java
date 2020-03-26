@@ -580,11 +580,11 @@ public class LiricalFactory {
     public void qcGenomeBuild() {
         if (this.assembly.equals(GenomeAssembly.HG19)) {
             if (! this.exomiserPath.contains("hg19")) {
-                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg19", this.exomiserPath));
+                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg19. Consider adding the option -g/--genome <...>.", this.exomiserPath));
             }
         } else if (this.assembly.equals(GenomeAssembly.HG38)) {
             if (! this.exomiserPath.contains("hg38")) {
-                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg38", this.exomiserPath));
+                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg38. Consider adding the option -g/--genome <...>.", this.exomiserPath));
             }
         } else {
             logger.trace("Genome assembly: {}",this.assembly.toString());

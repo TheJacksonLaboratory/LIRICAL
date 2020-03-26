@@ -11,7 +11,7 @@ import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
 import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.exception.LiricalException;
-import org.monarchinitiative.lirical.gt2git.GenicIntoleranceCalculator;
+import org.monarchinitiative.lirical.backgroundfrequency.GenicIntoleranceCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +28,8 @@ import java.util.List;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Calculation of background variant frequency", hidden = true)
-public class Gt2GitCommand extends LiricalCommand {
-    private static final Logger logger = LoggerFactory.getLogger(Gt2GitCommand.class);
+public class BackgroundFrequencyCommand extends LiricalCommand {
+    private static final Logger logger = LoggerFactory.getLogger(BackgroundFrequencyCommand.class);
     /** One of HG38 (default) or HG19. */
     private GenomeAssembly genomeAssembly;
     /** Name of the output file (e.g., background-hg19.tsv). Determined automatically based on genome build..*/
@@ -53,7 +53,7 @@ public class Gt2GitCommand extends LiricalCommand {
     private String datadir="data";
 
 
-    public Gt2GitCommand(){
+    public BackgroundFrequencyCommand(){
     }
 
     @Override
