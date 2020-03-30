@@ -198,7 +198,6 @@ public class GenicIntoleranceCalculator {
      */
     private void binPathogenicityData() {
         logger.trace("Binning pathogenicity data...");
-        logger.info("Binning pathogenicity data...2");
         int c=0;
         for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : alleleMap.entrySet()) {
             AlleleProto.AlleleKey alleleKey = entry.getKey();
