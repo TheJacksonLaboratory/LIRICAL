@@ -1,6 +1,12 @@
 =========
 Changelog
 =========
+------
+v1.0.3
+------
+- updated to phenol 1.4.2
+- added output of UCSC links to visualize variants
+- added some unit tests and fixed a few minor bugs
 
 ------
 v1.0.1

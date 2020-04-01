@@ -7,6 +7,8 @@ import com.google.common.collect.Multimap;
 
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.configuration.LrThreshold;
+import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.io.PhenopacketImporter;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
@@ -72,7 +74,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
      * Run an analysis of a phenopacket that contains a VCF file.
      */
     private void runVcfAnalysis() {
-        LiricalFactory factory = new LiricalFactory.Builder(ontology)
+        this.factory = new LiricalFactory.Builder(ontology)
                 .datadir(this.datadir)
                 .genomeAssembly(this.genomeAssembly)
                 .exomiser(this.exomiserDataDirectory)
@@ -130,8 +132,8 @@ public class PhenopacketCommand extends PrioritizeCommand {
                 .geneid2symMap(this.geneId2symbol)
                 .errors(errors)
                 .outdirectory(this.outdir)
-                .threshold(this.factory.getLrThreshold())
-                .mindiff(this.factory.getMinDifferentials())
+                .threshold(factory.getLrThreshold())
+                .mindiff(factory.getMinDifferentials())
                 .prefix(this.outfilePrefix);
         LiricalTemplate template = outputTSV ?
                 builder.buildGenoPhenoTsvTemplate() :
@@ -143,7 +145,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
      * Run an analysis of a phenopacket that only has Phenotype data
      */
     private void runPhenotypeOnlyAnalysis() {
-        LiricalFactory factory = new LiricalFactory.Builder(ontology)
+        this.factory = new LiricalFactory.Builder(ontology)
                 .datadir(this.datadir)
                 .orphanet(this.useOrphanet)
                 .build();
