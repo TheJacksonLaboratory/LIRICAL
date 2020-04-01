@@ -36,6 +36,18 @@ public class Age {
         return NOT_KNOWN;
     }
 
+    public int getYears() {
+        return years;
+    }
+
+    public int getMonths() {
+        return months;
+    }
+
+    public int getDays() {
+        return days;
+    }
+
     public static Age ageInYears(int y) {
         return new Age(y,0,0);
     }

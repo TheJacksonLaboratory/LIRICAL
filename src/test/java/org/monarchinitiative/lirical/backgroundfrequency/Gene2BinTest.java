@@ -22,6 +22,7 @@ class Gene2BinTest {
         g2bin.addVar(0.02,0.95); // pathogenic
         double expectedPathogenicBinFrequency=0.03/100; // sum of the two pathogenic variants divided by 100
         assertEquals(expectedPathogenicBinFrequency,g2bin.getPathogenicBinFrequency(),EPSILON);
+        assertEquals(id, g2bin.getGeneid());
     }
 
     @Test
