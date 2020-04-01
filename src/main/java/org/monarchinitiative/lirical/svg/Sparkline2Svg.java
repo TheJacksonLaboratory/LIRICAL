@@ -87,8 +87,8 @@ public class Sparkline2Svg extends Lirical2Svg {
         }
         Collections.sort(observedIndexList);
         ImmutableList.Builder<Integer> builder = new ImmutableList.Builder<>();
-        for (int i = 0; i<observedIndexList.size(); i++) {
-            builder.add(observedIndexList.get(i).getOriginalIndex());
+        for (Value2Index value2Index : observedIndexList) {
+            builder.add(value2Index.getOriginalIndex());
         }
         this.indicesObserved = builder.build();
         // Now do the same for the excluded HPO terms
@@ -100,8 +100,8 @@ public class Sparkline2Svg extends Lirical2Svg {
         Collections.sort(excludedIndexList);
 
         builder = new ImmutableList.Builder<>();
-        for (int i = 0; i<excludedIndexList.size(); i++) {
-            builder.add(excludedIndexList.get(i).getOriginalIndex());
+        for (Value2Index value2Index : excludedIndexList) {
+            builder.add(value2Index.getOriginalIndex());
         }
         this.indicesExcluded =  builder.build();
         this.n_hpo_terms = indicesExcluded.size() + indicesObserved.size();

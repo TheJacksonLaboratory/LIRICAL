@@ -174,12 +174,10 @@ public class YamlParser {
      * @return true if phenotype only analysis should be performed.
      */
     public boolean phenotypeOnlyMode() {
-        if (yconfig.getAnalysis().containsKey("exomiser")) {
+        if (yconfig.getAnalysis().containsKey("exomiser"))
             return false; // exomiser is only to be used for VCF analysis
-        } else if (yconfig.getAnalysis().containsKey("vcf")) {
-            return false;
-        }
-        return true;
+        else
+            return !yconfig.getAnalysis().containsKey("vcf");
     }
 
 

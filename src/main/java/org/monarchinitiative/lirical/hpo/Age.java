@@ -1,7 +1,5 @@
 package org.monarchinitiative.lirical.hpo;
 
-import org.checkerframework.checker.units.qual.A;
-
 import java.util.Objects;
 
 /**
