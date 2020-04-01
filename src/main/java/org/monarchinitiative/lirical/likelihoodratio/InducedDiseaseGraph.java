@@ -127,9 +127,7 @@ public class InducedDiseaseGraph {
                 return new Term2Freq(t,this.term2frequencyMap.get(t));
             } else {
                 Set<TermId> parents = OntologyAlgorithm.getParentTerms(ontology,t,false);
-                for (TermId p : parents) {
-                    queue.add(p);
-                }
+                queue.addAll(parents);
             }
         }
 

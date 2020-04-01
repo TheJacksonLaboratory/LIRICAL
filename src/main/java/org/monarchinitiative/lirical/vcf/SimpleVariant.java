@@ -5,8 +5,6 @@ import com.google.common.collect.Sets;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Set;
@@ -19,7 +17,6 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarDat
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class SimpleVariant implements Comparable<SimpleVariant> {
-    private static final Logger logger = LoggerFactory.getLogger(SimpleVariant.class);
     /** A set of interpretation classes from ClinVar that we will regard as pathogenic. */
     private static final Set<ClinVarData.ClinSig> PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS =
             Sets.immutableEnumSet(ClinVarData.ClinSig.PATHOGENIC,
@@ -29,8 +26,6 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
     private static final float PATHOGENICITY_THRESHOLD=0.80f;
     /** Must be either hg19 or hg38 -- we are using this for the UCSC URL. */
     private static String genomeBuild=null;
-
-
 
     private final String chromosome;
     private final int position;
@@ -104,6 +99,8 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
 
 
 
+
+
     /**
      * @return true if the predicted pathogenicity of this variant is above {@link #PATHOGENICITY_THRESHOLD}.
      */
@@ -161,7 +158,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
 
     /** This function sorts variants in descending order of pathogenicity. */
     @Override
-    public int compareTo(@SuppressWarnings("NullableProblems") SimpleVariant other){
+    public int compareTo(SimpleVariant other){
         return Float.compare(other.pathogenicityScore,pathogenicityScore);
 
     }

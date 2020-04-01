@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableMap;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatioTest;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 
@@ -40,8 +39,8 @@ class HpoCaseTest {
     @BeforeAll
     static void setup() throws NullPointerException {
         ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
-        String hpoPath = Objects.requireNonNull(classLoader.getResource("hp.small.obo").getFile());
-        String annotationPath = Objects.requireNonNull(classLoader.getResource("small.hpoa").getFile());
+        String hpoPath = Objects.requireNonNull(Objects.requireNonNull(classLoader.getResource("hp.small.obo")).getFile());
+        String annotationPath = Objects.requireNonNull(Objects.requireNonNull(classLoader.getResource("small.hpoa")).getFile());
         /* parse ontology */
         // The HPO is in the default  curie map and only contains known relationships / HP terms
         Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));
@@ -84,6 +83,28 @@ class HpoCaseTest {
     void testNumberOfAnnotations() {
         int expected=5;
         assertEquals(expected,hpocase.getNumberOfObservations());
+    }
+
+    @Test
+    void testGetObservedAbnormalities() {
+        assertEquals(5, hpocase.getObservedAbnormalities().size());
+    }
+
+    @Test
+    void testGetExcludedAbnormalities() {
+        assertEquals(0,  hpocase.getExcludedAbnormalities().size());
+    }
+
+    @Test
+    void testAge() {
+        // we did not specify the age, so it should return not known
+        assertEquals(Age.ageNotKnown(),hpocase.getAge());
+    }
+
+    @Test
+    void testSex() {
+        // we did not specify sex, so it should return unknown
+        assertEquals(Sex.UNKNOWN, hpocase.getSex());
     }
 
 

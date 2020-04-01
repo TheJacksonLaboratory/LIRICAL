@@ -17,6 +17,7 @@ import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
 import org.monarchinitiative.lirical.io.YamlParser;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
+import org.monarchinitiative.lirical.vcf.SimpleVariant;
 import org.monarchinitiative.phenol.annotations.assoc.HpoAssociationParser;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.obo.hpo.HpoDiseaseAnnotationParser;
@@ -66,8 +67,7 @@ public class LiricalFactory {
     /** Prefix for output files. For example, if outfilePrefix is ABC, then the HTML outfile would be ABC.html.*/
     private String outfilePrefix;
     /** Path to the directory where the output files should be written (by default, this is null and the files are
-     * written to the directory in which LIRICAL is run.
-     */
+     * written to the directory in which LIRICAL is run.*/
     private String outdir = null;
     /** Default threshold for showing a candidate. */
     public static final double DEFAULT_LR_THRESHOLD = 0.05;
@@ -126,6 +126,10 @@ public class LiricalFactory {
             globalAnalysisMode = false;
             ontology = null;
             assembly = builder.getAssembly();
+            if (assembly.equals(GenomeAssembly.HG19) || assembly.equals(GenomeAssembly.HG38)) {
+                // This will set up UCSCS output URLs for variants
+                SimpleVariant.setGenomeBuildForUrl(assembly);
+            }
             this.exomiserPath = builder.exomiserDataDir;
             if (exomiserPath!=null) {
                 initializeExomiserPaths();
@@ -152,6 +156,10 @@ public class LiricalFactory {
             initializeExomiserPaths();
         }
         this.assembly=builder.getAssembly();
+        if (assembly.equals(GenomeAssembly.HG19) || assembly.equals(GenomeAssembly.HG38)) {
+            // This will set up UCSCS output URLs for variants
+            SimpleVariant.setGenomeBuildForUrl(assembly);
+        }
         if (builder.backgroundFrequencyPath!=null
                 && !builder.backgroundFrequencyPath.isEmpty()) {
             this.gene2backgroundFrequency = GenotypeDataIngestor.fromPath(builder.backgroundFrequencyPath);
@@ -580,11 +588,11 @@ public class LiricalFactory {
     public void qcGenomeBuild() {
         if (this.assembly.equals(GenomeAssembly.HG19)) {
             if (! this.exomiserPath.contains("hg19")) {
-                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg19", this.exomiserPath));
+                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg19. Consider adding the option -g/--genome <...>.", this.exomiserPath));
             }
         } else if (this.assembly.equals(GenomeAssembly.HG38)) {
             if (! this.exomiserPath.contains("hg38")) {
-                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg38", this.exomiserPath));
+                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg38. Consider adding the option -g/--genome <...>.", this.exomiserPath));
             }
         } else {
             logger.trace("Genome assembly: {}",this.assembly.toString());
