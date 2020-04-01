@@ -24,7 +24,7 @@ public abstract class PrioritizeCommand extends LiricalCommand {
     @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
     protected Integer minDifferentialsToShow = null;
     @Parameter(names={"-o","--output-directory"}, description = "directory into which to write output file(s).")
-    protected String outdir=null;
+    protected String outdir=".";
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 5%).*/
     @Parameter(names= {"-t","--threshold"}, description = "minimum post-test prob. to show diagnosis in HTML output")
     protected Double LR_THRESHOLD = null;

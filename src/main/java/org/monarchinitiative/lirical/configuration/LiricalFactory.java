@@ -120,7 +120,8 @@ public class LiricalFactory {
     private enum BuildType { GT2GIT}
 
     /**
-     * This constructor is used to build Gt2Git. The BuildType argument is used as a flag.
+     * This constructor is used to build Gt2Git. The BuildType argument is used as a flag but otherwise has no
+     * function.
      */
     private LiricalFactory(Builder builder, BuildType bt){
             globalAnalysisMode = false;
@@ -216,7 +217,6 @@ public class LiricalFactory {
         } else {
             this.desiredDatabasePrefixes=ImmutableList.of("OMIM","DECIPHER");
         }
-
     }
 
     public String getOutfilePrefix() {
@@ -226,7 +226,7 @@ public class LiricalFactory {
     public String getOutdir() {
         return outdir;
     }
-
+    /** @return an {@link LrThreshold} object representing the likelihood ratio threshold chosen by the user (or default).*/
     public LrThreshold getLrThreshold() {
         return lrThreshold;
     }
