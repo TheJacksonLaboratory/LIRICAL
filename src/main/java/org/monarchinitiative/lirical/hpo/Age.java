@@ -1,5 +1,9 @@
 package org.monarchinitiative.lirical.hpo;
 
+import org.checkerframework.checker.units.qual.A;
+
+import java.util.Objects;
+
 /**
  * Convenience class to represent the age of a proband. Note that if (@link #initialized} is false,
  * then we are representing the fact that we do not know the age and we will disregard the feature
@@ -11,6 +15,8 @@ public class Age {
     private final int years;
     private final int months;
     private final int days;
+    /** Used as a constant if we do not have information about the age of a proband. */
+    private final static Age NOT_KNOWN = new Age();
 
     private Age(int years, int months, int days) {
         this.years=years;
@@ -27,7 +33,7 @@ public class Age {
     }
 
     public static Age ageNotKnown() {
-        return new Age();
+        return NOT_KNOWN;
     }
 
     public static Age ageInYears(int y) {
@@ -40,5 +46,21 @@ public class Age {
 
     public static Age ageInDays(int d) {
         return new Age(0,0,d);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Age age = (Age) o;
+        return initialized == age.initialized &&
+                years == age.years &&
+                months == age.months &&
+                days == age.days;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(initialized, years, months, days);
     }
 }
