@@ -21,7 +21,7 @@
         <java.version>8</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <junit.version>5.5.0</junit.version>
+        <junit.version>5.6.1</junit.version>
         <phenol.version>1.4.4</phenol.version>
         <exomiser.version>12.1.0</exomiser.version>
         <phenopacket.version>1.0.0</phenopacket.version>
@@ -113,6 +113,10 @@
                     <groupId>org.apache.logging.log4j</groupId>
                     <artifactId>log4j-slf4j18-impl</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -130,6 +134,10 @@
                     <groupId>commons-logging</groupId>
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -141,6 +149,12 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.13.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -194,6 +208,10 @@
                    <groupId>com.google.guava</groupId>
                    <artifactId>guava</artifactId>
                </exclusion>
+               <exclusion>
+                   <groupId>com.h2database</groupId>
+                   <artifactId>h2</artifactId>
+               </exclusion>
            </exclusions>
        </dependency>
 
@@ -201,6 +219,16 @@
             <groupId>org.monarchinitiative.phenol</groupId>
             <artifactId>phenol-annotations</artifactId>
             <version>${phenol.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/de.charite.compbio/Jannovar -->
@@ -209,6 +237,12 @@
             <artifactId>Jannovar</artifactId>
             <version>0.34</version>
             <type>pom</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -252,6 +286,12 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
             <version>3.11.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.tukaani/xz
@@ -367,13 +407,19 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>1.5.0</version>
+            <version>1.6.1</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.platform</groupId>
+                    <artifactId>junit-platform-engine</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-runner</artifactId>
-            <version>1.6.0</version>
+            <version>1.6.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -394,7 +440,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>3.3.0</version>
+            <version>3.3.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.junit.jupiter</groupId>
@@ -433,7 +479,7 @@
 
         <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/versions-maven-plugin
         Unplug to check version of plugins-
-        mvn versions:display-dependency-updates
+        mvn versions:display-dependency-updates-->
         <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>versions-maven-plugin</artifactId>
@@ -464,7 +510,7 @@
                     <artifactId>wagon-provider-api</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency> -->
+        </dependency>
     </dependencies>
 
 
@@ -594,19 +640,23 @@
                  </executions>
              </plugin>
 
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-surefire-plugin</artifactId>
-                 <version>3.0.0-M3</version>
-                 <dependencies>
-                     <dependency>
-                         <groupId>org.ow2.asm</groupId>
-                         <artifactId>asm</artifactId>
-                         <version>6.2</version>
-                     </dependency>
-                 </dependencies>
-             </plugin>
-
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions> <!-- or?  combine.children="merge"> -->
+                    <execution>
+                        <id>default-cli</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <banDuplicateClasses/>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
              <plugin>
                  <groupId>org.apache.maven.plugins</groupId>
                  <artifactId>maven-shade-plugin</artifactId>
@@ -650,28 +700,6 @@
                      <nohelp>false</nohelp>
                  </configuration>
              </plugin>
-
-<!--
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-enforcer-plugin</artifactId>
-                 <version>3.0.0-M2</version>
-                 <executions>
-                     <execution>
-                         <id>enforce</id>
-                         <configuration>
-                             <rules>
-                                 <DependencyConvergence/>
-                             </rules>
-                         </configuration>
-                         <goals>
-                             <goal>enforce</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-             </plugin>
-
-             -->
 
              <plugin>
                  <groupId>org.jacoco</groupId>
