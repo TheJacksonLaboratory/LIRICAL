@@ -56,12 +56,12 @@ public class Lirical {
             // Note that by default, JCommand is OK with -h download but
             // not with download -h
             // The following hack makes things work with either option.
-            String mycommand=null;
+            //String mycommand=null;
             String commandstring = String.join(" ",args);
             for (String a:args) {
-                if (commandnames.contains(a)) {
-                    mycommand=a;
-                }
+                //if (commandnames.contains(a)) {
+             //       mycommand=a;
+//                }
                 if (a.equals("h") || a.equals("-h") || a.equals("--h")) {
                     jc.usage();
                     System.exit(1);

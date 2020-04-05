@@ -100,7 +100,7 @@ public class YamlCommand extends LiricalCommand {
                 .gene2idMap(geneId2symbol)
                 .genotypeLr(genoLr);
         this.metadata.put("transcriptDatabase", factory.transcriptdb());
-        int n_genes_with_var=factory.getGene2GenotypeMap().size();
+        int n_genes_with_var = genotypeMap.size();
         this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
         this.metadata.put("exomiserPath",factory.getExomiserPath());
         CaseEvaluator evaluator = caseBuilder.build();

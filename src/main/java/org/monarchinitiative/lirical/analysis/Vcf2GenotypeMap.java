@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
+import de.charite.compbio.jannovar.annotation.PutativeImpact;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.Chromosome;
 import de.charite.compbio.jannovar.data.JannovarData;
@@ -81,8 +82,11 @@ public class Vcf2GenotypeMap {
     private int n_good_quality_variants=0;
     /** Number of variants that were removed because of the quality filter. */
     private int n_filtered_variants=0;
-
-   // private final Map<String,String> vcfMetaData=new HashMap<>();
+    /** There are gene symbols returned by Jannovar for which we cannot find a geneId. This issues seems to be related
+     * to the input files used by Jannovar from UCSC ( knownToLocusLink.txt.gz has links between ucsc ids, e.g.,
+     * uc003fts.3, and NCBIGene ids (earlier known as locus link), e.g., 1370).
+     */
+    private final Set<String> symbolsWithoutGeneIds=new HashSet<>();
     /**
      * Key: an EntrezGene gene id; value a {@link Gene2Genotype} obhject with variants/genotypes in this gene.
      */
@@ -125,6 +129,7 @@ public class Vcf2GenotypeMap {
         // whether or not to just look at a specific genomic interval
         final boolean useInterval = false;
         this.gene2genotypeMap = new HashMap<>();
+        final long startTime = System.nanoTime();
         try (VCFFileReader vcfReader = new VCFFileReader(new File(vcfPath), useInterval)) {
             //final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(getOptionalVcfPath));
             VCFHeader vcfHeader = vcfReader.getFileHeader();
@@ -132,9 +137,7 @@ public class Vcf2GenotypeMap {
             this.n_samples=samplenames.size();
             this.samplename=samplenames.get(0);
             logger.trace("Annotating VCF at " + vcfPath + " for sample " + this.samplename);
-            final long startTime = System.nanoTime();
             CloseableIterator<VariantContext> iter = vcfReader.iterator();
-
             VariantContextAnnotator variantEffectAnnotator =
                     new VariantContextAnnotator(this.referenceDictionary, this.chromosomeMap,
                             new VariantContextAnnotator.Options());
@@ -169,14 +172,26 @@ public class Vcf2GenotypeMap {
                         String genIdString = va.getGeneId(); // for now assume this is an Entrez Gene ID
                         String symbol = va.getGeneSymbol();
                         TermId geneId;
+                        if (genIdString.isEmpty() && !variantEffect.getImpact().equals(PutativeImpact.HIGH)) {
+                            // this is something where the NCBI gene is is not included in the Jannovar file
+                            // it could be e.g., abParts, or a gene such as DQ582201 (a piRNA)
+                            //System.out.println("ABOUT TO CONU with " + genIdString + ":"+ symbol);
+                            if (! symbol.isEmpty()) {
+                                symbolsWithoutGeneIds.add(symbol);
+                            }
+                            continue;
+                        }
                         try {
                             geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
                         } catch (PhenolRuntimeException pre) {
                            logger.error("Could not identify gene \"{}\" with symbol \"{}\" for variant {}", genIdString,symbol,va.toString());
                            // if gene is not included in the Jannovar file then it is not a Mendelian
                             // disease gene, e.g., abParts.
-                            System.out.println(genIdString);
-                            System.out.print(symbol);
+                            //System.out.println(genIdString +"!");
+                            //System.out.print(symbol+"!");
+                            if (! symbol.isEmpty()) {
+                                symbolsWithoutGeneIds.add(symbol);
+                            }
                             // Therefore just skip it
                             continue;
                         }
@@ -215,13 +230,16 @@ public class Vcf2GenotypeMap {
                     }
                 }
             }
-            final long endTime = System.nanoTime();
 
-            logger.info(String.format("Finished Annotating VCF (time= %.2f sec).", (endTime-startTime)/1_000_000_000.0 ));
-            logger.info("Extracted {} non-filtered variants and {} variants that were removed because of a quality filter",
-                    n_good_quality_variants,n_filtered_variants);
+
+
         }
-
+        final long endTime = System.nanoTime();
+        logger.info(String.format("Finished Annotating VCF (time= %.2f sec).", (endTime-startTime)/1_000_000_000.0 ));
+        logger.info("Extracted {} non-filtered variants and {} variants that were removed because of a quality filter",
+                n_good_quality_variants,n_filtered_variants);
+        System.out.printf("Symbols without gene ids n=%d.\n", symbolsWithoutGeneIds.size());
+        System.out.println(String.join(";", symbolsWithoutGeneIds));
         return gene2genotypeMap;
     }
 
