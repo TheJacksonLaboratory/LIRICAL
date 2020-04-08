@@ -2,6 +2,12 @@
 Changelog
 =========
 ------
+v1.1.0
+------
+- bugfix -- NCBI Gene ID ingest
+- update to phenol 1.5.0
+
+------
 v1.0.3
 ------
 - updated to phenol 1.4.2

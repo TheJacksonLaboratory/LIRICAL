@@ -5,13 +5,11 @@
 
     <groupId>org.monarchinitiative</groupId>
     <artifactId>LIRICAL</artifactId>
-    <version>1.0.4</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>LIRICAL</name>
     <url>https://github.com/TheJacksonLaboratory/LIRICAL/</url>
-
-
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,7 +18,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <junit.version>5.6.1</junit.version>
-        <phenol.version>1.4.4</phenol.version>
+        <phenol.version>1.5.0</phenol.version>
         <exomiser.version>12.1.0</exomiser.version>
         <phenopacket.version>1.0.0</phenopacket.version>
         <slf4j.version>1.7.30</slf4j.version>
@@ -147,13 +145,28 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.13.1</version>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
       </dependency>
-
+-->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.7</version>
+        </dependency>
 
        <dependency>
            <groupId>org.monarchinitiative.phenol</groupId>

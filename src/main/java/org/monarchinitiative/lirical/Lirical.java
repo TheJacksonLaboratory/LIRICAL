@@ -22,8 +22,8 @@ public class Lirical {
     private static final Logger logger = LoggerFactory.getLogger(Lirical.class);
 
 
-    @Parameter(names = {"-h", "--help"}, help = true, arity = 0,description = "display this help message")
-    private boolean usageHelpRequested;
+    @Parameter(names = {"-h", "--help"}, help = true, description = "display this help message")
+    protected boolean usageHelpRequested;
 
     private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","yaml","phenopacket","simulate","grid","background","simulate-vcf","not");
 
@@ -58,6 +58,8 @@ public class Lirical {
             // The following hack makes things work with either option.
             //String mycommand=null;
             String commandstring = String.join(" ",args);
+
+
             for (String a:args) {
                 //if (commandnames.contains(a)) {
              //       mycommand=a;

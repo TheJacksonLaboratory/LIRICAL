@@ -27,7 +27,7 @@
         <logger name="org.monarchinitiative.phenol.io.obo.OboGraphDocumentAdaptor" level="error"/>
         <logger name="org.monarchinitiative.phenol.io.OntologyLoader" level="error" />
         <logger name="org.monarchinitiative.phenol.graph.util.CompatibilityChecker" level="error"/>
-        <Root level="error">
+        <Root level="warn">
             <AppenderRef ref="Console" />
             <AppenderRef ref="File" />
         </Root>
