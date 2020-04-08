@@ -98,6 +98,7 @@ public class Vcf2GenotypeMap {
     /** List of all names in the VCF file */
     private List<String> samplenames;
 
+    private Map<String, TermId> symbolToIdMap;
 
     /**
      * A map with data from the Exomiser database.
@@ -112,13 +113,34 @@ public class Vcf2GenotypeMap {
                     ClinVarData.ClinSig.LIKELY_PATHOGENIC);
 
 
-    public Vcf2GenotypeMap(String vcf, JannovarData jannovar, MVStore mvs, GenomeAssembly ga) {
+    public Vcf2GenotypeMap(String vcf, JannovarData jannovar, MVStore mvs, GenomeAssembly ga, Map<TermId, String> geneId2SymbolMap) {
         this.vcfPath = vcf;
         this.jannovarData = jannovar;
         this.alleleMap = MvStoreUtil.openAlleleMVMap(mvs);
         this.referenceDictionary = jannovarData.getRefDict();
         this.chromosomeMap = jannovarData.getChromosomes();
         this.genomeAssembly = ga;
+        initSymbolToGenIdMap(geneId2SymbolMap);
+    }
+
+    /**
+     * As a part of the {@link Vcf2GenotypeMap} we get information about the transcripts
+     * and genes that contain the identified variants. In most cases, the Jannovar-derived
+     * functions return both the gene symbol and the NCBI gene id. This data in turn is derived
+     * from UCSC. In some cases, the data from UCSC is incomplete for some variants, and Jannovar
+     * returns the symbol but not the gene id.
+     * This function inverts the map geneId2SymbolMap. Note that a very small
+     * number of the symbols are duplicate (these are TRNA genes). For now it seems
+     * better just to record this in the log but to choose one of the ids. This is because
+     * if we just have the symbol but not the gene ID, we cannot know the correct geneID to choose anyway.
+     * This seems to affect just one TRNA at present, but we cannot just invert.
+     */
+    private void initSymbolToGenIdMap(Map<TermId, String> geneId2SymbolMap) {
+        Map<String, TermId> tempmap = new HashMap<>();
+        for (Map.Entry<TermId, String> entry: geneId2SymbolMap.entrySet()){
+            tempmap.put(entry.getValue(), entry.getKey());
+        }
+        symbolToIdMap = ImmutableMap.copyOf(tempmap);
     }
 
     /**
@@ -172,28 +194,32 @@ public class Vcf2GenotypeMap {
                         String genIdString = va.getGeneId(); // for now assume this is an Entrez Gene ID
                         String symbol = va.getGeneSymbol();
                         TermId geneId;
-                        if (genIdString.isEmpty() && !variantEffect.getImpact().equals(PutativeImpact.HIGH)) {
-                            // this is something where the NCBI gene is is not included in the Jannovar file
-                            // it could be e.g., abParts, or a gene such as DQ582201 (a piRNA)
-                            //System.out.println("ABOUT TO CONU with " + genIdString + ":"+ symbol);
-                            if (! symbol.isEmpty()) {
+                        if (genIdString.isEmpty() ) {
+                            if (symbolToIdMap.containsKey(symbol)){
+                                geneId = symbolToIdMap.get(symbol);
+                            } else {
+                                // this is something where the NCBI gene is is not included in the Jannovar file
+                                // it could be e.g., abParts, or a gene such as DQ582201 (a piRNA)
+                                //System.out.println("ABOUT TO CONU with " + genIdString + ":"+ symbol);
                                 symbolsWithoutGeneIds.add(symbol);
+                                continue;
                             }
-                            continue;
-                        }
-                        try {
-                            geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
-                        } catch (PhenolRuntimeException pre) {
-                           logger.error("Could not identify gene \"{}\" with symbol \"{}\" for variant {}", genIdString,symbol,va.toString());
-                           // if gene is not included in the Jannovar file then it is not a Mendelian
-                            // disease gene, e.g., abParts.
-                            //System.out.println(genIdString +"!");
-                            //System.out.print(symbol+"!");
-                            if (! symbol.isEmpty()) {
-                                symbolsWithoutGeneIds.add(symbol);
+                        } else {
+                            try {
+                                geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
+                            } catch (PhenolRuntimeException pre) {
+                                logger.error("Could not identify gene \"{}\" with symbol \"{}\" for variant {}", genIdString, symbol, va.toString());
+                                // if gene is not included in the Jannovar file then it is not a Mendelian
+                                // disease gene, e.g., abParts.
+                                //System.out.println(genIdString +"!");
+                                //System.out.print(symbol+"!");
+                                if (!symbol.isEmpty()) {
+                                    symbolsWithoutGeneIds.add(symbol);
+                                    System.out.println("Adding " + symbol);
+                                }
+                                // Therefore just skip it
+                                continue;
                             }
-                            // Therefore just skip it
-                            continue;
                         }
 
                         gene2genotypeMap.putIfAbsent(geneId, new Gene2Genotype(geneId, symbol));

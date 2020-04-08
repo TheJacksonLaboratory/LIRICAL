@@ -18,6 +18,7 @@ import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
 import org.monarchinitiative.lirical.io.YamlParser;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.vcf.SimpleVariant;
+import org.monarchinitiative.phenol.annotations.assoc.GeneInfoParser;
 import org.monarchinitiative.phenol.annotations.assoc.HpoAssociationParser;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.obo.hpo.HpoDiseaseAnnotationParser;
@@ -328,9 +329,6 @@ public class LiricalFactory {
     }
 
 
-
-
-
     private void parseHpoAnnotations()  {
         if (this.ontology==null) {
             hpoOntology();
@@ -355,7 +353,9 @@ public class LiricalFactory {
                 ontology);
         this.gene2diseaseMultiMap=assocParser.getGeneToDiseaseIdMap();
         this.disease2geneIdMultiMap=assocParser.getDiseaseToGeneIdMap();
-        this.geneId2SymbolMap=assocParser.getGeneIdToSymbolMap();
+        // TODO revert to the assocParser once bug in phenol is fixed!!
+        //this.geneId2SymbolMap=assocParser.getGeneIdToSymbolMap();
+        this.geneId2SymbolMap=GeneInfoParser.loadGeneIdToSymbolMap(geneInfoFile);
     }
 
 
@@ -468,7 +468,8 @@ public class LiricalFactory {
         Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath,
                 jannovarData(),
                 mvStore(),
-                getAssembly());
+                getAssembly(),
+                geneId2symbolMap() );
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
         this.sampleName=vcf2geno.getSamplename();
         this.n_filtered_variants=vcf2geno.getN_filtered_variants();

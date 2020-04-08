@@ -35,6 +35,8 @@ public class HpoDownloader {
 
     private final static String GENE_INFO_URL = "ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz";
 
+    //private final static String HUGO_URL = "ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt";
+
 
 
     public HpoDownloader(String path){
