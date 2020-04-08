@@ -582,7 +582,6 @@
                          <index>true</index>
                          <manifest>
                              <addClasspath>true</addClasspath>
-                             <classpathPrefix>lib/</classpathPrefix>
                              <useUniqueVersions>false</useUniqueVersions>
                              <mainClass>org.monarchinitiative.lirical.Lirical</mainClass>
                              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
