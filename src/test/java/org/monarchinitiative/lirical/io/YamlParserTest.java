@@ -154,7 +154,7 @@ class YamlParserTest {
         // example 1 has no negated HPOs
         YamlParser yparser = new YamlParser(example1path);
         List<TermId> emptyList = ImmutableList.of();
-        assertEquals(emptyList,yparser.getNegatedHpoTermList());
+        assertEquals(0,yparser.getNegatedHpoTermList().size());
     }
 
     @Test

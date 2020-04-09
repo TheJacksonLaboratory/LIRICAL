@@ -35,7 +35,7 @@ public class AgeTest {
         Age a = Age.ageInYears(13);
         Age b = Age.ageInYears(13);
         Age c = Age.ageInYears(12);
-        assertTrue(a.equals(b));
-        assertFalse(a.equals(c));
+        assertEquals(a, b);
+        assertNotEquals(a, c);
     }
 }

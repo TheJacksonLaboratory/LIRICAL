@@ -7,8 +7,6 @@ import com.google.common.collect.Multimap;
 
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
-import org.monarchinitiative.lirical.configuration.LrThreshold;
-import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.io.PhenopacketImporter;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;

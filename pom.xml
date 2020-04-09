@@ -137,10 +137,7 @@
             </exclusions>
         </dependency>
 
-
-
-
-        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl
+        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl-->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
@@ -151,22 +148,7 @@
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
       </dependency>
--->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>2.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.7</version>
-        </dependency>
+
 
        <dependency>
            <groupId>org.monarchinitiative.phenol</groupId>
@@ -576,7 +558,7 @@
              <plugin>
                  <groupId>org.apache.maven.plugins</groupId>
                  <artifactId>maven-jar-plugin</artifactId>
-                 <version>3.1.1</version>
+                 <version>3.2.0</version>
                  <configuration>
                      <archive>
                          <index>true</index>
@@ -592,7 +574,7 @@
              <plugin>
                  <groupId>org.apache.maven.plugins</groupId>
                  <artifactId>maven-dependency-plugin</artifactId>
-                 <version>3.1.1</version>
+                 <version>3.1.2</version>
                  <executions>
                      <execution>
                          <id>copy-dependencies</id>
@@ -660,12 +642,25 @@
                             </rules>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.4</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
              <plugin>
                  <groupId>org.apache.maven.plugins</groupId>
                  <artifactId>maven-shade-plugin</artifactId>
-                 <version>3.2.1</version>
+                 <version>3.2.2</version>
                  <configuration>
                      <createDependencyReducedPom>false</createDependencyReducedPom>
                      <filters>
@@ -699,7 +694,7 @@
              <plugin>
                  <groupId>org.apache.maven.plugins</groupId>
                  <artifactId>maven-javadoc-plugin</artifactId>
-                 <version>3.0.1</version>
+                 <version>3.2.0</version>
                  <configuration>
                      <show>private</show>
                      <nohelp>false</nohelp>
@@ -709,7 +704,7 @@
              <plugin>
                  <groupId>org.jacoco</groupId>
                  <artifactId>jacoco-maven-plugin</artifactId>
-                 <version>0.8.2</version>
+                 <version>0.8.5</version>
                  <executions>
                      <execution>
                          <goals>

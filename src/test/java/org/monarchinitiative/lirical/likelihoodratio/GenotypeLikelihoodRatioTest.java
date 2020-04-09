@@ -40,7 +40,7 @@ class GenotypeLikelihoodRatioTest {
         TermId fakeGeneId = TermId.of("Fake:123");
         List<TermId> emptyList= ImmutableList.of(AUTOSOMAL_DOMINANT);
         double result = genoLRmap.evaluateGenotype( g2g, emptyList, fakeGeneId).getLR();
-        double expected = (double)1000;
+        double expected = 1000;
         assertEquals(expected,result,EPSILON);
     }
 

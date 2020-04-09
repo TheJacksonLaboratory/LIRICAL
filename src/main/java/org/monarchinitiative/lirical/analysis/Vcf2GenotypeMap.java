@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
-import de.charite.compbio.jannovar.annotation.PutativeImpact;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.data.Chromosome;
 import de.charite.compbio.jannovar.data.JannovarData;
