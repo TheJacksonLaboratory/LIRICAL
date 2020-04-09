@@ -61,6 +61,12 @@ public class PhenopacketCommand extends PrioritizeCommand {
      */
     private String genomeAssembly;
     /**
+     * There are gene symbols returned by Jannovar for which we cannot find a geneId. This issues seems to be related
+     * to the input files used by Jannovar from UCSC ( knownToLocusLink.txt.gz has links between ucsc ids, e.g.,
+     * uc003fts.3, and NCBIGene ids (earlier known as locus link), e.g., 1370).
+     */
+    private Set<String> symbolsWithoutGeneIds;
+    /**
      * Path to the VCF file (if any).
      */
     private String vcfPath = null;
@@ -91,7 +97,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
         factory.qcVcfFile();
 
         Map<TermId, Gene2Genotype> genotypemap = factory.getGene2GenotypeMap();
-
+        symbolsWithoutGeneIds = factory.getSymbolsWithoutGeneIds();
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
         Ontology ontology = factory.hpoOntology();
         Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
@@ -131,6 +137,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
                 .errors(errors)
                 .outdirectory(this.outdir)
                 .threshold(factory.getLrThreshold())
+                .symbolsWithOutIds(symbolsWithoutGeneIds)
                 .mindiff(factory.getMinDifferentials())
                 .prefix(this.outfilePrefix);
         LiricalTemplate template = outputTSV ?

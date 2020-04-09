@@ -77,24 +77,35 @@ public class Vcf2GenotypeMap {
      * Should be hg37 or hg38
      */
     private final GenomeAssembly genomeAssembly;
-    /** Number of variants that were not filtered. */
-    private int n_good_quality_variants=0;
-    /** Number of variants that were removed because of the quality filter. */
-    private int n_filtered_variants=0;
-    /** There are gene symbols returned by Jannovar for which we cannot find a geneId. This issues seems to be related
+    /**
+     * Number of variants that were not filtered.
+     */
+    private int n_good_quality_variants = 0;
+    /**
+     * Number of variants that were removed because of the quality filter.
+     */
+    private int n_filtered_variants = 0;
+    /**
+     * There are gene symbols returned by Jannovar for which we cannot find a geneId. This issues seems to be related
      * to the input files used by Jannovar from UCSC ( knownToLocusLink.txt.gz has links between ucsc ids, e.g.,
      * uc003fts.3, and NCBIGene ids (earlier known as locus link), e.g., 1370).
      */
-    private final Set<String> symbolsWithoutGeneIds=new HashSet<>();
+    private final Set<String> symbolsWithoutGeneIds = new HashSet<>();
     /**
      * Key: an EntrezGene gene id; value a {@link Gene2Genotype} obhject with variants/genotypes in this gene.
      */
     private Map<TermId, Gene2Genotype> gene2genotypeMap;
-    /** Number of samples in the VCF file. */
+    /**
+     * Number of samples in the VCF file.
+     */
     private int n_samples;
-    /** Name of the proband in the VCF file. */
+    /**
+     * Name of the proband in the VCF file.
+     */
     private String samplename;
-    /** List of all names in the VCF file */
+    /**
+     * List of all names in the VCF file
+     */
     private List<String> samplenames;
 
     private Map<String, TermId> symbolToIdMap;
@@ -136,7 +147,7 @@ public class Vcf2GenotypeMap {
      */
     private void initSymbolToGenIdMap(Map<TermId, String> geneId2SymbolMap) {
         Map<String, TermId> tempmap = new HashMap<>();
-        for (Map.Entry<TermId, String> entry: geneId2SymbolMap.entrySet()){
+        for (Map.Entry<TermId, String> entry : geneId2SymbolMap.entrySet()) {
             tempmap.put(entry.getValue(), entry.getKey());
         }
         symbolToIdMap = ImmutableMap.copyOf(tempmap);
@@ -144,6 +155,7 @@ public class Vcf2GenotypeMap {
 
     /**
      * Read the VCF file and extract genotype
+     *
      * @return map with key=TermId of a Gene, value corresponding {@link Gene2Genotype} object
      */
     public Map<TermId, Gene2Genotype> vcf2genotypeMap() {
@@ -151,12 +163,13 @@ public class Vcf2GenotypeMap {
         final boolean useInterval = false;
         this.gene2genotypeMap = new HashMap<>();
         final long startTime = System.nanoTime();
+
         try (VCFFileReader vcfReader = new VCFFileReader(new File(vcfPath), useInterval)) {
             //final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(getOptionalVcfPath));
             VCFHeader vcfHeader = vcfReader.getFileHeader();
             this.samplenames = vcfHeader.getSampleNamesInOrder();
-            this.n_samples=samplenames.size();
-            this.samplename=samplenames.get(0);
+            this.n_samples = samplenames.size();
+            this.samplename = samplenames.get(0);
             logger.trace("Annotating VCF at " + vcfPath + " for sample " + this.samplename);
             CloseableIterator<VariantContext> iter = vcfReader.iterator();
             VariantContextAnnotator variantEffectAnnotator =
@@ -181,20 +194,18 @@ public class Vcf2GenotypeMap {
                 String contig = vc.getContig();
                 int start = vc.getStart();
                 String ref = vc.getReference().getBaseString();
-                for (int i=0;i<altAlleles.size();i++){
-               // for (Allele allele : altAlleles) {
-                    Allele allele =altAlleles.get(i);
-                    Genotype gt = vc.getGenotype(i);
+                for (int i = 0; i < altAlleles.size(); i++) {
+                    Allele allele = altAlleles.get(i);
                     String alt = allele.getBaseString();
-                    Map<String, SampleGenotype> sampleGenotypes = createAlleleSampleGenotypes(vc,i);
+                    Map<String, SampleGenotype> sampleGenotypes = createAlleleSampleGenotypes(vc, i);
                     VariantAnnotation va = jannovarVariantAnnotator.annotate(contig, start, ref, alt);
                     VariantEffect variantEffect = va.getVariantEffect();
                     if (!variantEffect.isOffExome()) {
                         String genIdString = va.getGeneId(); // for now assume this is an Entrez Gene ID
                         String symbol = va.getGeneSymbol();
                         TermId geneId;
-                        if (genIdString.isEmpty() ) {
-                            if (symbolToIdMap.containsKey(symbol)){
+                        if (genIdString.isEmpty()) {
+                            if (symbolToIdMap.containsKey(symbol)) {
                                 geneId = symbolToIdMap.get(symbol);
                             } else {
                                 // this is something where the NCBI gene is is not included in the Jannovar file
@@ -223,7 +234,7 @@ public class Vcf2GenotypeMap {
 
                         gene2genotypeMap.putIfAbsent(geneId, new Gene2Genotype(geneId, symbol));
                         Gene2Genotype gene2Genotype = gene2genotypeMap.get(geneId);
-                        VariantEvaluation veval = buildVariantEvaluation(vc, va,sampleGenotypes);
+                        VariantEvaluation veval = buildVariantEvaluation(vc, va, sampleGenotypes);
                         AlleleProto.AlleleKey alleleKey = AlleleProtoAdaptor.toAlleleKey(veval);
                         AlleleProto.AlleleProperties alleleProp = alleleMap.get(alleleKey);
                         int chrom = veval.getChromosome();
@@ -257,14 +268,14 @@ public class Vcf2GenotypeMap {
             }
 
 
-
         }
+
         final long endTime = System.nanoTime();
-        logger.info(String.format("Finished Annotating VCF (time= %.2f sec).", (endTime-startTime)/1_000_000_000.0 ));
+        logger.info(String.format("Finished Annotating VCF (time= %.2f sec).", (endTime - startTime) / 1_000_000_000.0));
         logger.info("Extracted {} non-filtered variants and {} variants that were removed because of a quality filter",
-                n_good_quality_variants,n_filtered_variants);
-        System.out.printf("Symbols without gene ids n=%d.\n", symbolsWithoutGeneIds.size());
-        System.out.println(String.join(";", symbolsWithoutGeneIds));
+                n_good_quality_variants, n_filtered_variants);
+        logger.info("Symbols without gene ids n={}.", symbolsWithoutGeneIds.size());
+        logger.info(String.join(";", symbolsWithoutGeneIds));
         return gene2genotypeMap;
     }
 
@@ -349,6 +360,17 @@ public class Vcf2GenotypeMap {
     }
 
     /**
+     * This function returns a set of gene symbols for which we could not identify NCBI Gene IDs.
+     * In practice, these are "symbols" that are actually accession numbers, i.e., that have not
+     * yet been curated. We have noticed that they are found when using the UCSC annotations for
+     * hg19
+     * @return Set of symbols for which we could not find an NCBI Gene ID.
+     */
+    public Set<String> getSymbolsWithoutGeneIds() {
+        return symbolsWithoutGeneIds;
+    }
+
+    /**
      * Calculate a pathogenicity score for the current variant in the same way that the Exomiser does.
      *
      * @param variantEffect     class of variant such as Missense, Nonsense, Synonymous, etc.
@@ -370,7 +392,6 @@ public class Vcf2GenotypeMap {
                 return Math.max(predictedScore, variantEffectScore);
         }
     }
-
 
 
     private VariantEvaluation buildVariantEvaluation(VariantContext variantContext,
