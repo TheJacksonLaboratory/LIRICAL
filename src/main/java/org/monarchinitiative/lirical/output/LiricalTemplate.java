@@ -2,6 +2,7 @@ package org.monarchinitiative.lirical.output;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import freemarker.template.Configuration;
 import freemarker.template.Version;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
@@ -17,10 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This is the superclass for {@link TsvTemplate} and {@link HtmlTemplate}, and provides common methods for
@@ -38,8 +36,6 @@ public abstract class LiricalTemplate {
     protected static final String EMPTY_STRING="";
 
     protected String outpath;
-
-
     /** This map contains the names of the top differential diagnoses that we will show as a list at the
      * top of the page together with anchors to navigate to the detailed analysis.*/
     protected Map<String,String> topDiagnosisMap;
@@ -142,6 +138,7 @@ public abstract class LiricalTemplate {
         private Map<TermId, Gene2Genotype> genotypeMap;
         private Map<TermId,String> geneid2sym;
         private List<String> errors= ImmutableList.of();
+        private Set<String> symbolsWithoutIds;
         private LrThreshold thres;
         private MinDiagnosisCount minDifferentials;
         String outfileprefix = "lirical";
@@ -155,13 +152,14 @@ public abstract class LiricalTemplate {
         }
 
 
-        public Builder genotypeMap(Map<TermId, Gene2Genotype> gm){this.genotypeMap=gm;return this;}
-        public Builder geneid2symMap(Map<TermId,String> gsm) { this.geneid2sym=gsm;return this;}
-        public Builder threshold(LrThreshold t) { this.thres=t;return this;}
-        public Builder mindiff(MinDiagnosisCount md){ this.minDifferentials=md; return this;}
-        public Builder prefix(String p){ this.outfileprefix = p; return this;}
-        public Builder outdirectory(String od){ this.outdir=od;return this;}
-        public Builder errors(List<String> e) { this.errors = e;return this;}
+        public Builder genotypeMap(Map<TermId, Gene2Genotype> gm){ this.genotypeMap=gm; return this; }
+        public Builder geneid2symMap(Map<TermId,String> gsm) { this.geneid2sym=gsm; return this; }
+        public Builder threshold(LrThreshold t) { this.thres=t;return this; }
+        public Builder mindiff(MinDiagnosisCount md){ this.minDifferentials=md; return this; }
+        public Builder prefix(String p){ this.outfileprefix = p; return this; }
+        public Builder outdirectory(String od){ this.outdir=od; return this; }
+        public Builder errors(List<String> e) { this.errors = e; return this; }
+        public Builder symbolsWithOutIds(Set<String> syms) { this.symbolsWithoutIds = syms; return this; }
 
         public HtmlTemplate buildPhenotypeHtmlTemplate() {
 
@@ -185,7 +183,8 @@ public abstract class LiricalTemplate {
                     this.minDifferentials,
                     this.outfileprefix,
                     this.outdir,
-                    this.errors);
+                    this.errors,
+                    this.symbolsWithoutIds);
         }
 
         public TsvTemplate buildPhenotypeTsvTemplate() {

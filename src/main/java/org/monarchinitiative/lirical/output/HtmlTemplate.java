@@ -20,10 +20,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class coordinates getting the data from the analysis into the FreeMark org.monarchinitiative.lirical.output templates.
@@ -42,6 +39,12 @@ public class HtmlTemplate extends LiricalTemplate {
 
     private final double DEFAULT_THRESHOLD = LiricalFactory.DEFAULT_LR_THRESHOLD;
 
+    /**
+     * There are gene symbols returned by Jannovar for which we cannot find a geneId. This issues seems to be related
+     * to the input files used by Jannovar from UCSC ( knownToLocusLink.txt.gz has links between ucsc ids, e.g.,
+     * uc003fts.3, and NCBIGene ids (earlier known as locus link), e.g., 1370).
+     */
+    protected Set<String> symbolsWithoutGeneIds;
 
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
@@ -53,12 +56,23 @@ public class HtmlTemplate extends LiricalTemplate {
      * @param metadat     Metadata about the analysis.
      * @param thres       threshold posterior probability to show differential in detail
      */
-    public HtmlTemplate(HpoCase hcase, Ontology ontology, Map<TermId, Gene2Genotype> genotypeMap, Map<TermId, String> geneid2sym, Map<String, String> metadat, LrThreshold thres, MinDiagnosisCount minDifferentials, String prefix, String outdir, List<String> errs) {
+    public HtmlTemplate(HpoCase hcase,
+                        Ontology ontology,
+                        Map<TermId, Gene2Genotype> genotypeMap,
+                        Map<TermId, String> geneid2sym,
+                        Map<String, String> metadat,
+                        LrThreshold thres,
+                        MinDiagnosisCount minDifferentials,
+                        String prefix,
+                        String outdir,
+                        List<String> errs,
+                        Set<String> symbolsWithoutGeneIds) {
         super(hcase, ontology, genotypeMap, geneid2sym, metadat);
         initpath(prefix, outdir);
         this.lrThreshold = thres;
         this.minDiagnosisToShowInDetail = minDifferentials;
         this.templateData.put("errorlist", errs);
+        this.symbolsWithoutGeneIds = symbolsWithoutGeneIds;
         List<DifferentialDiagnosis> diff = new ArrayList<>();
         List<ImprobableDifferential> improbdiff = new ArrayList<>();
         this.topDiagnosisMap = new HashMap<>();
@@ -70,6 +84,12 @@ public class HtmlTemplate extends LiricalTemplate {
         List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N, geneid2sym, ontology);
         this.templateData.put("sparkline", sparklinePackets);
         this.templateData.put("hasGenotypes", "true");
+        if (symbolsWithoutGeneIds.isEmpty()){
+            this.templateData.put("hasGeneSymbolsWithoutIds", "false");
+        } else {
+            this.templateData.put("hasGeneSymbolsWithoutIds", "true");
+            this.templateData.put("geneSymbolsWithoutIds", symbolsWithoutGeneIds);
+        }
         int counter = 0;
         for (TestResult result : hcase.getResults()) {
             String symbol = EMPTY_STRING;

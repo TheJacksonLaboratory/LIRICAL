@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class coordinates the main analysis of a VCF file plus list of observed HPO terms. This
@@ -51,6 +52,12 @@ public class YamlCommand extends LiricalCommand {
     protected Map<String,String> metadata;
     /** If true, output TSV and not HTML. */
     private boolean outputTSV = false;
+    /**
+     * There are gene symbols returned by Jannovar for which we cannot find a geneId. This issues seems to be related
+     * to the input files used by Jannovar from UCSC ( knownToLocusLink.txt.gz has links between ucsc ids, e.g.,
+     * uc003fts.3, and NCBIGene ids (earlier known as locus link), e.g., 1370).
+     */
+    private Set<String> symbolsWithoutGeneIds;
 
     /**
      * Command pattern to coordinate analysis of a VCF file with LIRICAL.
@@ -83,6 +90,7 @@ public class YamlCommand extends LiricalCommand {
     private void runVcf() throws LiricalException {
         this.geneId2symbol = factory.geneId2symbolMap();
         Map<TermId, Gene2Genotype> genotypeMap = factory.getGene2GenotypeMap();
+        this.symbolsWithoutGeneIds = factory.getSymbolsWithoutGeneIds();
         this.metadata.put("vcf_file", factory.getVcfPath());
         this.metadata.put("n_filtered_variants", String.valueOf(factory.getN_filtered_variants()));
         this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
@@ -112,6 +120,7 @@ public class YamlCommand extends LiricalCommand {
                 .geneid2symMap(geneId2symbol)
                 .threshold(this.factory.getLrThreshold())
                 .errors(evaluator.getErrors())
+                .symbolsWithOutIds(symbolsWithoutGeneIds)
                 .mindiff(this.factory.getMinDifferentials());
         LiricalTemplate template = outputTSV ?
                 builder.buildGenoPhenoTsvTemplate() :

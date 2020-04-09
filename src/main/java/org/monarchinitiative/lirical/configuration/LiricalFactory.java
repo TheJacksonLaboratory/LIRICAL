@@ -101,6 +101,12 @@ public class LiricalFactory {
     private Multimap<TermId,TermId> gene2diseaseMultiMap=null;
     private Multimap<TermId,TermId> disease2geneIdMultiMap=null;
     private Map<TermId,String> geneId2SymbolMap=null;
+    /**
+     * There are gene symbols returned by Jannovar for which we cannot find a geneId. This issues seems to be related
+     * to the input files used by Jannovar from UCSC ( knownToLocusLink.txt.gz has links between ucsc ids, e.g.,
+     * uc003fts.3, and NCBIGene ids (earlier known as locus link), e.g., 1370).
+     */
+    private Set<String> symbolsWithoutGeneIds;
     /** Key: the TermId of a gene. Value. Its background frequency in the current genome build. This variable
      * is only initialized for runs with a VCF file. */
     private Map<TermId, Double> gene2backgroundFrequency = null;
@@ -464,6 +470,10 @@ public class LiricalFactory {
         return getGene2GenotypeMap(getVcfPath());
     }
 
+    public Set<String> getSymbolsWithoutGeneIds() {
+        return symbolsWithoutGeneIds;
+    }
+
     public  Map<TermId, Gene2Genotype> getGene2GenotypeMap(String vcfPath) {
         Vcf2GenotypeMap vcf2geno = new Vcf2GenotypeMap(vcfPath,
                 jannovarData(),
@@ -471,9 +481,10 @@ public class LiricalFactory {
                 getAssembly(),
                 geneId2symbolMap() );
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
-        this.sampleName=vcf2geno.getSamplename();
-        this.n_filtered_variants=vcf2geno.getN_filtered_variants();
-        this.n_good_quality_variants=vcf2geno.getN_good_quality_variants();
+        this.sampleName = vcf2geno.getSamplename();
+        this.n_filtered_variants = vcf2geno.getN_filtered_variants();
+        this.n_good_quality_variants = vcf2geno.getN_good_quality_variants();
+        this.symbolsWithoutGeneIds = vcf2geno.getSymbolsWithoutGeneIds();
         return genotypeMap;
     }
 

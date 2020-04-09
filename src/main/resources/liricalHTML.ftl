@@ -532,6 +532,20 @@ a.svg:hover, a.svg:active {
       </article>
     </section>
 
+    <#if geneSymbolsWithoutIds?has_content>
+     <section>
+          <article>
+                  <h2>Gene symbols that could not be annotated</h2>
+                  <p>Explanation.</p>
+                  <ul>
+                  <#list geneSymbolsWithoutIds as sym>
+                    <li>${sym}</li>
+                  </#list>
+          </article>
+     </section>
+   </#if>
+
+
     <section>
       <a name="explain"></a>
       <article>
