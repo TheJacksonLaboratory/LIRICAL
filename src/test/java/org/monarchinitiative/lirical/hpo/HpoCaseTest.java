@@ -8,13 +8,13 @@ import com.google.common.collect.ImmutableMap;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatioTest;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
-import org.monarchinitiative.phenol.base.PhenolException;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.OntologyLoader;
-import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
+
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -34,20 +34,17 @@ class HpoCaseTest {
     /** Name of the disease we are simulating in this test, i.e., OMIM:108500. */
     private static String diseasename="108500";
     private static HpoCase hpocase;
-    private static Ontology ontology;
-    private static PhenotypeLikelihoodRatio backforeFreq;
 
 
     @BeforeAll
     static void setup() throws NullPointerException {
         ClassLoader classLoader = PhenotypeLikelihoodRatioTest.class.getClassLoader();
-        String hpoPath = Objects.requireNonNull(classLoader.getResource("hp.small.obo").getFile());
-        String annotationPath = Objects.requireNonNull(classLoader.getResource("small.hpoa").getFile());
+        String hpoPath = Objects.requireNonNull(Objects.requireNonNull(classLoader.getResource("hp.small.obo")).getFile());
+        String annotationPath = Objects.requireNonNull(Objects.requireNonNull(classLoader.getResource("small.hpoa")).getFile());
         /* parse ontology */
         // The HPO is in the default  curie map and only contains known relationships / HP terms
-        ontology = OntologyLoader.loadOntology(new File(hpoPath));
+        Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));
         Map<TermId, HpoDisease> diseaseMap = HpoDiseaseAnnotationParser.loadDiseaseMap(annotationPath, ontology);
-        backforeFreq = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
 
         /* these are the phenotypic abnormalties of our "case" */
         String HP_PREFIX = "HP";
@@ -86,6 +83,28 @@ class HpoCaseTest {
     void testNumberOfAnnotations() {
         int expected=5;
         assertEquals(expected,hpocase.getNumberOfObservations());
+    }
+
+    @Test
+    void testGetObservedAbnormalities() {
+        assertEquals(5, hpocase.getObservedAbnormalities().size());
+    }
+
+    @Test
+    void testGetExcludedAbnormalities() {
+        assertEquals(0,  hpocase.getExcludedAbnormalities().size());
+    }
+
+    @Test
+    void testAge() {
+        // we did not specify the age, so it should return not known
+        assertEquals(Age.ageNotKnown(),hpocase.getAge());
+    }
+
+    @Test
+    void testSex() {
+        // we did not specify sex, so it should return unknown
+        assertEquals(Sex.UNKNOWN, hpocase.getSex());
     }
 
 

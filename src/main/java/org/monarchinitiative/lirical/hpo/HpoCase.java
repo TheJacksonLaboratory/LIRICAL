@@ -3,15 +3,12 @@ package org.monarchinitiative.lirical.hpo;
 
 import com.google.common.collect.ImmutableList;
 
-import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 

@@ -4,4 +4,4 @@
  * to enable the genotype likelihood ratio calculations in the main LIRICAL algorithm.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-package org.monarchinitiative.lirical.gt2git;
+package org.monarchinitiative.lirical.backgroundfrequency;

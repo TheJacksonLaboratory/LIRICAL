@@ -2,11 +2,13 @@ package org.monarchinitiative.lirical.likelihoodratio;
 
 
 import org.monarchinitiative.lirical.hpo.HpoCase;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,23 +47,25 @@ public class TestResult implements Comparable<TestResult> {
     private final double posttestProbability;
     /** The overall rank of the the result withint the differential diagnosis. */
     private int rank;
-    /** An optional setGenotypeExplanation of the genotype result, intended for display */
-    private String genotypeExplanation =EMPTY_STRING;
-    /** An setGenotypeExplanation of the phenotype score. */
-    private String phenotypeExplanation=EMPTY_STRING;
+    /** An optional genotypeExplanation of the genotype result, intended for display */
+    private String genotypeExplanation = EMPTY_STRING;
+    /** Explanations of the phenotype score for observed HPOs. */
+    private List<String> explanationsObservedPhenotypes = null;
+    /**Explanations of the phenotype score for excluded HPOs. */
+    private List<String> explanationsExcludedPhenotypes = null;
 
     /**
      * The constructor initializes the variables and calculates {@link #compositeLR}
      *
      * @param reslist list of individual test results for observed phenotypes
      * @param excllist list of individual test results for excluded phenotypes
-     * @param diseaseId name of the disease being tested
+     * @param disease name of the disease being tested
      * @param pretest pretest probability of the disease
      */
-    public TestResult(List<Double> reslist, List<Double> excllist, HpoDisease diseaseId, double pretest) {
+    public TestResult(List<Double> reslist, List<Double> excllist, HpoDisease disease, double pretest) {
         this.results = reslist;
         this.excludedResults=excllist;
-        this.hpoDisease = diseaseId;
+        this.hpoDisease = disease;
         this.pretestProbability = pretest;
         // the composite LR is the product of the individual LR's
         double observed=reslist.stream().reduce(1.0, (a, b) -> a * b);
@@ -86,7 +90,7 @@ public class TestResult implements Comparable<TestResult> {
      * @param geneId gene id of the gene being tested
      * @param pretest pretest probability of the disease
      */
-    public TestResult(List<Double> reslist, List<Double> excllist,HpoDisease diseaseId, Double genotypeLr,TermId geneId,double pretest) {
+    public TestResult(List<Double> reslist, List<Double> excllist, HpoDisease diseaseId, Double genotypeLr,TermId geneId,double pretest) {
         this.results = reslist;
         this.excludedResults=excllist;
         this.hpoDisease = diseaseId;
@@ -199,10 +203,29 @@ public class TestResult implements Comparable<TestResult> {
 
     public void setGenotypeExplanation(String text) { this.genotypeExplanation = this.genotypeExplanation + text; }
     public String getGenotypeExplanation() { return this.genotypeExplanation; }
-    public void setPhenotypeExplanation(String text) { this.phenotypeExplanation=text;}
-    public String getPhenotypeExplanation() { return phenotypeExplanation;}
+    //public void setPhenotypeExplanation(String text) { this.phenotypeExplanation=text;}
+    public void setObservedPhenotypeExplanation(List<String> lst) { this.explanationsObservedPhenotypes = lst; }
+    public void setExcludedPhenotypeExplanation(List<String> lst) { this.explanationsExcludedPhenotypes = lst; }
+    public List<String> getObservedPhenotypeExplanation() {
+        return explanationsObservedPhenotypes == null ? new ArrayList<>() : explanationsObservedPhenotypes;
+    }
+    public List<String> getExcludedPhenotypeExplanation() {
+        return explanationsExcludedPhenotypes == null ? new ArrayList<>() : explanationsExcludedPhenotypes;
+    }
 
 
     public boolean hasGenotypeExplanation() { return ! this.genotypeExplanation.isEmpty();}
-    public boolean hasPhenotypeExplanation() { return  ! this.phenotypeExplanation.isEmpty();}
+
+    /**
+     * Calculate the maximum absolute value of any individual likelihood ratio. This is used to help layout the SVG
+     * @return maximum abs(LR)
+     */
+    public double getMaximumIndividualLR() {
+        double m1 = this.results.stream().map(Math::abs).max(Comparator.comparing( Double::doubleValue )).orElse(0.0);
+        double m2 = this.excludedResults.stream().map(Math::abs).max(Comparator.comparing( Double::doubleValue )).orElse(0.0);
+        double m3 = this.genotypeLR != null ? Math.abs(this.genotypeLR) : 0.0;
+        return Math.max(m1, Math.max(m2, m3));
+    }
+
+
 }

@@ -3,8 +3,8 @@ package org.monarchinitiative.lirical.likelihoodratio;
 
 import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.lirical.hpo.HpoCase;
-import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;

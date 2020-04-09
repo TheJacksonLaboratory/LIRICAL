@@ -10,15 +10,17 @@ Preparing Phenopacket-formated data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows a phenopacket
-representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_. THe file
-is adapted from the phenopacket on :ref"`rstphenopackethpo`. We have removed several of the
-phenotypic features, and added an **HtsFiles* element that contains the path of the VCF file
-(in our exmaple, the path is ``/path/to/data/Pfeiffer.vcf``, but obviously you need to adjust
+representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_. The file
+is adapted from the phenopacket on :ref:`rstphenopackethpo`. We have removed several of the
+phenotypic features, and added an **HtsFiles** element that contains the path of the VCF file
+
+(in our exmaple, the path is ``/example/path/Pfeiffer.vcf``, but obviously you need to adjust
 the path to a file located on your system). ::
 
     {
         "subject": {
-        "id": "example-1",
+            "id": "example-1"
+        },
         "phenotypicFeatures": [{
             "type": {
                 "id": "HP:0000244",
@@ -37,29 +39,28 @@ the path to a file located on your system). ::
                 "id": "HP:0003577",
                 "label": "Congenital onset"
         }
-        }]
-    },
-    "htsFiles":
-    [{
-        "uri": "file://path/to/data/example.vcf",
-        "description": "test",
-        "htsFormat": "VCF",
-        "genomeAssembly": "GRCh19",
-        "individualToSampleIdentifiers": {
-          "patient1": "NA12345"
+        }],
+        "htsFiles":
+        [{
+            "uri": "file://example/path/example.vcf",
+            "description": "test",
+            "htsFormat": "VCF",
+            "genomeAssembly": "GRCh19",
+            "individualToSampleIdentifiers": {
+                "patient1": "NA12345"
+            }
+        }],
+        "metaData": {
+            "createdBy": "Peter R.",
+            "resources": [{
+                "id": "hp",
+                "name": "human phenotype ontology",
+                "namespacePrefix": "HP",
+                "url": "http://purl.obolibrary.org/obo/hp.owl",
+                "version": "2018-03-08",
+                "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
+            }]
         }
-    }],
-    "metaData": {
-        "createdBy": "Peter R.",
-        "resources": [{
-        "id": "hp",
-        "name": "human phenotype ontology",
-        "namespacePrefix": "HP",
-        "url": "http://purl.obolibrary.org/obo/hp.owl",
-        "version": "2018-03-08",
-        "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
-        }]
-     }
     }
 
 
@@ -69,7 +70,7 @@ Running LIRICAL with clinical and genomic data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 LIRICAL will perform combined phenotye and variant analysis if the Phenopacket contains an ``htsFiles`` element. In this
-case, you need to indicate the path to the VCF file on your system as shown above (``/path/to/data/Pfeiffer.vcf``).
+case, you need to indicate the path to the VCF file on your system as shown above (``/example/path/Pfeiffer.vcf``).
 
 
 The ``-p`` option is used to indicate the Phenopacket, and the -e option is used to indicate the location of
@@ -116,7 +117,7 @@ LIRICAL can use transcript data from UCSC, Ensembl, or RefSeq. The default is
     --global
 
 By default,  LIRICAL's default mode, which only ranks candidate genes for which at least one pathogenic allele is
-present in the VCF file. LIRICAL can also be run in a ```--global`` mode in which diseases are ranked irrespective of
+present in the VCF file. LIRICAL can also be run in a ``--global`` mode in which diseases are ranked irrespective of
 whether a disease gene is known for a disease or whether the gene is found to have a pathogenic allele or not.
 
 

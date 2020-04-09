@@ -7,21 +7,21 @@ results of gene panel, exome, or genome sequencing. The prefered input format is
 `Phenopackets <https://github.com/phenopackets>`_, an open standard for sharing disease and phenotype information.
 This is a new standard of the `Global Alliance for Genomics and Health <https://www.ga4gh.org/>`_ that
 links detailed phenotype descriptions with disease, patient, and genetic information (The
-other allowed input format is YAML. See :ref:`rstyaml`).
+other allowed input format is YAML. See :ref:`rstyaml-vcf`).
 
 
-Preparing Phenopacket-formated data
+Preparing Phenopacket-formatted data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 See the `Phenopackets <https://phenopackets-schema.readthedocs.io/en/latest/>`_ website for details on the format. LIRICAL expects
 the Phenopacket to be in JSON format. The following example shows a phenopacket
-representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_ in whom exome sequencing has
-been performed, whereby the corresponding VCF file is available at ``/path/to/data/Pfeiffer.vcf``. ::
+representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_. ::
 
     {
         "subject": {
-        "id": "example-1",
+            "id": "example-1"
+        },
         "phenotypicFeatures": [{
             "type": {
                 "id": "HP:0000244",
@@ -67,19 +67,18 @@ been performed, whereby the corresponding VCF file is available at ``/path/to/da
                 "id": "HP:0003577",
                 "label": "Congenital onset"
         }
-        }]
-    },
-    "metaData": {
-        "createdBy": "Peter R.",
-        "resources": [{
-        "id": "hp",
-        "name": "human phenotype ontology",
-        "namespacePrefix": "HP",
-        "url": "http://purl.obolibrary.org/obo/hp.owl",
-        "version": "2018-03-08",
-        "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
-        }]
-     }
+        }],
+        "metaData": {
+            "createdBy": "Peter R.",
+            "resources": [{
+                "id": "hp",
+                "name": "human phenotype ontology",
+                "namespacePrefix": "HP",
+                "url": "http://purl.obolibrary.org/obo/hp.owl",
+                "version": "2018-03-08",
+                "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
+            }]
+        }
     }
 
 
@@ -89,7 +88,7 @@ Running LIRICAL with clinical data
 LIRICAL will perform phenotype-only analysis if the Phenopacket does not contain a ``htsFiles`` element.
 In this case, the only required argument is the phenopacket. ::
 
-    $ java -jar LIRICAL.java phenopacket -p /path/to/example.json
+    $ java -jar LIRICAL.jar phenopacket -p /path/to/example.json
 
 
 
@@ -121,7 +120,7 @@ want LIRICAL to show details about more differentials, set this option to the de
     -t, --threshold
 
 This option controls the minimum post-test probability to show a differential diagnosis in HTML output.
-By default, LIRICAL shows all differnetials with a posterior probability of 1% or greater.
+By default, LIRICAL shows all differentials with a posterior probability of 1% or greater.
 
 
 ::
@@ -148,7 +147,7 @@ Use TSV instead of HTML output (Default: false).
 
 ::
 
-    --orphanet
+    --orpha
 
 Use annotation data from `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>`_.
 

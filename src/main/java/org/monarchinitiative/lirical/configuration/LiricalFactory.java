@@ -17,10 +17,12 @@ import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
 import org.monarchinitiative.lirical.io.YamlParser;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.lirical.vcf.SimpleVariant;
+import org.monarchinitiative.phenol.annotations.assoc.GeneInfoParser;
+import org.monarchinitiative.phenol.annotations.assoc.HpoAssociationParser;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.io.OntologyLoader;
-import org.monarchinitiative.phenol.io.assoc.HpoAssociationParser;
-import org.monarchinitiative.phenol.io.obo.hpo.HpoDiseaseAnnotationParser;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -42,7 +44,7 @@ public class LiricalFactory {
     private static final Logger logger = LoggerFactory.getLogger(LiricalFactory.class);
     /** Path to the {@code phenotype.hpoa} file. */
     private final String phenotypeAnnotationPath;
-    /** UCSC, RefSeq, Ensembl. */
+    /** UCSC or RefSeq. */
     private final TranscriptDatabase transcriptdatabase;
     /** Path to the {@code Homo_sapiens_gene_info.gz} file. */
     private final String geneInfoPath;
@@ -63,13 +65,29 @@ public class LiricalFactory {
     /** Number of variants that were removed because of the quality filter. */
     private int n_filtered_variants=0;
 
+    /** Prefix for output files. For example, if outfilePrefix is ABC, then the HTML outfile would be ABC.html.*/
+    private String outfilePrefix;
+    /** Path to the directory where the output files should be written (by default, this is null and the files are
+     * written to the directory in which LIRICAL is run.*/
+    private String outdir = null;
+    /** Default threshold for showing a candidate. */
+    public static final double DEFAULT_LR_THRESHOLD = 0.05;
+    /** Default number of differentials to show on the HTML output. */
+    public static final int DEFAULT_MIN_DIFFERENTIALS = 10;
+    /** LR threshold to include/show a candidate in the differential diagnosis. This option is incompatible with the
+     * {@link #minDifferentials} option, at most one can be non-null*/
+    private LrThreshold lrThreshold;
+    /** Minimum number of differentials to show in detail in the HTML output. This option is incompatible with the
+     * {@link #lrThreshold} option, at most one can be non-null */
+    private MinDiagnosisCount minDifferentials;
+
+    private static final String DEFAULT_OUTFILE_PREFIX = "lirical";
+
     private final GenomeAssembly assembly;
 
     private final Ontology ontology;
     /** The path to the Exomiser database file, e.g., {@code 1811_hg19_variants.mv.db}. */
     private String mvStorePath=null;
-    /** genotype matching for likelihood ratio calculation". */
-    private boolean strict;
     /** If global is set to true, then LIRICAL will not discard candidate diseases with no known disease gene or
      * candidatesfor which no predicted pathogenic variant was found in the VCF. */
     private final boolean globalAnalysisMode;
@@ -86,48 +104,47 @@ public class LiricalFactory {
     /** Key: the TermId of a gene. Value. Its background frequency in the current genome build. This variable
      * is only initialized for runs with a VCF file. */
     private Map<TermId, Double> gene2backgroundFrequency = null;
-    /** If true, filter VCF lines by the FILTER column (variants pass if there is no entry, i.e., ".",
-     * or if the value of the field is FALSE. Variant also fail if a reason for the not passing the
-     * filter is given in the column, i.e., for allelic imbalance. This is true by default. Filtering
-     * can be turned off by entering {@code -q false} or {@code --quality} false. */
-    private final boolean filterOnFILTER;
-
     /** Path of the Jannovar UCSC transcript file (from the Exomiser distribution) */
     private String jannovarUcscPath=null;
-    /** Path of the Jannovar Ensembl transcript file (from the Exomiser distribution) */
-    private String jannovarEnsemblPath=null;
     /** Path of the Jannovar RefSeq transcript file (from the Exomiser distribution) */
     private String jannovarRefSeqPath=null;
     /** Name of sample in VCF file, if any. The default value is n/a to indicate this field has not been initiatilized. */
     private String sampleName="n/a";
 
 
+
+
     private JannovarData jannovarData=null;
+
+
     /** Used as a flag to pick the right constructor in {@link Builder#buildForGt2Git()}. */
     private enum BuildType { GT2GIT}
 
     /**
-     * This constructor is used to build Gt2Git. The BuildType argument is used as a flag.
+     * This constructor is used to build Gt2Git. The BuildType argument is used as a flag but otherwise has no
+     * function.
      */
     private LiricalFactory(Builder builder, BuildType bt){
-            filterOnFILTER = false;
             globalAnalysisMode = false;
             ontology = null;
             assembly = builder.getAssembly();
+            if (assembly.equals(GenomeAssembly.HG19) || assembly.equals(GenomeAssembly.HG38)) {
+                // This will set up UCSCS output URLs for variants
+                SimpleVariant.setGenomeBuildForUrl(assembly);
+            }
             this.exomiserPath = builder.exomiserDataDir;
             if (exomiserPath!=null) {
                 initializeExomiserPaths();
             }
             this.geneInfoPath = null;
             this.mim2genemedgenPath=builder.mim2genemedgenPath;
-
             this.phenotypeAnnotationPath = null;
             this.transcriptdatabase = builder.transcriptdatabase;
             this.vcfPath = null;
             this.datadir= builder.liricalDataDir;
-            this.strict = false;
             hpoIdList = ImmutableList.of();
             negatedHpoIdList = ImmutableList.of();
+            this.outfilePrefix = builder.outfilePrefix;
     }
 
     private LiricalFactory(Builder builder) {
@@ -141,6 +158,10 @@ public class LiricalFactory {
             initializeExomiserPaths();
         }
         this.assembly=builder.getAssembly();
+        if (assembly.equals(GenomeAssembly.HG19) || assembly.equals(GenomeAssembly.HG38)) {
+            // This will set up UCSCS output URLs for variants
+            SimpleVariant.setGenomeBuildForUrl(assembly);
+        }
         if (builder.backgroundFrequencyPath!=null
                 && !builder.backgroundFrequencyPath.isEmpty()) {
             this.gene2backgroundFrequency = GenotypeDataIngestor.fromPath(builder.backgroundFrequencyPath);
@@ -155,17 +176,29 @@ public class LiricalFactory {
                 logger.error("Did not recognize genome assembly: {}",assembly);
                 throw new LiricalRuntimeException("Did not recognize genome assembly: "+assembly);
             }
-
         }
 
         this.geneInfoPath=builder.geneInfoPath;
         this.mim2genemedgenPath=builder.mim2genemedgenPath;
-
+        // by the time we get here, we are guaranteed that at once one of the following two
+        // thresholds are non-null (see checkThresholds function in PrioritizeCommand.java).
+        // We have also checked that if present, the threshold is in [0,1]
+        // the YAML parser performs analogous checks.
+        if (builder.minDifferentials == null) {
+            this.minDifferentials = MinDiagnosisCount.notInitialized();
+        } else {
+            this.minDifferentials = MinDiagnosisCount.setToUserDefinedMinCount(builder.minDifferentials);
+        }
+        if (builder.lrThreshold == null) {
+            this.lrThreshold = LrThreshold.notInitialized();
+        } else {
+            this.lrThreshold = LrThreshold.setToUserDefinedThreshold(builder.lrThreshold);
+        }
         this.phenotypeAnnotationPath=builder.phenotypeAnnotationPath;
         this.transcriptdatabase=builder.transcriptdatabase;
         this.vcfPath=builder.vcfPath;
         this.datadir=builder.liricalDataDir;
-        this.strict = builder.strict;
+        this.outfilePrefix = builder.outfilePrefix;
 
         ImmutableList.Builder<TermId> listbuilder = new ImmutableList.Builder<>();
         for (String id : builder.observedHpoTerms) {
@@ -179,7 +212,6 @@ public class LiricalFactory {
             listbuilder.add(negatedId);
         }
         this.negatedHpoIdList = listbuilder.build();
-        this.filterOnFILTER=builder.filterFILTER;
         this.globalAnalysisMode = builder.global;
         if (builder.useOrphanet) {
             this.desiredDatabasePrefixes=ImmutableList.of("ORPHA");
@@ -188,6 +220,17 @@ public class LiricalFactory {
         }
     }
 
+    public String getOutfilePrefix() {
+        return outfilePrefix;
+    }
+
+    public String getOutdir() {
+        return outdir;
+    }
+    /** @return an {@link LrThreshold} object representing the likelihood ratio threshold chosen by the user (or default).*/
+    public LrThreshold getLrThreshold() {
+        return lrThreshold;
+    }
 
     /**
      * @return a list of observed HPO terms (from the YAML/Phenopacket file)
@@ -239,6 +282,8 @@ public class LiricalFactory {
 
     public String getHpoVersion() { return hpoVersion; }
 
+    public MinDiagnosisCount getMinDifferentials() { return this.minDifferentials; }
+
     public String getVcfPath() {
         if (this.vcfPath==null) {
             throw new LiricalRuntimeException("VCF path not initialized");
@@ -262,8 +307,6 @@ public class LiricalFactory {
         this.mvStorePath=String.format("%s%s%s", exomiserPath,File.separator,filename);
         filename=String.format("%s_transcripts_ucsc.ser", basename);
         this.jannovarUcscPath=filename;
-        filename=String.format("%s_transcripts_ensembl.ser", basename);
-        this.jannovarEnsemblPath=filename;
         filename=String.format("%s_transcripts_refseq.ser", basename);
         this.jannovarRefSeqPath=filename;
 
@@ -284,9 +327,6 @@ public class LiricalFactory {
         }
         return mvstore;
     }
-
-
-
 
 
     private void parseHpoAnnotations()  {
@@ -313,7 +353,9 @@ public class LiricalFactory {
                 ontology);
         this.gene2diseaseMultiMap=assocParser.getGeneToDiseaseIdMap();
         this.disease2geneIdMultiMap=assocParser.getDiseaseToGeneIdMap();
-        this.geneId2SymbolMap=assocParser.getGeneIdToSymbolMap();
+        // TODO revert to the assocParser once bug in phenol is fixed!!
+        //this.geneId2SymbolMap=assocParser.getGeneIdToSymbolMap();
+        this.geneId2SymbolMap=GeneInfoParser.loadGeneIdToSymbolMap(geneInfoFile);
     }
 
 
@@ -357,7 +399,8 @@ public class LiricalFactory {
      * @return a {@link GenotypeLikelihoodRatio} object
      */
     public GenotypeLikelihoodRatio getGenotypeLR() {
-        return new GenotypeLikelihoodRatio(this.gene2backgroundFrequency,this.strict);
+        boolean strict = ! globalAnalysisMode;
+        return new GenotypeLikelihoodRatio(this.gene2backgroundFrequency,strict);
     }
 
 
@@ -379,10 +422,6 @@ public class LiricalFactory {
             case REFSEQ:
                 String refseqfilename=String.format("%s_transcripts_refseq.ser", basename);
                 fullpath=String.format("%s%s%s", exomiserPath,File.separator,refseqfilename);
-                break;
-            case ENSEMBL:
-                String ensemblfilename=String.format("%s_transcripts_ensembl.ser", basename);
-                fullpath=String.format("%s%s%s", exomiserPath,File.separator,ensemblfilename);
                 break;
             case UCSC:
             default:
@@ -430,7 +469,7 @@ public class LiricalFactory {
                 jannovarData(),
                 mvStore(),
                 getAssembly(),
-                this.filterOnFILTER);
+                geneId2symbolMap() );
         Map<TermId, Gene2Genotype> genotypeMap = vcf2geno.vcf2genotypeMap();
         this.sampleName=vcf2geno.getSamplename();
         this.n_filtered_variants=vcf2geno.getN_filtered_variants();
@@ -501,6 +540,10 @@ public class LiricalFactory {
     }
 
     public void qcExomiserFiles() {
+        if (exomiserPath == null) {
+            logger.error("Exomiser data directory is not set");
+            throw new LiricalRuntimeException("Exomiser data directory is not set");
+        }
         File exomiserDir = new File(exomiserPath);
         if (!exomiserDir.exists()) {
             logger.error("Could not find Exomiser data directory at {}",exomiserPath);
@@ -546,11 +589,11 @@ public class LiricalFactory {
     public void qcGenomeBuild() {
         if (this.assembly.equals(GenomeAssembly.HG19)) {
             if (! this.exomiserPath.contains("hg19")) {
-                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg19", this.exomiserPath));
+                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg19. Consider adding the option -g/--genome <...>.", this.exomiserPath));
             }
         } else if (this.assembly.equals(GenomeAssembly.HG38)) {
             if (! this.exomiserPath.contains("hg38")) {
-                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg38", this.exomiserPath));
+                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg38. Consider adding the option -g/--genome <...>.", this.exomiserPath));
             }
         } else {
             logger.trace("Genome assembly: {}",this.assembly.toString());
@@ -582,14 +625,15 @@ public class LiricalFactory {
         private String backgroundFrequencyPath = null;
         private String vcfPath = null;
         private String genomeAssembly = null;
-        private boolean filterFILTER = true;
-        private boolean strict = false;
         private boolean global = false;
         private boolean useOrphanet = false;
         /** The default transcript database is UCSC> */
         private TranscriptDatabase transcriptdatabase=  TranscriptDatabase.UCSC;
         private List<String> observedHpoTerms=ImmutableList.of();
         private List<String> negatedHpoTerms=ImmutableList.of();
+        private String outfilePrefix = DEFAULT_OUTFILE_PREFIX;
+        private Double lrThreshold = null;
+        private Integer minDifferentials = null;
 
         /** If this constructor is used, the the build method will attempt to load the HPO
          * based on its file location in datadir. If it is not possible, we will die gracefully.
@@ -601,24 +645,46 @@ public class LiricalFactory {
             ontology = hpo;
         }
 
+        /**
+         * Create a Builder object from the YAML Parser. By default, phenotypeOnly mode is set to false
+         * @param yp YamlParser
+         * @return a Builder object
+         */
         public Builder yaml(YamlParser yp) {
+            return yaml(yp,false);
+        }
+
+        /**
+         * Create a Builder object from the YAML Parser.
+         * @param yp YamlParser
+         * @param phenotypeOnly If false, expect to see information about the VCF file and Exomiser build.
+         * @return Builder object
+         */
+        public Builder yaml(YamlParser yp, boolean phenotypeOnly) {
             this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(yp.getDataDir());
             initDatadirFiles();
-            this.exomiserDataDir=yp.getExomiserDataDir();
-            this.genomeAssembly=yp.getGenomeAssembly();
-            this.observedHpoTerms=new ArrayList<>();
-            this.negatedHpoTerms=new ArrayList<>();
             this.observedHpoTerms=yp.getHpoTermList();
             this.negatedHpoTerms=yp.getNegatedHpoTermList();
             switch (yp.transcriptdb().toUpperCase()) {
-                case "ENSEMBL" :
-                    this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
                 case "REFSEQ":
-                    this.transcriptdatabase=TranscriptDatabase.REFSEQ;
+                    this.transcriptdatabase = TranscriptDatabase.REFSEQ;
+                    break;
                 case "UCSC":
                 default:
-                    this.transcriptdatabase=TranscriptDatabase.UCSC;
+                    this.transcriptdatabase = TranscriptDatabase.UCSC;
             }
+            if (yp.getPrefix() != null) {
+                this.outfilePrefix = yp.getPrefix();
+            }
+            Optional<Double> threshold = yp.threshold();
+            threshold.ifPresent(d -> this.lrThreshold = d);
+            if (yp.mindiff().isPresent()) {
+                this.minDifferentials = yp.mindiff().get();
+            }
+            if (phenotypeOnly) return this;
+            // if we get here, then we add stuff that is relevant to VCF analysis
+            this.exomiserDataDir=yp.getExomiserDataDir();
+            this.genomeAssembly=yp.getGenomeAssembly();
             Optional<String> vcfOpt=yp.getOptionalVcfPath();
             if (vcfOpt.isPresent()) {
                 this.vcfPath=vcfOpt.get();
@@ -627,24 +693,9 @@ public class LiricalFactory {
             }
             Optional<String> backgroundOpt = yp.getBackgroundPath();
             backgroundOpt.ifPresent(s -> this.backgroundFrequencyPath = s);
-            return this;
-        }
+            this.global = yp.global();
 
 
-        public Builder yaml(YamlParser yp, boolean phenotypeOnly) {
-            if (!phenotypeOnly) return yaml(yp);
-            this.liricalDataDir = getPathWithoutTrailingSeparatorIfPresent(yp.getDataDir());
-            initDatadirFiles();
-            this.observedHpoTerms=new ArrayList<>();
-            this.negatedHpoTerms=new ArrayList<>();
-            this.observedHpoTerms=yp.getHpoTermList();
-            this.negatedHpoTerms=yp.getNegatedHpoTermList();
-            return this;
-        }
-
-
-        public Builder strict(boolean b) {
-            this.strict = b;
             return this;
         }
 
@@ -666,9 +717,6 @@ public class LiricalFactory {
 
         public Builder transcriptdatabase(String tdb) {
             switch (tdb.toUpperCase()) {
-                case "ENSEMBL" :
-                    this.transcriptdatabase=TranscriptDatabase.ENSEMBL;
-                    break;
                 case "REFSEQ":
                     this.transcriptdatabase=TranscriptDatabase.REFSEQ;
                     break;
@@ -703,6 +751,16 @@ public class LiricalFactory {
 
         public Builder backgroundFrequency(String bf) {
             this.backgroundFrequencyPath=bf;
+            return this;
+        }
+
+        public Builder lrThreshold(Double d) {
+            this.lrThreshold = d;
+            return this;
+        }
+
+        public Builder minDiff(Integer n) {
+            this.minDifferentials = n;
             return this;
         }
 

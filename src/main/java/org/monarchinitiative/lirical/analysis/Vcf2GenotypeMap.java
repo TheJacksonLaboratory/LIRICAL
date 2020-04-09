@@ -81,8 +81,11 @@ public class Vcf2GenotypeMap {
     private int n_good_quality_variants=0;
     /** Number of variants that were removed because of the quality filter. */
     private int n_filtered_variants=0;
-
-   // private final Map<String,String> vcfMetaData=new HashMap<>();
+    /** There are gene symbols returned by Jannovar for which we cannot find a geneId. This issues seems to be related
+     * to the input files used by Jannovar from UCSC ( knownToLocusLink.txt.gz has links between ucsc ids, e.g.,
+     * uc003fts.3, and NCBIGene ids (earlier known as locus link), e.g., 1370).
+     */
+    private final Set<String> symbolsWithoutGeneIds=new HashSet<>();
     /**
      * Key: an EntrezGene gene id; value a {@link Gene2Genotype} obhject with variants/genotypes in this gene.
      */
@@ -94,6 +97,7 @@ public class Vcf2GenotypeMap {
     /** List of all names in the VCF file */
     private List<String> samplenames;
 
+    private Map<String, TermId> symbolToIdMap;
 
     /**
      * A map with data from the Exomiser database.
@@ -108,23 +112,45 @@ public class Vcf2GenotypeMap {
                     ClinVarData.ClinSig.LIKELY_PATHOGENIC);
 
 
-    public Vcf2GenotypeMap(String vcf, JannovarData jannovar, MVStore mvs, GenomeAssembly ga, boolean filter) {
+    public Vcf2GenotypeMap(String vcf, JannovarData jannovar, MVStore mvs, GenomeAssembly ga, Map<TermId, String> geneId2SymbolMap) {
         this.vcfPath = vcf;
         this.jannovarData = jannovar;
         this.alleleMap = MvStoreUtil.openAlleleMVMap(mvs);
         this.referenceDictionary = jannovarData.getRefDict();
         this.chromosomeMap = jannovarData.getChromosomes();
         this.genomeAssembly = ga;
+        initSymbolToGenIdMap(geneId2SymbolMap);
+    }
+
+    /**
+     * As a part of the {@link Vcf2GenotypeMap} we get information about the transcripts
+     * and genes that contain the identified variants. In most cases, the Jannovar-derived
+     * functions return both the gene symbol and the NCBI gene id. This data in turn is derived
+     * from UCSC. In some cases, the data from UCSC is incomplete for some variants, and Jannovar
+     * returns the symbol but not the gene id.
+     * This function inverts the map geneId2SymbolMap. Note that a very small
+     * number of the symbols are duplicate (these are TRNA genes). For now it seems
+     * better just to record this in the log but to choose one of the ids. This is because
+     * if we just have the symbol but not the gene ID, we cannot know the correct geneID to choose anyway.
+     * This seems to affect just one TRNA at present, but we cannot just invert.
+     */
+    private void initSymbolToGenIdMap(Map<TermId, String> geneId2SymbolMap) {
+        Map<String, TermId> tempmap = new HashMap<>();
+        for (Map.Entry<TermId, String> entry: geneId2SymbolMap.entrySet()){
+            tempmap.put(entry.getValue(), entry.getKey());
+        }
+        symbolToIdMap = ImmutableMap.copyOf(tempmap);
     }
 
     /**
      * Read the VCF file and extract genotype
-     * @return
+     * @return map with key=TermId of a Gene, value corresponding {@link Gene2Genotype} object
      */
     public Map<TermId, Gene2Genotype> vcf2genotypeMap() {
         // whether or not to just look at a specific genomic interval
         final boolean useInterval = false;
         this.gene2genotypeMap = new HashMap<>();
+        final long startTime = System.nanoTime();
         try (VCFFileReader vcfReader = new VCFFileReader(new File(vcfPath), useInterval)) {
             //final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(getOptionalVcfPath));
             VCFHeader vcfHeader = vcfReader.getFileHeader();
@@ -132,9 +158,7 @@ public class Vcf2GenotypeMap {
             this.n_samples=samplenames.size();
             this.samplename=samplenames.get(0);
             logger.trace("Annotating VCF at " + vcfPath + " for sample " + this.samplename);
-            final long startTime = System.nanoTime();
             CloseableIterator<VariantContext> iter = vcfReader.iterator();
-
             VariantContextAnnotator variantEffectAnnotator =
                     new VariantContextAnnotator(this.referenceDictionary, this.chromosomeMap,
                             new VariantContextAnnotator.Options());
@@ -169,16 +193,32 @@ public class Vcf2GenotypeMap {
                         String genIdString = va.getGeneId(); // for now assume this is an Entrez Gene ID
                         String symbol = va.getGeneSymbol();
                         TermId geneId;
-                        try {
-                            geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
-                        } catch (PhenolRuntimeException pre) {
-                           logger.error("Could not identify gene \"{}\" with symbol \"{}\" for variant {}", genIdString,symbol,va.toString());
-                           // if gene is not included in the Jannovar file then it is not a Mendelian
-                            // disease gene, e.g., abParts.
-                            System.out.println(genIdString);
-                            System.out.print(symbol);
-                            // Therefore just skip it
-                            continue;
+                        if (genIdString.isEmpty() ) {
+                            if (symbolToIdMap.containsKey(symbol)){
+                                geneId = symbolToIdMap.get(symbol);
+                            } else {
+                                // this is something where the NCBI gene is is not included in the Jannovar file
+                                // it could be e.g., abParts, or a gene such as DQ582201 (a piRNA)
+                                //System.out.println("ABOUT TO CONU with " + genIdString + ":"+ symbol);
+                                symbolsWithoutGeneIds.add(symbol);
+                                continue;
+                            }
+                        } else {
+                            try {
+                                geneId = TermId.of(NCBI_ENTREZ_GENE_PREFIX, genIdString);
+                            } catch (PhenolRuntimeException pre) {
+                                logger.error("Could not identify gene \"{}\" with symbol \"{}\" for variant {}", genIdString, symbol, va.toString());
+                                // if gene is not included in the Jannovar file then it is not a Mendelian
+                                // disease gene, e.g., abParts.
+                                //System.out.println(genIdString +"!");
+                                //System.out.print(symbol+"!");
+                                if (!symbol.isEmpty()) {
+                                    symbolsWithoutGeneIds.add(symbol);
+                                    System.out.println("Adding " + symbol);
+                                }
+                                // Therefore just skip it
+                                continue;
+                            }
                         }
 
                         gene2genotypeMap.putIfAbsent(geneId, new Gene2Genotype(geneId, symbol));
@@ -215,13 +255,16 @@ public class Vcf2GenotypeMap {
                     }
                 }
             }
-            final long endTime = System.nanoTime();
 
-            logger.info(String.format("Finished Annotating VCF (time= %.2f sec).", (endTime-startTime)/1_000_000_000.0 ));
-            logger.info("Extracted {} non-filtered variants and {} variants that were removed because of a quality filter",
-                    n_good_quality_variants,n_filtered_variants);
+
+
         }
-
+        final long endTime = System.nanoTime();
+        logger.info(String.format("Finished Annotating VCF (time= %.2f sec).", (endTime-startTime)/1_000_000_000.0 ));
+        logger.info("Extracted {} non-filtered variants and {} variants that were removed because of a quality filter",
+                n_good_quality_variants,n_filtered_variants);
+        System.out.printf("Symbols without gene ids n=%d.\n", symbolsWithoutGeneIds.size());
+        System.out.println(String.join(";", symbolsWithoutGeneIds));
         return gene2genotypeMap;
     }
 

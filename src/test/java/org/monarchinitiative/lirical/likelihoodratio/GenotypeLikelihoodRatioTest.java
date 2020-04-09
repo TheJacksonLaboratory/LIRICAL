@@ -13,9 +13,8 @@ import java.util.*;
 import static junit.framework.TestCase.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_DOMINANT;
-import static org.monarchinitiative.phenol.formats.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE;
-
+import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_DOMINANT;
+import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE;
 
 class GenotypeLikelihoodRatioTest {
 
@@ -40,8 +39,8 @@ class GenotypeLikelihoodRatioTest {
         GenotypeLikelihoodRatio genoLRmap = new GenotypeLikelihoodRatio(emptyMap);
         TermId fakeGeneId = TermId.of("Fake:123");
         List<TermId> emptyList= ImmutableList.of(AUTOSOMAL_DOMINANT);
-        double result = genoLRmap.evaluateGenotype( g2g, emptyList, fakeGeneId);
-        double expected = (double)1000;
+        double result = genoLRmap.evaluateGenotype( g2g, emptyList, fakeGeneId).getLR();
+        double expected = 1000;
         assertEquals(expected,result,EPSILON);
     }
 
@@ -59,7 +58,7 @@ class GenotypeLikelihoodRatioTest {
         GenotypeLikelihoodRatio genoLRmap = new GenotypeLikelihoodRatio(emptyMap);
         TermId fakeGeneId = TermId.of("Fake:123");
         List<TermId> emptyList= ImmutableList.of(AUTOSOMAL_RECESSIVE);
-        double result = genoLRmap.evaluateGenotype( g2g, emptyList, fakeGeneId);
+        double result = genoLRmap.evaluateGenotype( g2g, emptyList, fakeGeneId).getLR();
         double expected = (double)1000*1000;
         assertEquals(expected,result,EPSILON);
     }
@@ -80,7 +79,7 @@ class GenotypeLikelihoodRatioTest {
         inheritanceModes.add(autosomalDominant);
         Gene2Genotype g2g = mock(Gene2Genotype.class);
         when(g2g.getSumOfPathBinScores()).thenReturn(0.00); // mock that we find no pathogenic variant
-        Double score = glr.evaluateGenotype(g2g,inheritanceModes,HLAB);
+        Double score = glr.evaluateGenotype(g2g,inheritanceModes,HLAB).getLR();
         double expected = 0.05; // heuristic score
         assertEquals(expected,score,EPSILON);
     }
@@ -100,7 +99,7 @@ class GenotypeLikelihoodRatioTest {
         inheritanceModes.add(autosomalRecessive);
         Gene2Genotype g2g = mock(Gene2Genotype.class);
         when(g2g.getSumOfPathBinScores()).thenReturn(0.00); // mock that we find no pathogenic variant
-        Double score = glr.evaluateGenotype(g2g,inheritanceModes,madeUpGene);
+        Double score = glr.evaluateGenotype(g2g,inheritanceModes,madeUpGene).getLR();
         double expected = 0.05*0.05; // heuristic score for AR
         assertEquals(expected,score,EPSILON);
     }

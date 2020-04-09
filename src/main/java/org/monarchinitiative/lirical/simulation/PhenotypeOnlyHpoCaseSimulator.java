@@ -6,8 +6,8 @@ import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.phenol.formats.hpo.HpoAnnotation;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
     /** A list of all HPO term ids in the Phenotypic abnormality subontology. */
     private final ImmutableList<TermId> phenotypeterms;
     /** Key: diseaseID, e.g., OMIM:600321; value: Corresponding HPO disease object. */
-    private final Map<TermId,HpoDisease> diseaseMap;
+    private final Map<TermId, HpoDisease> diseaseMap;
     /** Number of HPO terms to use for each simulated case. */
     private final int n_terms_per_case;
     /** Number of "noise" (unrelated) HPO terms to use for each simulated case. */
@@ -234,9 +234,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
     /** @return a non-root random parent of term tid. It could be empty. */
     private Optional<TermId> getNonRootRandomParentTerm(TermId tid) {
         Set<TermId> parents = new HashSet<>(getParentTerms(ontology.subOntology(PHENOTYPIC_ABNORMALITY),tid,false));
-        if (parents.contains(PHENOTYPIC_ABNORMALITY)){
-            parents.remove(PHENOTYPIC_ABNORMALITY);
-        }
+        parents.remove(PHENOTYPIC_ABNORMALITY);
         if (parents.isEmpty()) { //no parents could be found
             return Optional.empty();
         }

@@ -6,6 +6,8 @@ import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.analysis.VcfSimulator;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.configuration.LrThreshold;
+import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.io.PhenopacketImporter;
@@ -15,7 +17,7 @@ import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.output.HtmlTemplate;
 import org.monarchinitiative.lirical.output.LiricalTemplate;
 import org.monarchinitiative.lirical.output.TsvTemplate;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.core.Disease;
@@ -30,7 +32,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.monarchinitiative.phenol.formats.hpo.HpoSubOntologyRootTermIds.PHENOTYPIC_ABNORMALITY;
+import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoSubOntologyRootTermIds.PHENOTYPIC_ABNORMALITY;
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
 
 public class PhenoGenoCaseSimulator {
@@ -104,7 +106,7 @@ public class PhenoGenoCaseSimulator {
 
         this.randomize = rand;
         if (randomize) {
-            Set<TermId> descendents=getDescendents(factory.hpoOntology(),PHENOTYPIC_ABNORMALITY);
+            Set<TermId> descendents=getDescendents(factory.hpoOntology(), PHENOTYPIC_ABNORMALITY);
             ImmutableList.Builder<TermId> termbuilder = new ImmutableList.Builder<>();
             for (TermId t: descendents) {
                 termbuilder.add(t);
@@ -141,9 +143,6 @@ public class PhenoGenoCaseSimulator {
         this.diseaseMap = factory.diseaseMap(ontology);
         this.disease2geneMultimap = factory.disease2geneMultimap();
         this.gene2diseaseMultimap = factory.gene2diseaseMultimap();
-
-
-
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
@@ -212,40 +211,49 @@ public class PhenoGenoCaseSimulator {
                 rank_of_gene = r;
             }
         }
-
-
         this.metadata.put("genesWithVar", String.valueOf(genotypemap.size()));
         this.metadata.put("exomiserPath", factory.getExomiserPath());
         this.metadata.put("hpoVersion", factory.getHpoVersion());
-
+        if (factory.global()) {
+            this.metadata.put("global_mode", "true");
+        } else {
+            this.metadata.put("global_mode", "false");
+        }
     }
 
 
-    public void outputHtml(String prefix, double lrThreshold,int minDiff, String outdir) {
+    public void outputHtml(String prefix, LrThreshold lrThreshold, MinDiagnosisCount minDiff, String outdir) {
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hpocase,ontology,metadata)
                 .genotypeMap(genotypemap)
                 .geneid2symMap(factory.geneId2symbolMap())
-                .threshold(lrThreshold)
-                .mindiff(minDiff)
                 .outdirectory(outdir)
+                .threshold(factory.getLrThreshold())
+                .mindiff(factory.getMinDifferentials())
                 .prefix(prefix);
+        if (lrThreshold != null) {
+            builder = builder.threshold(lrThreshold);
+        } else if (minDiff != null) {
+            builder = builder.mindiff(minDiff);
+        }
         HtmlTemplate htemplate = builder.buildGenoPhenoHtmlTemplate();
         htemplate.outputFile();
     }
 
 
-    public void outputTsv(String prefix, double lrThreshold,int minDiff, String outdir) {
+    public void outputTsv(String prefix, LrThreshold lrThreshold, MinDiagnosisCount minDiff, String outdir) {
         String outname=String.format("%s.tsv",prefix);
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(this.hpocase,ontology,metadata)
                 .genotypeMap(genotypemap)
                 .geneid2symMap(factory.geneId2symbolMap())
-                .threshold(lrThreshold)
-                .mindiff(minDiff)
                 .outdirectory(outdir)
                 .prefix(prefix);
+        if (lrThreshold != null) {
+            builder = builder.threshold(lrThreshold);
+        } else if (minDiff != null) {
+            builder = builder.mindiff(minDiff);
+        }
         TsvTemplate tsvtemplate = builder.buildGenoPhenoTsvTemplate();
         tsvtemplate.outputFile(outname);
-
     }
 
 

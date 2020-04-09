@@ -9,12 +9,21 @@ LIRICAL also supports `YAML <https://en.wikipedia.org/wiki/YAML>`_, which is a s
 is commonly used for configuration files.
 
 
-
 YAML
 ----
 Before running LIRICAL, download and built it and set it up according to the instructions on the :ref:`rstsetup` page.
-LIRICAL uses default values for many configuration options (see below), and so the simplest possible YAML configuration
-file must include the following information. ::
+LIRICAL uses default values for many configuration options (see below). An example of the simplest possible YAML
+configuration file is shown::
+
+    ---
+    analysis:
+      # hg19 or hg38 is supported
+      genomeAssembly: hg19
+    hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
+
+This file can be found at ``src/test/resources/yaml/simple.yml``.
+
+An example YAML file that uses several parameters is shown below::
 
     ## LIRICAL Analysis Template.
     # These are all the possible options for running LIRICAL. Use this as a template for
@@ -24,15 +33,14 @@ file must include the following information. ::
     # hg19 or hg38 is supported
         mindiff: 50
         threshold: 0.05
-        tsv: true
-        datadir: mydata
-        orphanet: true
+        tsv: false
+        datadir: data
+        orphanet: false
     hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
     negatedHpoIds: ['HP:0001328']
     prefix: example
 
-
-This file can be found at ``src/test/resources/yaml/example1.yaml``.
+This file can be found at ``src/test/resources/yaml/multiple_params.yml``.
 
 
 
@@ -40,7 +48,7 @@ In YAML, lines that begin with ``#`` are comments, and the three dashes
 indicate the start of the contents of the file. The ``analysis`` element is used to hold a dictionary with options for
 running the program. The items in ``analysis`` refer to the genome assembly and to the paths of files required to run LIRICAL.
 Users must provide values for ``genomeAssembly``, ``vcf``, and ``exomiser``. Default values will be use for the
-other three entries if the user does not proviude values.
+other three entries if the user does not provide values.
 
 
 1. ``mindiff``
@@ -53,7 +61,7 @@ This option controls the minimum post-test probability to show a differential di
 By default, LIRICAL shows all differnetials with a posterior probability of 1% or greater.
 
 
-3. ``tsv`` T
+3. ``tsv``
 Use TSV instead of HTML output (Default: false).
 
 4. ``datadir``
@@ -61,7 +69,7 @@ The path with LIRICAL data that should be downloaded before running LIRICAL
 (see :ref:`rstsetup` for details). This option should not be used if the default data location (``data``) is used.
 
 5. ``orphanet``
-If true, use annotation data from `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>_`.
+If true, use annotation data from `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>`_.
 
 Additionally, ``hpoIds`` is a list of HPO term representing the clinical manifestations
 observed in the individual being analyzed. In contrast, ``negatedHpoIds`` represents
@@ -69,8 +77,7 @@ phenotypic abnormalities (HPO terms) that were explicitly excluded in the proban
 
 
 Finally,  ``prefix`` is the prefix of the output file (optional, default: lirical).
- For instance, if the prefix is ``example1``, then the HTML output file will be
-``example1.html``.
+For instance, if the prefix is ``example1``, then the HTML output file will be ``example1.html``.
 
 
 
@@ -82,5 +89,5 @@ Running LIRICAL
 
 A typical command that runs LIRICAL using settings shown in the YAML file with the default data directory would be simply ::
 
-    $ java -jar LIRICAL.jar vcf -y example.yml
+    $ java -jar LIRICAL.jar yaml -y example.yml
 

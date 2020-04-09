@@ -60,9 +60,11 @@ public class PhenopacketImporter {
             JsonFormat.parser().merge(phenopacketJsonString, phenoPacketBuilder);
             Phenopacket phenopacket = phenoPacketBuilder.build();
             return new PhenopacketImporter(phenopacket,ontology);
-        } catch (IOException | ParseException e1) {
-            e1.printStackTrace();
-            throw new LiricalRuntimeException("Could not load phenopacket at " + pathToJsonPhenopacketFile);
+        } catch (IOException  e1) {
+            throw new LiricalRuntimeException("I/O Error: Could not load phenopacket  (" + pathToJsonPhenopacketFile +"): "+ e1.getMessage());
+        } catch (ParseException ipbe) {
+            System.err.println("[ERROR] Malformed phenopacket: " + ipbe.getMessage());
+            throw new LiricalRuntimeException("Could not load phenopacket (" + pathToJsonPhenopacketFile +"): "+ ipbe.getMessage());
         }
     }
 

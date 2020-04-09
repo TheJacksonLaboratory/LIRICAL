@@ -7,7 +7,6 @@ import com.beust.jcommander.ParameterException;
 import com.google.common.collect.ImmutableSet;
 import org.monarchinitiative.lirical.cmd.*;
 import org.monarchinitiative.lirical.exception.LiricalException;
-import org.monarchinitiative.lirical.simulation.NotCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,10 +22,10 @@ public class Lirical {
     private static final Logger logger = LoggerFactory.getLogger(Lirical.class);
 
 
-    @Parameter(names = {"-h", "--help"}, help = true, arity = 0,description = "display this help message")
-    private boolean usageHelpRequested;
+    @Parameter(names = {"-h", "--help"}, help = true, description = "display this help message")
+    protected boolean usageHelpRequested;
 
-    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","yaml","phenopacket","simulate","grid","gt2git","simulate-vcf","not");
+    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","yaml","phenopacket","simulate","grid","background","simulate-vcf","not");
 
 
     static public void main(String [] args) {
@@ -36,21 +35,19 @@ public class Lirical {
         DownloadCommand download = new DownloadCommand();
         SimulatePhenotypeOnlyCommand simulate = new SimulatePhenotypeOnlyCommand();
         GridSearchCommand grid = new GridSearchCommand();
-        Gt2GitCommand gt2git = new Gt2GitCommand();
+        BackgroundFrequencyCommand background = new BackgroundFrequencyCommand();
         YamlCommand yaml = new YamlCommand();
         PhenopacketCommand phenopacket = new PhenopacketCommand();
         SimulatePhenopacketCommand simvcf = new SimulatePhenopacketCommand();
-        NotCommand not = new NotCommand();
         JCommander jc = JCommander.newBuilder()
                 .addObject(lirical)
                 .addCommand("download", download)
                 .addCommand("phenopacket",phenopacket)
                 .addCommand("yaml",yaml)
-                .addCommand("gt2git",gt2git)
+                .addCommand("background",background)
                 .addCommand("simulate", simulate)
                 .addCommand("grid", grid)
                 .addCommand("simulate-vcf",simvcf)
-                .addCommand("not",not)
                 .build();
         jc.setProgramName("java -jar LIRICAL.jar");
         try {
@@ -59,18 +56,16 @@ public class Lirical {
             // Note that by default, JCommand is OK with -h download but
             // not with download -h
             // The following hack makes things work with either option.
-            String mycommand=null;
+            //String mycommand=null;
             String commandstring = String.join(" ",args);
+
+
             for (String a:args) {
-                if (commandnames.contains(a)) {
-                    mycommand=a;
-                }
-                if (a.equals("h")) {
-                    if (mycommand!=null) {
-                        jc.usage(mycommand);
-                    } else {
-                        jc.usage();
-                    }
+                //if (commandnames.contains(a)) {
+             //       mycommand=a;
+//                }
+                if (a.equals("h") || a.equals("-h") || a.equals("--h")) {
+                    jc.usage();
                     System.exit(1);
                 }
             }
@@ -92,11 +87,7 @@ public class Lirical {
         }
 
         if ( lirical.usageHelpRequested) {
-            if (parsedCommand==null) {
-                jc.usage();
-            } else {
-                jc.usage(parsedCommand);
-            }
+            jc.usage();
             System.exit(1);
         }
 
@@ -124,8 +115,8 @@ public class Lirical {
            case "grid":
                liricalCommand = grid;
                break;
-           case "gt2git":
-               liricalCommand = gt2git;
+           case "background":
+               liricalCommand = background;
                break;
             case "yaml":
                 liricalCommand = yaml;
@@ -136,14 +127,10 @@ public class Lirical {
            case "phenopacket":
                 liricalCommand =phenopacket;
                 break;
-           case "not":
-                liricalCommand =not;
-                break;
            default:
                System.err.println(String.format("[ERROR] command \"%s\" not recognized",command));
                jc.usage();
                System.exit(1);
-
         }
         try {
             liricalCommand.run();

@@ -19,6 +19,16 @@ This is a new standard of the `Global Alliance for Genomics and Health <https://
 links detailed phenotype descriptions with disease, patient, and genetic information.
 
 
+.. figure:: _static/hpo-textmining.png
+    :width: 75 %
+    :align: center
+    :alt: PhenopacketGenerator
+
+    For convenience, we provide a tool called `PhenopacketGenerator <https://github.com/TheJacksonLaboratory/PhenopacketGenerator>`_ that can be used to create a Phenopacket with a list of HPO terms and the path to a VCF file with which LIRICAL can be run.
+
+
+
+
 .. toctree::
     :maxdepth: 1
 

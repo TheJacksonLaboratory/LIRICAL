@@ -12,8 +12,8 @@ import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.output.LiricalTemplate;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * This class coordinates the main analysis of a VCF file plus list of observed HPO terms. This
@@ -31,21 +30,27 @@ import java.util.Optional;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Run LIRICAL from YAML file")
-public class YamlCommand extends PrioritizeCommand {
+public class YamlCommand extends LiricalCommand {
     private static final Logger logger = LoggerFactory.getLogger(YamlCommand.class);
     @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
     private String yamlPath;
     /** Reference to the HPO. */
     private Ontology ontology;
 
-    private  Map<TermId,HpoDisease> diseaseMap;
+    private  Map<TermId, HpoDisease> diseaseMap;
 
     private boolean phenotypeOnly;
 
     private PhenotypeLikelihoodRatio phenoLr;
 
-    /** If true, run with VCF file, otherwise, perform phenotype-only analysis. */
-    private boolean hasVcf;
+    /** An object that contains parameters from the YAML file for configuration. */
+    protected LiricalFactory factory;
+    /** Key: an EntrezGene id; value: corresponding gene symbol. */
+    protected Map<TermId,String> geneId2symbol;
+    /** Various metadata that will be used for the HTML org.monarchinitiative.lirical.output. */
+    protected Map<String,String> metadata;
+    /** If true, output TSV and not HTML. */
+    private boolean outputTSV = false;
 
     /**
      * Command pattern to coordinate analysis of a VCF file with LIRICAL.
@@ -55,24 +60,35 @@ public class YamlCommand extends PrioritizeCommand {
 
 
 
-    private HpoCase runPhenotypeOnly() throws LiricalException {
+    private void runPhenotypeOnly() throws LiricalException {
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
                 .negated(factory.negatedHpoTerms())
                 .ontology(ontology)
                 .diseaseMap(diseaseMap)
                 .phenotypeLr(phenoLr);
         CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
-        return evaluator.evaluate();
+        HpoCase hcase = evaluator.evaluate();
+        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                .prefix(this.factory.getOutfilePrefix())
+                .outdirectory(this.factory.getOutdir())
+                .threshold(this.factory.getLrThreshold())
+                .mindiff(this.factory.getMinDifferentials());
+        LiricalTemplate template = outputTSV ?
+                builder.buildPhenotypeTsvTemplate():
+                builder.buildPhenotypeHtmlTemplate();
+        template.outputFile();
+        logger.error("Done analysis of " + template.getOutPath());
     }
 
-    private HpoCase runVcf() throws LiricalException {
+    private void runVcf() throws LiricalException {
+        this.geneId2symbol = factory.geneId2symbolMap();
         Map<TermId, Gene2Genotype> genotypeMap = factory.getGene2GenotypeMap();
         this.metadata.put("vcf_file", factory.getVcfPath());
         this.metadata.put("n_filtered_variants", String.valueOf(factory.getN_filtered_variants()));
         this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
         Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
-        this.geneId2symbol = factory.geneId2symbolMap();
+
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
                 .negated(factory.negatedHpoTerms())
                 .ontology(ontology)
@@ -80,15 +96,28 @@ public class YamlCommand extends PrioritizeCommand {
                 .disease2geneMultimap(disease2geneMultimap)
                 .genotypeMap(genotypeMap)
                 .phenotypeLr(phenoLr)
-                .global(globalAnalysisMode)
+                .global(factory.global())
                 .gene2idMap(geneId2symbol)
                 .genotypeLr(genoLr);
         this.metadata.put("transcriptDatabase", factory.transcriptdb());
-        int n_genes_with_var=factory.getGene2GenotypeMap().size();
+        int n_genes_with_var = genotypeMap.size();
         this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
         this.metadata.put("exomiserPath",factory.getExomiserPath());
         CaseEvaluator evaluator = caseBuilder.build();
-        return evaluator.evaluate();
+        HpoCase hcase = evaluator.evaluate();
+        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+                .prefix(this.factory.getOutfilePrefix())
+                .genotypeMap(genotypeMap)
+                .outdirectory(this.factory.getOutdir())
+                .geneid2symMap(geneId2symbol)
+                .threshold(this.factory.getLrThreshold())
+                .errors(evaluator.getErrors())
+                .mindiff(this.factory.getMinDifferentials());
+        LiricalTemplate template = outputTSV ?
+                builder.buildGenoPhenoTsvTemplate() :
+                builder.buildGenoPhenoHtmlTemplate();
+        template.outputFile();
+        logger.error("Wrote output file to " + template.getOutPath());
     }
 
 
@@ -104,30 +133,28 @@ public class YamlCommand extends PrioritizeCommand {
         this.metadata.put("sample_name", factory.getSampleName());
         this.metadata.put("analysis_date", factory.getTodaysDate());
         this.metadata.put("yaml", this.yamlPath);
-        Ontology ontology = factory.hpoOntology();
-        Map<TermId,HpoDisease> diseaseMap = factory.diseaseMap(ontology);
-        PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
-        Map<String,String> ontologyMetainfo=ontology.getMetaInfo();
+
+        Map<String,String> ontologyMetainfo = factory.hpoOntology().getMetaInfo();
         if (ontologyMetainfo.containsKey("data-version")) {
             this.metadata.put("hpoVersion",ontologyMetainfo.get("data-version"));
         }
-        HpoCase hcase;
-        if (this.phenotypeOnly) {
-            hcase =runPhenotypeOnly();
-        } else {
-            hcase=runVcf();
-        }
 
-        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
-                .prefix(this.outfilePrefix)
-                .outdirectory(this.outdir)
-                .threshold(this.LR_THRESHOLD)
-                .mindiff(this.minDifferentialsToShow);
-        LiricalTemplate template = outputTSV ?
-                builder.buildPhenotypeTsvTemplate() :
-                builder.buildPhenotypeHtmlTemplate();
-        template.outputFile();
-        logger.error("Done analysis of " + outfilePrefix);
+        if (this.phenotypeOnly) {
+            runPhenotypeOnly();
+        } else {
+            if (factory.global()) { // global mode only makes sense for genomic analysis
+                this.metadata.put("global_mode", "true");
+            } else {
+                this.metadata.put("global_mode", "false");
+            }
+            this.factory.qcExomiserFiles();
+            factory.qcHumanPhenotypeOntologyFiles();
+            factory.qcExternalFilesInDataDir();
+            factory.qcExomiserFiles();
+            factory.qcGenomeBuild();
+            factory.qcVcfFile();
+            runVcf();
+        }
     }
 
     /**
@@ -138,22 +165,12 @@ public class YamlCommand extends PrioritizeCommand {
      */
     private LiricalFactory deYamylate(String yamlPath) {
         YamlParser yparser = new YamlParser(yamlPath);
-        Optional<Integer> mindiff = yparser.mindiff();
-        mindiff.ifPresent(i -> this.minDifferentialsToShow = i);
-        Optional<Double> threshold = yparser.threshold();
-        threshold.ifPresent(d -> this.LR_THRESHOLD = d);
-        this.outfilePrefix = yparser.getPrefix();
-
+        this.outputTSV = yparser.doTsv();
         String hpoPath = yparser.getHpoPath();
         if (hpoPath == null || !(new File(hpoPath).exists())) {
             throw new PhenolRuntimeException("Could not find hp.obo file. Consider running download command first");
         }
         Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));
-
-        if (yparser.getOutDirectory().isPresent()) {
-            this.outdir=yparser.getOutDirectory().get();
-        }
-
         if (yparser.phenotypeOnlyMode()) {
             phenotypeOnly=true;
             LiricalFactory.Builder builder = new LiricalFactory.Builder(ontology).
@@ -165,6 +182,5 @@ public class YamlCommand extends PrioritizeCommand {
                     yaml(yparser);
             return builder.buildForGenomicDiagnostics();
         }
-
     }
 }

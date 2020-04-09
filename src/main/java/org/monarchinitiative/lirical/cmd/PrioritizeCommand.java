@@ -1,7 +1,9 @@
 package org.monarchinitiative.lirical.cmd;
 
 import com.beust.jcommander.Parameter;
+import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.Map;
@@ -20,12 +22,12 @@ public abstract class PrioritizeCommand extends LiricalCommand {
     @Parameter(names={"-g","--global"}, description = "global analysis")
     protected boolean globalAnalysisMode = false;
     @Parameter(names={"-m","--mindiff"}, description = "minimal number of differential diagnoses to show")
-    protected int minDifferentialsToShow=10;
+    protected Integer minDifferentialsToShow = null;
     @Parameter(names={"-o","--output-directory"}, description = "directory into which to write output file(s).")
-    protected String outdir=null;
-    /** The threshold for showing a differential diagnosis in the main section (posterior probability of 1%).*/
+    protected String outdir=".";
+    /** The threshold for showing a differential diagnosis in the main section (posterior probability of 5%).*/
     @Parameter(names= {"-t","--threshold"}, description = "minimum post-test prob. to show diagnosis in HTML output")
-    protected double LR_THRESHOLD=0.01;
+    protected Double LR_THRESHOLD = null;
     /** If true, the program will not output an HTML file but will output a Tab Separated Values file instead.*/
     @Parameter(names="--tsv",description = "Use TSV instead of HTML output")
     protected boolean outputTSV=false;
@@ -40,7 +42,21 @@ public abstract class PrioritizeCommand extends LiricalCommand {
     protected LiricalFactory factory;
     /** Key: an EntrezGene id; value: corresponding gene symbol. */
     protected Map<TermId,String> geneId2symbol;
+    protected Map<TermId, Gene2Genotype> genotypeMap;
     /** Various metadata that will be used for the HTML org.monarchinitiative.lirical.output. */
     protected Map<String,String> metadata;
+
+    protected void checkThresholds() {
+        if (LR_THRESHOLD != null && minDifferentialsToShow != null) {
+            System.err.println("[ERROR] Only one of the options -t/--threshold and -m/--mindiff can be used at once.");
+            throw new LiricalRuntimeException("Only one of the options -t/--threshold and -m/--mindiff can be used at once.");
+        }
+        if (LR_THRESHOLD != null ) {
+            if (LR_THRESHOLD < 0.0 || LR_THRESHOLD > 1.0) {
+                System.err.println("[ERROR] Post-test probability (-t/--threshold) must be between 0.0 and 1.0.");
+                throw new LiricalRuntimeException("Post-test probability (-t/--threshold) must be between 0.0 and 1.0.");
+            }
+        }
+    }
 
 }

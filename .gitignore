@@ -12,8 +12,7 @@ hs_err_pid*
 .idea
 target/
 *.iml
-lr2pg.log.1
-lr2pg.log.2
+*.log
 data/
 dependency-reduced-pom.xml
 .settings

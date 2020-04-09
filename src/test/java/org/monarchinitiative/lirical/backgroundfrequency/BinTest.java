@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.gt2git;
+package org.monarchinitiative.lirical.backgroundfrequency;
 
 
 import org.junit.jupiter.api.Test;

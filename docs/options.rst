@@ -41,11 +41,10 @@ download to a non-default directory if the user passes the ``-d`` option.
 Running LIRICAL with a phenopacket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``phenopacket`` command runs LIRICAL from a :ref:`rstyaml` configuration file.
+The ``phenopacket`` command runs LIRICAL from a Phenopacket file.
 
-.. list-table::  ``yaml`` command
-    :widths: 1 1 1 1
-    :class: longtable
+.. list-table::  ``phenopacket`` command
+    :widths: 10 20 10 20
     :header-rows: 1
 
     * - short
@@ -60,10 +59,11 @@ The ``phenopacket`` command runs LIRICAL from a :ref:`rstyaml` configuration fil
       - ``--download``
       - data
       - diretory that contains the downloaded data
-    * - ``-k``
-      - ``--keep``
+    * - ``-g``
+      - ``--global``
       - false
-      - retain candidate diseases even if no candidate variant is found in VCF file. This option causes LIRICAL to list good phenotype candidates even if there is no supporting variant
+      - retain candidate diseases even if no candidate gene is known or no candidate variant
+        is found in VCF file.
     * - ``-m``
       - ``--mindiff``
       - 10
@@ -76,10 +76,6 @@ The ``phenopacket`` command runs LIRICAL from a :ref:`rstyaml` configuration fil
       - ``--prefix``
       - lirical
       - prefix of outfile
-    * - none
-      - ``--strict``
-      - false
-      - use strict genotype matching for likelihood ratio calculation. This option causes LIRICAL to show only candidates that have a genotype that matches what is expected because of the mode of inheritance of the disease
     * - ``-t``
       - ``--threshold``
       - 0.01
@@ -87,7 +83,8 @@ The ``phenopacket`` command runs LIRICAL from a :ref:`rstyaml` configuration fil
     * - none
       - ``--transcriptdb``
       - ucsc
-      - transcript database. Valid optiona are UCSC, Ensembl, and RefSeq
+      - transcript database. Valid options
+        are UCSC, Ensembl, and RefSeq
     * - none
       - ``--tsv``
       - false
@@ -100,9 +97,9 @@ The ``phenopacket`` command runs LIRICAL from a :ref:`rstyaml` configuration fil
 YAML
 ~~~~
 
-The ``yaml`` command runs LIRICAL from a :ref:`rstphenopacket` configuration file. Users should
+The ``yaml`` command runs LIRICAL from a YAML configuration file. Users should
 indicate all non-default arguments within the YAML file. The only valid argument for the
-``yaml`` command is the path to the YAML file. ::
+``yaml`` command is the path to the YAML file (``-y <path>``). ::
 
     $ java -jar LIRICAL.java yaml -y example.yaml
 

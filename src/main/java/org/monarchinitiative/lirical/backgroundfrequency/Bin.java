@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.gt2git;
+package org.monarchinitiative.lirical.backgroundfrequency;
 
 /**
  * This class represents one of two bins associated with each gene. Bin A is for the "pathogenic" variants, i.e.,
@@ -11,7 +11,7 @@ package org.monarchinitiative.lirical.gt2git;
  */
 class Bin {
     /** A small constant added to avoid division by zero. */
-    private final static double EPSILON=1/100_000;
+    private final static double EPSILON=1/(double)100_000;
     /** The sumOfPerc of the percentages (100*frequency) of all of the variants associated with this bin of this gene. */
     private double sumOfPerc;
     /** The total number (count) of variants associated with this bin of this gene. */

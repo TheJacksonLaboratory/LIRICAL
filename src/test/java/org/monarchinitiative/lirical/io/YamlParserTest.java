@@ -154,7 +154,7 @@ class YamlParserTest {
         // example 1 has no negated HPOs
         YamlParser yparser = new YamlParser(example1path);
         List<TermId> emptyList = ImmutableList.of();
-        assertEquals(emptyList,yparser.getNegatedHpoTermList());
+        assertEquals(0,yparser.getNegatedHpoTermList().size());
     }
 
     @Test
@@ -207,11 +207,9 @@ class YamlParserTest {
 
     @Test
     void testMinDiff2() {
-        //example 2 has  mindiff:50
+        //example 2 has  no mindiff entry
         YamlParser yparser = new YamlParser(example2path);
-        assertTrue(yparser.mindiff().isPresent());
-        int expected=50;
-        assertEquals(expected,yparser.mindiff().get());
+        assertFalse(yparser.mindiff().isPresent());
     }
 
     @Test

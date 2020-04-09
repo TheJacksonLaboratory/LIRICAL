@@ -23,7 +23,7 @@ public class HpoDownloader {
     /** URL of the hp.obo file. */
     private final static String HP_OBO_URL ="https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/master/hp.obo";
     /** URL of the annotation file phenotype.hpoa. */
-    private final static String HP_ANNOTATION_URL ="http://compbio.charite.de/jenkins/job/hpo.annotations.current/lastSuccessfulBuild/artifact/misc_2018/phenotype.hpoa";
+    private final static String HP_ANNOTATION_URL ="http://compbio.charite.de/jenkins/job/hpo.annotations.current/lastSuccessfulBuild/artifact/current/phenotype.hpoa";
     /** Basename of the phenotype annotation file. */
     private final static String HP_ANNOTATION ="phenotype.hpoa";
 
@@ -35,6 +35,8 @@ public class HpoDownloader {
 
     private final static String GENE_INFO_URL = "ftp://ftp.ncbi.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz";
 
+    //private final static String HUGO_URL = "ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt";
+
 
 
     public HpoDownloader(String path){
@@ -44,7 +46,7 @@ public class HpoDownloader {
     public HpoDownloader(String path, boolean overwrite){
         this.downloadDirectory=path;
         this.overwrite=overwrite;
-        logger.error("overwrite="+overwrite);
+        logger.info("overwrite="+overwrite);
     }
 
     /**

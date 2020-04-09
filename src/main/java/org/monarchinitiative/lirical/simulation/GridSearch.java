@@ -2,7 +2,7 @@ package org.monarchinitiative.lirical.simulation;
 
 
 import org.monarchinitiative.lirical.exception.LiricalException;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;

@@ -1,6 +1,47 @@
 =========
 Changelog
 =========
+------
+v1.1.0
+------
+- bugfix -- NCBI Gene ID ingest
+- update to phenol 1.5.0
+
+------
+v1.0.3
+------
+- updated to phenol 1.4.2
+- added output of UCSC links to visualize variants
+- added some unit tests and fixed a few minor bugs
+
+------
+v1.0.1
+------
+- updated to phenol 1.4.2
+- updated hpo annotation download URL
+
+------
+v1.0.0
+------
+- Update to phenopacket-schema version 1.0.0
+- Improvements to HTML output
+
+
+
+----------
+v1.0.0-RC2
+----------
+- fixed bug in YAML output
+- removing Ensembl option
+- Adding sparkline graphic to show posttest probability
+- various bug fixes
+
+----------
+v1.0.0-RC1
+----------
+- Preparing first release
+- Adding posttest probability SVG to HTML output
+
 -------
 v0.9.24
 -------

@@ -13,7 +13,7 @@ import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.output.LiricalTemplate;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -39,7 +39,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
     protected String phenopacketPath = null;
     @Parameter(names = {"-e", "--exomiser"}, description = "path to the Exomiser data directory")
     protected String exomiserDataDirectory = null;
-    @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC, Ensembl, RefSeq)")
+    @Parameter(names={"--transcriptdb"}, description = "transcript database (UCSC or RefSeq)")
     protected String transcriptDb="refseq";
     /** Reference to HPO object. */
     private Ontology ontology;
@@ -72,7 +72,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
      * Run an analysis of a phenopacket that contains a VCF file.
      */
     private void runVcfAnalysis() {
-        LiricalFactory factory = new LiricalFactory.Builder(ontology)
+        this.factory = new LiricalFactory.Builder(ontology)
                 .datadir(this.datadir)
                 .genomeAssembly(this.genomeAssembly)
                 .exomiser(this.exomiserDataDirectory)
@@ -81,6 +81,8 @@ public class PhenopacketCommand extends PrioritizeCommand {
                 .global(this.globalAnalysisMode)
                 .orphanet(this.useOrphanet)
                 .transcriptdatabase(this.transcriptDb)
+                .lrThreshold(this.LR_THRESHOLD)
+                .minDiff(this.minDifferentialsToShow)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
         factory.qcExternalFilesInDataDir();
@@ -111,20 +113,25 @@ public class PhenopacketCommand extends PrioritizeCommand {
         if (!factory.transcriptdb().equals("n/a")) {
             this.metadata.put("transcriptDatabase", factory.transcriptdb());
         }
-        int n_genes_with_var = factory.getGene2GenotypeMap().size();
+        int n_genes_with_var = genotypemap.size();
         this.metadata.put("genesWithVar", String.valueOf(n_genes_with_var));
         this.metadata.put("exomiserPath", factory.getExomiserPath());
         this.metadata.put("hpoVersion", factory.getHpoVersion());
         this.metadata.put("sample_name", factory.getSampleName());
+        if (globalAnalysisMode) {
+            this.metadata.put("global_mode", "true");
+        } else {
+            this.metadata.put("global_mode", "false");
+        }
         this.geneId2symbol = factory.geneId2symbolMap();
         List<String> errors = evaluator.getErrors();
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
                 .genotypeMap(genotypemap)
                 .geneid2symMap(this.geneId2symbol)
-                .threshold(this.LR_THRESHOLD)
-                .mindiff(minDifferentialsToShow)
                 .errors(errors)
                 .outdirectory(this.outdir)
+                .threshold(factory.getLrThreshold())
+                .mindiff(factory.getMinDifferentials())
                 .prefix(this.outfilePrefix);
         LiricalTemplate template = outputTSV ?
                 builder.buildGenoPhenoTsvTemplate() :
@@ -136,7 +143,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
      * Run an analysis of a phenopacket that only has Phenotype data
      */
     private void runPhenotypeOnlyAnalysis() {
-        LiricalFactory factory = new LiricalFactory.Builder(ontology)
+        this.factory = new LiricalFactory.Builder(ontology)
                 .datadir(this.datadir)
                 .orphanet(this.useOrphanet)
                 .build();
@@ -157,9 +164,9 @@ public class PhenopacketCommand extends PrioritizeCommand {
         LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
                 .prefix(this.outfilePrefix)
                 .outdirectory(this.outdir)
-                .errors(errors)
-                .threshold(this.LR_THRESHOLD)
-                .mindiff(this.minDifferentialsToShow);
+                .threshold(this.factory.getLrThreshold())
+                .mindiff(this.factory.getMinDifferentials())
+                .errors(errors);
         LiricalTemplate template = outputTSV ?
                 builder.buildPhenotypeTsvTemplate() :
                 builder.buildPhenotypeHtmlTemplate();
@@ -174,6 +181,7 @@ public class PhenopacketCommand extends PrioritizeCommand {
             logger.error("-p option (phenopacket) is required");
             return;
         }
+        checkThresholds();
         this.metadata = new HashMap<>();
         String hpoPath = String.format("%s%s%s",this.datadir, File.separator,"hp.obo");
         Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));

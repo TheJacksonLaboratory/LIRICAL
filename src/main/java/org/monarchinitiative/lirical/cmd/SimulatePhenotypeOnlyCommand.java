@@ -6,7 +6,7 @@ import com.beust.jcommander.Parameters;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.simulation.PhenotypeOnlyHpoCaseSimulator;
-import org.monarchinitiative.phenol.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -19,11 +19,11 @@ import java.util.Map;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @Parameters(commandDescription = "Simulate phenotype-only cases",hidden = true)
-public class SimulatePhenotypeOnlyCommand extends LiricalCommand {
+public class SimulatePhenotypeOnlyCommand extends PhenopacketCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulatePhenotypeOnlyCommand.class);
     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
-    @Parameter(names={"-d","--data"}, description ="directory to download data" )
-    private String datadir="data";
+   // @Parameter(names={"-d","--data"}, description ="directory to download data" )
+   // private String datadir="data";
     @Parameter(names={"-c","--n_cases"}, description="Number of cases to simulate")
     private int n_cases_to_simulate = 25;
     @Parameter(names={"-h","--n_hpos"}, description="Number of HPO terms per case")
@@ -42,11 +42,12 @@ public class SimulatePhenotypeOnlyCommand extends LiricalCommand {
 
 
     @Override
-    public void run() throws LiricalException {
+    public void run()  {
         LiricalFactory factory = new LiricalFactory.Builder()
                 .datadir(this.datadir)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
+        checkThresholds();
         logger.trace("Running simulation with {} cases, {} terms/case, {} noise terms/case. Imprecision: {}",
                 n_cases_to_simulate,n_terms_per_case,n_noise_terms,imprecise_phenotype?"yes":"no");
         Ontology ontology = factory.hpoOntology();
@@ -60,6 +61,10 @@ public class SimulatePhenotypeOnlyCommand extends LiricalCommand {
                 imprecise_phenotype);
         logger.info("Simulating {} cases with {} terms each, {} noise terms. imprecision={}",
             n_cases_to_simulate,n_terms_per_case,n_noise_terms,imprecise_phenotype);
-        phenotypeOnlyHpoCaseSimulator.simulateCases();
+        try {
+            phenotypeOnlyHpoCaseSimulator.simulateCases();
+        } catch (LiricalException e) {
+            e.printStackTrace(); // should never happen, but nothing we can do about it
+        }
     }
 }
