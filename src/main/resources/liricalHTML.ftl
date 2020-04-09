@@ -347,6 +347,10 @@ a.svg:hover, a.svg:active {
   display: none;
 }
 
+#hide-symbol-table, #symbol-table {
+  display: none;
+}
+
 </style>
 </head>
 
@@ -536,11 +540,19 @@ a.svg:hover, a.svg:active {
      <section>
           <article>
                   <h2>Gene symbols that could not be annotated</h2>
-                  <p>Explanation.</p>
-                  <ul>
-                  <#list geneSymbolsWithoutIds as sym>
-                    <li>${sym}</li>
-                  </#list>
+                  <p>LIRICAL relates variants to genes and diseases by means of the NCBI Gene ID. In some cases, gene symbols
+                  returned from the VCF annotation cannot be mapped to a Gene ID. We have observed that these are often
+                  accession numbers of poorly defined entities. The following list shows gene IDs that could not
+                  be identified in this run. If there are many entries in this list, we recommend trying a different
+                  annotation source (e.g., refseq). See also the online documentation of LIRICAL.</p>
+                   <a id="show-symbol-table" class="table-btn" onclick="showSymbolTable()">Show Table</a>
+                   <a id="hide-symbol-table" class="table-btn" onclick="hideSymbolTable()">Hide Table</a>
+                    <table class="redTable" id="symbol-table">
+                       <tr><th style="width:20%">Symbol</th></tr>
+                          <#list geneSymbolsWithoutIds as sym>
+                         <tr><td class="disease">${sym}</td></tr>
+                        </#list>
+                    </table>
           </article>
      </section>
    </#if>
@@ -628,7 +640,7 @@ a.svg:hover, a.svg:active {
     tooltip.style.display = "none";
   }
 
-  function showTable() {
+function showTable() {
     var table = document.getElementById("other-genes-table");
     table.style.display = "block";
     var showtablebtn = document.getElementById("show-other-genes-table");
@@ -647,6 +659,26 @@ a.svg:hover, a.svg:active {
     var hidetablebtn = document.getElementById("hide-other-genes-table");
     hidetablebtn.style.display = "none";
   }
+
+  function showSymbolTable() {
+      var table = document.getElementById("symbol-table");
+      table.style.display = "block";
+      var showtablebtn = document.getElementById("show-symbol-table");
+      showtablebtn.style.display = "none";
+
+      var hidetablebtn = document.getElementById("hide-symbol-table");
+      hidetablebtn.style.display = "block";
+    }
+
+     function hideSymbolTable() {
+      var table = document.getElementById("symbol-table");
+      table.style.display = "none";
+      var showtablebtn = document.getElementById("show-symbol-table");
+      showtablebtn.style.display = "block";
+
+      var hidetablebtn = document.getElementById("hide-symbol-table");
+      hidetablebtn.style.display = "none";
+    }
   </script>
 </body>
 </html>

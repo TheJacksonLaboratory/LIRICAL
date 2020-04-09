@@ -274,8 +274,8 @@ public class Vcf2GenotypeMap {
         logger.info(String.format("Finished Annotating VCF (time= %.2f sec).", (endTime - startTime) / 1_000_000_000.0));
         logger.info("Extracted {} non-filtered variants and {} variants that were removed because of a quality filter",
                 n_good_quality_variants, n_filtered_variants);
-        System.out.printf("Symbols without gene ids n=%d.\n", symbolsWithoutGeneIds.size());
-        System.out.println(String.join(";", symbolsWithoutGeneIds));
+        logger.info("Symbols without gene ids n={}.", symbolsWithoutGeneIds.size());
+        logger.info(String.join(";", symbolsWithoutGeneIds));
         return gene2genotypeMap;
     }
 

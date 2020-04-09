@@ -126,7 +126,7 @@ public class YamlCommand extends LiricalCommand {
                 builder.buildGenoPhenoTsvTemplate() :
                 builder.buildGenoPhenoHtmlTemplate();
         template.outputFile();
-        logger.error("Wrote output file to " + template.getOutPath());
+        logger.trace("Wrote output file to " + template.getOutPath());
     }
 
 
