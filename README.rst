@@ -11,6 +11,8 @@ abnormalities (encoded using the `Human Phenotype Ontology <http://www.human-phe
 optionally combined with an analysis of variants and genotypes if a VCF file is provided with the
 results of diagnostic gene panel, exome, or genome sequencing.
 
+A preprint describing LIRICAL is available on [medRxiv](https://www.medrxiv.org/content/10.1101/2020.01.25.19014803v1).
+
 
 Please consult the Read the docs site for `Detailed documentation <https://lirical.readthedocs.io/en/latest/>`_.
 
