@@ -241,6 +241,11 @@ public class Vcf2GenotypeMap {
                         int pos = veval.getPosition();
                         List<TranscriptAnnotation> transcriptAnnotationList = veval.getTranscriptAnnotations();
                         String genotypeString = veval.getGenotypeString();
+                        // Some VCF files may have been prepared from multi-VCF files. In some cases,
+                        // 0/0 is left in, i.e., HOMOZYGOUS_REF, or ./., i.e., no call possible
+                        // We will just skip these lines
+                        if ((genotypeString.equals("0/0") || genotypeString.equals("./.")))
+                            continue;
                         float freq;
                         float pathogenicity;
                         if (alleleProp == null) {
