@@ -229,6 +229,7 @@ public class PhenoGenoCaseSimulator {
                 .outdirectory(outdir)
                 .threshold(factory.getLrThreshold())
                 .mindiff(factory.getMinDifferentials())
+                .symbolsWithOutIds(factory.getSymbolsWithoutGeneIds())
                 .prefix(prefix);
         if (lrThreshold != null) {
             builder = builder.threshold(lrThreshold);
