@@ -32,13 +32,13 @@ public class Lirical {
         long startTime = System.currentTimeMillis();
 
         Lirical lirical = new Lirical();
-        DownloadCommand download = new DownloadCommand();
-        SimulatePhenotypeOnlyCommand simulate = new SimulatePhenotypeOnlyCommand();
-        GridSearchCommand grid = new GridSearchCommand();
-        BackgroundFrequencyCommand background = new BackgroundFrequencyCommand();
-        YamlCommand yaml = new YamlCommand();
-        PhenopacketCommand phenopacket = new PhenopacketCommand();
-        SimulatePhenopacketCommand simvcf = new SimulatePhenopacketCommand();
+        LiricalCommand download = new DownloadCommand();
+        LiricalCommand simulate = new SimulatePhenotypeOnlyCommand();
+        LiricalCommand grid = new GridSearchCommand();
+        LiricalCommand background = new BackgroundFrequencyCommand();
+        LiricalCommand yaml = new YamlCommand();
+        LiricalCommand phenopacket = new PhenopacketCommand();
+        LiricalCommand simvcf = new SimulatePhenopacketCommand();
         JCommander jc = JCommander.newBuilder()
                 .addObject(lirical)
                 .addCommand("download", download)

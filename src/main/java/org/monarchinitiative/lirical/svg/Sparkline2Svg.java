@@ -141,8 +141,11 @@ public class Sparkline2Svg extends Lirical2Svg {
             //writeHeader(swriter);
             int geneSvgWidth = 150;
             writeHeader(swriter, geneSvgWidth, total_height);
-            double LR = hcase.getResult(diseaseId).getGenotypeLR();
-            writeGeneSpark(swriter, gsymbol, LR);
+            TestResult result = hcase.getResult(diseaseId);
+            if (result.hasGenotype()) {
+                double LR = hcase.getResult(diseaseId).getGenotypeLR();
+                writeGeneSpark(swriter, gsymbol, LR);
+            }
             writeFooter(swriter);
             return swriter.toString();
         } catch (IOException e) {

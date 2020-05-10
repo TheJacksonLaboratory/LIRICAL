@@ -231,7 +231,7 @@ public class CaseEvaluator {
         Collection<TermId> associatedGenes = disease2geneMultimap.get(diseaseId);
         if (associatedGenes.isEmpty()) {
             // this is a disease with no known disease gene
-            result = new TestResult(observedLR, excludedLR, disease, pretest);
+            result =  createResultFromPheno(observedLR, excludedLR, disease, pretest);
             return Optional.of(result);
         }
         // If we get here, then the disease is associated with one or multiple genes
@@ -273,13 +273,56 @@ public class CaseEvaluator {
         // genotypeLR has the most pathogenic genotype score for all associated genes, or is null if
         // no variants in any associated gene were found.
         //when we get here, genotypeLR is not null
-        result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
-        result.setGenotypeExplanation(currentGenotypeExplanation);
+        result =  createResultFromGenoPheno(observedLR, excludedLR, disease, genotypeLR, geneId, pretest,currentGenotypeExplanation);
+        return Optional.of(result);
+    }
+
+    /**
+     * * This is a convenience method that constructs a {@link TestResult} object from pheno/geno data
+     * @param observedLR List of LRs for observed HPOs
+     * @param excludedLR List of LRs for excluded HPOs
+     * @param disease HpoDisease object
+     * @param genotypeLR genotype likelihood ratio
+     * @param geneId id of disease-associated gene
+     * @param pretest pretest probability
+     * @param currentGeneExp current genotype Explanation
+     * @return Corresponding {@link TestResult} object
+     */
+    private TestResult createResultFromGenoPheno(List<Double> observedLR,
+                                                 List<Double> excludedLR,
+                                                 HpoDisease disease,
+                                                 Double genotypeLR,
+                                                 TermId geneId,
+                                                 double pretest,
+                                                 String currentGeneExp) {
+        TestResult result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
+        result.setGenotypeExplanation(currentGeneExp);
         List<String> phenoExpObserved = getObservedPhenotypeExplanation();
         List<String> phenoExpExcluded = getExcludedPhenotypeExplanation();
         result.setObservedPhenotypeExplanation(phenoExpObserved);
         result.setExcludedPhenotypeExplanation(phenoExpExcluded);
-        return Optional.of(result);
+        return result;
+    }
+
+    /**
+     * This is a convenience method that constructs a {@link TestResult} object from purely phenotypic
+     * observation (no VCF)
+     * @param observedLR List of LRs for observed HPOs
+     * @param excludedLR List of LRs for excluded HPOs
+     * @param disease HpoDisease object
+     * @param pretest pretest probability
+     * @return Corresponding {@link TestResult} object
+     */
+    private TestResult createResultFromPheno(List<Double> observedLR,
+                                                 List<Double> excludedLR,
+                                                 HpoDisease disease,
+                                                 double pretest) {
+        TestResult result = new TestResult(observedLR, excludedLR, disease, pretest);
+        List<String> phenoExpObserved = getObservedPhenotypeExplanation();
+        List<String> phenoExpExcluded = getExcludedPhenotypeExplanation();
+        result.setObservedPhenotypeExplanation(phenoExpObserved);
+        result.setExcludedPhenotypeExplanation(phenoExpExcluded);
+        return result;
     }
 
     private List<String> getObservedPhenotypeExplanation() {
@@ -328,8 +371,7 @@ public class CaseEvaluator {
                 // if keepIfNoCandidateVariant is true then the user wants to
                 // keep differentials with no associated gene
                 // we create the TestResult based solely on the Phenotype data.
-                result = new TestResult(observedLR, excludedLR, disease, pretest);
-                result.setObservedPhenotypeExplanation(phenoExpObserved);
+                result = createResultFromPheno(observedLR, excludedLR, disease, pretest);
                 return Optional.of(result);
             } else {
                 // we skip this differential because there is no associated gene
@@ -374,10 +416,7 @@ public class CaseEvaluator {
             return Optional.empty(); // Skip this disease since there was no pathogenic variant.
         } else {
             // if we get here, then foundPredictedPathogenicVariant is true.
-            result = new TestResult(observedLR, excludedLR, disease, genotypeLR, geneId, pretest);
-            result.setGenotypeExplanation(currentGenotypeExplanation);
-            result.setObservedPhenotypeExplanation(phenoExpObserved);
-            result.setExcludedPhenotypeExplanation(phenoExpExcluded);
+            result = createResultFromGenoPheno(observedLR, excludedLR, disease, genotypeLR, geneId, pretest,currentGenotypeExplanation);
             return Optional.of(result);
         }
     }
