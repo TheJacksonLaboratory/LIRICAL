@@ -1,14 +1,13 @@
 package org.monarchinitiative.lirical;
 
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
-import com.google.common.collect.ImmutableSet;
+
 import org.monarchinitiative.lirical.cmd.*;
-import org.monarchinitiative.lirical.exception.LiricalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
+
+import java.util.concurrent.Callable;
 
 
 /**
@@ -17,118 +16,108 @@ import org.slf4j.LoggerFactory;
  * @version 0.9.1 (2019-01-02)
  */
 
-
-public class Lirical {
+@CommandLine.Command(name = "LIRICAL", mixinStandardHelpOptions = true, version = "1.3.0",
+        description = "LIkelihood Ratio Interpretation of Clinical AbnormaLities")
+public class Lirical implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(Lirical.class);
 
 
-    @Parameter(names = {"-h", "--help"}, help = true, description = "display this help message")
-    protected boolean usageHelpRequested;
+//    @CommandLine.Option(names = {"-h", "--help"}, help = true, description = "display this help message")
+//    protected boolean usageHelpRequested;
 
-    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","yaml","phenopacket","simulate","grid","background","simulate-vcf","not");
+//    private static final ImmutableSet<String> commandnames=ImmutableSet.of("download","yaml","phenopacket","simulate","grid","background","simulate-vcf","not");
+//
 
-
-    static public void main(String [] args) {
+    static public void main2(String [] args) {
         long startTime = System.currentTimeMillis();
 
         Lirical lirical = new Lirical();
-        LiricalCommand download = new DownloadCommand();
-        LiricalCommand simulate = new SimulatePhenotypeOnlyCommand();
-        LiricalCommand grid = new GridSearchCommand();
-        LiricalCommand background = new BackgroundFrequencyCommand();
-        LiricalCommand yaml = new YamlCommand();
-        LiricalCommand phenopacket = new PhenopacketCommand();
-        LiricalCommand simvcf = new SimulatePhenopacketCommand();
-        JCommander jc = JCommander.newBuilder()
-                .addObject(lirical)
-                .addCommand("download", download)
-                .addCommand("phenopacket",phenopacket)
-                .addCommand("yaml",yaml)
-                .addCommand("background",background)
-                .addCommand("simulate", simulate)
-                .addCommand("grid", grid)
-                .addCommand("simulate-vcf",simvcf)
-                .build();
-        jc.setProgramName("java -jar LIRICAL.jar");
-        try {
-            jc.parse(args);
-        } catch (ParameterException e) {
-            String commandstring = String.join(" ",args);
+        //LiricalCommand download = new DownloadCommand();
+       // LiricalCommand simulate = new SimulatePhenotypeOnlyCommand();
+      //  LiricalCommand grid = new GridSearchCommand();
+       // LiricalCommand background = new BackgroundFrequencyCommand();
+        //LiricalCommand yaml = new YamlCommand();
+       // LiricalCommand phenopacket = new PhenopacketCommand();
+       // LiricalCommand simvcf = new SimulatePhenopacketCommand();
+//        JCommander jc = JCommander.newBuilder()
+//                .addObject(lirical)
+//              //  .addCommand("download", download)
 
-            for (String a:args) {
-                if (a.equals("h") || a.equals("-h") || a.equals("--h")) {
-                    jc.usage();
-                    System.exit(1);
-                }
-            }
-            System.err.println("[ERROR] "+e.getMessage());
-            System.err.println("[ERROR] your command: "+commandstring);
-            System.err.println("[ERROR] enter java -jar LIRICAL.jar -h for more information.");
-            System.exit(1);
-        }
-        String parsedCommand = jc.getParsedCommand();
-        if (parsedCommand==null || parsedCommand.isEmpty()) {
-            jc.usage(); // user ran program with no arguments, probably help is want is wanted.
-            System.exit(0);
-        }
-        if (! commandnames.contains(parsedCommand)) {
-            System.err.println("[ERROR] did not recognize command \"" + parsedCommand +"\"");
-            System.err.println("[ERROR] available commands are " + String.join(", ",commandnames));
-            System.err.println("[ERROR] enter java -jar LIRICAL.jar -h for more information.");
-            System.exit(1);
-        }
-
-        if ( lirical.usageHelpRequested) {
-            jc.usage();
-            System.exit(1);
-        }
-
-        if (jc.getParsedCommand()==null ) {
-            System.err.println("[ERROR] no command passed");
-            jc.usage();
-           System.exit(1);
-       }
-
-        if ( lirical.usageHelpRequested) {
-
-            jc.usage();
-            System.exit(1);
-        }
-
-        String command = jc.getParsedCommand();
-        LiricalCommand liricalCommand=null;
-        switch (command) {
-            case "download":
-                liricalCommand= download;
-                break;
-            case "simulate":
-                liricalCommand = simulate;
-               break;
-           case "grid":
-               liricalCommand = grid;
-               break;
-           case "background":
-               liricalCommand = background;
-               break;
-            case "yaml":
-                liricalCommand = yaml;
-                break;
-           case "simulate-vcf":
-               liricalCommand=simvcf;
-               break;
-           case "phenopacket":
-                liricalCommand =phenopacket;
-                break;
-           default:
-               System.err.println(String.format("[ERROR] command \"%s\" not recognized",command));
-               jc.usage();
-               System.exit(1);
-        }
-        try {
-            liricalCommand.run();
-        } catch (LiricalException e) {
-            e.printStackTrace();
-        }
+             //   .addCommand("yaml",yaml)
+                //.addCommand("background",background)
+              //  .addCommand("simulate", simulate)
+                //.addCommand("grid", grid)
+                //.addCommand("simulate-vcf",simvcf)
+                //.build();
+//        jc.setProgramName("java -jar LIRICAL.jar");
+//        try {
+//            jc.parse(args);
+//        } catch (ParameterException e) {
+//            String commandstring = String.join(" ",args);
+//
+//            for (String a:args) {
+//                if (a.equals("h") || a.equals("-h") || a.equals("--h")) {
+//                    jc.usage();
+//                    System.exit(1);
+//                }
+//            }
+//            System.err.println("[ERROR] "+e.getMessage());
+//            System.err.println("[ERROR] your command: "+commandstring);
+//            System.err.println("[ERROR] enter java -jar LIRICAL.jar -h for more information.");
+//            System.exit(1);
+//        }
+//        String parsedCommand = jc.getParsedCommand();
+//        if (parsedCommand==null || parsedCommand.isEmpty()) {
+//            jc.usage(); // user ran program with no arguments, probably help is want is wanted.
+//            System.exit(0);
+//        }
+//        if (! commandnames.contains(parsedCommand)) {
+//            System.err.println("[ERROR] did not recognize command \"" + parsedCommand +"\"");
+//            System.err.println("[ERROR] available commands are " + String.join(", ",commandnames));
+//            System.err.println("[ERROR] enter java -jar LIRICAL.jar -h for more information.");
+//            System.exit(1);
+//        }
+//
+//        if ( lirical.usageHelpRequested) {
+//            jc.usage();
+//            System.exit(1);
+//        }
+//
+//        if (jc.getParsedCommand()==null ) {
+//            System.err.println("[ERROR] no command passed");
+//            jc.usage();
+//           System.exit(1);
+//       }
+//
+//        if ( lirical.usageHelpRequested) {
+//
+//            jc.usage();
+//            System.exit(1);
+//        }
+//
+//        String command = jc.getParsedCommand();
+//      //  LiricalCommand liricalCommand=null;
+//        switch (command) {
+////
+//
+////
+//
+////           case "simulate-vcf":
+////               liricalCommand=simvcf;
+////               break;
+////           case "phenopacket":
+////                liricalCommand =phenopacket;
+////                break;
+//           default:
+//               System.err.println(String.format("[ERROR] command \"%s\" not recognized",command));
+//               jc.usage();
+//               System.exit(1);
+//        }
+//        try {
+//          //  liricalCommand.run();
+//        } catch (LiricalException e) {
+//            e.printStackTrace();
+//        }
         long stopTime = System.currentTimeMillis();
         int elapsedTime = (int)((stopTime - startTime)*(1.0)/1000);
         if (elapsedTime > 3599) {
@@ -144,6 +133,27 @@ public class Lirical {
         } else {
             System.out.println("LIRICAL: Elapsed time was " + (stopTime - startTime) * (1.0) / 1000 + " seconds.");
         }
+    }
+
+
+    public static void main(String[] args) {
+        CommandLine cline = new CommandLine(new Lirical())
+                .addSubcommand("background", new BackgroundFrequencyCommand())
+               .addSubcommand("download", new DownloadCommand())
+                .addSubcommand("grid", new GridSearchCommand())
+                .addSubcommand("phenopacket", new PhenopacketCommand())
+                .addSubcommand("simulate", new SimulatePhenotypeOnlyCommand())
+                .addSubcommand("simulate-vcf", new SimulatePhenopacketWithVcfCommand())
+                .addSubcommand("yaml", new YamlCommand());
+        cline.setToggleBooleanFlags(false);
+        int exitCode = cline.execute(args);
+        System.exit(exitCode);
+    }
+
+    @Override
+    public Integer call() {
+        // work done in subcommands
+        return 0;
     }
 
 
