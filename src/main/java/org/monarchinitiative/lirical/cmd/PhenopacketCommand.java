@@ -22,6 +22,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 /**
  * Run LIRICAL from a Phenopacket -- with or without accompanying VCF file.
@@ -33,7 +34,7 @@ import java.util.*;
         aliases = {"P"},
         mixinStandardHelpOptions = true,
         description = "Run LIRICAL from a Phenopacket")
-public class PhenopacketCommand extends AbstractPrioritizeCommand {
+public class PhenopacketCommand extends AbstractPrioritizeCommand implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(PhenopacketCommand.class);
     @CommandLine.Option(names = {"-b", "--background"}, description = "path to non-default background frequency file")
     protected String backgroundFrequencyFile;
@@ -44,7 +45,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
     @CommandLine.Option(names={"--transcriptdb"}, description = "transcript database (UCSC or RefSeq)")
     protected String transcriptDb="refseq";
     /** Reference to HPO object. */
-    private Ontology ontology;
+    private Ontology hpOntology;
 
     /**
      * If true, the phenopacket contains the path of a VCF file.
@@ -80,7 +81,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
      * Run an analysis of a phenopacket that contains a VCF file.
      */
     private void runVcfAnalysis() {
-        this.factory = new LiricalFactory.Builder(ontology)
+        this.factory = new LiricalFactory.Builder(this.hpOntology)
                 .datadir(this.datadir)
                 .genomeAssembly(this.genomeAssembly)
                 .exomiser(this.exomiserDataDirectory)
@@ -101,12 +102,11 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
         Map<TermId, Gene2Genotype> genotypemap = factory.getGene2GenotypeMap();
         symbolsWithoutGeneIds = factory.getSymbolsWithoutGeneIds();
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
-        Ontology ontology = factory.hpoOntology();
-        Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
-        PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
+        Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(this.hpOntology);
+        PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(this.hpOntology, diseaseMap);
         Multimap<TermId, TermId> disease2geneMultimap = factory.disease2geneMultimap();
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(this.hpoIdList)
-                .ontology(ontology)
+                .ontology(this.hpOntology)
                 .negated(this.negatedHpoIdList)
                 .diseaseMap(diseaseMap)
                 .disease2geneMultimap(disease2geneMultimap)
@@ -133,7 +133,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
         }
         this.geneId2symbol = factory.geneId2symbolMap();
         List<String> errors = evaluator.getErrors();
-        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,this.hpOntology,this.metadata)
                 .genotypeMap(genotypemap)
                 .geneid2symMap(this.geneId2symbol)
                 .errors(errors)
@@ -152,17 +152,16 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
      * Run an analysis of a phenopacket that only has Phenotype data
      */
     private void runPhenotypeOnlyAnalysis() {
-        this.factory = new LiricalFactory.Builder(ontology)
+        this.factory = new LiricalFactory.Builder(this.hpOntology)
                 .datadir(this.datadir)
                 .orphanet(this.useOrphanet)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
         factory.qcExternalFilesInDataDir();
-        Ontology ontology = factory.hpoOntology();
-        Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(ontology);
-        PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(ontology, diseaseMap);
+        Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(this.hpOntology);
+        PhenotypeLikelihoodRatio phenoLr = new PhenotypeLikelihoodRatio(this.hpOntology, diseaseMap);
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(this.hpoIdList)
-                .ontology(ontology)
+                .ontology(this.hpOntology)
                 .negated(this.negatedHpoIdList)
                 .diseaseMap(diseaseMap)
                 .phenotypeLr(phenoLr);
@@ -170,7 +169,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
         HpoCase hcase = evaluator.evaluate();
         this.metadata.put("hpoVersion", factory.getHpoVersion());
         List<String> errors = evaluator.getErrors();
-        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,this.hpOntology,this.metadata)
                 .prefix(this.outfilePrefix)
                 .outdirectory(this.outdir)
                 .threshold(this.factory.getLrThreshold())
@@ -183,18 +182,18 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
     }
 
 
-
-    public void run() {
+    @Override
+    public Integer call() {
         // read the Phenopacket
         if (phenopacketPath==null) {
             logger.error("-p option (phenopacket) is required");
-            return;
+            return 1;
         }
         checkThresholds();
         this.metadata = new HashMap<>();
         String hpoPath = String.format("%s%s%s",this.datadir, File.separator,"hp.obo");
-        Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));
-        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath,ontology);
+        this.hpOntology = OntologyLoader.loadOntology(new File(hpoPath));
+        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath,this.hpOntology);
         this.hasVcf = importer.hasVcf();
         if (this.hasVcf) {
             this.vcfPath = importer.getVcfPath();
@@ -221,5 +220,6 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
             // i.e., the Phenopacket has no VCF reference -- LIRICAL will work on just phenotypes!
             runPhenotypeOnlyAnalysis();
         }
+        return 0;
     }
 }

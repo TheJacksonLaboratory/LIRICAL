@@ -26,11 +26,11 @@ import java.util.concurrent.Callable;
 public class GridSearchCommand implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(GridSearchCommand.class);
     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
-    @CommandLine.Option(names={"-d","--data"}, description ="directory to download data" )
+    @CommandLine.Option(names={"-d","--data"}, description ="directory to download data (default: ${DEFAULT-VALUE})" )
     private String datadir="data";
-    @CommandLine.Option(names={"-c","--n_cases"}, description="Number of cases to simulate")
+    @CommandLine.Option(names={"-c","--n_cases"}, description="Number of cases to simulate (default: ${DEFAULT-VALUE})")
     private int n_cases_to_simulate = 100;
-    @CommandLine.Option(names={"-i","--imprecision"}, description="Use imprecision?")
+    @CommandLine.Option(names={"-i","--imprecision"}, description="Use imprecision? (default: ${DEFAULT-VALUE})")
     private boolean imprecise_phenotype = false;
 
 

@@ -30,7 +30,8 @@ import java.util.concurrent.Callable;
  * analysis is driven by a YAML file.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-@CommandLine.Command(name = "yaml", aliases = {"Y"},
+@CommandLine.Command(name = "yaml",
+        aliases = {"Y"},
         mixinStandardHelpOptions = true,
         description = "Run LIRICAL from YAML file")
 public class YamlCommand implements Callable<Integer> {
