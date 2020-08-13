@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------
+v1.3.0
+------
+- Switch to picocli command line interface
+
+------
 v1.2.0
 ------
 - update to phenol 1.6.0 (note minor change to phenotype.hpoa format with '#' starting header line
