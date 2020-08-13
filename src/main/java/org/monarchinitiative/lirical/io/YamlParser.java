@@ -124,7 +124,7 @@ public class YamlParser {
 
 
     public String transcriptdb() {
-        if (yconfig.getAnalysis().containsKey("transcriptdb")) {
+        if (yconfig.hasAnalysis() &&  yconfig.getAnalysis().containsKey("transcriptdb")) {
             String trdb = yconfig.getAnalysis().get("transcriptdb");
             switch (trdb.toUpperCase()) {
                 case "UCSC": return "UCSC";
@@ -137,7 +137,7 @@ public class YamlParser {
     }
 
     public String getExomiserDataDir(){
-        if (yconfig.getAnalysis().containsKey("exomiser")) {
+        if (yconfig.hasAnalysis() && yconfig.getAnalysis().containsKey("exomiser")) {
             String datadir=yconfig.getAnalysis().get("exomiser");
             datadir=getPathWithoutTrailingSeparatorIfPresent(datadir);
             return datadir;
@@ -154,7 +154,7 @@ public class YamlParser {
      * @return Path of non-default data directory or default. Trailing slash (if present) will be removed
      */
     public String getDataDir() {
-        if (yconfig.getAnalysis().containsKey("datadir")) {
+        if (yconfig.hasAnalysis() &&  yconfig.getAnalysis().containsKey("datadir")) {
             String path = yconfig.getAnalysis().get("datadir");
             return getPathWithoutTrailingSeparatorIfPresent(path);
         }  else {
@@ -174,6 +174,9 @@ public class YamlParser {
      * @return true if phenotype only analysis should be performed.
      */
     public boolean phenotypeOnlyMode() {
+        if (!yconfig.hasAnalysis()){
+            return true;
+        }
         if (yconfig.getAnalysis().containsKey("exomiser"))
             return false; // exomiser is only to be used for VCF analysis
         else
@@ -286,7 +289,7 @@ public class YamlParser {
     }
 
     public Optional<Integer> mindiff() {
-        if (yconfig.getAnalysis().containsKey("mindiff")) {
+        if (yconfig.hasAnalysis() && yconfig.getAnalysis().containsKey("mindiff")) {
             String md =  yconfig.getAnalysis().get("mindiff");
             try {
                 return Optional.of(Integer.parseInt(md));
@@ -302,7 +305,7 @@ public class YamlParser {
      * @return threshold (may be empty)
      */
     public Optional<Double> threshold() {
-        if (yconfig.getAnalysis().containsKey("threshold")) {
+        if (yconfig.hasAnalysis() && yconfig.getAnalysis().containsKey("threshold")) {
             String thr =  yconfig.getAnalysis().get("threshold");
             try {
                 return Optional.of(Double.parseDouble(thr));
@@ -314,7 +317,7 @@ public class YamlParser {
     }
 
     public boolean doTsv() {
-        if (yconfig.getAnalysis().containsKey("tsv")) {
+        if (yconfig.hasAnalysis() && yconfig.getAnalysis().containsKey("tsv")) {
             String k = yconfig.getAnalysis().get("tsv");
             return k.equalsIgnoreCase("true");
         }
