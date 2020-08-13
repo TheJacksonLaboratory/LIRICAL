@@ -11,10 +11,14 @@ abnormalities (encoded using the [Human Phenotype Ontology](http://www.human-phe
 optionally combined with an analysis of variants and genotypes if a VCF file is provided with the
 results of diagnostic gene panel, exome, or genome sequencing.
 
-A preprint describing LIRICAL is available on [medRxiv](https://www.medrxiv.org/content/10.1101/2020.01.25.19014803v1).
+A manuscript describing LIRICAL is available at the 
+[American Journal of Human Genetics](https://pubmed.ncbi.nlm.nih.gov/32755546/).
 
 
 Please consult the Read the docs site for [Detailed documentation](https://lirical.readthedocs.io/en/latest/).
+
+Most users should download the latest LIRICAL.jar file from 
+the [Releases page](https://github.com/TheJacksonLaboratory/LIRICAL/releases).
 
 
 
