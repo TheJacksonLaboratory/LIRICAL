@@ -17,6 +17,9 @@ A manuscript describing LIRICAL is available at the
 
 Please consult the Read the docs site for [Detailed documentation](https://lirical.readthedocs.io/en/latest/).
 
+Most users should download the latest LIRICAL.jar file from 
+the [Releases page](https://github.com/TheJacksonLaboratory/LIRICAL/releases).
+
 
 
 
