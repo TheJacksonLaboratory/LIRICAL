@@ -1,7 +1,5 @@
 package org.monarchinitiative.lirical.cmd;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.collect.ImmutableList;
 import de.charite.compbio.jannovar.data.JannovarData;
 import org.h2.mvstore.MVStore;
@@ -14,8 +12,10 @@ import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.backgroundfrequency.GenicIntoleranceCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * This command is used to generate the background frequency files. It is not needed to run LIRICAL on exome/genome
@@ -27,8 +27,13 @@ import java.util.List;
  * </pre>
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-@Parameters(commandDescription = "Calculation of background variant frequency", hidden = true)
-public class BackgroundFrequencyCommand extends LiricalCommand {
+
+@CommandLine.Command(name = "background",
+        aliases = {"B"},
+        mixinStandardHelpOptions = true,
+        description = "Calculation of background variant frequency",
+        hidden = true)
+public class BackgroundFrequencyCommand implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(BackgroundFrequencyCommand.class);
     /** One of HG38 (default) or HG19. */
     private GenomeAssembly genomeAssembly;
@@ -36,20 +41,20 @@ public class BackgroundFrequencyCommand extends LiricalCommand {
     private String outputFileName;
     /** Path of the Jannovar file. Note this can be taken from the Exomiser distribution, e.g.,
      * {@code exomiser/1802_hg19/1802_hg19_transcripts_refseq.ser}. */
-    @Parameter(names={"-e","--exomiser"}, description = "path to Exomiser database directory", required = true)
+    @CommandLine.Option(names={"-e","--exomiser"}, description = "path to Exomiser database directory", required = true)
     private String exomiser;
     /** Should be one of hg19 or hg38. */
-    @Parameter(names={"-g", "--genome"}, description = "string representing the genome assembly (hg19,hg38)")
+    @CommandLine.Option(names={"-g", "--genome"}, description = "string representing the genome assembly (hg19,hg38)")
     private String genomeAssemblyString="hg38";
-    @Parameter(names={"--transcriptdb"}, description = "Jannovar transcript database (UCSC, RefSeq)")
+    @CommandLine.Option(names={"--transcriptdb"}, description = "Jannovar transcript database (UCSC, RefSeq)")
     private String transcriptdatabase="UCSC";
     /** If true, calculate the distribution of ClinVar pathogenicity scores. */
-    @Parameter(names="--clinvar", description = "determine distribution of ClinVar pathogenicity scores")
+    @CommandLine.Option(names="--clinvar", description = "determine distribution of ClinVar pathogenicity scores")
     private boolean doClinvar;
     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. In the current implementation this
      * is required to initialize the {@link LiricalFactory} object, but the data in this directory is not actually
      * needed for this analysis.*/
-    @Parameter(names={"-d","--data"}, description ="directory to download data" )
+    @CommandLine.Option(names={"-d","--data"}, description ="directory to download data" )
     private String datadir="data";
 
 
@@ -57,7 +62,7 @@ public class BackgroundFrequencyCommand extends LiricalCommand {
     }
 
     @Override
-    public void run() throws LiricalException {
+    public Integer call() throws LiricalException {
         if (genomeAssemblyString.toLowerCase().contains("hg19")) {
             this.genomeAssembly=GenomeAssembly.HG19;
             outputFileName="background-hg19.tsv";
@@ -93,6 +98,7 @@ public class BackgroundFrequencyCommand extends LiricalCommand {
         String outputpath=this.outputFileName;
         GenicIntoleranceCalculator calculator = new GenicIntoleranceCalculator(jannovarVariantAnnotator, alleleStore, outputpath, this.doClinvar);
         calculator.run();
+        return 0;
     }
 
 }

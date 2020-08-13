@@ -1,9 +1,6 @@
 package org.monarchinitiative.lirical.cmd;
 
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-import org.json.simple.parser.ParseException;
 import org.monarchinitiative.lirical.simulation.PhenoGenoCaseSimulator;
 import org.monarchinitiative.lirical.simulation.PhenoOnlyCaseSimulator;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
@@ -12,10 +9,12 @@ import org.monarchinitiative.lirical.output.LiricalRanking;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static java.util.Map.Entry.comparingByKey;
@@ -36,24 +35,29 @@ import static java.util.Map.Entry.comparingByKey;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 
-@Parameters(commandDescription = "Simulate analysis from phenopacket (with or without VCF)", hidden = true)
-public class SimulatePhenopacketCommand extends PhenopacketCommand {
-    private static final Logger logger = LoggerFactory.getLogger(SimulatePhenopacketCommand.class);
-    @Parameter(names = {"-a","--assembly"})
+
+@CommandLine.Command(name = "simulate",
+        aliases = {"S"},
+        mixinStandardHelpOptions = true,
+        description = "Simulate analysis from phenopacket (with or without VCF)",
+        hidden = true)
+public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand implements Callable<Integer> {
+    private static final Logger logger = LoggerFactory.getLogger(SimulatePhenopacketWithVcfCommand.class);
+    @CommandLine.Option(names = {"-a","--assembly"})
     private String genomeAssembly = "GRCh37";
-    @Parameter(names = {"-v", "--template-vcf"}, description = "path to template VCF file", required = true)
+    @CommandLine.Option(names = {"-v", "--template-vcf"}, description = "path to template VCF file", required = true)
     private String templateVcfPath;
-    @Parameter(names = {"--phenopacket-dir"}, description = "path to directory with multiple phenopackets")
+    @CommandLine.Option(names = {"--phenopacket-dir"}, description = "path to directory with multiple phenopackets")
     private String phenopacketDir;
-    @Parameter(names = {"-outputfile"}, description = "name of the output file with simulation results")
+    @CommandLine.Option(names = {"-outputfile"}, description = "name of the output file with simulation results")
     private String simulationOutFile = null;
-    @Parameter(names = {"--phenotype-only"}, description = "run simulations with phenotypes only?")
+    @CommandLine.Option(names = {"--phenotype-only"}, description = "run simulations with phenotypes only?")
     private boolean phenotypeOnly=false;
-    @Parameter(names={"--output-vcf"}, description = "output a VCF file or files with results of the simulation")
+    @CommandLine.Option(names={"--output-vcf"}, description = "output a VCF file or files with results of the simulation")
     private boolean outputVCF = false;
-    @Parameter(names={"--output-tsv"}, description = "output a TSV file or files with results of the simulation")
+    @CommandLine.Option(names={"--output-tsv"}, description = "output a TSV file or files with results of the simulation")
     private boolean outputTSV = false;
-    @Parameter(names={"--random"},description = "randomize the HPO terms from the phenopacket")
+    @CommandLine.Option(names={"--random"},description = "randomize the HPO terms from the phenopacket")
     private boolean randomize = false;
     /** If true, output HTML or TSV */
     private boolean outputFiles = false;
@@ -73,7 +77,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
      * No-op constructor meant to demo the phenotype LIRICAL algorithm by simulating some case based on
      * a phenopacket and a "normal" VCF file.
      */
-    public SimulatePhenopacketCommand() {
+    public SimulatePhenopacketWithVcfCommand() {
     }
 
     /**
@@ -100,8 +104,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
 
 
 
-    private void runOnePhenotypeOnlyAnalysis(File phenopacketFile) throws IOException, ParseException {
-
+    private void runOnePhenotypeOnlyAnalysis(File phenopacketFile) {
         PhenoOnlyCaseSimulator simulator = new PhenoOnlyCaseSimulator(phenopacketFile,this.factory);
         simulator.run();
         int rank = simulator.getRank_of_disease();
@@ -149,7 +152,11 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
                 throw new PhenolRuntimeException("Could not open Phenopackets directory at "+phenopacketDir);
             }
             int counter=0;
-            for (final File fileEntry : folder.listFiles()) {
+            File[] files = folder.listFiles();
+            if (files == null) {
+                throw new LiricalRuntimeException("Could not files in phenopackets directory");
+            }
+            for (final File fileEntry : files) {
                 if (fileEntry.isFile() && fileEntry.getAbsolutePath().endsWith(".json")) {
                     logger.info("\tPhenopacket: \"{}\"", fileEntry.getAbsolutePath());
                     System.out.println(++counter + ") "+ fileEntry.getName());
@@ -177,11 +184,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
 
         if (this.phenopacketPath != null) {
             logger.info("Running single file Phenopacket/VCF simulation at {}", phenopacketPath);
-            try {
-                runOnePhenotypeOnlyAnalysis(new File(this.phenopacketPath));
-            } catch (IOException | ParseException e) {
-                e.printStackTrace();
-            }
+            runOnePhenotypeOnlyAnalysis(new File(this.phenopacketPath));
         } else if (this.phenopacketDir != null) {
             outputTSV=true; // needed so that we can capture the results of the simulations across all cases
             logger.info("Running Phenopacket/VCF simulations at {}", phenopacketDir);
@@ -190,15 +193,15 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
                 throw new PhenolRuntimeException("Could not open Phenopackets directory at "+phenopacketDir);
             }
             int counter=0;
-            for (final File fileEntry : folder.listFiles()) {
+            File [] files = folder.listFiles();
+            if (files == null) {
+                throw new PhenolRuntimeException("Could not find phenopacket files in " + phenopacketDir);
+            }
+            for (final File fileEntry : files) {
                 if (fileEntry.isFile() && fileEntry.getAbsolutePath().endsWith(".json")) {
                     logger.info("\tPhenopacket: \"{}\"", fileEntry.getAbsolutePath());
                     System.out.println(++counter + ") "+ fileEntry.getName());
-                    try {
-                        runOnePhenotypeOnlyAnalysis(fileEntry);
-                    } catch (IOException | ParseException e) {
-                        e.printStackTrace();
-                    }
+                    runOnePhenotypeOnlyAnalysis(fileEntry);
                 }
                // if (counter>4)break;
             }
@@ -213,7 +216,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
 
     private String getSettingsString() {
         List<String> settings= new ArrayList<>();
-        settings.add("phenopacket-dir: "+phenopacketDir!=null?phenopacketDir:"n/a");
+        settings.add("phenopacket-dir: " + phenopacketDir);
         settings.add("phenopackets: n=" + this.rankingsList.size());
         settings.add("keep: " + (globalAnalysisMode ? "true" : "false"));
         settings.add("random: " + (randomize ?  "true" : "false"));
@@ -296,7 +299,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
      * multi-phenopacket mode (in which case phenopacketDir needs to be defined).
      */
     @Override
-    public void run()  {
+    public Integer call() {
         rankingsList = new ArrayList<>();
         this.metadata = new HashMap<>();
        // disease2rankMap = new HashMap<>();
@@ -318,6 +321,7 @@ public class SimulatePhenopacketCommand extends PhenopacketCommand {
         double avgrank = (double) total_rank / N;
         logger.info("Average rank from " + N + " simulations was " + avgrank);
         outputRankings();
+        return 0;
     }
 
 }

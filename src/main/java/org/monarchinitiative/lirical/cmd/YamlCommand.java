@@ -1,7 +1,5 @@
 package org.monarchinitiative.lirical.cmd;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.collect.Multimap;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
@@ -19,21 +17,26 @@ import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 /**
  * This class coordinates the main analysis of a VCF file plus list of observed HPO terms. This
  * analysis is driven by a YAML file.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-@Parameters(commandDescription = "Run LIRICAL from YAML file")
-public class YamlCommand extends LiricalCommand {
+@CommandLine.Command(name = "yaml",
+        aliases = {"Y"},
+        mixinStandardHelpOptions = true,
+        description = "Run LIRICAL from YAML file")
+public class YamlCommand implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(YamlCommand.class);
-    @Parameter(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
+    @CommandLine.Option(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
     private String yamlPath;
     /** Reference to the HPO. */
     private Ontology ontology;
@@ -133,7 +136,7 @@ public class YamlCommand extends LiricalCommand {
 
 
     @Override
-    public void run() throws LiricalException {
+    public Integer call() throws LiricalException {
         this.factory = deYamylate(this.yamlPath);
         this.ontology =  factory.hpoOntology();
         this.diseaseMap = factory.diseaseMap(ontology);
@@ -164,6 +167,7 @@ public class YamlCommand extends LiricalCommand {
             factory.qcVcfFile();
             runVcf();
         }
+        return 0;
     }
 
     /**
