@@ -1,7 +1,5 @@
 package org.monarchinitiative.lirical.cmd;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.exception.LiricalException;
@@ -11,26 +9,36 @@ import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
- * This class coordinates simulation of cases with only phenotype.
- * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ * This class coordinates simulation of cases with only phenotype. It draws HPOs at random and then
+ * performs analysis and records the rank.
+ * This differs from {@link org.monarchinitiative.lirical.simulation.GridSearch} because GridSearch essentially
+ * runs this analysis for different numbers of HPO observed/noise terms.
+ * @author <a href="mailto:peter.robinson@jax.org">Peter N Robinson</a>
  */
-@Parameters(commandDescription = "Simulate phenotype-only cases",hidden = true)
-public class SimulatePhenotypeOnlyCommand extends PhenopacketCommand {
+
+@CommandLine.Command(name = "simulate",
+        aliases = {"SP"},
+        mixinStandardHelpOptions = true,
+        description = "Simulate phenotype-only cases",
+        hidden = true)
+public class SimulatePhenotypeOnlyCommand implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(SimulatePhenotypeOnlyCommand.class);
     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
-   // @Parameter(names={"-d","--data"}, description ="directory to download data" )
-   // private String datadir="data";
-    @Parameter(names={"-c","--n_cases"}, description="Number of cases to simulate")
+    @CommandLine.Option(names={"-d","--data"}, description ="directory to download data" )
+    private String datadir="data";
+    @CommandLine.Option(names={"-c","--n_cases"}, description="Number of cases to simulate")
     private int n_cases_to_simulate = 25;
-    @Parameter(names={"-h","--n_hpos"}, description="Number of HPO terms per case")
+    @CommandLine.Option(names={"--n_hpos"}, description="Number of HPO terms per case")
     private int n_terms_per_case = 5;
-    @Parameter(names={"-n","--n_noise"}, description="Number of noise terms per case")
+    @CommandLine.Option(names={"-n","--n_noise"}, description="Number of noise terms per case")
     private int n_noise_terms = 1;
-    @Parameter(names={"-i","--imprecision"}, description="Use imprecision?")
+    @CommandLine.Option(names={"-i","--imprecision"}, description="Use imprecision?")
     private boolean imprecise_phenotype = false;
 
 
@@ -42,12 +50,11 @@ public class SimulatePhenotypeOnlyCommand extends PhenopacketCommand {
 
 
     @Override
-    public void run()  {
+    public Integer call() {
         LiricalFactory factory = new LiricalFactory.Builder()
                 .datadir(this.datadir)
                 .build();
         factory.qcHumanPhenotypeOntologyFiles();
-        checkThresholds();
         logger.trace("Running simulation with {} cases, {} terms/case, {} noise terms/case. Imprecision: {}",
                 n_cases_to_simulate,n_terms_per_case,n_noise_terms,imprecise_phenotype?"yes":"no");
         Ontology ontology = factory.hpoOntology();
@@ -66,5 +73,6 @@ public class SimulatePhenotypeOnlyCommand extends PhenopacketCommand {
         } catch (LiricalException e) {
             e.printStackTrace(); // should never happen, but nothing we can do about it
         }
+        return 0;
     }
 }

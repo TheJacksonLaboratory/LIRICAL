@@ -1,7 +1,5 @@
 package org.monarchinitiative.lirical.configuration;
 
-
-
 import java.util.Map;
 
 /**
@@ -34,6 +32,10 @@ public class YamlConfig {
      */
     public Map<String,String> getAnalysis(){
         return analysis;
+    }
+
+    public boolean hasAnalysis() {
+        return analysis != null && analysis.size()>0;
     }
 
     /** @return name (prefix) of the output file */
