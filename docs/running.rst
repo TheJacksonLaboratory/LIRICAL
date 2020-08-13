@@ -9,6 +9,34 @@ can be run both with and without genomic data in form of a VCF file from genome,
 or NGS gene-panel sequencing.
 
 
+To get help, run LIRICAL with a command or with the option "-h": ::
+
+    $ java -jar target/LIRICAL.jar -h
+      Usage: java -jar LIRICAL [-hV] [COMMAND]
+      LIkelihood Ratio Interpretation of Clinical AbnormaLities
+        -h, --help      Show this help message and exit.
+        -V, --version   Print version information and exit.
+      Commands:
+        download, D     Download files for LIRICAL
+        phenopacket, P  Run LIRICAL from a Phenopacket
+        yaml, Y         Run LIRICAL from YAML file
+
+Run LIRICAL with a specific command with the "-h" option to get information about the command, e.g., ::
+
+    $ java -jar target/LIRICAL.jar download -h
+      Usage: java -jar LIRICAL download [-hVw] [-d=<datadir>]
+      Download files for LIRICAL
+        -d, --data=<datadir>   directory to download data (default: data)
+        -h, --help             Show this help message and exit.
+        -V, --version          Print version information and exit.
+        -w, --overwrite        overwrite previously downloaded files (default: false)
+
+
+LIRICAL has three main commands, ``download``, ``phenopacket``, and ``yaml``. The download command
+needs to be run before anything else and downloads some files required for LIRICAL analysis. LIRICAL
+can then be run using a Phenopacket or a YAML-formated file as input.
+
+
 Running LIRICAL with a Phenopacket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
