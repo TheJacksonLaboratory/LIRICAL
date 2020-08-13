@@ -22,7 +22,7 @@ public class DownloadCommand implements Callable<Integer>{
     private static final Logger logger = LoggerFactory.getLogger(DownloadCommand.class);
     @CommandLine.Option(names={"-d","--data"}, description ="directory to download data (default: data)" )
     private String datadir="data";
-    @CommandLine.Option(names={"-w","--overwrite"}, description = "overwrite prevously downloaded files, if any")
+    @CommandLine.Option(names={"-w","--overwrite"}, description = "overwrite previously downloaded files (default: ${DEFAULT-VALUE})")
     private boolean overwrite;
 
     public DownloadCommand() {
