@@ -248,14 +248,14 @@ class YamlParserTest {
     void testHtml1() {
         //example 1 has html with false entry,
         YamlParser yparser = new YamlParser(example1path);
-        assertFalse(yparser.doHtml());
+        assertTrue(yparser.doHtml());
     }
 
     @Test
     void testHtml2() {
         //example 2 has  html: true,
         YamlParser yparser = new YamlParser(example2path);
-        assertTrue(yparser.doHtml());
+        assertFalse(yparser.doHtml());
     }
 
 

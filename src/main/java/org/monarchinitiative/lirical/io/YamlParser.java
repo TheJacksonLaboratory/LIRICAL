@@ -329,7 +329,7 @@ public class YamlParser {
             String k = yconfig.getAnalysis().get("html");
             return k.equalsIgnoreCase("true");
         }
-        return false; // no HTML entry in YAML file
+        return true; // no HTML entry in YAML file
     }
 
 }
