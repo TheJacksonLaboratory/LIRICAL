@@ -53,8 +53,12 @@ public class YamlCommand implements Callable<Integer> {
     protected Map<TermId,String> geneId2symbol;
     /** Various metadata that will be used for the HTML org.monarchinitiative.lirical.output. */
     protected Map<String,String> metadata;
-    /** If true, output TSV and not HTML. */
-    private boolean outputTSV = false;
+    /** If true, the program will output an HTML file.*/
+    @CommandLine.Option(names="--html", arity = "0..1", description = "Provide HTML output (default: ${DEFAULT-VALUE})")
+    protected boolean outputHTML=true;
+    /** If true, the program will output a Tab Separated Values file.*/
+    @CommandLine.Option(names="--tsv", arity = "0..1", description = "Provide TSV output (default: ${DEFAULT-VALUE})")
+    protected boolean outputTSV=false;
     /**
      * There are gene symbols returned by Jannovar for which we cannot find a geneId. This issues seems to be related
      * to the input files used by Jannovar from UCSC ( knownToLocusLink.txt.gz has links between ucsc ids, e.g.,
@@ -83,11 +87,19 @@ public class YamlCommand implements Callable<Integer> {
                 .outdirectory(this.factory.getOutdir())
                 .threshold(this.factory.getLrThreshold())
                 .mindiff(this.factory.getMinDifferentials());
-        LiricalTemplate template = outputTSV ?
-                builder.buildPhenotypeTsvTemplate():
-                builder.buildPhenotypeHtmlTemplate();
-        template.outputFile();
-        logger.error("Done analysis of " + template.getOutPath());
+        writeOutput(builder);
+    }
+
+    private void writeOutput(LiricalTemplate.Builder builder) {
+        writeOutput(builder.buildGenoPhenoHtmlTemplate(), outputHTML);
+        writeOutput(builder.buildGenoPhenoTsvTemplate(), outputTSV);
+    }
+
+    private void writeOutput(LiricalTemplate template, boolean doWrite) {
+        if (doWrite) {
+            template.outputFile();
+            logger.error("Done analysis of " + template.getOutPath());
+        }
     }
 
     private void runVcf() throws LiricalException {
@@ -125,11 +137,7 @@ public class YamlCommand implements Callable<Integer> {
                 .errors(evaluator.getErrors())
                 .symbolsWithOutIds(symbolsWithoutGeneIds)
                 .mindiff(this.factory.getMinDifferentials());
-        LiricalTemplate template = outputTSV ?
-                builder.buildGenoPhenoTsvTemplate() :
-                builder.buildGenoPhenoHtmlTemplate();
-        template.outputFile();
-        logger.trace("Wrote output file to " + template.getOutPath());
+        writeOutput(builder);
     }
 
 
@@ -179,6 +187,7 @@ public class YamlCommand implements Callable<Integer> {
     private LiricalFactory deYamylate(String yamlPath) {
         YamlParser yparser = new YamlParser(yamlPath);
         this.outputTSV = yparser.doTsv();
+        this.outputHTML = yparser.doHtml();
         String hpoPath = yparser.getHpoPath();
         if (hpoPath == null || !(new File(hpoPath).exists())) {
             throw new PhenolRuntimeException("Could not find hp.obo file. Consider running download command first");

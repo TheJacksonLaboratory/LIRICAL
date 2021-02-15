@@ -142,10 +142,13 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand implements Cal
                 .symbolsWithOutIds(symbolsWithoutGeneIds)
                 .mindiff(factory.getMinDifferentials())
                 .prefix(this.outfilePrefix);
-        LiricalTemplate template = outputTSV ?
-                builder.buildGenoPhenoTsvTemplate() :
-                builder.buildGenoPhenoHtmlTemplate();
-        template.outputFile();
+        
+        if (outputTSV) {
+            builder.buildGenoPhenoTsvTemplate().outputFile();
+        }
+        if (outputHTML) {
+            builder.buildGenoPhenoHtmlTemplate().outputFile();
+        }
     }
 
     /**
