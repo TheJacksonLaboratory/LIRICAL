@@ -324,4 +324,12 @@ public class YamlParser {
         return false; // no TSV entry in YAML file
     }
 
+    public boolean doHtml() {
+        if (yconfig.hasAnalysis() && yconfig.getAnalysis().containsKey("html")) {
+            String k = yconfig.getAnalysis().get("html");
+            return k.equalsIgnoreCase("true");
+        }
+        return true; // no HTML entry in YAML file
+    }
+
 }
