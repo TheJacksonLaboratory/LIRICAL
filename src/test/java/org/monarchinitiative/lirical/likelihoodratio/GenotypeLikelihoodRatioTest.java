@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.likelihoodratio;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 
@@ -10,7 +11,6 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.*;
 
-import static junit.framework.TestCase.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_DOMINANT;
@@ -41,7 +41,7 @@ class GenotypeLikelihoodRatioTest {
         List<TermId> emptyList= ImmutableList.of(AUTOSOMAL_DOMINANT);
         double result = genoLRmap.evaluateGenotype( g2g, emptyList, fakeGeneId).getLR();
         double expected = 1000;
-        assertEquals(expected,result,EPSILON);
+        Assertions.assertEquals(expected,result,EPSILON);
     }
 
 
@@ -60,7 +60,7 @@ class GenotypeLikelihoodRatioTest {
         List<TermId> emptyList= ImmutableList.of(AUTOSOMAL_RECESSIVE);
         double result = genoLRmap.evaluateGenotype( g2g, emptyList, fakeGeneId).getLR();
         double expected = (double)1000*1000;
-        assertEquals(expected,result,EPSILON);
+        Assertions.assertEquals(expected,result,EPSILON);
     }
 
 
@@ -81,7 +81,7 @@ class GenotypeLikelihoodRatioTest {
         when(g2g.getSumOfPathBinScores()).thenReturn(0.00); // mock that we find no pathogenic variant
         Double score = glr.evaluateGenotype(g2g,inheritanceModes,HLAB).getLR();
         double expected = 0.05; // heuristic score
-        assertEquals(expected,score,EPSILON);
+        Assertions.assertEquals(expected,score,EPSILON);
     }
 
     /**
@@ -101,6 +101,6 @@ class GenotypeLikelihoodRatioTest {
         when(g2g.getSumOfPathBinScores()).thenReturn(0.00); // mock that we find no pathogenic variant
         Double score = glr.evaluateGenotype(g2g,inheritanceModes,madeUpGene).getLR();
         double expected = 0.05*0.05; // heuristic score for AR
-        assertEquals(expected,score,EPSILON);
+        Assertions.assertEquals(expected,score,EPSILON);
     }
 }

@@ -64,12 +64,11 @@ public class LiricalFactory {
     private int n_good_quality_variants=0;
     /** Number of variants that were removed because of the quality filter. */
     private int n_filtered_variants=0;
-
     /** Prefix for output files. For example, if outfilePrefix is ABC, then the HTML outfile would be ABC.html.*/
-    private String outfilePrefix;
+    private final String outfilePrefix;
     /** Path to the directory where the output files should be written (by default, this is null and the files are
      * written to the directory in which LIRICAL is run.*/
-    private String outdir = null;
+    private final String outdir = null;
     /** Default threshold for showing a candidate. */
     public static final double DEFAULT_LR_THRESHOLD = 0.05;
     /** Default number of differentials to show on the HTML output. */

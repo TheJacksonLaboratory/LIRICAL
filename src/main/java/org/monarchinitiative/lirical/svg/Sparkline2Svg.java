@@ -213,25 +213,24 @@ public class Sparkline2Svg extends Lirical2Svg {
         swriter.write("<line fill=\"none\" stroke=\"" + BLACK + "\" stroke-width=\"1\" " +
                 "x1=\"" + currentX + "\" y1=\"" + ybaseline + "\" x2=\"" + (currentX+linewidth) +
                 "\" y2=\"" + ybaseline + "\"/>\n");
-        for (int i=0; i<indicesObserved.size(); i++) {
-            int originalIndex = indicesObserved.get(i);
+        for (int originalIndex : indicesObserved) {
             String msg = this.observedTermToolTipLabels.get(originalIndex);
             double logratio = Math.log10(result.getObservedPhenotypeRatio(originalIndex));
             if (logratio > 0) {
                 logratio = Math.min(MAX_LOG_LR, logratio);
-                int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
+                int height = (int) (logratio * (MAXIMUM_BAR_HEIGHT / MAX_LOG_LR));
                 int ypos = ybaseline - height;
                 if (height == 0) {
-                    writeSmallDiamond(swriter,currentX,ypos,msg);
+                    writeSmallDiamond(swriter, currentX, ypos, msg);
                 } else {
                     swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ypos + "\" x=\"" + currentX + "\" " +
                             "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\" onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + msg + "')\"/>\n");
                 }
             } else {
-                logratio = Math.max((-1)*MAX_LOG_LR, logratio);
-                int height = (int)((-1)*logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
+                logratio = Math.max((-1) * MAX_LOG_LR, logratio);
+                int height = (int) ((-1) * logratio * (MAXIMUM_BAR_HEIGHT / MAX_LOG_LR));
                 if (height == 0) {
-                    writeSmallDiamond(swriter,currentX,ybaseline,msg);
+                    writeSmallDiamond(swriter, currentX, ybaseline, msg);
                 } else {
                     swriter.write("<rect height=\"" + height + "\" width=\"" + BAR_WIDTH + "\" y=\"" + ybaseline + "\" x=\"" + currentX + "\" " +
                             "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + RED + "\" onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + msg + "')\"/>\n");
@@ -239,13 +238,12 @@ public class Sparkline2Svg extends Lirical2Svg {
             }
             currentX += BAR_WIDTH + INTERBAR_WIDTH;
         }
-        for (int i=0; i<indicesExcluded.size(); i++) {
-            int originalIndex = indicesExcluded.get(i);
+        for (int originalIndex : indicesExcluded) {
             String msg = this.excludedTermToolTipLabels.get(originalIndex);
             double logratio = Math.log10(result.getExcludedPhenotypeRatio(originalIndex));
             if (logratio > 0) {
                 logratio = Math.min(MAX_LOG_LR, logratio);
-                int height = (int)(logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
+                int height = (int) (logratio * (MAXIMUM_BAR_HEIGHT / MAX_LOG_LR));
                 int ypos = ybaseline - height;
                 if (height == 0) {
                     writeSmallDiamond(swriter, currentX, ybaseline, msg);
@@ -254,8 +252,8 @@ public class Sparkline2Svg extends Lirical2Svg {
                             "stroke-width=\"0\" stroke=\"#000000\" fill=\"" + BRIGHT_GREEN + "\" onmouseout=\"hideTooltip();\" onmouseover=\"showTooltip(evt,'" + msg + "')\"/>\n");
                 }
             } else {
-                logratio = Math.max((-1)*MAX_LOG_LR, logratio);
-                int height = (int)((-1)*logratio *(MAXIMUM_BAR_HEIGHT/MAX_LOG_LR));
+                logratio = Math.max((-1) * MAX_LOG_LR, logratio);
+                int height = (int) ((-1) * logratio * (MAXIMUM_BAR_HEIGHT / MAX_LOG_LR));
                 if (height == 0) {
                     writeSmallDiamond(swriter, currentX, ybaseline, msg);
                 } else {
@@ -354,7 +352,7 @@ public class Sparkline2Svg extends Lirical2Svg {
 
         @Override
         public int compareTo(Value2Index other) {
-            return this.LR < other.LR ? 1 : this.LR == other.LR ? 0 : -1;
+            return Double.compare(other.LR, this.LR);
         }
     }
 

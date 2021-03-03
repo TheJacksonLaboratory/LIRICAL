@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -181,7 +180,7 @@ public class PhenopacketImporter {
             return false; // skip to next Phenopacket
         }
         List<PhenotypicFeature> phenolist = phenoPacket.getPhenotypicFeaturesList();
-        int n_observed = phenolist.stream().filter( p -> ! p.getNegated()).collect(Collectors.toList()).size();
+        int n_observed = (int) phenolist.stream().filter(p -> !p.getNegated()).count();
         if (n_observed==0) {
             System.err.println("[ERROR] phenopackets must have at least one observed HPO term. ");
             return false; // skip to next Phenopacket

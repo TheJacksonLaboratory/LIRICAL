@@ -52,9 +52,9 @@ public class GenicIntoleranceCalculator {
                     ClinVarData.ClinSig.LIKELY_BENIGN,
                     ClinVarData.ClinSig.BENIGN_OR_LIKELY_BENIGN);
     /** Ordered list of the populations included in the calculations. */
-    private FrequencySource[] orderedSources = {GNOMAD_E_AFR,GNOMAD_E_AMR,GNOMAD_E_ASJ,GNOMAD_E_EAS,GNOMAD_E_FIN,GNOMAD_E_NFE,GNOMAD_E_SAS};
+    private final FrequencySource[] orderedSources = {GNOMAD_E_AFR,GNOMAD_E_AMR,GNOMAD_E_ASJ,GNOMAD_E_EAS,GNOMAD_E_FIN,GNOMAD_E_NFE,GNOMAD_E_SAS};
     /** The header of the org.monarchinitiative.lirical.output file that shows the populations included in the calculation. */
-    private String[] headerFields = {"AFR","AMR","ASJ","EAS","FIN","NFE","SAS"};
+    private final String[] headerFields = {"AFR","AMR","ASJ","EAS","FIN","NFE","SAS"};
     /** File name for the file that will contain the frequencies of predicted pathogenic variants in the
      * population background, i.e., from gnomAD  from the Exomiser database.*/
     private final String outputFileName;

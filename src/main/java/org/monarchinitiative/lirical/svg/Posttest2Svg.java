@@ -30,9 +30,9 @@ public class Posttest2Svg extends Lirical2Svg {
     /** Height of the 'posttest probability title*/
     private final int TITLE_HEIGHT = 20;
     /** Starting x position for the bars representing post-test probability. */
-    private int minX;
+    private final int minX;
     /**rightmost location of scale/bars representing post-test probability. */
-    private int maxX;
+    private final int maxX;
     /** Y position where the probability scale is located. */
     private int probability_scale_Y_location;
     /** Width of the graphic we will show (scaling*width) */

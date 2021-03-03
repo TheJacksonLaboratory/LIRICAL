@@ -2,6 +2,15 @@
 Changelog
 =========
 
+
+------
+v1.3.1
+------
+- Update download URL for phenotype.hpoa
+- Update versions of multiple plugins/dependencies
+- Add option to simultaneously output HTML and TSV
+- maven wrapper
+
 ------
 v1.3.0
 ------

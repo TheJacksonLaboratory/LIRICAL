@@ -327,7 +327,7 @@ public class CaseEvaluator {
 
     private List<String> getObservedPhenotypeExplanation() {
         ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
-        Collections.sort(this.currentObservedPhenotypeExplanation, Collections.reverseOrder());
+        this.currentObservedPhenotypeExplanation.sort(Collections.reverseOrder());
         for (LrWithExplanation lrwe : this.currentObservedPhenotypeExplanation) {
             String e = lrwe.getEscapedExplanation(this.ontology);
             builder.add(e);
@@ -337,7 +337,7 @@ public class CaseEvaluator {
 
     private List<String> getExcludedPhenotypeExplanation() {
         ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
-        Collections.sort(this.currentExcludedPhenotypeExplanation, Collections.reverseOrder());
+        this.currentExcludedPhenotypeExplanation.sort(Collections.reverseOrder());
         for (LrWithExplanation lrwe : this.currentExcludedPhenotypeExplanation) {
             String e = lrwe.getEscapedExplanation(this.ontology);
             builder.add(e);

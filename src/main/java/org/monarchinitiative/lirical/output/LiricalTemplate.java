@@ -2,7 +2,6 @@ package org.monarchinitiative.lirical.output;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import freemarker.template.Configuration;
 import freemarker.template.Version;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
