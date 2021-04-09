@@ -7,8 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -208,7 +211,10 @@ public class FileDownloader {
         BufferedInputStream in;
         FileOutputStream out;
         try {
-            URLConnection connection =  src.openConnection();
+            int connectionTimeout = 5000; // 5 seconds should be more than enough to connect to a server
+            final String TEXTPLAIN_REQUEST_TYPE = ", text/plain; q=0.1";
+            String actualAcceptHeaders = TEXTPLAIN_REQUEST_TYPE;
+            URLConnection connection =  connect(src.openConnection(),connectionTimeout,actualAcceptHeaders,new HashSet<>());
             final int fileSize = connection.getContentLength();
             in = new BufferedInputStream(connection.getInputStream());
             out = new FileOutputStream(dest);
@@ -242,6 +248,47 @@ public class FileDownloader {
         }
         return true;
     }
+
+
+    protected static URLConnection connect(URLConnection conn, int connectionTimeout, String acceptHeaders, Set<String> visited)
+            throws IOException {
+        if (conn instanceof HttpURLConnection) {
+            // follow redirects to HTTPS
+            HttpURLConnection con = (HttpURLConnection) conn;
+            con.connect();
+            int responseCode = con.getResponseCode();
+            // redirect
+            if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
+                    || responseCode == HttpURLConnection.HTTP_MOVED_PERM
+                    || responseCode == HttpURLConnection.HTTP_SEE_OTHER
+                    // no constants for temporary and permanent redirect in HttpURLConnection
+                    || responseCode == 307 || responseCode == 308) {
+                String location = con.getHeaderField("Location");
+                if (visited.add(location)) {
+                    URL newURL = new URL(location);
+                    return connect(rebuildConnection(connectionTimeout, newURL, acceptHeaders),
+                            connectionTimeout, acceptHeaders, visited);
+                } else {
+                    throw new IllegalStateException(
+                            "Infinite loop: redirect cycle detected. " + visited);
+                }
+            }
+        }
+        return conn;
+    }
+
+    protected static URLConnection rebuildConnection(int connectionTimeout, URL newURL, String acceptHeaders) throws IOException {
+        URLConnection conn;
+        conn = newURL.openConnection();
+        final String ACCEPTABLE_CONTENT_ENCODING = "xz,gzip,deflate";
+        conn.addRequestProperty("Accept", acceptHeaders);
+        conn.setRequestProperty("Accept-Encoding", ACCEPTABLE_CONTENT_ENCODING);
+        conn.setConnectTimeout(connectionTimeout);
+        return conn;
+    }
+
+
+
 
     /**
      * Set system properties from {@link #options}.

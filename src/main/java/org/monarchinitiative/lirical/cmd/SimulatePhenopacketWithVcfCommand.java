@@ -55,12 +55,14 @@ public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand implem
     private boolean phenotypeOnly=false;
     @CommandLine.Option(names={"--output-vcf"}, description = "output a VCF file or files with results of the simulation")
     private boolean outputVCF = false;
-    @CommandLine.Option(names={"--output-tsv"}, description = "output a TSV file or files with results of the simulation")
-    private boolean outputTSV = false;
+    /** If true, the program will output an HTML file.*/
+    @CommandLine.Option(names="--output-html", arity = "0..1", description = "Provide HTML output (default: ${DEFAULT-VALUE})")
+    protected boolean outputHTML=true;
+    /** If true, the program will output a Tab Separated Values file.*/
+    @CommandLine.Option(names="--output-tsv", arity = "0..1", description = "output a TSV file or files with results of the simulation (default: ${DEFAULT-VALUE})")
+    protected boolean outputTSV=false;
     @CommandLine.Option(names={"--random"},description = "randomize the HPO terms from the phenopacket")
     private boolean randomize = false;
-    /** If true, output HTML or TSV */
-    private boolean outputFiles = false;
 
     private List<LiricalRanking> rankingsList;
     /** Each entry in this list represents one simulated case with various data about the simulation. */
@@ -97,7 +99,8 @@ public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand implem
         geneRank2CountMap.merge(geneRank,1, Integer::sum); // increment count
         if (outputTSV) {
             simulator.outputTsv(outfilePrefix, factory.getLrThreshold(), factory.getMinDifferentials(), outdir);
-        } else {
+        }
+        if (outputHTML) {
             simulator.outputHtml(outfilePrefix, factory.getLrThreshold(), factory.getMinDifferentials(), outdir);
         }
     }

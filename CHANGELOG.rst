@@ -2,6 +2,19 @@
 Changelog
 =========
 
+-------------------
+v1.3.2 (2021-04-09)
+-------------------
+- Fixed null pointer error in YAML output
+
+------
+v1.3.1
+------
+- Update download URL for phenotype.hpoa
+- Update versions of multiple plugins/dependencies
+- Add option to simultaneously output HTML and TSV
+- maven wrapper
+
 ------
 v1.3.0
 ------

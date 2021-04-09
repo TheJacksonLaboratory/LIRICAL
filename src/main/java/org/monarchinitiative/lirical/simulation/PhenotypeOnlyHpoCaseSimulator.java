@@ -27,7 +27,7 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getPa
 public class PhenotypeOnlyHpoCaseSimulator {
     private static final Logger logger = LoggerFactory.getLogger(PhenotypeOnlyHpoCaseSimulator.class);
     /** An object representing the Human Phenotype Ontology */
-    private Ontology ontology;
+    private final Ontology ontology;
     /** An object that calculates the foreground frequency of an HPO term in a disease as well as the background frequency */
     private final PhenotypeLikelihoodRatio phenotypeLrEvaluator;
     /** A list of all HPO term ids in the Phenotypic abnormality subontology. */
@@ -47,7 +47,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
     private double proportionAtRank1=0.0;
     /** This array will hold the TermIds from the disease map in order -- this will allow us to
      * get random indices for the simulations. */
-    private TermId[] termIndices;
+    private final TermId[] termIndices;
     /** If true, show lots of results in STDOUT while we are calculating. */
     private boolean verbose=true;
     /** Root term id in the phenotypic abnormality subontology. */

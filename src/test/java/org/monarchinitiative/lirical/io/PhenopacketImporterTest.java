@@ -4,6 +4,7 @@ package org.monarchinitiative.lirical.io;
 
 import com.google.protobuf.util.JsonFormat;
 
+import org.junit.jupiter.api.Assertions;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -20,9 +21,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class PhenopacketImporterTest {
@@ -133,39 +131,39 @@ class PhenopacketImporterTest {
     @Test
     void testTempFileWritten( ) {
         java.io.File f = new java.io.File(phenopacketAbsolutePathOfTempFile);
-        assertTrue(f.exists());
+        Assertions.assertTrue(f.exists());
     }
 
     @Test
     void testInputOfTempPhenopacket() {
-        assertNotNull(ppacket);
+        Assertions.assertNotNull(ppacket);
     }
 
     @Test
     void testNumberOfHpoTermsImported() {
         int expected =5;  // we have 4 non-negated (observed) HPO terms and one negated term
-        assertEquals(expected,ppacket.getPhenotypicFeaturesCount());
+        Assertions.assertEquals(expected,ppacket.getPhenotypicFeaturesCount());
     }
 
     @Test
     void testNumberOfObservedTerms() {
         PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
         int expecte=4;
-        assertEquals(expecte,importer.getHpoTerms().size());
+        Assertions.assertEquals(expecte,importer.getHpoTerms().size());
     }
 
     @Test
     void testNumberOfNegatedTerms() {
         PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
         int expected=1;
-        assertEquals(expected,importer.getNegatedHpoTerms().size());
+        Assertions.assertEquals(expected,importer.getNegatedHpoTerms().size());
     }
 
     @Test
     void testIdentifyOfNegatedTerm() {
         TermId tid = TermId.of("HP:0031508");
         PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
-        assertTrue(importer.getNegatedHpoTerms().contains(tid));
+        Assertions.assertTrue(importer.getNegatedHpoTerms().contains(tid));
     }
 
     @Test
@@ -174,15 +172,15 @@ class PhenopacketImporterTest {
         PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
         assertFalse(importer.getHpoTerms().contains(tid)); // should not include negated term
         TermId tid2 = TermId.of("HP:0001510"); // this os one of the observed terms
-        assertTrue(importer.getHpoTerms().contains(tid2));
+        Assertions.assertTrue(importer.getHpoTerms().contains(tid2));
     }
 
     @Test
     void testGetVcfFile() {
         PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
-        assertTrue(importer.hasVcf());
-        assertEquals(fakeVcfPath, importer.getVcfPath());
-        assertEquals(fakeGenomeAssembly,importer.getGenomeAssembly());
+        Assertions.assertTrue(importer.hasVcf());
+        Assertions.assertEquals(fakeVcfPath, importer.getVcfPath());
+        Assertions.assertEquals(fakeGenomeAssembly,importer.getGenomeAssembly());
     }
 
 

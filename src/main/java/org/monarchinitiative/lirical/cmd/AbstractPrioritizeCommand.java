@@ -29,8 +29,11 @@ public abstract class AbstractPrioritizeCommand {
     /** The threshold for showing a differential diagnosis in the main section (posterior probability of 5%).*/
     @CommandLine.Option(names= {"-t","--threshold"}, description = "minimum post-test prob. to show diagnosis in HTML output")
     protected Double LR_THRESHOLD = null;
-    /** If true, the program will not output an HTML file but will output a Tab Separated Values file instead.*/
-    @CommandLine.Option(names="--tsv",description = "Use TSV instead of HTML output (default: ${DEFAULT-VALUE})")
+    /** If true, the program will output an HTML file.*/
+    @CommandLine.Option(names="--html", arity = "0..1", description = "Provide HTML output (default: ${DEFAULT-VALUE})")
+    protected boolean outputHTML=true;
+    /** If true, the program will output a Tab Separated Values file.*/
+    @CommandLine.Option(names="--tsv", arity = "0..1", description = "Provide TSV output (default: ${DEFAULT-VALUE})")
     protected boolean outputTSV=false;
     /** Prefix of the output file. For instance, if the user enters {@code -x sample1} and an HTML file is output,
      * the name of the HTML file will be {@code sample1.html}. If a TSV file is output, the name of the file will

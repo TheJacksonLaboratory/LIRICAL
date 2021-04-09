@@ -229,8 +229,7 @@ public class Lr2Svg extends Lirical2Svg {
         List<String> explanationObserved = result.getObservedPhenotypeExplanation();
         List<String> explanationExcluded = result.getExcludedPhenotypeExplanation();
         int explanationIndex = 0;
-        for (int i=0; i<indicesObserved.size(); i++) {
-            int originalIndex = indicesObserved.get(i);
+        for (int originalIndex : indicesObserved) {
             TermId tid = this.termIdList.get(originalIndex);
             double ratio = result.getObservedPhenotypeRatio(originalIndex);
             ratio = Math.log10(ratio);
@@ -248,7 +247,7 @@ public class Lr2Svg extends Lirical2Svg {
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " + "stroke-width=\"0\" " +
                         "stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
-                        "onmouseover=\"showTooltip(evt,\'%s\')\"/>\n", BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanationObserved.get(explanationIndex)));
+                        "onmouseover=\"showTooltip(evt,'%s')\"/>\n", BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanationObserved.get(explanationIndex)));
             }
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);
@@ -259,8 +258,7 @@ public class Lr2Svg extends Lirical2Svg {
         }
         // Now add negated terms if any
         explanationIndex = 0;
-        for (int i=0; i<indicesExcluded.size(); i++) {
-            int originalIndex = indicesExcluded.get(i);
+        for (int originalIndex : indicesExcluded) {
             TermId tid = this.excludedTermIdList.get(originalIndex);
             double ratio = result.getExcludedPhenotypeRatio(originalIndex);
             ratio = Math.log10(ratio);
@@ -277,8 +275,8 @@ public class Lr2Svg extends Lirical2Svg {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
-                        "stroke-width=\"0\" stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
-                                "onmouseover=\"showTooltip(evt,\'%s\')\"/>\n",
+                                "stroke-width=\"0\" stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
+                                "onmouseover=\"showTooltip(evt,'%s')\"/>\n",
                         BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanationExcluded.get(explanationIndex)));
             }
             // add label of corresponding HPO term
@@ -311,7 +309,7 @@ public class Lr2Svg extends Lirical2Svg {
                 int X = (int) xstart;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
                         "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
-                                "onmouseover=\"showTooltip(evt,\'%s\')\"/>\n",
+                                "onmouseover=\"showTooltip(evt,'%s')\"/>\n",
                         BOX_HEIGHT, (int) boxwidth, currentY, X, color, lrstring));
             }
             // add label of Genotype
@@ -378,7 +376,7 @@ public class Lr2Svg extends Lirical2Svg {
 
         @Override
         public int compareTo(Value2Index other) {
-            return this.LR < other.LR ? 1 : this.LR == other.LR ? 0 : -1;
+            return Double.compare(other.LR, this.LR);
         }
     }
 

@@ -14,6 +14,7 @@ analysis:
   strict: true
   threshold: 0.05
   tsv: true
+  html: false
 hpoIds: [ 'HP:0001363', 'HP:0011304', 'HP:0010055']
 negatedHpoIds: ['HP:0001328']
 prefix: example2
