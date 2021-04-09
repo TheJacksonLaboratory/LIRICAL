@@ -2,6 +2,10 @@
 Changelog
 =========
 
+-------------------
+v1.3.2 (2021-04-09)
+-------------------
+- Fixed null pointer error in YAML output
 
 ------
 v1.3.1
