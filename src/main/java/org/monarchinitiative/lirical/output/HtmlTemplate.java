@@ -84,7 +84,7 @@ public class HtmlTemplate extends LiricalTemplate {
         List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N, geneid2sym, ontology);
         this.templateData.put("sparkline", sparklinePackets);
         this.templateData.put("hasGenotypes", "true");
-        if (symbolsWithoutGeneIds.isEmpty()){
+        if (symbolsWithoutGeneIds==null || symbolsWithoutGeneIds.isEmpty()){
             this.templateData.put("hasGeneSymbolsWithoutIds", "false");
         } else {
             this.templateData.put("hasGeneSymbolsWithoutIds", "true");
@@ -131,7 +131,7 @@ public class HtmlTemplate extends LiricalTemplate {
                         String name = shortName(result.getDiseaseName());
                         String id = result.getDiseaseCurie().getId();// This is intended to work with OMIM
                         if (name == null) {
-                            logger.error("Got null string for disease name from result=" + result.toString());
+                            logger.error("Got null string for disease name from result={}", result);
                             name = EMPTY_STRING;// avoid errors
                         }
                         ImprobableDifferential ipd = new ImprobableDifferential(name, id, symbol, result.getPosttestProbability(), c);
@@ -206,7 +206,7 @@ public class HtmlTemplate extends LiricalTemplate {
                 String name = shortName(result.getDiseaseName());
                 String id = result.getDiseaseCurie().getId();// This is intended to work with OMIM
                 if (name == null) {
-                    logger.error("Got null string for disease name from result=" + result.toString());
+                    logger.error("Got null string for disease name from result={}", result);
                     name = EMPTY_STRING;// avoid errors
                 }
                 int c = 0;

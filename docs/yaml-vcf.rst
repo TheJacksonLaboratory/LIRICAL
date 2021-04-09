@@ -46,7 +46,7 @@ Any of the options described in :ref:`rstyamlhpo` can also be used here.
 
 Additionally, ``hpoIds`` is a list of HPO term representing the clinical manifestations observed in the individual being analyzed.
 Finally,  ``prefix`` is the prefix of the output file (optional, default: lirical) For instance, if the prefix is ``example1``, then the HTML output file will be
-``example1.html``.
+``example1.html``. ``prefix`` is *not* used to represent the path to the outfile.
 
 
 The following YAML file contains values for all of the options. ::
