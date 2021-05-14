@@ -222,6 +222,8 @@ public class HtmlTemplate extends LiricalTemplate {
 
     @Override
     public void outputFile() {
+        String path;
+
         logger.info("Writing HTML file to {}", this.outpath);
         try (BufferedWriter out = new BufferedWriter(new FileWriter(this.outpath))) {
             Template template = cfg.getTemplate("liricalHTML.ftl");

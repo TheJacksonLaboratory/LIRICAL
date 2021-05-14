@@ -66,6 +66,7 @@ The following YAML file contains values for all of the options. ::
     hpoIds: [ 'HP:0001363', 'HP:0011304', 'HP:0010055']
     negatedHpoIds: ['HP:0001328']
     prefix: example2
+    outdir: /path/to/output/directory
 
 
 This file can be found at ``src/test/resources/yaml/hpo_and_vcf_mult.yml``. This YAML file additionally has a list

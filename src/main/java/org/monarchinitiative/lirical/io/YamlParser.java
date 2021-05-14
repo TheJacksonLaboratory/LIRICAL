@@ -25,7 +25,7 @@ import java.util.Optional;
 public class YamlParser {
     private static final Logger logger = LoggerFactory.getLogger(YamlParser.class);
     private YamlConfig yconfig;
-    /** THe path to which LIRICAL will download data such as hp.obo by default. */
+    /** The path to which LIRICAL will download data such as hp.obo by default. */
     private static final String DEFAULT_DATA_PATH="data";
 
 
@@ -38,6 +38,7 @@ public class YamlParser {
         try {
             yconfig = mapper.readValue(new File(yamlPath), YamlConfig.class);
         } catch (JsonMappingException e) {
+            e.printStackTrace();
             throw new LiricalRuntimeException(String.format("[FATAL] Malformed YAML file: Unrecognized field name in YAML file %s.\n %s" ,
                     yamlPath ,e.getMessage()));
         } catch (JsonParseException e ) {
@@ -242,9 +243,19 @@ public class YamlParser {
         }
     }
 
-
+    /**
+     * The prefix is a String that is provided by the user and will form the first part of the output file name.
+     * It is not allowed to be a Path, and we throw an error if the prefix contains "/"
+     * @return
+     */
     public String getPrefix() {
-        return yconfig.getPrefix();
+        String prefix = yconfig.getPrefix();
+        if (prefix.contains(File.separator)) {
+            throw new LiricalRuntimeException("Prefix is not allow to contain path separators but we got this: "
+                    + prefix + ". Hint -- use the outdir parameter");
+        } else {
+            return prefix;
+        }
     }
 
     /**
