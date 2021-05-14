@@ -98,7 +98,7 @@ public class YamlCommand implements Callable<Integer> {
     private void writeOutput(LiricalTemplate template, boolean doWrite) {
         if (doWrite) {
             template.outputFile();
-            logger.error("Done analysis of " + template.getOutPath());
+            logger.info("Done analysis of " + template.getOutPath());
         }
     }
 

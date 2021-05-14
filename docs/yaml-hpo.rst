@@ -39,6 +39,7 @@ An example YAML file that uses several parameters is shown below::
     hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
     negatedHpoIds: ['HP:0001328']
     prefix: example
+    outdir: /path/to/output/directory
 
 This file can be found at ``src/test/resources/yaml/multiple_params.yml``.
 

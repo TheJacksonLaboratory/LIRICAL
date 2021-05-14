@@ -25,7 +25,7 @@ import java.util.Optional;
 public class YamlParser {
     private static final Logger logger = LoggerFactory.getLogger(YamlParser.class);
     private YamlConfig yconfig;
-    /** THe path to which LIRICAL will download data such as hp.obo by default. */
+    /** The path to which LIRICAL will download data such as hp.obo by default. */
     private static final String DEFAULT_DATA_PATH="data";
 
 
@@ -38,6 +38,7 @@ public class YamlParser {
         try {
             yconfig = mapper.readValue(new File(yamlPath), YamlConfig.class);
         } catch (JsonMappingException e) {
+            e.printStackTrace();
             throw new LiricalRuntimeException(String.format("[FATAL] Malformed YAML file: Unrecognized field name in YAML file %s.\n %s" ,
                     yamlPath ,e.getMessage()));
         } catch (JsonParseException e ) {
