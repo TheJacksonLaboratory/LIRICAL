@@ -243,9 +243,19 @@ public class YamlParser {
         }
     }
 
-
+    /**
+     * The prefix is a String that is provided by the user and will form the first part of the output file name.
+     * It is not allowed to be a Path, and we throw an error if the prefix contains "/"
+     * @return
+     */
     public String getPrefix() {
-        return yconfig.getPrefix();
+        String prefix = yconfig.getPrefix();
+        if (prefix.contains(File.separator)) {
+            throw new LiricalRuntimeException("Prefix is not allow to contain path separators but we got this: "
+                    + prefix + ". Hint -- use the outdir parameter");
+        } else {
+            return prefix;
+        }
     }
 
     /**

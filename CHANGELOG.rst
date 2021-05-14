@@ -1,6 +1,10 @@
 =========
 Changelog
 =========
+-------------------
+v1.3.3 (2021-05-14)
+-------------------
+- Fixed output directory option for YAML input format
 
 -------------------
 v1.3.2 (2021-04-09)
