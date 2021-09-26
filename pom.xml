@@ -46,6 +46,10 @@
                     <artifactId>guava</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>de.sonumina</groupId>
+                    <artifactId>javautil</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>com.google.protobuf</groupId>
                     <artifactId>protobuf-java</artifactId>
                 </exclusion>
