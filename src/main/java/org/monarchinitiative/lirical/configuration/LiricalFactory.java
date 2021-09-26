@@ -690,7 +690,7 @@ public class LiricalFactory {
                 throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg38. Consider adding the option -g/--genome <...>.", this.exomiserPath));
             }
         } else {
-            logger.trace("Genome assembly: {}", this.assembly.toString());
+            logger.trace("Genome assembly: {}", this.assembly);
         }
     }
 

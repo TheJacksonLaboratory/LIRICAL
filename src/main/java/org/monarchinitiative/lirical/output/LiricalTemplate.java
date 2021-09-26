@@ -76,9 +76,7 @@ public abstract class LiricalTemplate {
     abstract public void outputFile(String fname);
 
     private void initTemplateData(HpoCase hcase, Ontology ontology, Map<String,String> metadat) {
-        for(Map.Entry<String,String> entry : metadat.entrySet()) {
-            templateData.put(entry.getKey(),entry.getValue());
-        }
+        templateData.putAll(metadat);
         List<String> observedHPOs = new ArrayList<>();
         for (TermId id:hcase.getObservedAbnormalities()) {
             Term term = ontology.getTermMap().get(id);

@@ -254,8 +254,6 @@ public class PhenotypeOnlyHpoCaseSimulator {
      */
     private List<TermId> getRandomTermsFromDisease(HpoDisease disease) {
         //We already checked to make sure disease have at least n_terms_per_case, so the following line is unnecessary and confusing to read--Aaron
-        //int n_terms = Math.min(disease.getNumberOfPhenotypeAnnotations(), n_terms_per_case);
-        //int n_random=Math.min(n_terms, n_noise_terms);
         logger.trace("Creating simulated case with n_terms="+n_terms_per_case + ", n_random=" + n_noise_terms);
         // the creation of a new ArrayList is needed because disease returns an immutable list.
         List<HpoAnnotation> abnormalities = new ArrayList<>(disease.getPhenotypicAbnormalities());

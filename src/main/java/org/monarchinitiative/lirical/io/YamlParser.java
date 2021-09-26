@@ -246,7 +246,7 @@ public class YamlParser {
     /**
      * The prefix is a String that is provided by the user and will form the first part of the output file name.
      * It is not allowed to be a Path, and we throw an error if the prefix contains "/"
-     * @return
+     * @return prefix for output files
      */
     public String getPrefix() {
         String prefix = yconfig.getPrefix();
