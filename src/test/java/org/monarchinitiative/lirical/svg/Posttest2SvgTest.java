@@ -13,9 +13,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import java.util.ArrayList;
 import java.util.List;
 
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 class Posttest2SvgTest {
@@ -61,7 +59,7 @@ class Posttest2SvgTest {
         int numtoshow = 3;
         Posttest2Svg p2svg = new Posttest2Svg(results, threshold,numtoshow);
         assertEquals(3, p2svg.getNumDifferentialsToShowSVG());
-       //  String svg = p2svg.getSvgString();
-        //System.out.println(svg);
+       String svg = p2svg.getSvgString();
+       assertFalse(svg.isEmpty());
     }
 }

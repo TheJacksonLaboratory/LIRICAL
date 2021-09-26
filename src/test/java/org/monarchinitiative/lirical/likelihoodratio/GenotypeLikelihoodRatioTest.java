@@ -79,7 +79,7 @@ class GenotypeLikelihoodRatioTest {
         inheritanceModes.add(autosomalDominant);
         Gene2Genotype g2g = mock(Gene2Genotype.class);
         when(g2g.getSumOfPathBinScores()).thenReturn(0.00); // mock that we find no pathogenic variant
-        Double score = glr.evaluateGenotype(g2g,inheritanceModes,HLAB).getLR();
+        double score = glr.evaluateGenotype(g2g,inheritanceModes,HLAB).getLR();
         double expected = 0.05; // heuristic score
         Assertions.assertEquals(expected,score,EPSILON);
     }
@@ -99,7 +99,7 @@ class GenotypeLikelihoodRatioTest {
         inheritanceModes.add(autosomalRecessive);
         Gene2Genotype g2g = mock(Gene2Genotype.class);
         when(g2g.getSumOfPathBinScores()).thenReturn(0.00); // mock that we find no pathogenic variant
-        Double score = glr.evaluateGenotype(g2g,inheritanceModes,madeUpGene).getLR();
+        double score = glr.evaluateGenotype(g2g,inheritanceModes,madeUpGene).getLR();
         double expected = 0.05*0.05; // heuristic score for AR
         Assertions.assertEquals(expected,score,EPSILON);
     }

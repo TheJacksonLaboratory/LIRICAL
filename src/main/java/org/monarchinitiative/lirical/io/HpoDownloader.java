@@ -72,7 +72,7 @@ public class HpoDownloader {
         FileDownloader downloader=new FileDownloader();
         try {
             URL url = new URL(webAddress);
-            logger.debug("Created url from "+webAddress+": "+url.toString());
+            logger.debug("Created url from "+webAddress+": "+ url);
             downloader.copyURLToFile(url, new File(f.getAbsolutePath()));
         } catch (MalformedURLException e) {
             logger.error(String.format("Malformed URL for %s [%s]",filename, webAddress));

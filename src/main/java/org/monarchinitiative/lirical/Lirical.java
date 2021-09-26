@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
  */
 
 @CommandLine.Command(name = "java -jar LIRICAL", mixinStandardHelpOptions = true,
-        version = "1.3.0",
+        version = "1.3.4",
         description = "LIkelihood Ratio Interpretation of Clinical AbnormaLities")
 public class Lirical implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(Lirical.class);
