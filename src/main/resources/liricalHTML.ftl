@@ -499,7 +499,7 @@ a.svg:hover, a.svg:active {
                   <td>
                   <ul class="no-list-style">
                     <#list svar.annotationList as annot>
-                    <li>${annot.accession}: ${annot.hgvsCdna} ${annot.hgvsProtein} ${annot.variantEffect}</li>
+                    <li>${annot.accession!"n/a"}: ${annot.hgvsCdna!"n/a"} ${annot.hgvsProtein!"n/a"} ${annot.variantEffect!"n/a"}</li>
                     </#list>
                     </ul>
                   </td>
