@@ -14,11 +14,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>8</java.version>
+        <java.version>16</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <junit.version>5.8.1</junit.version>
         <phenol.version>1.6.3</phenol.version>
+        <svart.version>2.0.0-RC1</svart.version>
         <exomiser.version>12.1.0</exomiser.version>
         <phenopacket.version>1.0.0</phenopacket.version>
         <slf4j.version>1.7.30</slf4j.version>
@@ -26,6 +27,11 @@
 
 
     <dependencies>
+        <dependency>
+            <groupId>org.monarchinitiative.svart</groupId>
+            <artifactId>svart</artifactId>
+            <version>${svart.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
