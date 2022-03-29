@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.svg;
 
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.lirical.hpo.HpoCase;
+import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.Term;
@@ -199,7 +200,7 @@ public class Lr2Svg extends Lirical2Svg {
 
 
         int rank = hpocase.getResult(diseaseCURIE).getRank();
-        double ptp = hpocase.getResult(diseaseCURIE).getPosttestProbability();
+        double ptp = hpocase.getResult(diseaseCURIE).calculatePosttestProbability();
         String diseaseLabel = String.format("%s [%s]", diseaseName, diseaseCURIE.getValue());
         String diseaseResult = String.format("Rank: #%d Posttest probability: %.1f%%", rank, (100.0 * ptp));
         writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"16px\" font-weight=\"bold\">%s</text>\n", (midline - (maxTick - 1) * block), Y + 35, diseaseLabel));
@@ -288,10 +289,11 @@ public class Lr2Svg extends Lirical2Svg {
         }
 
 
-        if (result.hasGenotype()) {
+        Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
+        if (genotypeLr.isPresent()) {
             currentY += 0.5 * (BOX_HEIGHT + BOX_OFFSET);
 
-            double ratio = result.getGenotypeLR();
+            double ratio = genotypeLr.get().lr();
              double lgratio = Math.log10(ratio);
             String lrstring = String.format("LR: %.3f",lgratio);
             double boxwidth = lgratio * scaling;
@@ -328,7 +330,7 @@ public class Lr2Svg extends Lirical2Svg {
     private int calculateHeightOfMiddleLine() {
         Objects.requireNonNull(result);
         int n = result.getNumberOfTests();
-        if (result.hasGenotype()) {
+        if (result.genotypeLr().isPresent()) {
             n += 2; // add another unit for the genotype
         }
         return 2 * BOX_OFFSET + n * (BOX_HEIGHT + BOX_OFFSET);

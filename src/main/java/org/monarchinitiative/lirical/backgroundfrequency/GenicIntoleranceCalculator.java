@@ -33,8 +33,8 @@ import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySourc
  * the population background from the Exomiser database (gnomAD, TOPMed, others, but filtering out variants that are listed
  * in ClinVar).
  *
- * @author <a href="mailto:j.jacobsen@qmul.ac.uk>Jules Jacobsen</a>
- * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
+ * @author Jules Jacobsen
+ * @author Peter Robinson
  */
 public class GenicIntoleranceCalculator {
     private static final Logger logger = LoggerFactory.getLogger(GenicIntoleranceCalculator.class);

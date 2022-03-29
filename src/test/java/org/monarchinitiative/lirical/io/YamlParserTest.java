@@ -1,17 +1,12 @@
 package org.monarchinitiative.lirical.io;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
-import org.monarchinitiative.lirical.exception.LiricalException;
-import org.monarchinitiative.phenol.base.PhenolRuntimeException;
+import org.monarchinitiative.lirical.TestResources;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.URL;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,52 +14,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 
-class YamlParserTest {
+public class YamlParserTest {
+    private static final Path TEST_YAML_DIR = TestResources.TEST_BASE.resolve("yaml");
     // Paths to the example YAML files in src/test/resources/yaml/
-    private static String example1path;
-    private static String example2path;
+    private static final Path example1path = TEST_YAML_DIR.resolve("example1.yml");
+    private static final Path example2path = TEST_YAML_DIR.resolve("example2.yml");
 
     private static final double EPSILON=0.000001;
-
-    @BeforeAll
-    static void init() throws FileNotFoundException{
-        ClassLoader classLoader = YamlParserTest.class.getClassLoader();
-        URL resource = classLoader.getResource("yaml/example1.yml");
-        if (resource==null){
-            throw new FileNotFoundException("Could not find example1.yml file");
-        }
-        example1path = resource.getFile();
-        resource = classLoader.getResource("yaml/example2.yml");
-        if (resource==null){
-            throw new FileNotFoundException("Could not find example2.yml file");
-        }
-        example2path = resource.getFile();
-    }
-
-    @Test
-    void testExample1YamlFile() {
-        YamlParser parser = new YamlParser(example1path);
-        String expected = String.format("%s%s%s","data", File.separator,"hp.obo");
-        assertEquals(expected,parser.getHpOboPath());
-    }
-
-    /**
-     * This test is disabled on windows because it depends on the File separator (/ vs \).
-     */
-    @Test @DisabledOnOs(WINDOWS)
-    void testMvStorePath() {
-        YamlParser parser = new YamlParser(example1path);
-        String expected="/path/to/1802_hg19/1802_hg19_variants.mv.db";
-        assertEquals(expected,parser.getMvStorePath());
-    }
-
-    @Test
-    void testBadMvStorePath() {
-        String badPath="/nonexistant/path/1802_hg19_variants.mv.db";
-        Assertions.assertThrows(PhenolRuntimeException.class, () -> {
-            YamlParser parser = new YamlParser(badPath);
-        });
-    }
 
     /**
      * In the YAML file, the exomiser path is given as
@@ -73,12 +29,9 @@ class YamlParserTest {
      * This test is disabled on windows because it depends on the File separator (/ vs \).
      */
     @Test @DisabledOnOs(WINDOWS)
-    void testExomiserData()throws LiricalException {
+    void testExomiserData() {
         YamlParser parser = new YamlParser(example1path);
-        String expectedMvStore = "/path/to/1802_hg19/1802_hg19_variants.mv.db";
-        assertEquals(expectedMvStore,parser.getMvStorePath());
-        String expectedJannovar = "/path/to/1802_hg19/1802_hg19_transcripts_ucsc.ser";
-        assertEquals(expectedJannovar,parser.jannovarFile());
+        assertEquals("/path/to/1802_hg19", parser.getExomiserDataDir());
     }
 
     /**

@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.output;
 
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.lirical.hpo.HpoCase;
+import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.lirical.svg.Sparkline2Svg;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -10,6 +11,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,20 +38,21 @@ public class SparklinePacket {
         if (results.isEmpty()) {
             return builder.build();
         }
-        TermId topCandidateId = results.get(0).getDiseaseCurie();
+        TermId topCandidateId = results.get(0).diseaseId();
         int rank = 0;
         Sparkline2Svg sparkline2Svg = new Sparkline2Svg(hcase,topCandidateId, true, ontology);
         while (rank < N && rank < results.size()) {
             TestResult result = results.get(rank);
             rank++;
-            TermId diseaseId = result.getDiseaseCurie();
+            TermId diseaseId = result.diseaseId();
             String geneSymbol = EMPTY_STRING;
-            if (result.hasGenotype() ) {
-                TermId geneId = result.getEntrezGeneId();
+            Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
+            if (genotypeLr.isPresent()) {
+                TermId geneId = genotypeLr.get().geneId();
                 geneSymbol = geneid2sym.getOrDefault(geneId, EMPTY_STRING);
             }
             double compositeLR = result.getCompositeLR();
-            double posttestProb = result.getPosttestProbability();
+            double posttestProb = result.calculatePosttestProbability();
             String posttestSVG = sparkline2Svg.getPosttestBar(posttestProb);
             String sparkSVG = sparkline2Svg.getSparklineSvg(hcase, diseaseId, geneSymbol);
             String geneSparkSvg = sparkline2Svg.getGeneSparklineSvg(hcase, diseaseId, geneSymbol);
@@ -68,15 +71,15 @@ public class SparklinePacket {
         if (results.isEmpty()) {
             return builder.build();
         }
-        TermId topCandidateId = results.get(0).getDiseaseCurie();
+        TermId topCandidateId = results.get(0).diseaseId();
         int rank = 0;
         Sparkline2Svg sparkline2Svg = new Sparkline2Svg(hcase,topCandidateId, false, ontology);
         while (rank < N && rank < results.size()) {
             TestResult result = results.get(rank);
             rank++;
-            TermId diseaseId = result.getDiseaseCurie();
+            TermId diseaseId = result.diseaseId();
             double compositeLR = result.getCompositeLR();
-            double posttestProb = result.getPosttestProbability();
+            double posttestProb = result.calculatePosttestProbability();
             String posttestSVG = sparkline2Svg.getPosttestBar(posttestProb);
             String sparkSVG = sparkline2Svg.getSparklineSvg(hcase, diseaseId);
             String disname = prettifyDiseaseName(result.getDiseaseName());

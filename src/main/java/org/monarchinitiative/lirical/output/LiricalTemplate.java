@@ -1,7 +1,6 @@
 package org.monarchinitiative.lirical.output;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import freemarker.template.Configuration;
 import freemarker.template.Version;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
@@ -16,7 +15,9 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -34,7 +35,7 @@ public abstract class LiricalTemplate {
 
     protected static final String EMPTY_STRING="";
 
-    protected String outpath;
+    protected Path outpath;
     /** This map contains the names of the top differential diagnoses that we will show as a list at the
      * top of the page together with anchors to navigate to the detailed analysis.*/
     protected Map<String,String> topDiagnosisMap;
@@ -45,38 +46,33 @@ public abstract class LiricalTemplate {
 
 
 
-    public LiricalTemplate(HpoCase hcase,
-                           Ontology ontology,
-                           Map<TermId, Gene2Genotype> genotypeMap,
-                           Map<TermId,String> geneid2sym,
-                           Map<String,String> metadat){
-
-        this.cfg = new Configuration(new Version("2.3.23"));
-        cfg.setDefaultEncoding("UTF-8");
-        this.geneId2symbol=geneid2sym;
-        initTemplateData(hcase,ontology,metadat);
-    }
-
     /** This version of the constructor should be used for cases without genotype data
      * @param hcase Data representing the case
      * @param ontology reference to HP ontology
-     * @param metadat Metadata about the analysis
+     * @param metadata Metadata about the analysis
      */
     public LiricalTemplate(HpoCase hcase,
                            Ontology ontology,
-                           Map<String,String> metadat){
+                           Map<String,String> metadata){
+        this(hcase, ontology, Map.of(), metadata);
+    }
+
+    public LiricalTemplate(HpoCase hcase,
+                           Ontology ontology,
+                           Map<TermId,String> geneIdToSymbol,
+                           Map<String,String> metadata){
 
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
-        this.geneId2symbol= ImmutableMap.of(); // not needed -- make empty make
-        initTemplateData(hcase,ontology,metadat);
+        this.geneId2symbol=geneIdToSymbol;
+        initTemplateData(hcase,ontology,metadata);
     }
 
     abstract public void outputFile();
     abstract public void outputFile(String fname);
 
-    private void initTemplateData(HpoCase hcase, Ontology ontology, Map<String,String> metadat) {
-        templateData.putAll(metadat);
+    private void initTemplateData(HpoCase hcase, Ontology ontology, Map<String,String> metadata) {
+        templateData.putAll(metadata);
         List<String> observedHPOs = new ArrayList<>();
         for (TermId id:hcase.getObservedAbnormalities()) {
             Term term = ontology.getTermMap().get(id);
@@ -107,30 +103,37 @@ public abstract class LiricalTemplate {
             return name;
     }
 
-    public String getOutPath() { return outpath;}
+    public Path getOutPath() { return outpath;}
 
+    protected static Path createOutputFile(Path outdir, String prefix, String format) {
+        if (!Files.isDirectory(outdir))
+            mkdirIfNotExist(outdir);
+        return outdir.resolve(String.format(format, prefix));
+    }
 
-    protected File mkdirIfNotExist(String dir) {
-        File f = new File(dir);
-        if (f.exists()) {
-            if (f.isDirectory()) {
-                return f;
+    protected static void mkdirIfNotExist(Path dir) {
+        if (Files.exists(dir)) {
+            if (Files.isDirectory(dir)) {
+                return;
             } else {
                 throw new LiricalRuntimeException("Cannot create directory since file of same name exists already: " + dir);
             }
         }
         // if we get here, we need to make the directory
-        boolean success = f.mkdir();
-        if (!success) {
-            throw new LiricalRuntimeException("Unable to make directory: " + dir);
-        } else {
-            return f;
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            throw new LiricalRuntimeException("Unable to make directory: " + dir, e);
         }
     }
 
+    public static Builder builder(HpoCase hpoCase, Ontology hpo, Map<String, String> metadata) {
+        return new Builder(hpoCase, hpo, metadata);
+    }
+
     public static class Builder {
-        private final HpoCase hcase;
-        private final Ontology ontology;
+        private final HpoCase hpoCase;
+        private final Ontology hpo;
         private final Map<String,String> metadata;
         private Map<TermId, Gene2Genotype> genotypeMap;
         private Map<TermId,String> geneid2sym;
@@ -139,13 +142,13 @@ public abstract class LiricalTemplate {
         private LrThreshold thres;
         private MinDiagnosisCount minDifferentials;
         String outfileprefix = "lirical";
-        String outdir = null;
+        private Path outdir = null;
 
 
-        public Builder(HpoCase hcase, Ontology ont, Map<String,String> mdata){
-            this.hcase=hcase;
-            this.ontology=ont;
-            this.metadata=mdata;
+        private Builder(HpoCase hpoCase, Ontology hpo, Map<String,String> metadata){
+            this.hpoCase = hpoCase;
+            this.hpo = hpo;
+            this.metadata = metadata;
         }
 
 
@@ -154,14 +157,14 @@ public abstract class LiricalTemplate {
         public Builder threshold(LrThreshold t) { this.thres=t;return this; }
         public Builder mindiff(MinDiagnosisCount md){ this.minDifferentials=md; return this; }
         public Builder prefix(String p){ this.outfileprefix = p; return this; }
-        public Builder outdirectory(String od){ this.outdir=od; return this; }
+        public Builder outDirectory(Path od){ this.outdir=od; return this; }
         public Builder errors(List<String> e) { this.errors = e; return this; }
         public Builder symbolsWithOutIds(Set<String> syms) { this.symbolsWithoutIds = syms; return this; }
 
         public HtmlTemplate buildPhenotypeHtmlTemplate() {
 
-            return new HtmlTemplate(this.hcase,
-                    this.ontology,
+            return new HtmlTemplate(this.hpoCase,
+                    this.hpo,
                     this.metadata,
                     this.thres,
                     this.minDifferentials,
@@ -171,8 +174,8 @@ public abstract class LiricalTemplate {
         }
 
         public HtmlTemplate buildGenoPhenoHtmlTemplate() {
-            return new HtmlTemplate(this.hcase,
-                    this.ontology,
+            return new HtmlTemplate(this.hpoCase,
+                    this.hpo,
                     this.genotypeMap,
                     this.geneid2sym,
                     this.metadata,
@@ -185,8 +188,8 @@ public abstract class LiricalTemplate {
         }
 
         public TsvTemplate buildPhenotypeTsvTemplate() {
-            return new TsvTemplate(this.hcase,
-                    this.ontology,
+            return new TsvTemplate(this.hpoCase,
+                    this.hpo,
                     this.metadata,
                     this.outfileprefix,
                     this.outdir);
@@ -194,8 +197,8 @@ public abstract class LiricalTemplate {
 
         public TsvTemplate buildGenoPhenoTsvTemplate() {
 
-            return new TsvTemplate(this.hcase,
-                    this.ontology,
+            return new TsvTemplate(this.hpoCase,
+                    this.hpo,
                     this.genotypeMap,
                     this.geneid2sym,
                     this.metadata,

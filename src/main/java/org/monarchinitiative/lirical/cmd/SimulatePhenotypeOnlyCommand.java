@@ -51,10 +51,10 @@ public class SimulatePhenotypeOnlyCommand implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        LiricalFactory factory = new LiricalFactory.Builder()
-                .datadir(this.datadir)
+        LiricalFactory factory = LiricalFactory.builder()
+//                .datadir(this.datadir) // TODO - fix
                 .build();
-        factory.qcHumanPhenotypeOntologyFiles();
+//        factory.qcHumanPhenotypeOntologyFiles();
         logger.trace("Running simulation with {} cases, {} terms/case, {} noise terms/case. Imprecision: {}",
                 n_cases_to_simulate,n_terms_per_case,n_noise_terms,imprecise_phenotype?"yes":"no");
         Ontology ontology = factory.hpoOntology();

@@ -143,7 +143,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
             //logger.trace("Simulating disease "+diseasename);
             if (disease.getNumberOfPhenotypeAnnotations() <this.n_terms_per_case) {
                 logger.trace(String.format("Skipping disease %s [%s] because it has no phenotypic annotations",
-                        disease.getName(),
+                        disease.getDiseaseName(),
                         disease.getDiseaseDatabaseId()));
                 continue;
             }
@@ -151,7 +151,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
             if (optionalRank.isPresent()) {
                 int rank = optionalRank.get();
                 if (verbose) {
-                    System.err.println(String.format("%s: rank=%d", disease.getName(), rank));
+                    System.err.println(String.format("%s: rank=%d", disease.getDiseaseName(), rank));
                 }
                 ranks.putIfAbsent(rank,0);
                 ranks.put(rank, ranks.get(rank) + 1);
@@ -222,7 +222,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
         return phenotypeterms.get(r);
     }
 
-    /** @return a random parent of term tid. */
+    /** @return a random parent of term termId. */
     private TermId getRandomParentTerm(TermId tid) {
         Set<TermId> parents = getParentTerms(ontology,tid,false);
         int r = (int)Math.floor(parents.size()*Math.random());
@@ -262,15 +262,15 @@ public class PhenotypeOnlyHpoCaseSimulator {
         // take the first n_random terms of the randomized list
         if (addTermImprecision) {
             abnormalities.stream().limit(n_terms_per_case).forEach( a -> {
-                Optional<TermId> randomParent = getNonRootRandomParentTerm(a.getTermId());
+                Optional<TermId> randomParent = getNonRootRandomParentTerm(a.id());
                 if (randomParent.isPresent()) {
                     termIdBuilder.add(randomParent.get());
                 } else { //cannot find non-root parent
-                    termIdBuilder.add(a.getTermId());
+                    termIdBuilder.add(a.id());
                 }
             });
         } else {
-            abnormalities.stream().limit(n_terms_per_case).forEach(a-> termIdBuilder.add(a.getTermId()));
+            abnormalities.stream().limit(n_terms_per_case).forEach(a-> termIdBuilder.add(a.id()));
         }
         // now add n_random "noise" terms to the list of abnormalities of our case.
         for(int i=0;i<n_noise_terms;i++){

@@ -31,9 +31,6 @@ public class Gene2Genotype {
      * was found in the gene (no variant in the gene was present in teh VCF file).    */
     public static final Gene2Genotype NO_IDENTIFIED_VARIANT = new Gene2Genotype(TermId.of("n/a:n/a"),"n/a");
 
-
-
-
     /**
      *
      * @param id gene ID of this gene

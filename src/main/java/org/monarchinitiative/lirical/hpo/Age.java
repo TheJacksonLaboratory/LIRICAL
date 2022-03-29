@@ -1,5 +1,6 @@
 package org.monarchinitiative.lirical.hpo;
 
+import java.time.Period;
 import java.util.Objects;
 
 /**
@@ -47,15 +48,24 @@ public class Age {
     }
 
     public static Age ageInYears(int y) {
-        return new Age(y,0,0);
+        return of(y,0,0);
     }
 
     public static Age ageInMonths(int m) {
-        return new Age(0,m,0);
+        return of(0,m,0);
     }
 
     public static Age ageInDays(int d) {
-        return new Age(0,0,d);
+        return of(0,0,d);
+    }
+
+    public static Age parse(Period period) {
+        Period normalized = period.normalized();
+        return of(normalized.getYears(), normalized.getMonths(), normalized.getDays());
+    }
+
+    public static Age of(int years, int months, int days) {
+        return new Age(years, months, days);
     }
 
     @Override
@@ -72,5 +82,15 @@ public class Age {
     @Override
     public int hashCode() {
         return Objects.hash(initialized, years, months, days);
+    }
+
+    @Override
+    public String toString() {
+        return "Age{" +
+                "initialized=" + initialized +
+                ", years=" + years +
+                ", months=" + months +
+                ", days=" + days +
+                '}';
     }
 }

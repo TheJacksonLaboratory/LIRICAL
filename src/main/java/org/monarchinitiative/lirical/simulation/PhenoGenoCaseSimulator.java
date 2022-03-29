@@ -1,7 +1,6 @@
 package org.monarchinitiative.lirical.simulation;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.analysis.VcfSimulator;
@@ -17,6 +16,7 @@ import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.output.HtmlTemplate;
 import org.monarchinitiative.lirical.output.LiricalTemplate;
 import org.monarchinitiative.lirical.output.TsvTemplate;
+import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -25,8 +25,8 @@ import org.phenopackets.schema.v1.core.HtsFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -38,13 +38,9 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDe
 public class PhenoGenoCaseSimulator {
     private static final Logger logger = LoggerFactory.getLogger(PhenoGenoCaseSimulator.class);
 
-    private final File phenopacketFile;
-
-    private final String templateVcfPath;
+    private final Path phenopacketPath;
 
     private final LiricalFactory factory;
-
-    private final GenomeAssembly genomeAssembly;
 
     private final Disease simulatedDiagnosis;
 
@@ -52,17 +48,15 @@ public class PhenoGenoCaseSimulator {
 
     private TermId simulatedDiseaseGene;
 
-    private final String sampleName;
-
     private final Map<TermId, Gene2Genotype> genotypemap;
 
     private final Ontology ontology;
 
     private final Map<TermId, HpoDisease> diseaseMap;
 
-    private final Multimap<TermId, TermId> disease2geneMultimap;
+    private final Map<TermId, Collection<GeneIdentifier>> disease2geneMultimap;
 
-    private final  Multimap<TermId,TermId> gene2diseaseMultimap;
+    private final  Map<TermId,Collection<TermId>> gene2diseaseMultimap;
 
     private final  List<TermId> hpoIdList;
     // List of excluded HPO terms in the subject.
@@ -78,34 +72,35 @@ public class PhenoGenoCaseSimulator {
     private int rank_of_gene;
     /** The posttest probability of the simulated disease. */
     private double posttest_probability;
-    /** If true, replace the HPO terms with random terms (both the observed and the included). */
-    private final boolean randomize;
     /** A list of all HPO term ids in the Phenotypic abnormality subontology. */
     private final ImmutableList<TermId> phenotypeterms;
 
 
     /**
      *
-     * @param phenopacket A GA4GH Phenopacket with information about a case
+     * @param phenopacketPath A GA4GH Phenopacket with information about a case
      * @param vcfpath Path to a template VCF file we will add a mutation to
      * @param factory {@link LiricalFactory} object
      * @param rand if true, randomize the HPO terms in the phenopacket
      */
-    public PhenoGenoCaseSimulator(File phenopacket, String vcfpath, LiricalFactory factory, boolean rand) {
-        phenopacketFile = phenopacket;
-        templateVcfPath = vcfpath;
-        this.metadata = new HashMap<>();
+    public PhenoGenoCaseSimulator(Path phenopacketPath, String vcfpath, LiricalFactory factory, boolean rand) {
+        this.phenopacketPath = phenopacketPath;
+
         this.factory = factory;
-        this.genomeAssembly = factory.getAssembly();
-        String phenopacketAbsolutePath = phenopacketFile.getAbsolutePath();
-        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketAbsolutePath,this.factory.hpoOntology());
-        this.sampleName = importer.getSamplename();
-        simulatedDiagnosis = importer.getDiagnosis();
+        GenomeAssembly genomeAssembly = factory.getAssembly();
+
+        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
+        String sampleName = importer.getSampleId();
+        Optional<Disease> diseaseDiagnosis = importer.getDiagnosis();
+        if (diseaseDiagnosis.isEmpty())
+            throw new LiricalRuntimeException("Disease diagnosis should not be empty here"); // TODO(pnr) is this true?
+        simulatedDiagnosis = diseaseDiagnosis.get();
         String disId = simulatedDiagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
         this.simulatedDiseaseId = TermId.of(disId);
 
-        this.randomize = rand;
-        if (randomize) {
+        // TODO - sanitize with HpoTermSanitizer
+        List<TermId> hpoTerms = importer.getHpoTerms();
+        if (rand) {
             Set<TermId> descendents=getDescendents(factory.hpoOntology(), PHENOTYPIC_ABNORMALITY);
             ImmutableList.Builder<TermId> termbuilder = new ImmutableList.Builder<>();
             for (TermId t: descendents) {
@@ -113,7 +108,8 @@ public class PhenoGenoCaseSimulator {
             }
             this.phenotypeterms=termbuilder.build();
             ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
-            for (int i=0;i<importer.getHpoTerms().size();i++) {
+
+            for (int i = 0; i< hpoTerms.size(); i++) {
                 builder.add(getRandomPhenotypeTerm());
             }
             this.hpoIdList = builder.build();
@@ -124,20 +120,21 @@ public class PhenoGenoCaseSimulator {
             negatedHpoIdList = builder.build();
         } else {
             this.phenotypeterms = ImmutableList.of(); // not needed
-            hpoIdList = importer.getHpoTerms();
+            hpoIdList = hpoTerms;
             negatedHpoIdList = importer.getNegatedHpoTerms();
         }
 
-        VcfSimulator vcfSimulator = new VcfSimulator(Paths.get(this.templateVcfPath));
+        VcfSimulator vcfSimulator = new VcfSimulator(Paths.get(vcfpath));
         HtsFile simulatedVcf;
         try {
-            simulatedVcf = vcfSimulator.simulateVcf(importer.getSamplename(), importer.getVariantList(), genomeAssembly.toString());
+            simulatedVcf = vcfSimulator.simulateVcf(importer.getSampleId(), importer.getVariantList(), genomeAssembly.toString());
             //pp = pp.toBuilder().clearHtsFiles().addHtsFiles(htsFile).build();
         } catch (IOException e) {
             throw new LiricalRuntimeException("Could not simulate VCF for phenopacket");
         }
-        String vcfPath = simulatedVcf.getUri();//File().getPath();
-        this.metadata.put("vcf_file", vcfPath);
+        Path vcfPath = Path.of(simulatedVcf.getUri());
+        this.metadata = new HashMap<>();
+        this.metadata.put("vcf_file", vcfPath.toAbsolutePath().toString());
         this.genotypemap = factory.getGene2GenotypeMap(vcfPath);
         this.ontology = factory.hpoOntology();
         this.diseaseMap = factory.diseaseMap(ontology);
@@ -147,16 +144,14 @@ public class PhenoGenoCaseSimulator {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
         this.metadata.put("analysis_date", dateFormat.format(date));
-        this.metadata.put("phenopacket_file", phenopacketAbsolutePath);
-        metadata.put("sample_name", this.sampleName);
+        this.metadata.put("phenopacket_file", phenopacketPath.toAbsolutePath().toString());
+        metadata.put("sample_name", sampleName);
         if (!importer.qcPhenopacket() ){
-            System.err.println("[ERROR] Could not simulate VCF for "+phenopacketFile.getName());
+            System.err.println("[ERROR] Could not simulate VCF for "+ phenopacketPath.toFile().getName());
             return;
         }
         this.simulatedDiseaseGene = TermId.of(importer.getGene());
-        logger.trace("Running simulation from phenopacket {} with template VCF {}",
-                phenopacketFile.getAbsolutePath(),
-                vcfPath);
+        logger.trace("Running simulation from phenopacket {} with template VCF {}", phenopacketPath.toAbsolutePath(), vcfPath);
 
 
        this.metadata.put("phenopacket.diagnosisId", simulatedDiseaseId.getValue());
@@ -212,7 +207,7 @@ public class PhenoGenoCaseSimulator {
             }
         }
         this.metadata.put("genesWithVar", String.valueOf(genotypemap.size()));
-        this.metadata.put("exomiserPath", factory.getExomiserPath());
+        this.metadata.put("exomiserPath", factory.getExomiserPath().map(Path::toAbsolutePath).map(Path::toString).orElse(""));
         this.metadata.put("hpoVersion", factory.getHpoVersion());
         if (factory.global()) {
             this.metadata.put("global_mode", "true");
@@ -222,11 +217,11 @@ public class PhenoGenoCaseSimulator {
     }
 
 
-    public void outputHtml(String prefix, LrThreshold lrThreshold, MinDiagnosisCount minDiff, String outdir) {
-        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hpocase,ontology,metadata)
+    public void outputHtml(String prefix, LrThreshold lrThreshold, MinDiagnosisCount minDiff, Path outdir) {
+        LiricalTemplate.Builder builder = LiricalTemplate.builder(hpocase,ontology,metadata)
                 .genotypeMap(genotypemap)
                 .geneid2symMap(factory.geneId2symbolMap())
-                .outdirectory(outdir)
+                .outDirectory(outdir)
                 .threshold(factory.getLrThreshold())
                 .mindiff(factory.getMinDifferentials())
                 .symbolsWithOutIds(factory.getSymbolsWithoutGeneIds())
@@ -241,12 +236,12 @@ public class PhenoGenoCaseSimulator {
     }
 
 
-    public void outputTsv(String prefix, LrThreshold lrThreshold, MinDiagnosisCount minDiff, String outdir) {
+    public void outputTsv(String prefix, LrThreshold lrThreshold, MinDiagnosisCount minDiff, Path outdir) {
         String outname=String.format("%s.tsv",prefix);
-        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(this.hpocase,ontology,metadata)
+        LiricalTemplate.Builder builder = LiricalTemplate.builder(hpocase,ontology,metadata)
                 .genotypeMap(genotypemap)
                 .geneid2symMap(factory.geneId2symbolMap())
-                .outdirectory(outdir)
+                .outDirectory(outdir)
                 .prefix(prefix);
         if (lrThreshold != null) {
             builder = builder.threshold(lrThreshold);
@@ -285,7 +280,7 @@ public class PhenoGenoCaseSimulator {
             simulatedGene = "n/a";
         else
             simulatedGene = simulatedDiseaseGene.getValue();
-        return String.format("%s\t%s\t%s\t%s\t%d\t%d\t%f", phenopacketFile.getName(),
+        return String.format("%s\t%s\t%s\t%s\t%d\t%d\t%f", phenopacketPath.toFile().getName(),
                 simulatedDiagnosis.getTerm().getLabel(),
                 simulatedDiagnosis.getTerm().getId(),
                 simulatedGene,

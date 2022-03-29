@@ -5,8 +5,6 @@ package org.monarchinitiative.lirical.io;
 import com.google.protobuf.util.JsonFormat;
 
 import org.junit.jupiter.api.Assertions;
-import org.monarchinitiative.phenol.io.OntologyLoader;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
@@ -19,8 +17,10 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
+import java.util.Optional;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class PhenopacketImporterTest {
@@ -28,14 +28,11 @@ class PhenopacketImporterTest {
     @TempDir
     static Path tempDir;
 
-    private static final String fakeVcfPath="/home/user/example.vcf";
     private static final String fakeGenomeAssembly = "GRCH_37";
 
     private static Phenopacket ppacket;
 
     private static String phenopacketAbsolutePathOfTempFile;
-
-    private static Ontology ontology;
 
     private static OntologyClass ontologyClass(String id, String label ){
         return OntologyClass.newBuilder().
@@ -87,9 +84,8 @@ class PhenopacketImporterTest {
                 setRef("T").
                 setAlt("A").
                 build();
-        HtsFile vcfFile = HtsFile.newBuilder().
-               // setFile(File.newBuilder().setPath(fakeVcfPath).build())
-                setUri(fakeVcfPath)
+        HtsFile vcfFile = HtsFile.newBuilder()
+                .setUri("file:/home/user/example.vcf")
                 .setHtsFormat(HtsFile.HtsFormat.VCF)
                 .setGenomeAssembly(fakeGenomeAssembly)
                 .build();
@@ -113,24 +109,21 @@ class PhenopacketImporterTest {
         // arrange
         Path output = Files.createFile(tempDir.resolve("temp_output.txt"));
         phenopacketAbsolutePathOfTempFile = output.toAbsolutePath().toString();
-        BufferedWriter br = new BufferedWriter(new FileWriter(output.toAbsolutePath().toFile()));
-        String jsonString = JsonFormat.printer().includingDefaultValueFields().print(tmppacket);
-        br.write(jsonString);
-        br.close();
+        try (BufferedWriter br = Files.newBufferedWriter(output)) {
+            String jsonString = JsonFormat.printer().includingDefaultValueFields().print(tmppacket);
+            br.write(jsonString);
+        }
 
-        String phenopacketJsonString =  new String ( Files.readAllBytes( Paths.get(phenopacketAbsolutePathOfTempFile) ) );
-
-        Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
-        JsonFormat.parser().merge(phenopacketJsonString, phenoPacketBuilder);
-        ppacket = phenoPacketBuilder.build();
-        ClassLoader classLoader = PhenopacketImporterTest.class.getClassLoader();
-        String hpoPath = Objects.requireNonNull(classLoader.getResource("hp.small.obo").getFile());
-        ontology = OntologyLoader.loadOntology(new java.io.File(hpoPath));
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get(phenopacketAbsolutePathOfTempFile))) {
+            Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
+            JsonFormat.parser().merge(reader, phenoPacketBuilder);
+            ppacket = phenoPacketBuilder.build();
+        }
     }
 
     @Test
     void testTempFileWritten( ) {
-        java.io.File f = new java.io.File(phenopacketAbsolutePathOfTempFile);
+        File f = new File(phenopacketAbsolutePathOfTempFile);
         Assertions.assertTrue(f.exists());
     }
 
@@ -147,14 +140,14 @@ class PhenopacketImporterTest {
 
     @Test
     void testNumberOfObservedTerms() {
-        PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
-        int expecte=4;
-        Assertions.assertEquals(expecte,importer.getHpoTerms().size());
+        PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
+        int expected=4;
+        Assertions.assertEquals(expected,importer.getHpoTerms().size());
     }
 
     @Test
     void testNumberOfNegatedTerms() {
-        PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
+        PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
         int expected=1;
         Assertions.assertEquals(expected,importer.getNegatedHpoTerms().size());
     }
@@ -162,14 +155,14 @@ class PhenopacketImporterTest {
     @Test
     void testIdentifyOfNegatedTerm() {
         TermId tid = TermId.of("HP:0031508");
-        PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
+        PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
         Assertions.assertTrue(importer.getNegatedHpoTerms().contains(tid));
     }
 
     @Test
     void testIdentifyObservedTerm() {
         TermId tid = TermId.of("HP:0031508");
-        PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
+        PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
         assertFalse(importer.getHpoTerms().contains(tid)); // should not include negated term
         TermId tid2 = TermId.of("HP:0001510"); // this os one of the observed terms
         Assertions.assertTrue(importer.getHpoTerms().contains(tid2));
@@ -177,10 +170,16 @@ class PhenopacketImporterTest {
 
     @Test
     void testGetVcfFile() {
-        PhenopacketImporter importer = new PhenopacketImporter(ppacket,ontology);
+        PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
         Assertions.assertTrue(importer.hasVcf());
-        Assertions.assertEquals(fakeVcfPath, importer.getVcfPath());
-        Assertions.assertEquals(fakeGenomeAssembly,importer.getGenomeAssembly());
+
+        Optional<Path> vcfPath = importer.getVcfPath();
+        assertThat(vcfPath.isPresent(), equalTo(true));
+        Assertions.assertEquals(Path.of("/home/user/example.vcf"), vcfPath.get());
+
+        Optional<String> assembly = importer.getGenomeAssembly();
+        assertThat(assembly.isPresent(), equalTo(true));
+        Assertions.assertEquals(fakeGenomeAssembly, assembly.get());
     }
 
 

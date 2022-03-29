@@ -1,5 +1,7 @@
 package org.monarchinitiative.lirical.configuration;
 
+import java.util.Objects;
+
 /**
  * This class encapsulates the likelihood ratio threshold, which is an optional user argument (-t).
  * If the user has set a value, then we only show d iagnoses in the detailed HTML output if it exceeds
@@ -7,23 +9,30 @@ package org.monarchinitiative.lirical.configuration;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class LrThreshold {
+    /**
+     * Default threshold for showing a candidate.
+     */
+    private static final double DEFAULT_LR_THRESHOLD = 0.05;
+
+    /** If the user sets -t, we still show at least this amount even if fewer candidates are above threshold. */
+    private final static int MINIMUM_TO_SHOW_IN_THRESHOLD_MODE = 3;
+
     /** True if the user passed a -m/--mindiff flag */
     private final boolean setByUser;
 
     private final double threshold;
-    /** If the user sets -t, we still show at least this amount even if fewer candidates are above threshold. */
-    final private static int MINIMUM_TO_SHOW_IN_THRESHOLD_MODE = 3;
 
-    private LrThreshold(double t, boolean setByUser) {
+
+    private LrThreshold(double threshold, boolean setByUser) {
         this.setByUser = setByUser;
-        this.threshold = t;
+        this.threshold = threshold;
     }
 
-    static LrThreshold notInitialized() {
-        return new LrThreshold(LiricalFactory.DEFAULT_LR_THRESHOLD, false);
+    public static LrThreshold notInitialized() {
+        return new LrThreshold(DEFAULT_LR_THRESHOLD, false);
     }
 
-    static LrThreshold setToUserDefinedThreshold(double t) {
+    public static LrThreshold setToUserDefinedThreshold(double t) {
         return new LrThreshold(t, true);
     }
 
@@ -37,5 +46,26 @@ public class LrThreshold {
 
     public int getMinimumToShowInThresholdMode() {
         return MINIMUM_TO_SHOW_IN_THRESHOLD_MODE;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LrThreshold that = (LrThreshold) o;
+        return setByUser == that.setByUser && Double.compare(that.threshold, threshold) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(setByUser, threshold);
+    }
+
+    @Override
+    public String toString() {
+        return "LrThreshold{" +
+                "setByUser=" + setByUser +
+                ", threshold=" + threshold +
+                '}';
     }
 }

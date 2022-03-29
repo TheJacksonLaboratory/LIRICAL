@@ -2,6 +2,7 @@ package org.monarchinitiative.lirical.svg;
 
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.lirical.hpo.HpoCase;
+import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -142,9 +143,10 @@ public class Sparkline2Svg extends Lirical2Svg {
             int geneSvgWidth = 150;
             writeHeader(swriter, geneSvgWidth, total_height);
             TestResult result = hcase.getResult(diseaseId);
-            if (result.hasGenotype()) {
-                double LR = hcase.getResult(diseaseId).getGenotypeLR();
-                writeGeneSpark(swriter, gsymbol, LR);
+            Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
+
+            if (genotypeLr.isPresent()) {
+                writeGeneSpark(swriter, gsymbol, genotypeLr.get().lr());
             }
             writeFooter(swriter);
             return swriter.toString();

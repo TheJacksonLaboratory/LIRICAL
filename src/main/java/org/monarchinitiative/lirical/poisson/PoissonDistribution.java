@@ -12,15 +12,9 @@ public class PoissonDistribution {
 
     private final double mean;
 
-    public PoissonDistribution(double m) {
-        this.mean=m;
+    public PoissonDistribution(double mean) {
+        this.mean=mean;
     }
-
-
-
-
-
-
 
     /**
      * Get the mean for the distribution.
@@ -31,7 +25,6 @@ public class PoissonDistribution {
         return mean;
     }
 
-    /** {@inheritDoc} */
     public double probability(double x) {
         final double logProbability = logProbability(x);
         return logProbability == Double.NEGATIVE_INFINITY ? 0 : Math.exp(logProbability);
@@ -39,21 +32,19 @@ public class PoissonDistribution {
 
 
     public double logProbability(double x) {
-        double ret;
         if (x < 0 || x == Integer.MAX_VALUE) {
-            ret = Double.NEGATIVE_INFINITY;
+            return Double.NEGATIVE_INFINITY;
         } else if (x == 0) {
-            ret = -mean;
+            return -mean;
         } else {
             try {
-                ret = -SaddlePointExpansion.getStirlingError(x) -
-                        SaddlePointExpansion.getDeviancePart(x, mean) -
-                        0.5 * Math.log(TWO_PI) - 0.5 * Math.log(x);
+                return -SaddlePointExpansion.getStirlingError(x) -
+                                SaddlePointExpansion.getDeviancePart(x, mean) -
+                                0.5 * Math.log(TWO_PI) - 0.5 * Math.log(x);
             } catch (NumberIsTooSmallException | NumberIsTooLargeException e) {
                 e.printStackTrace();
                 return Double.NEGATIVE_INFINITY;
             }
         }
-        return ret;
     }
 }

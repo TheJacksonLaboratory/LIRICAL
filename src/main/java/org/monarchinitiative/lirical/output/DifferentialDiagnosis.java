@@ -1,11 +1,13 @@
 package org.monarchinitiative.lirical.output;
 
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
+import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.lirical.vcf.SimpleVariant;
 
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * This class stores all the information we need for a detailed differential diagnosis -- the major
@@ -44,9 +46,9 @@ public class DifferentialDiagnosis {
 
     DifferentialDiagnosis(TestResult result) {
         this.diseaseName=prettifyDiseaseName(result.getDiseaseName());
-        this.diseaseCurie=result.getDiseaseCurie().getValue();
+        this.diseaseCurie=result.diseaseId().getValue();
         this.rank=result.getRank();
-        this.posttestprob=String.format("%.1f%%",100*result.getPosttestProbability());
+        this.posttestprob=String.format("%.1f%%",100*result.calculatePosttestProbability());
         double ptp=result.getPretestProbability();
         if (ptp < 0.001) {
             this.pretestprob = String.format("1/%d",Math.round(1.0/ptp));
@@ -54,12 +56,9 @@ public class DifferentialDiagnosis {
             this.pretestprob = String.format("%.6f",ptp);
         }
         this.compositeLR=Math.log10(result.getCompositeLR());
-        if (result.hasGenotype()) {
-            this.entrezGeneId = result.getEntrezGeneId().getValue();
-        } else {
-            this.entrezGeneId=null;
-        }
-        url=String.format("https://hpo.jax.org/app/browse/disease/%s",result.getDiseaseCurie().getValue());
+        Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
+        this.entrezGeneId = genotypeLr.map(lr -> lr.geneId().getValue()).orElse(null);
+        url=String.format("https://hpo.jax.org/app/browse/disease/%s",result.diseaseId().getValue());
     }
 
     void addG2G(Gene2Genotype g2g) {

@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.simulation;
 
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.io.PhenopacketImporter;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
@@ -15,7 +16,7 @@ import org.phenopackets.schema.v1.core.Disease;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -23,7 +24,7 @@ import java.util.*;
 public class PhenoOnlyCaseSimulator {
     private static final Logger logger = LoggerFactory.getLogger(PhenoOnlyCaseSimulator.class);
 
-    private final File phenopacketFile;
+    private final Path phenopacketPath;
 
     private final LiricalFactory factory;
 
@@ -48,16 +49,19 @@ public class PhenoOnlyCaseSimulator {
 
 
 
-    public PhenoOnlyCaseSimulator(File phenopacket, LiricalFactory factory) {
-        phenopacketFile = phenopacket;
+    public PhenoOnlyCaseSimulator(Path phenopacketPath, LiricalFactory factory) {
+        this.phenopacketPath = phenopacketPath;
         this.metadata = new HashMap<>();
         this.factory = factory;
-        String phenopacketAbsolutePath = phenopacketFile.getAbsolutePath();
-        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketAbsolutePath,this.factory.hpoOntology());
-        String sampleName = importer.getSamplename();
-        simulatedDiagnosis = importer.getDiagnosis();
+        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
+        String sampleName = importer.getSampleId();
+        Optional<Disease> diseaseDiagnosis = importer.getDiagnosis();
+        if (diseaseDiagnosis.isEmpty())
+            throw new LiricalRuntimeException("Disease diagnosis should not be empty here"); // TODO(pnr) is this true?
+        simulatedDiagnosis = diseaseDiagnosis.get();
         String disId = simulatedDiagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
         this.simulatedDiseaseId = TermId.of(disId);
+        // TODO - sanitize with HpoTermSanitizer
         hpoIdList = importer.getHpoTerms();
         negatedHpoIdList = importer.getNegatedHpoTerms();
         this.ontology = factory.hpoOntology();
@@ -65,10 +69,9 @@ public class PhenoOnlyCaseSimulator {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
         this.metadata.put("analysis_date", dateFormat.format(date));
-        this.metadata.put("phenopacket_file", phenopacketAbsolutePath);
+        this.metadata.put("phenopacket_file", phenopacketPath.toAbsolutePath().toString());
         metadata.put("sample_name", sampleName);
-        logger.trace("Running phenotype-only simulation from phenopacket {} ",
-                phenopacketFile.getAbsolutePath());
+        logger.trace("Running phenotype-only simulation from phenopacket {} ", phenopacketPath.toAbsolutePath());
         this.metadata.put("phenopacket.diagnosisId", simulatedDiseaseId.getValue());
         this.metadata.put("phenopacket.diagnosisLabel", simulatedDiagnosis.getTerm().getLabel());
     }
@@ -94,23 +97,23 @@ public class PhenoOnlyCaseSimulator {
     }
 
 
-    public void outputHtml(String prefix, double lrThreshold,int minDiff, String outdir) {
-        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hpocase,ontology,metadata)
+    public void outputHtml(String prefix, double lrThreshold,int minDiff, Path outdir) {
+        LiricalTemplate.Builder builder = LiricalTemplate.builder(hpocase,ontology,metadata)
                 .threshold(factory.getLrThreshold())
                 .mindiff(factory.getMinDifferentials())
-                .outdirectory(outdir)
+                .outDirectory(outdir)
                 .prefix(prefix);
         HtmlTemplate htemplate = builder.buildPhenotypeHtmlTemplate();
         htemplate.outputFile();
     }
 
 
-    public void outputTsv(String prefix, double lrThreshold,int minDiff, String outdir) {
+    public void outputTsv(String prefix, double lrThreshold,int minDiff, Path outdir) {
         String outname=String.format("%s.tsv",prefix);
-        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(this.hpocase,ontology,metadata)
+        LiricalTemplate.Builder builder = LiricalTemplate.builder(hpocase,ontology,metadata)
                 .threshold(factory.getLrThreshold())
                 .mindiff(factory.getMinDifferentials())
-                .outdirectory(outdir)
+                .outDirectory(outdir)
                 .prefix(prefix);
         TsvTemplate tsvtemplate = builder.buildPhenotypeTsvTemplate();
         tsvtemplate.outputFile(outname);
@@ -135,7 +138,7 @@ public class PhenoOnlyCaseSimulator {
     }
 
     public String getDetails() {
-        return String.format("%s\t%s\t%s\t%d", phenopacketFile.getName(),
+        return String.format("%s\t%s\t%s\t%d", phenopacketPath.toFile().getName(),
                 simulatedDiagnosis.getTerm().getLabel(),
                 simulatedDiagnosis.getTerm().getId(),
                 rank_of_disease);

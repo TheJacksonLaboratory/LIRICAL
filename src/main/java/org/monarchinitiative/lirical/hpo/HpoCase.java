@@ -88,7 +88,7 @@ public final class HpoCase {
         if (result==null) {
             return 0.0;
         }
-        return result.getPosttestProbability();
+        return result.calculatePosttestProbability();
     }
 
     /**
@@ -117,8 +117,8 @@ public final class HpoCase {
 
     public double getBestPosteriorProbability() {
         return disease2resultMap.values().stream().
-                max(Comparator.comparing(TestResult::getPosttestProbability)).
-                get().getPosttestProbability();
+                max(Comparator.comparing(TestResult::calculatePosttestProbability)).
+                get().calculatePosttestProbability();
     }
 
 

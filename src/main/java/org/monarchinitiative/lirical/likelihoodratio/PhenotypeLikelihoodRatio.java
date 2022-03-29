@@ -1,7 +1,6 @@
 package org.monarchinitiative.lirical.likelihoodratio;
 
 
-import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
@@ -17,19 +16,29 @@ import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.*;
 /**
  * This class is designed to calculate the background and foreground frequencies of any HPO term in any disease
  * (This is calculated by {@link #initializeFrequencyMap()} and stored in {@link #hpoTerm2OverallFrequency}).
- * The main entry point into this class is the function {@link #getLikelihoodRatio}, which is called by
+ * The main entry point into this class is the function {@link #lrForObservedTerm}, which is called by
  * {@link HpoCase} once for each HPO term to which the case is annotation; it calls it once for each disease in our
  * database and calculates the likelihood ratio for each HPO term in the query for each of the diseases.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
+// TODO - should be an interface
 public class PhenotypeLikelihoodRatio {
     private static final Logger logger = LoggerFactory.getLogger(PhenotypeLikelihoodRatio.class);
+    /**
+     * The default probability for an HPO term annotating a disease if we cannot find in the dataset.
+     */
+    private static final double DEFAULT_BACKGROUND_FREQUENCY =1.0/10000;
+    /** The default likelihood ratio for a query term that is explicitly excluded in a disease.*/
+    private static final double EXCLUDED_IN_DISEASE_BUT_PRESENT_IN_QUERY_PROBABILITY = 1.0/1000;
+    /** The default likelihood ratio for an excluded query term that is explicitly excluded in a disease.*/
+    private static final double EXCLUDED_IN_DISEASE_AND_EXCLUDED_IN_QUERY_PROBABILITY = 1000.0;
     /** The HPO ontology with all of its subontologies. */
     private final Ontology ontology;
     /** This map has one entry for each disease in our database. Key--the disease ID, e.g., OMIM:600200.*/
     private final Map<TermId, HpoDisease> diseaseMap;
+    private final LrWithExplanationFactory explanationFactory;
     /** Overall, i.e., background frequency of each HPO term. */
-    private ImmutableMap<TermId, Double> hpoTerm2OverallFrequency = null;
+    private Map<TermId, Double> hpoTerm2OverallFrequency = null;
     /**
      * This is the probability of a finding if the disease is not annotated to it and there
      * is no common ancestor except the root. There are many possible causes of findings called
@@ -41,22 +50,15 @@ public class PhenotypeLikelihoodRatio {
      * small probability (one in ten thousand)
      */
     private final double DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY=0.01;
-    /**
-     * The default probability for an HPO term annotating a disease if we cannot find in the dataset.
-     */
-    private static final double DEFAULT_BACKGROUND_PROBQABILITY=1.0/10000;
-    /** The default likelihood ratio for a query term that is explicitly excluded in a disease.*/
-    private static final double EXCLUDED_IN_DISEASE_BUT_PRESENT_IN_QUERY_PROBABILITY = 1.0/1000;
-    /** The default likelihood ratio for an excluded query term that is explicitly excluded in a disease.*/
-    private static final double EXCLUDED_IN_DISEASE_AND_EXCLUDED_IN_QUERY_PROBABILITY = 1000.0;
 
     /**
-     * @param onto The HPO ontology object
+     * @param ontology The HPO ontology object
      * @param diseases List of all diseases for this simulation
      */
-    public PhenotypeLikelihoodRatio(Ontology onto, Map<TermId, HpoDisease> diseases) {
-        this.ontology=onto;
+    public PhenotypeLikelihoodRatio(Ontology ontology, Map<TermId, HpoDisease> diseases) {
+        this.ontology = ontology;
         this.diseaseMap = diseases;
+        this.explanationFactory = new LrWithExplanationFactory(ontology); // TODO - DI?
         initializeFrequencyMap();
     }
 
@@ -68,7 +70,7 @@ public class PhenotypeLikelihoodRatio {
      * @param idg The {@link InducedDiseaseGraph} of the disease
      * @return A {@link LrWithExplanation} object with an explanation and the likelihood ratio of observing the HPO term in the disease corresponding to idg
      */
-    LrWithExplanation getLikelihoodRatio(TermId queryTid, InducedDiseaseGraph idg) {
+    public LrWithExplanation lrForObservedTerm(TermId queryTid, InducedDiseaseGraph idg) {
         HpoDisease disease = idg.getDisease();
         Set<TermId> queryAncestors = getAncestorTerms(ontology,queryTid,true);
         List<TermId> diseaseExcludedTerms = disease.getNegativeAnnotations();
@@ -76,7 +78,9 @@ public class PhenotypeLikelihoodRatio {
             for (TermId excl : diseaseExcludedTerms) {
                 if (queryAncestors.contains(excl)) {
                     // i.e., the query term is explicitly EXCLUDED in the disease definition
-                    return LrWithExplanation.queryTermExcluded(queryTid, EXCLUDED_IN_DISEASE_BUT_PRESENT_IN_QUERY_PROBABILITY);
+                    return explanationFactory.create(queryTid,
+                            LrMatchType.QUERY_TERM_PRESENT_BUT_EXCLUDED_IN_DISEASE,
+                            EXCLUDED_IN_DISEASE_BUT_PRESENT_IN_QUERY_PROBABILITY);
                 }
             }
         }
@@ -85,7 +89,7 @@ public class PhenotypeLikelihoodRatio {
             double numerator = hpoTid.getFrequency();
             double denominator = getBackgroundFrequency(queryTid);
             double lr = numerator / denominator;
-            return LrWithExplanation.exactMatch(queryTid,lr);
+            return explanationFactory.create(queryTid, LrMatchType.EXACT_MATCH, lr);
         } else {
             // there are multiple possibilities
             // 1. the query term is a superclass of at least one disease term. Therefore,
@@ -97,16 +101,18 @@ public class PhenotypeLikelihoodRatio {
             TermId diseaseMatchingTerm=null;
             for (HpoAnnotation hpoTermId : disease.getPhenotypicAbnormalities()) {
                 // is query an ancestor of a term that annotates the disease?
-                if (isSubclass(ontology,hpoTermId.getTermId(),queryTid)) {
+                if (isSubclass(ontology,hpoTermId.id(),queryTid)) {
                     maximumFrequencyOfDescendantTerm=Math.max(maximumFrequencyOfDescendantTerm,hpoTermId.getFrequency());
-                    diseaseMatchingTerm=hpoTermId.getTermId();
+                    diseaseMatchingTerm=hpoTermId.id();
                     isAncestor=true;
                 }
             }
             if (isAncestor) {
                 double denominator = getBackgroundFrequency(queryTid);
                 double lr = maximumFrequencyOfDescendantTerm/denominator;
-                return LrWithExplanation.diseaseTermSubTermOfQuery(queryTid,diseaseMatchingTerm,lr);
+                return explanationFactory.create(queryTid, diseaseMatchingTerm,
+                        LrMatchType.DISEASE_TERM_SUBCLASS_OF_QUERY,
+                        lr);
             }
             // if we get here, then the query term was not a superclass of a disease term
 
@@ -124,12 +130,12 @@ public class PhenotypeLikelihoodRatio {
             TermId bestMatchTermId = null;
             double denominatorForNonRootCommandAnc = getBackgroundFrequency(queryTid);
             for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
-                if (isSubclass(ontology, queryTid, annot.getTermId())){
-                    double proportionalFrequency = getProportionInChildren(queryTid,annot.getTermId());
+                if (isSubclass(ontology, queryTid, annot.id())){
+                    double proportionalFrequency = getProportionInChildren(queryTid,annot.id());
                     double queryFrequency = annot.getFrequency();
                     double f = proportionalFrequency*queryFrequency;
                     if (f > maxF) {
-                        bestMatchTermId = annot.getTermId();
+                        bestMatchTermId = annot.id();
                         maxF = f;
                         hasNonRootCommonAncestor = true;
                     }
@@ -137,21 +143,23 @@ public class PhenotypeLikelihoodRatio {
             }
             if (hasNonRootCommonAncestor) {
                 double lr = Math.max(maxF,noCommonOrganProbability(queryTid))/denominatorForNonRootCommandAnc;
-                return LrWithExplanation.queryTermSubTermOfDisease(queryTid,bestMatchTermId,lr);
+                return explanationFactory.create(queryTid, bestMatchTermId,
+                        LrMatchType.QUERY_TERM_SUBCLASS_OF_DISEASE_TERM,
+                        lr);
             }
             // If we get here, queryId is not directly annotated in the disease, and it is not a child
             // of a disease term, nor is a disease term a subclass of queryTid. The next bit of code
             // checks whether they have a common ancestor that is more specfic that Phenotypic_Abnormality
-            Term2Freq t2f = idg.getClosestAncestor(queryTid);
+            Term2Freq t2f = idg.getClosestAncestor(queryTid, ontology);
             if (t2f.nonRootCommonAncestor()) {
-                double numerator = t2f.frequency;
-                double denominator = getBackgroundFrequency(t2f.tid);
+                double numerator = t2f.frequency();
+                double denominator = getBackgroundFrequency(t2f.termId());
                 double lr = Math.max(DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY,numerator/denominator);
-                return LrWithExplanation.nonRootCommonAncestor(queryTid,t2f.tid,lr);
+                return explanationFactory.create(queryTid, t2f.termId(), LrMatchType.NON_ROOT_COMMON_ANCESTOR, lr);
             }
             // If we get here, then the only common ancestor is PHENOTYPIC_ABNORMALITY
             // therefore, return a heuristic penalty score
-            return LrWithExplanation.noMatch(queryTid,DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY);
+            return explanationFactory.create(queryTid, LrMatchType.NO_MATCH_BELOW_ROOT, DEFAULT_FALSE_POSITIVE_NO_COMMON_ORGAN_PROBABILITY);
         }
     }
 
@@ -162,11 +170,13 @@ public class PhenotypeLikelihoodRatio {
      * @param idg An {@link InducedDiseaseGraph} created for the disease
      * @return the likelihood ratio of an EXCLUDED HPO term in the diseases
      */
-    LrWithExplanation getLikelihoodRatioForExcludedTerm(TermId queryTid, InducedDiseaseGraph idg) {
+    public LrWithExplanation lrForExcludedTerm(TermId queryTid, InducedDiseaseGraph idg) {
         HpoDisease disease = idg.getDisease();
         // check if term excluded in query is also excluded in disease
         if (idg.isExactExcludedMatch(queryTid)) {
-            return LrWithExplanation.excludedQueryTermEcludedInDisease(queryTid, EXCLUDED_IN_DISEASE_AND_EXCLUDED_IN_QUERY_PROBABILITY);
+            return explanationFactory.create(queryTid,
+                    LrMatchType.EXCLUDED_QUERY_TERM_EXCLUDED_IN_DISEASE,
+                    EXCLUDED_IN_DISEASE_AND_EXCLUDED_IN_QUERY_PROBABILITY);
         }
         double backgroundFrequency=getBackgroundFrequency(queryTid);
         // probability a feature is present but not recorded or not noticed.
@@ -175,13 +185,13 @@ public class PhenotypeLikelihoodRatio {
             logger.error("Warning, unusually high background frequency calculated for {} of {} (should never happen)",
                     backgroundFrequency,queryTid.getValue());
             // should never happen, but protect against divide by zero if there is some error
-            return LrWithExplanation.unusualBackgroundFrequency(queryTid,1.0);
+            return explanationFactory.create(queryTid, LrMatchType.UNUSUAL_BACKGROUND_FREQUENCY, 1.);
         }
         // The phenotype was excluded in the proband and also the disease
         // is not annotated to the term. This should result in a slight improvement of the LR score.
         if (! isIndirectlyAnnotatedTo(queryTid,disease,ontology)) {
             double lr = 1.0/(1.0-backgroundFrequency); // this is the negative LR if the disease does not have the term
-            return LrWithExplanation.excludedQueryTermNotPresentInDisease(queryTid,lr);
+            return explanationFactory.create(queryTid, LrMatchType.EXCLUDED_QUERY_TERM_NOT_PRESENT_IN_DISEASE, lr);
         }
         double frequency=getFrequencyOfTermInDiseaseWithAnnotationPropagation(queryTid,disease,ontology);
         // If the disease actually does have the abnormality in question, but the abnormality was ruled out in
@@ -194,7 +204,7 @@ public class PhenotypeLikelihoodRatio {
         double excludedFrequency=Math.max(FALSE_NEGATIVE_OBSERVATION_OF_PHENOTYPE_PROB, 1-frequency);
         // now calculate and return the likelihood ratio
         double lr = excludedFrequency/(1.0-backgroundFrequency);
-        return LrWithExplanation.excludedQueryTermPresentInDisease(queryTid,lr);
+        return explanationFactory.create(queryTid, LrMatchType.EXCLUDED_QUERY_TERM_PRESENT_IN_DISEASE, lr);
     }
 
     /**
@@ -286,14 +296,15 @@ public class PhenotypeLikelihoodRatio {
      * @return the estimate background frequency (note: bf \in [0,1])
      */
     double getBackgroundFrequency(TermId termId) {
-        if (! hpoTerm2OverallFrequency.containsKey(termId)) {
-            logger.error(String.format("Map did not contain data for term %s",termId.getValue() ));
-            logger.error(String.format("hpoTerm2OverallFrequency has total of %d entries",hpoTerm2OverallFrequency.size()));
+        Double backgroundFrequency = hpoTerm2OverallFrequency.get(termId);
+        if (backgroundFrequency == null) {
+            logger.error("Map did not contain data for term {}",termId.getValue() );
+            logger.error("hpoTerm2OverallFrequency has total of {} entries", hpoTerm2OverallFrequency.size());
             // Should never happen!
-            return DEFAULT_BACKGROUND_PROBQABILITY;
-
+            return DEFAULT_BACKGROUND_FREQUENCY;
         }
-        return Math.max(DEFAULT_BACKGROUND_PROBQABILITY,hpoTerm2OverallFrequency.get(termId));
+
+        return Math.max(backgroundFrequency, DEFAULT_BACKGROUND_FREQUENCY);
     }
 
     /**
@@ -304,14 +315,14 @@ public class PhenotypeLikelihoodRatio {
         for (TermId tid : ontology.getNonObsoleteTermIds()) {
             mp.put(tid, 0.0D);
         }
-        ImmutableMap.Builder<TermId, Double> mapbuilder = new ImmutableMap.Builder<>();
+        Map<TermId, Double> mapbuilder = new HashMap<>();
         for (HpoDisease dis : this.diseaseMap.values()) {
             // We construct a map in order to get the maximum frequencies for any
             // given ancestor term, also in order to avoid double counting.
             Map<TermId, Double> updateMap=new HashMap<>();
 
             for (HpoAnnotation tidm : dis.getPhenotypicAbnormalities()) {
-                TermId tid = tidm.getTermId();
+                TermId tid = tidm.id();
                 double termFrequency = tidm.getFrequency();
                 // All of the ancestor terms are implicitly annotated to tid
                 // therefore, add this to their background frequencies.
@@ -341,12 +352,12 @@ public class PhenotypeLikelihoodRatio {
             double f = me.getValue() / N;
             mapbuilder.put(me.getKey(), f);
         }
-        hpoTerm2OverallFrequency = mapbuilder.build();
+        hpoTerm2OverallFrequency = Map.copyOf(mapbuilder);
         logger.trace("Got data on background frequency for " + hpoTerm2OverallFrequency.size() + " terms");
     }
 
     /** @return the number of diseases we are using for the calculations. */
-    int getNumberOfDiseases() {
+    private int getNumberOfDiseases() {
         return diseaseMap.size();
     }
 

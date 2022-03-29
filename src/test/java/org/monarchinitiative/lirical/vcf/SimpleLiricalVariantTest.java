@@ -20,13 +20,13 @@ import static org.mockito.Mockito.when;
 /**
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-class SimpleVariantTest {
+public class SimpleLiricalVariantTest {
     private final static double EPSILON=0.000001;
     private static SimpleVariant svHet, svHom, svClinVarPath, getSvClinVarLikelyPath;
     private static SimpleVariant svRareVariant, svMediumRareVariant, svCommonVariant;
 
     @BeforeAll
-    static void init() {
+    public static void init() {
         // The following annotation is completely made up, but don't worry it has the right syntax
         TranscriptAnnotation annot = Mockito.mock(TranscriptAnnotation.class);
        //ta.getAccession(),ta.getHgvsCdna(),ta.getHgvsProtein()
@@ -48,7 +48,7 @@ class SimpleVariantTest {
 
 
     @Test
-    void testHetVariantUnphased() {
+    public void testHetVariantUnphased() {
         List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
         String genotypeString="0/1";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
@@ -57,7 +57,7 @@ class SimpleVariantTest {
 
 
     @Test
-    void testHetVariantPhased() {
+    public void testHetVariantPhased() {
         List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
         String genotypeString="0|1";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
@@ -65,7 +65,7 @@ class SimpleVariantTest {
     }
 
     @Test
-    void testHomVariantUnphased() {
+    public void testHomVariantUnphased() {
         List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
         String genotypeString="1/1";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
@@ -73,7 +73,7 @@ class SimpleVariantTest {
     }
 
     @Test
-    void testHomVariantPhased() {
+    public void testHomVariantPhased() {
         List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
         String genotypeString="1|1";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
@@ -81,7 +81,7 @@ class SimpleVariantTest {
     }
 
     @Test
-    void testHomRefVariant() {
+    public void testHomRefVariant() {
         List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
         String genotypeString="0/0";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
@@ -92,7 +92,7 @@ class SimpleVariantTest {
     }
 
     @Test
-    void testNotObservedVariant() {
+    public void testNotObservedVariant() {
         List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
         String genotypeString="./.";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
@@ -101,13 +101,13 @@ class SimpleVariantTest {
 
 
     @Test
-    void testHomVariant() {
+    public void testHomVariant() {
         assertEquals(SimpleGenotype.HOMOZYGOUS_ALT, svHom.getGtype());
     }
 
     /** Test {@link org.monarchinitiative.lirical.vcf.SimpleVariant#isClinVarPathogenic()}  for pathogenic variants. */
     @Test
-    void tesClinVarPath() {
+    public void tesClinVarPath() {
         List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
         String genotypeString="1/1";
         ClinVarData.ClinSig clinvarsig = ClinVarData.ClinSig.PATHOGENIC;
@@ -123,7 +123,7 @@ class SimpleVariantTest {
 
     /** Test {@link org.monarchinitiative.lirical.vcf.SimpleVariant#isClinVarPathogenic()}  for benign variants. */
     @Test
-    void tesClinVarBenign() {
+    public void tesClinVarBenign() {
         List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
         String genotypeString="1/1";
         ClinVarData.ClinSig clinvarsig = ClinVarData.ClinSig.BENIGN;
@@ -138,7 +138,7 @@ class SimpleVariantTest {
     }
 
     @Test
-    void testXYMchroms() {
+    public void testXYMchroms() {
         List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
         String genotypeString="1/1";
         ClinVarData.ClinSig clinvarsig = ClinVarData.ClinSig.BENIGN;
@@ -152,20 +152,20 @@ class SimpleVariantTest {
     }
 
     @Test
-    void test_n_a_clinvar() {
+    public void test_n_a_clinvar() {
         assertEquals("n/a", svHet.getClinvar());
         assertEquals("PATHOGENIC", svClinVarPath.getClinvar());
         assertEquals("LIKELY_PATHOGENIC", getSvClinVarLikelyPath.getClinvar());
     }
 
     @Test
-    void toStringTest() {
+    public void toStringTest() {
         String expected = "chr2:23333A>T uc001lfg.4:c.518A>C:p.(E173A) pathogenicity:0.9 [HOMOZYGOUS_ALT]";
         assertEquals(expected,svClinVarPath.toString());
     }
 
     @Test
-    void testPathScoreRareMediumCommonVar() {
+    public void testPathScoreRareMediumCommonVar() {
         // rare variant; path=0.9, freq = 0
         // frequency score should be 1 * 0.9
         double expected = 0.9;
@@ -182,17 +182,17 @@ class SimpleVariantTest {
     }
 
     @Test
-    void testGetRef() {
+    public void testGetRef() {
         assertEquals("A",svRareVariant.getRef());
     }
 
     @Test
-    void testGetAlt() {
+    public void testGetAlt() {
         assertEquals("T",svRareVariant.getAlt());
     }
 
     @Test
-    void testGetAnnotation() {
+    public void testGetAnnotation() {
         List<TranscriptAnnotation> annotlist = svHet.getAnnotationList();
         assertEquals(1,annotlist.size());
         TranscriptAnnotation annot = annotlist.get(0);
@@ -200,14 +200,14 @@ class SimpleVariantTest {
     }
 
     @Test
-    void testGetFrequency() {
+    public void testGetFrequency() {
         double expected=0.01;// 0.01%
         assertEquals(expected,svHet.getFrequency(),EPSILON);
     }
 
 
     @Test
-    void testCountTwoPathAllelesWithHomozygousVariant() {
+    public void testCountTwoPathAllelesWithHomozygousVariant() {
         List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
         String genotypeString="1/1";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
@@ -216,7 +216,7 @@ class SimpleVariantTest {
     }
 
     @Test
-    void testCountOnePathAllelesWithHeterozygousVariant() {
+    public void testCountOnePathAllelesWithHeterozygousVariant() {
         List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
         String genotypeString="0/1";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
@@ -225,7 +225,7 @@ class SimpleVariantTest {
     }
 
     @Test
-    void testGetUscsLink() {
+    public void testGetUscsLink() {
         // this function is only active after the genomebuild has been set
         String genotypeString="0/1";
         List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed

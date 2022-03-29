@@ -40,10 +40,10 @@ public class GridSearchCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws LiricalException {
-        LiricalFactory factory = new LiricalFactory.Builder()
-                .datadir(this.datadir)
+        LiricalFactory factory = LiricalFactory.builder()
+//                .datadir(this.datadir) // TODO - fix
                 .build();
-        factory.qcHumanPhenotypeOntologyFiles();
+//        factory.qcHumanPhenotypeOntologyFiles();
         logger.trace("Grid search: Simulating {} cases. imprecision={}",
                 n_cases_to_simulate,imprecise_phenotype?"yes":"no");
         Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(factory.hpoOntology());

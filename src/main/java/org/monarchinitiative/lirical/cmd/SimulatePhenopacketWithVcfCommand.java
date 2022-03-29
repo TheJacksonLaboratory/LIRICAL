@@ -1,6 +1,8 @@
 package org.monarchinitiative.lirical.cmd;
 
 
+import org.monarchinitiative.lirical.analysis.AnalysisData;
+import org.monarchinitiative.lirical.configuration.Lirical;
 import org.monarchinitiative.lirical.simulation.PhenoGenoCaseSimulator;
 import org.monarchinitiative.lirical.simulation.PhenoOnlyCaseSimulator;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
@@ -12,9 +14,9 @@ import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static java.util.Map.Entry.comparingByKey;
@@ -41,11 +43,9 @@ import static java.util.Map.Entry.comparingByKey;
         mixinStandardHelpOptions = true,
         description = "Simulate analysis from phenopacket (with or without VCF)",
         hidden = true)
-public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand implements Callable<Integer> {
+public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand {
     private static final Logger logger = LoggerFactory.getLogger(SimulatePhenopacketWithVcfCommand.class);
-    @CommandLine.Option(names = {"-a","--assembly"})
-    private String genomeAssembly = "GRCh37";
-    @CommandLine.Option(names = {"-v", "--template-vcf"}, description = "path to template VCF file", required = true)
+    @CommandLine.Option(names = {"-v", "--template-vcf"}, required = true, description = "path to template VCF file")
     private String templateVcfPath;
     @CommandLine.Option(names = {"--phenopacket-dir"}, description = "path to directory with multiple phenopackets")
     private String phenopacketDir;
@@ -84,10 +84,10 @@ public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand implem
 
     /**
      * This method coordinates the analysis for VCF files.
-     * @param phenopacketFile File with the Phenopacket we are currently analyzing
+     * @param phenopacketPath File with the Phenopacket we are currently analyzing
      */
-    private void runOneVcfAnalysis(File phenopacketFile) {
-        PhenoGenoCaseSimulator simulator = new PhenoGenoCaseSimulator(phenopacketFile, this.templateVcfPath, this.factory, this.randomize);
+    private void runOneVcfAnalysis(Path phenopacketPath) {
+        PhenoGenoCaseSimulator simulator = new PhenoGenoCaseSimulator(phenopacketPath, this.templateVcfPath, this.factory, this.randomize);
         simulator.run();
         int diseaseRank = simulator.getRank_of_disease();
         int geneRank    = simulator.getRank_of_gene();
@@ -98,17 +98,17 @@ public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand implem
         geneRank2CountMap.putIfAbsent(geneRank,0);
         geneRank2CountMap.merge(geneRank,1, Integer::sum); // increment count
         if (outputTSV) {
-            simulator.outputTsv(outfilePrefix, factory.getLrThreshold(), factory.getMinDifferentials(), outdir);
+            simulator.outputTsv(output.outfilePrefix, factory.getLrThreshold(), factory.getMinDifferentials(), output.outdir);
         }
         if (outputHTML) {
-            simulator.outputHtml(outfilePrefix, factory.getLrThreshold(), factory.getMinDifferentials(), outdir);
+            simulator.outputHtml(output.outfilePrefix, factory.getLrThreshold(), factory.getMinDifferentials(), output.outdir);
         }
     }
 
 
 
-    private void runOnePhenotypeOnlyAnalysis(File phenopacketFile) {
-        PhenoOnlyCaseSimulator simulator = new PhenoOnlyCaseSimulator(phenopacketFile,this.factory);
+    private void runOnePhenotypeOnlyAnalysis(Path phenopacketPath) {
+        PhenoOnlyCaseSimulator simulator = new PhenoOnlyCaseSimulator(phenopacketPath,this.factory);
         simulator.run();
         int rank = simulator.getRank_of_disease();
         String diseaseLabel = simulator.getDiagnosisLabel();
@@ -123,30 +123,31 @@ public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand implem
     /**
      * Run one or multiple simulations that are driven from one or multiple phenopackets. Each simulation
      * will add pathogenic allele(s) from the phenopacket to the otherwise background VCF file at
-     * {@link #templateVcfPath}. The function {@link #runOneVcfAnalysis(File)} will determine the
+     * {@link #templateVcfPath}. The function {@link #runOneVcfAnalysis(Path)} will determine the
      * rank of the correct diagnosis as represented in the Phenopacket.
+     * @param metadata
      */
-    private void runWithVcf() {
-
-        this.factory = new LiricalFactory.Builder()
-                .datadir(this.datadir)
-                .genomeAssembly(genomeAssembly)
-                .exomiser(this.exomiserDataDirectory)
-                .transcriptdatabase(this.transcriptDb)
-                .backgroundFrequency(this.backgroundFrequencyFile)
-                .global(this.globalAnalysisMode)
-                .lrThreshold(this.LR_THRESHOLD)
-                .minDiff(this.minDifferentialsToShow)
+    private void runWithVcf(Map<String, String> metadata) {
+        this.factory = LiricalFactory.builder()
+//                .datadir(this.datadir) // TODO - fix
+                .genomeAssembly(runConfiguration.genomeAssembly)
+                .exomiser(this.dataSection.exomiserDataDirectory)
+                .transcriptdatabase(runConfiguration.transcriptDb)
+                .backgroundFrequency(this.dataSection.backgroundFrequencyFile)
+                .global(runConfiguration.globalAnalysisMode)
+                .lrThreshold(runConfiguration.lrThreshold)
+                .minDiff(runConfiguration.minDifferentialsToShow)
                 .build();
-        factory.qcHumanPhenotypeOntologyFiles();
-        factory.qcExternalFilesInDataDir();
+        // TODO - fix
+//        factory.qcHumanPhenotypeOntologyFiles();
+//        factory.qcExternalFilesInDataDir();
         factory.qcExomiserFiles();
         factory.qcGenomeBuild();
 
 
-        if (this.phenopacketPath != null) {
+        if (phenopacketPath != null) {
             logger.info("Running single file Phenopacket/VCF simulation at {}", phenopacketPath);
-            runOneVcfAnalysis(new File(this.phenopacketPath));
+            runOneVcfAnalysis(phenopacketPath);
         } else if (this.phenopacketDir != null) {
             outputTSV=true; // needed so that we can capture the results of the simulations across all cases
             logger.info("Running Phenopacket/VCF simulations at {}", phenopacketDir);
@@ -159,35 +160,36 @@ public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand implem
             if (files == null) {
                 throw new LiricalRuntimeException("Could not files in phenopackets directory");
             }
-            for (final File fileEntry : files) {
+            for (File fileEntry : files) {
                 if (fileEntry.isFile() && fileEntry.getAbsolutePath().endsWith(".json")) {
                     logger.info("\tPhenopacket: \"{}\"", fileEntry.getAbsolutePath());
                     System.out.println(++counter + ") "+ fileEntry.getName());
-                    runOneVcfAnalysis(fileEntry);
+                    runOneVcfAnalysis(fileEntry.toPath());
                 }
             }
         } else {
             System.err.println("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");
             throw new LiricalRuntimeException("[ERROR] Either the --phenopacket or the --phenopacket-dir option is required");
         }
-        this.metadata.put("hpoVersion", factory.getHpoVersion());
+        metadata.put("hpoVersion", factory.getHpoVersion());
     }
 
-    private void runPhenotypeOnly() {
-
-        this.factory = new LiricalFactory.Builder()
-                .datadir(this.datadir)
-                .minDiff(this.minDifferentialsToShow)
-                .lrThreshold(this.LR_THRESHOLD)
-                .global(this.globalAnalysisMode)
+    private void runPhenotypeOnly(Map<String, String> metadata) {
+        this.factory = LiricalFactory.builder()
+                // TODO - fix
+//                .datadir(this.datadir)
+                .minDiff(runConfiguration.minDifferentialsToShow)
+                .lrThreshold(runConfiguration.lrThreshold)
+                .global(runConfiguration.globalAnalysisMode)
                 .build();
-        factory.qcHumanPhenotypeOntologyFiles();
-        factory.qcExternalFilesInDataDir();
+        // TODO - fix
+//        factory.qcHumanPhenotypeOntologyFiles();
+//        factory.qcExternalFilesInDataDir();
 
 
-        if (this.phenopacketPath != null) {
+        if (phenopacketPath != null) {
             logger.info("Running single file Phenopacket/VCF simulation at {}", phenopacketPath);
-            runOnePhenotypeOnlyAnalysis(new File(this.phenopacketPath));
+            runOnePhenotypeOnlyAnalysis(phenopacketPath);
         } else if (this.phenopacketDir != null) {
             outputTSV=true; // needed so that we can capture the results of the simulations across all cases
             logger.info("Running Phenopacket/VCF simulations at {}", phenopacketDir);
@@ -196,7 +198,7 @@ public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand implem
                 throw new PhenolRuntimeException("Could not open Phenopackets directory at "+phenopacketDir);
             }
             int counter=0;
-            File [] files = folder.listFiles();
+            File[] files = folder.listFiles();
             if (files == null) {
                 throw new PhenolRuntimeException("Could not find phenopacket files in " + phenopacketDir);
             }
@@ -204,7 +206,7 @@ public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand implem
                 if (fileEntry.isFile() && fileEntry.getAbsolutePath().endsWith(".json")) {
                     logger.info("\tPhenopacket: \"{}\"", fileEntry.getAbsolutePath());
                     System.out.println(++counter + ") "+ fileEntry.getName());
-                    runOnePhenotypeOnlyAnalysis(fileEntry);
+                    runOnePhenotypeOnlyAnalysis(fileEntry.toPath());
                 }
                // if (counter>4)break;
             }
@@ -221,10 +223,10 @@ public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand implem
         List<String> settings= new ArrayList<>();
         settings.add("phenopacket-dir: " + phenopacketDir);
         settings.add("phenopackets: n=" + this.rankingsList.size());
-        settings.add("keep: " + (globalAnalysisMode ? "true" : "false"));
+        settings.add("keep: " + (runConfiguration.globalAnalysisMode ? "true" : "false"));
         settings.add("random: " + (randomize ?  "true" : "false"));
         settings.add("phenotypeOnly: "+ (phenotypeOnly? "true":"false"));
-        settings.add("transcriptDb: " + this.transcriptDb);
+        settings.add("transcriptDb: " + runConfiguration.transcriptDb);
 
         return String.join(";",settings);
     }
@@ -304,16 +306,16 @@ public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand implem
     @Override
     public Integer call() {
         rankingsList = new ArrayList<>();
-        this.metadata = new HashMap<>();
+        Map<String, String> metadata = new HashMap<>();
        // disease2rankMap = new HashMap<>();
         detailedResultLineList = new ArrayList<>();
         rank2countMap=new HashMap<>();
         geneRank2CountMap = new HashMap<>();
         checkThresholds();
         if (phenotypeOnly) {
-            runPhenotypeOnly();
+            runPhenotypeOnly(metadata);
         } else {
-            runWithVcf();
+            runWithVcf(metadata);
         }
         int total_rank = 0;
         int N = 0;

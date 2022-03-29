@@ -1,14 +1,9 @@
 package org.monarchinitiative.lirical.io;
 
-import com.google.common.collect.ImmutableList;
 import com.google.protobuf.util.JsonFormat;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
 
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -17,9 +12,15 @@ import org.phenopackets.schema.v1.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileReader;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 
 /**
@@ -29,157 +30,139 @@ import java.util.List;
  */
 public class PhenopacketImporter {
     private static final Logger logger = LoggerFactory.getLogger(PhenopacketImporter.class);
+    private static final JsonFormat.Parser PARSER = JsonFormat.parser();
     /** The Phenopacket that represents the individual being sequenced in the current run. */
-    private final Phenopacket phenoPacket;
+    private final Phenopacket phenopacket;
     /** Object representing the VCF file with variants identified in the subject of this Phenopacket. */
-    private HtsFile vcfFile;
-    /** Name of the proband of the Phenopacket (corresponds to the {@code id} element of the phenopacket). */
-    private final String samplename;
-    /** Reference to HPO ontology */
-    private final Ontology hpo;
+    private final HtsFile vcfFile;
 
     /**
      * Factory method to obtain a PhenopacketImporter object starting from a phenopacket in Json format
-     * @param pathToJsonPhenopacketFile -- path to the phenopacket
-     * @return {@link PhenopacketImporter} object corresponding to the PhenoPacket
+     * @param phenopacketPath -- path to the phenopacket
+     * @return {@link PhenopacketImporter} object corresponding to the phenopacket
      */
-    public static PhenopacketImporter fromJson(String pathToJsonPhenopacketFile, Ontology ontology)  {
-        JSONParser parser = new JSONParser();
-        logger.trace("Importing Phenopacket: " + pathToJsonPhenopacketFile);
-        java.io.File tmp = new java.io.File(pathToJsonPhenopacketFile);
-        if (! tmp.exists() ) {
-            System.err.println("[ERROR] Could not find phenopacket file at " + pathToJsonPhenopacketFile);
-            throw new LiricalRuntimeException("[ERROR] Could not find phenopacket file at " + pathToJsonPhenopacketFile);
-        }
-        try {
-            Object obj = parser.parse(new FileReader(pathToJsonPhenopacketFile));
-            JSONObject jsonObject = (JSONObject) obj;
-            String phenopacketJsonString = jsonObject.toJSONString();
-            Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
-            JsonFormat.parser().merge(phenopacketJsonString, phenoPacketBuilder);
-            Phenopacket phenopacket = phenoPacketBuilder.build();
-            return new PhenopacketImporter(phenopacket,ontology);
+    public static PhenopacketImporter fromJson(Path phenopacketPath)  {
+        try (BufferedReader reader = Files.newBufferedReader(phenopacketPath)) {
+            Phenopacket.Builder builder = Phenopacket.newBuilder();
+            PARSER.merge(reader, builder);
+            Phenopacket phenopacket = builder.build();
+            return of(phenopacket);
         } catch (IOException  e1) {
-            throw new LiricalRuntimeException("I/O Error: Could not load phenopacket  (" + pathToJsonPhenopacketFile +"): "+ e1.getMessage());
-        } catch (ParseException ipbe) {
-            System.err.println("[ERROR] Malformed phenopacket: " + ipbe.getMessage());
-            throw new LiricalRuntimeException("Could not load phenopacket (" + pathToJsonPhenopacketFile +"): "+ ipbe.getMessage());
+            throw new LiricalRuntimeException("I/O Error: Could not load phenopacket  (" + phenopacketPath +"): "+ e1.getMessage());
         }
     }
 
-    PhenopacketImporter(Phenopacket ppack, Ontology ontology){
-        this.phenoPacket=ppack;
-        this.samplename = this.phenoPacket.getSubject().getId();
-        this.hpo=ontology;
-        extractVcfData();
+    public static PhenopacketImporter of(Phenopacket phenopacket) {
+        return new PhenopacketImporter(phenopacket);
     }
 
-    public boolean hasVcf() { return  this.vcfFile !=null; }
+    private PhenopacketImporter(Phenopacket phenopacket){
+        this.phenopacket = Objects.requireNonNull(phenopacket);
+        List<HtsFile> htsFileList = phenopacket.getHtsFilesList();
+        if (htsFileList.size() > 1)
+            logger.warn("Multiple HtsFiles associated with this phenopacket. We will use the first VCF file.");
+
+        this.vcfFile = htsFileList.stream()
+                .filter(hts -> hts.getHtsFormat().equals(HtsFile.HtsFormat.VCF))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public boolean hasVcf() {
+        return vcfFile != null;
+    }
 
     public List<TermId> getHpoTerms() {
-        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
-        for (PhenotypicFeature feature : phenoPacket.getPhenotypicFeaturesList()) {
-            if (feature.getNegated()) continue;
-            String id = feature.getType().getId();
-            TermId tid = TermId.of(id);
-            if (! hpo.getTermMap().containsKey(tid)) {
-                logger.error("Could not identify HPO term id {}.",tid.getValue());
-                System.err.println("[ERROR] Could not identify HPO term id " + tid.getValue() +". ");
-                System.err.println("[ERROR] Please check the input file and update to the latest hp.obo file. ");
-                throw new PhenolRuntimeException("Could not identify HPO term id: "+tid.getValue());
-            } else if (hpo.getObsoleteTermIds().contains(tid)) {
-                TermId current =  hpo.getPrimaryTermId(tid);
-                builder.add(current);
-                logger.error("Replacing obsolete HPO term id {} with current id {}.",tid.getValue(),current.getValue());
-                System.err.println("[ERROR] Replacing obsolete HPO term id " + tid.getValue() +". with current id "+current.getValue());
-            } else {
-                builder.add(tid);
-            }
+        return phenopacket.getPhenotypicFeaturesList().stream()
+                .filter(pf -> !pf.getNegated())
+                .map(PhenotypicFeature::getType)
+                .map(type -> createTermId(type.getId()))
+                .flatMap(Optional::stream)
+                .toList();
+    }
+
+    public List<TermId> getNegatedHpoTerms() {
+        return phenopacket.getPhenotypicFeaturesList().stream()
+                .filter(PhenotypicFeature::getNegated)
+                .map(PhenotypicFeature::getType)
+                .map(type -> createTermId(type.getId()))
+                .flatMap(Optional::stream)
+                .toList();
+    }
+
+    private static Optional<TermId> createTermId(String termId) {
+        try {
+            return Optional.of(TermId.of(termId));
+        } catch (PhenolRuntimeException e) {
+            logger.warn("Skipping unparsable HPO term id {}", termId);
+            return Optional.empty();
         }
-        return builder.build();
+    }
+
+    public Optional<Age> getAge() {
+        return Optional.of(phenopacket.getSubject().getAgeAtCollection());
+    }
+
+    public Optional<Sex> getSex() {
+        return Optional.of(phenopacket.getSubject().getSex());
     }
 
     public String getGene() {
-        if (phenoPacket.getGenesCount()==0) return null;
-        Gene g = phenoPacket.getGenes(0);
+        if (phenopacket.getGenesCount()==0) return null;
+        Gene g = phenopacket.getGenes(0);
         return g.getId();
     }
 
+    public Optional<HtsFile> getVcfFile() {
+        return Optional.ofNullable(vcfFile);
+    }
 
 
+    public Optional<Path> getVcfPath() {
+        return getVcfFile()
+                .flatMap(hts -> toUri(hts.getUri()))
+                .map(Path::of);
+    }
 
-    public List<TermId> getNegatedHpoTerms() {
-        ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
-        for (PhenotypicFeature feature : phenoPacket.getPhenotypicFeaturesList()) {
-            if (! feature.getNegated()) continue;
-            String id = feature.getType().getId();
-            TermId tid = TermId.of(id);
-            if (! hpo.getTermMap().containsKey(tid)) {
-                logger.error("Could not identify HPO term id {}.",tid.getValue());
-                System.err.println("[ERROR] Could not identify HPO term id " + tid.getValue() +". ");
-                System.err.println("[ERROR] Please check the input file and update to the latest hp.obo file. ");
-                throw new PhenolRuntimeException("Could not identify HPO term id: "+tid.getValue());
-            } else if (hpo.getObsoleteTermIds().contains(tid)) {
-                TermId current =  hpo.getPrimaryTermId(tid);
-                builder.add(current);
-                logger.error("Replacing obsolete HPO term id {} with current id {}.",tid.getValue(),current.getValue());
-                System.err.println("[ERROR] Replacing obsolete HPO term id " + tid.getValue() +". with current id "+current.getValue());
-            } else {
-                builder.add(tid);
-            }
+    private Optional<URI> toUri(String uri) {
+        try {
+            return Optional.of(new URI(uri));
+        } catch (URISyntaxException e) {
+            logger.warn("Invalid URI {}: {}", uri, e.getMessage());
+            return Optional.empty();
         }
-        return builder.build();
     }
 
-    /**
-     * The path to the VCF file may be a string such as file:/path/to/examples/BBS1.vcf
-     * In this case, remove the prefix 'path:', otherwise return the original URI
-     * @return URI of VCF file mentioned in the Phenopacket
-     */
-    public String getVcfPath() {
-        if (this.vcfFile == null) {
-            return null;
-        }
-        return this.vcfFile.getUri().startsWith("file:") ?
-                this.vcfFile.getUri().substring(5) :
-                this.vcfFile.getUri();
+    public Optional<String> getGenomeAssembly() {
+        return getVcfFile()
+                .map(HtsFile::getGenomeAssembly);
     }
 
-    public HtsFile getVcfFile() {
-        return this.vcfFile;
+    public String getSampleId() {
+        return phenopacket.getSubject().getId();
     }
 
-    public String getGenomeAssembly() {
-        return   this.vcfFile!=null ?
-                this.vcfFile.getGenomeAssembly() :
-                null;
-    }
-
-    public String getSamplename() {
-        return samplename;
-    }
-
-    public List<Variant> getVariantList() { return phenoPacket.getVariantsList(); }
+    public List<Variant> getVariantList() { return phenopacket.getVariantsList(); }
 
 
-    public Disease getDiagnosis() {
-        if (phenoPacket.getDiseasesCount() >1 ) {
-            logger.info("Phenopacket associated with {} diseases. Just returning the first disease", phenoPacket.getDiseasesCount());
-        } else if (phenoPacket.getDiseasesCount()==0) {
-            logger.info("No diseases found in Phenopacket.");
-            return null;
-        }
-        return phenoPacket.getDiseases(0);
+    public Optional<Disease> getDiagnosis() {
+        if (phenopacket.getDiseasesCount() == 0) {
+            logger.info("No diseases found in phenopacket");
+            return Optional.empty();
+        } else if (phenopacket.getDiseasesCount() > 1)
+            logger.warn("Phenopacket associated with {} diseases. Getting the first disease", phenopacket.getDiseasesCount());
+        return Optional.of(phenopacket.getDiseases(0));
     }
 
 
+    @Deprecated(forRemoval = true) // inline the QC where it is actually used
     public boolean qcPhenopacket() {
-        if (phenoPacket.getDiseasesCount() != 1) {
+        if (phenopacket.getDiseasesCount() != 1) {
             System.err.println("[ERROR] to run this simulation a phenopacket must have exactly one disease diagnosis");
-            System.err.println("[ERROR]  " + phenoPacket.getSubject().getId() + " had " + phenoPacket.getDiseasesCount());
+            System.err.println("[ERROR]  " + phenopacket.getSubject().getId() + " had " + phenopacket.getDiseasesCount());
             return false; // skip to next Phenopacket
         }
-        List<PhenotypicFeature> phenolist = phenoPacket.getPhenotypicFeaturesList();
+        List<PhenotypicFeature> phenolist = phenopacket.getPhenotypicFeaturesList();
         int n_observed = (int) phenolist.stream().filter(p -> !p.getNegated()).count();
         if (n_observed==0) {
             System.err.println("[ERROR] phenopackets must have at least one observed HPO term. ");
@@ -188,22 +171,4 @@ public class PhenopacketImporter {
         return true;
     }
 
-
-
-    /** This method extracts the VCF file and the corresponding GenomeBuild. We assume that
-     * the phenopacket contains a single VCF file and that this file is for a single person. */
-    private void extractVcfData() {
-        List<HtsFile> htsFileList = phenoPacket.getHtsFilesList();
-        if (htsFileList.size() > 1 ) {
-            logger.error("Warning: multiple HTsFiles associated with this phenopacket");
-            logger.error("Warning: we will return the path to the first VCF file we find");
-        } else if (htsFileList.isEmpty()) {
-            return;
-        }
-        for (HtsFile htsFile : htsFileList) {
-            if (htsFile.getHtsFormat().equals(HtsFile.HtsFormat.VCF)) {
-                this.vcfFile = htsFile;
-            }
-        }
-    }
 }

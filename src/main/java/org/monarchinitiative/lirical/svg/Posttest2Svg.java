@@ -61,7 +61,7 @@ public class Posttest2Svg extends Lirical2Svg {
         this.testResults = results;
         int n = 0;
         for (TestResult result : results) {
-            if (result.getPosttestProbability() >= threshold) {
+            if (result.calculatePosttestProbability() >= threshold) {
                 n++;
             }
         }
@@ -179,7 +179,7 @@ public class Posttest2Svg extends Lirical2Svg {
         int xOffset = 5;
         for (int i = 0; i < numDifferentialsToShowSVG && i < this.testResults.size(); ++i) {
             TestResult result = this.testResults.get(i);
-            double postprob = result.getPosttestProbability();
+            double postprob = result.calculatePosttestProbability();
             int boxwidth = (int) (scaledWidth * postprob);
             // either show a b ox or (if the post-test prob is less than 2.5%) show a diamond to symbolize
             // a small value

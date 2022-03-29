@@ -3,10 +3,10 @@ package org.monarchinitiative.lirical.output;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
-import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.configuration.LrThreshold;
 import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
 import org.monarchinitiative.lirical.hpo.HpoCase;
+import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.lirical.svg.Lr2Svg;
 import org.monarchinitiative.lirical.svg.Posttest2Svg;
@@ -16,10 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -36,8 +36,6 @@ public class HtmlTemplate extends LiricalTemplate {
 
 
     private final int DEFAULT_MIN_DIAGNOSES_TO_SHOW = 10;
-
-    private final double DEFAULT_THRESHOLD = LiricalFactory.DEFAULT_LR_THRESHOLD;
 
     /**
      * There are gene symbols returned by Jannovar for which we cannot find a geneId. This issues seems to be related
@@ -64,11 +62,11 @@ public class HtmlTemplate extends LiricalTemplate {
                         LrThreshold thres,
                         MinDiagnosisCount minDifferentials,
                         String prefix,
-                        String outdir,
+                        Path outdir,
                         List<String> errs,
                         Set<String> symbolsWithoutGeneIds) {
-        super(hcase, ontology, genotypeMap, geneid2sym, metadat);
-        initpath(prefix, outdir);
+        super(hcase, ontology, geneid2sym, metadat);
+        this.outpath = createOutputFile(outdir, prefix, "%s.html");
         this.lrThreshold = thres;
         this.minDiagnosisToShowInDetail = minDifferentials;
         this.templateData.put("errorlist", errs);
@@ -93,11 +91,13 @@ public class HtmlTemplate extends LiricalTemplate {
         int counter = 0;
         for (TestResult result : hcase.getResults()) {
             String symbol = EMPTY_STRING;
+            Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
             if (counter < N) {
                 DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
                 logger.trace("Diff diag for " + result.getDiseaseName());
-                if (result.hasGenotype()) {
-                    TermId geneId = result.getEntrezGeneId();
+                if (genotypeLr.isPresent()) {
+                    GenotypeLrWithExplanation genotypeLrWithExplanation = genotypeLr.get();
+                    TermId geneId = genotypeLrWithExplanation.geneId();
                     Gene2Genotype g2g = genotypeMap.get(geneId);
                     if (g2g != null) {
                         symbol = g2g.getSymbol();
@@ -106,14 +106,13 @@ public class HtmlTemplate extends LiricalTemplate {
                         ddx.setGenotypeExplanation("no variants found in " + this.geneId2symbol.get(geneId));
                         symbol = "no variants found in " + this.geneId2symbol.get(geneId);// will be used by SVG
                     }
-                    String expl = result.getGenotypeExplanation();
-                    ddx.setGenotypeExplanation(expl);
+                    ddx.setGenotypeExplanation(genotypeLrWithExplanation.explanation());
                 } else {
                     ddx.setGenotypeExplanation("No known disease gene");
                 }
                 //ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
                 // now get SVG
-                Lr2Svg lr2svg = new Lr2Svg(hcase, result.getDiseaseCurie(), result.getDiseaseName(), ontology, symbol);
+                Lr2Svg lr2svg = new Lr2Svg(hcase, result.diseaseId(), result.getDiseaseName(), ontology, symbol);
                 String svg = lr2svg.getSvgString();
                 ddx.setSvg(svg);
                 diff.add(ddx);
@@ -123,18 +122,18 @@ public class HtmlTemplate extends LiricalTemplate {
                 ddx.setAnchor(counterString);
                 this.topDiagnosisMap.put(counterString, ddx.getDiseaseName());
             } else {
-                if (result.hasGenotype()) {
-                    TermId geneId = result.getEntrezGeneId();
+                if (genotypeLr.isPresent()) {
+                    TermId geneId = genotypeLr.get().geneId();
                     if (genotypeMap.containsKey(geneId)) {
                         symbol = genotypeMap.get(geneId).getSymbol();
                         int c = genotypeMap.get(geneId).getVarList().size();
                         String name = shortName(result.getDiseaseName());
-                        String id = result.getDiseaseCurie().getId();// This is intended to work with OMIM
+                        String id = result.diseaseId().getId();// This is intended to work with OMIM
                         if (name == null) {
                             logger.error("Got null string for disease name from result={}", result);
                             name = EMPTY_STRING;// avoid errors
                         }
-                        ImprobableDifferential ipd = new ImprobableDifferential(name, id, symbol, result.getPosttestProbability(), c);
+                        ImprobableDifferential ipd = new ImprobableDifferential(name, id, symbol, result.calculatePosttestProbability(), c);
                         improbdiff.add(ipd);
                     }
                 }
@@ -142,14 +141,6 @@ public class HtmlTemplate extends LiricalTemplate {
         }
         this.templateData.put("improbdiff", improbdiff);
         this.templateData.put("diff", diff);
-    }
-
-    private void initpath(String prefix, String outdir) {
-        this.outpath = String.format("%s.html", prefix);
-        if (outdir != null) {
-            File dir = mkdirIfNotExist(outdir);
-            this.outpath = Paths.get(dir.getAbsolutePath(), this.outpath).toString();
-        }
     }
 
 
@@ -162,9 +153,9 @@ public class HtmlTemplate extends LiricalTemplate {
      * @param metadat  Metadata about the analysis.
      * @param thres    threshold posterior probability to show differential in detail
      */
-    public HtmlTemplate(HpoCase hcase, Ontology ontology, Map<String, String> metadat, LrThreshold thres, MinDiagnosisCount minDifferentials, String prefix, String outdir, List<String> errs) {
+    public HtmlTemplate(HpoCase hcase, Ontology ontology, Map<String, String> metadat, LrThreshold thres, MinDiagnosisCount minDifferentials, String prefix, Path outdir, List<String> errs) {
         super(hcase, ontology, metadat);
-        initpath(prefix, outdir);
+        this.outpath = createOutputFile(outdir, prefix, "%s.html");
         this.lrThreshold = thres;
         this.minDiagnosisToShowInDetail = minDifferentials;
         this.templateData.put("errorlist", errs);
@@ -192,7 +183,7 @@ public class HtmlTemplate extends LiricalTemplate {
                 logger.trace("Diff diag for " + result.getDiseaseName());
                 ddx.setGenotypeExplanation("Genetic data not available");
                 // now get SVG
-                Lr2Svg lr2svg = new Lr2Svg(hcase, result.getDiseaseCurie(), result.getDiseaseName(), ontology, symbol);
+                Lr2Svg lr2svg = new Lr2Svg(hcase, result.diseaseId(), result.getDiseaseName(), ontology, symbol);
                 String svg = lr2svg.getSvgString();
                 ddx.setSvg(svg);
                 diff.add(ddx);
@@ -202,15 +193,14 @@ public class HtmlTemplate extends LiricalTemplate {
                 ddx.setAnchor(counterString);
                 this.topDiagnosisMap.put(counterString, ddx.getDiseaseName());
             } else {
-                TermId geneId = result.getEntrezGeneId();
                 String name = shortName(result.getDiseaseName());
-                String id = result.getDiseaseCurie().getId();// This is intended to work with OMIM
+                String id = result.diseaseId().getId();// This is intended to work with OMIM
                 if (name == null) {
                     logger.error("Got null string for disease name from result={}", result);
                     name = EMPTY_STRING;// avoid errors
                 }
                 int c = 0;
-                ImprobableDifferential ipd = new ImprobableDifferential(name, id, symbol, result.getPosttestProbability(), c);
+                ImprobableDifferential ipd = new ImprobableDifferential(name, id, symbol, result.calculatePosttestProbability(), c);
                 improbdiff.add(ipd);
             }
         }
@@ -222,14 +212,12 @@ public class HtmlTemplate extends LiricalTemplate {
 
     @Override
     public void outputFile() {
-        String path;
-
-        logger.info("Writing HTML file to {}", this.outpath);
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(this.outpath))) {
+        logger.info("Writing HTML file to {}", outpath.toAbsolutePath());
+        try (BufferedWriter out = Files.newBufferedWriter(outpath)) {
             Template template = cfg.getTemplate("liricalHTML.ftl");
             template.process(templateData, out);
         } catch (TemplateException | IOException te) {
-            te.printStackTrace();
+            logger.warn("Error writing out results {}", te.getMessage(), te);
         }
     }
 
@@ -240,7 +228,7 @@ public class HtmlTemplate extends LiricalTemplate {
             Template template = cfg.getTemplate("liricalTSV.html");
             template.process(templateData, out);
         } catch (TemplateException | IOException te) {
-            te.printStackTrace();
+            logger.warn("Error writing out results {}", te.getMessage(), te);
         }
     }
 
@@ -256,7 +244,7 @@ public class HtmlTemplate extends LiricalTemplate {
      */
     private int totalDetailedDiagnosesToShow(List<TestResult> results) {
         double t = lrThreshold.getThreshold();
-        int aboveThreshold = (int) results.stream().filter(r -> r.getPosttestProbability() >= t).count();
+        int aboveThreshold = (int) results.stream().filter(r -> r.calculatePosttestProbability() >= t).count();
         initializeTopDifferentialCount(aboveThreshold);
         if (! this.minDiagnosisToShowInDetail.isSetByUser() && ! this.lrThreshold.isSetByUser()) {
             return DEFAULT_MIN_DIAGNOSES_TO_SHOW;

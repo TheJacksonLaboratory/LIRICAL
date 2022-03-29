@@ -5,9 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import de.charite.compbio.jannovar.data.Chromosome;
 import de.charite.compbio.jannovar.data.JannovarData;
-import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.htsjdk.VariantContextAnnotator;
 import de.charite.compbio.jannovar.progress.ProgressReporter;
 import htsjdk.samtools.util.CloseableIterator;
@@ -34,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -48,7 +46,7 @@ public class Vcf2GenotypeMap {
     /**
      * Path to the VCF file with the exome/genome of the proband.
      */
-    private final String vcfPath;
+    private final Path vcfPath;
     /**
      * Prefix for the NCBI Entrez Gene data.
      */
@@ -61,14 +59,7 @@ public class Vcf2GenotypeMap {
      * Reference to the Jannovar transcript file data for annotating the VCF file.
      */
     private final JannovarData jannovarData;
-    /**
-     * Reference dictionary that is part of {@link #jannovarData}.
-     */
-    private final ReferenceDictionary referenceDictionary;
-    /**
-     * Map of Chromosomes, used in the annotation.
-     */
-    private final ImmutableMap<Integer, Chromosome> chromosomeMap;
+    private final VariantContextAnnotator variantEffectAnnotator;
     /**
      * A Jannovar object to report progress of VCF parsing.
      */
@@ -123,13 +114,16 @@ public class Vcf2GenotypeMap {
                     ClinVarData.ClinSig.LIKELY_PATHOGENIC);
 
 
-    public Vcf2GenotypeMap(String vcf, JannovarData jannovar, MVStore mvs, GenomeAssembly ga, Map<TermId, String> geneId2SymbolMap) {
+    public Vcf2GenotypeMap(Path vcf,
+                           JannovarData jannovar,
+                           MVStore mvs,
+                           GenomeAssembly ga,
+                           Map<TermId, String> geneId2SymbolMap) {
         this.vcfPath = vcf;
         this.jannovarData = jannovar;
         this.alleleMap = MvStoreUtil.openAlleleMVMap(mvs);
-        this.referenceDictionary = jannovarData.getRefDict();
-        this.chromosomeMap = jannovarData.getChromosomes();
         this.genomeAssembly = ga;
+        this.variantEffectAnnotator = new VariantContextAnnotator(jannovarData.getRefDict(), jannovarData.getChromosomes(), new VariantContextAnnotator.Options());
         initSymbolToGenIdMap(geneId2SymbolMap);
     }
 
@@ -159,22 +153,16 @@ public class Vcf2GenotypeMap {
      * @return map with key=TermId of a Gene, value corresponding {@link Gene2Genotype} object
      */
     public Map<TermId, Gene2Genotype> vcf2genotypeMap() {
-        // whether or not to just look at a specific genomic interval
-        final boolean useInterval = false;
         this.gene2genotypeMap = new HashMap<>();
         final long startTime = System.nanoTime();
 
-        try (VCFFileReader vcfReader = new VCFFileReader(new File(vcfPath), useInterval)) {
-            //final SAMSequenceDictionary seqDict = VCFFileReader.getSequenceDictionary(new File(getOptionalVcfPath));
+        try (VCFFileReader vcfReader = new VCFFileReader(vcfPath, false);
+             CloseableIterator<VariantContext> iter = vcfReader.iterator()) {
             VCFHeader vcfHeader = vcfReader.getFileHeader();
             this.samplenames = vcfHeader.getSampleNamesInOrder();
             this.n_samples = samplenames.size();
             this.samplename = samplenames.get(0);
             logger.trace("Annotating VCF at " + vcfPath + " for sample " + this.samplename);
-            CloseableIterator<VariantContext> iter = vcfReader.iterator();
-            VariantContextAnnotator variantEffectAnnotator =
-                    new VariantContextAnnotator(this.referenceDictionary, this.chromosomeMap,
-                            new VariantContextAnnotator.Options());
             // Note that we do not use Genomiser data in this version of LIRICAL
             // Therefore, just pass in an empty list to satisfy the API
             List<RegulatoryFeature> emtpylist = ImmutableList.of();
@@ -379,26 +367,24 @@ public class Vcf2GenotypeMap {
      * @param pathogenicityData Object representing the predicted pathogenicity of the data.
      * @return the predicted pathogenicity score.
      */
-    private float calculatePathogenicity(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
+    private static float calculatePathogenicity(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
         float variantEffectScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
         if (pathogenicityData.isEmpty()) return variantEffectScore;
         float predictedScore = pathogenicityData.getScore();
-        switch (variantEffect) {
-            case MISSENSE_VARIANT:
-                return pathogenicityData.hasPredictedScore() ? predictedScore : variantEffectScore;
-            case SYNONYMOUS_VARIANT:
-                // there are cases where synonymous variants have been assigned a high MutationTaster score.
-                // These looked to have been wrongly mapped and are therefore probably wrong. So we'll use the default score for these.
-                return variantEffectScore;
-            default:
-                return Math.max(predictedScore, variantEffectScore);
-        }
+        return switch (variantEffect) {
+            case MISSENSE_VARIANT -> pathogenicityData.hasPredictedScore() ? predictedScore : variantEffectScore;
+            case SYNONYMOUS_VARIANT ->
+                    // there are cases where synonymous variants have been assigned a high MutationTaster score.
+                    // These looked to have been wrongly mapped and are therefore probably wrong. So we'll use the default score for these.
+                    variantEffectScore;
+            default -> Math.max(predictedScore, variantEffectScore);
+        };
     }
 
 
-    private VariantEvaluation buildVariantEvaluation(VariantContext variantContext,
-                                                     VariantAnnotation variantAnnotation,
-                                                     Map<String, SampleGenotype> sampleMap) {
+    private static VariantEvaluation buildVariantEvaluation(VariantContext variantContext,
+                                                            VariantAnnotation variantAnnotation,
+                                                            Map<String, SampleGenotype> sampleMap) {
 
         GenomeAssembly genomeAssembly = variantAnnotation.getGenomeAssembly();
         int chr = variantAnnotation.getChromosome();

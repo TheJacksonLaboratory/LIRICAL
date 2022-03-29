@@ -1,6 +1,5 @@
 package org.monarchinitiative.lirical.cmd;
 
-import com.google.common.collect.Multimap;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.exception.LiricalException;
@@ -10,6 +9,7 @@ import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.output.LiricalTemplate;
+import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.io.OntologyLoader;
@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +39,7 @@ import java.util.concurrent.Callable;
 public class YamlCommand implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(YamlCommand.class);
     @CommandLine.Option(names = {"-y","--yaml"}, description = "path to yaml configuration file", required = true)
-    private String yamlPath;
+    private Path yamlPath;
     /** Reference to the HPO. */
     private Ontology ontology;
 
@@ -82,11 +84,11 @@ public class YamlCommand implements Callable<Integer> {
                 .phenotypeLr(phenoLr);
         CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
         HpoCase hcase = evaluator.evaluate();
-        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
-                .prefix(this.factory.getOutfilePrefix())
-                .outdirectory(this.factory.getOutdir())
-                .threshold(this.factory.getLrThreshold())
-                .mindiff(this.factory.getMinDifferentials());
+        LiricalTemplate.Builder builder = LiricalTemplate.builder(hcase,ontology,metadata)
+                .prefix(factory.getOutfilePrefix())
+                .outDirectory(factory.getOutdir())
+                .threshold(factory.getLrThreshold())
+                .mindiff(factory.getMinDifferentials());
         writeOutput(builder);
     }
 
@@ -106,11 +108,11 @@ public class YamlCommand implements Callable<Integer> {
         this.geneId2symbol = factory.geneId2symbolMap();
         Map<TermId, Gene2Genotype> genotypeMap = factory.getGene2GenotypeMap();
         this.symbolsWithoutGeneIds = factory.getSymbolsWithoutGeneIds();
-        this.metadata.put("vcf_file", factory.getVcfPath());
+        this.metadata.put("vcf_file", factory.getVcfPath().toAbsolutePath().toString());
         this.metadata.put("n_filtered_variants", String.valueOf(factory.getN_filtered_variants()));
         this.metadata.put("n_good_quality_variants",String.valueOf(factory.getN_good_quality_variants()));
         GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
-        Multimap<TermId,TermId> disease2geneMultimap = factory.disease2geneMultimap();
+        Map<TermId, Collection<GeneIdentifier>> disease2geneMultimap = factory.disease2geneMultimap();
 
         CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(factory.observedHpoTerms())
                 .negated(factory.negatedHpoTerms())
@@ -125,13 +127,13 @@ public class YamlCommand implements Callable<Integer> {
         this.metadata.put("transcriptDatabase", factory.transcriptdb());
         int n_genes_with_var = genotypeMap.size();
         this.metadata.put("genesWithVar",String.valueOf(n_genes_with_var));
-        this.metadata.put("exomiserPath",factory.getExomiserPath());
+        this.metadata.put("exomiserPath",factory.getExomiserPath().map(Path::toAbsolutePath).map(Path::toString).orElse(""));
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
-        LiricalTemplate.Builder builder = new LiricalTemplate.Builder(hcase,ontology,this.metadata)
+        LiricalTemplate.Builder builder = LiricalTemplate.builder(hcase,ontology,metadata)
                 .prefix(this.factory.getOutfilePrefix())
                 .genotypeMap(genotypeMap)
-                .outdirectory(this.factory.getOutdir())
+                .outDirectory(this.factory.getOutdir())
                 .geneid2symMap(geneId2symbol)
                 .threshold(this.factory.getLrThreshold())
                 .errors(evaluator.getErrors())
@@ -152,7 +154,7 @@ public class YamlCommand implements Callable<Integer> {
         this.metadata=new HashMap<>();
         this.metadata.put("sample_name", factory.getSampleName());
         this.metadata.put("analysis_date", factory.getTodaysDate());
-        this.metadata.put("yaml", this.yamlPath);
+        this.metadata.put("yaml", yamlPath.toAbsolutePath().toString());
 
         Map<String,String> ontologyMetainfo = factory.hpoOntology().getMetaInfo();
         if (ontologyMetainfo.containsKey("data-version")) {
@@ -168,8 +170,9 @@ public class YamlCommand implements Callable<Integer> {
                 this.metadata.put("global_mode", "false");
             }
             this.factory.qcExomiserFiles();
-            factory.qcHumanPhenotypeOntologyFiles();
-            factory.qcExternalFilesInDataDir();
+            // TODO - fix
+//            factory.qcHumanPhenotypeOntologyFiles();
+//            factory.qcExternalFilesInDataDir();
             factory.qcExomiserFiles();
             factory.qcGenomeBuild();
             factory.qcVcfFile();
@@ -184,7 +187,7 @@ public class YamlCommand implements Callable<Integer> {
      * @param yamlPath Path to the YAML file for the VCF analysis
      * @return An {@link LiricalFactory} object with various settings.
      */
-    private LiricalFactory deYamylate(String yamlPath) {
+    private LiricalFactory deYamylate(Path yamlPath) {
         YamlParser yparser = new YamlParser(yamlPath);
         this.outputTSV = yparser.doTsv();
         this.outputHTML = yparser.doHtml();
@@ -195,13 +198,15 @@ public class YamlCommand implements Callable<Integer> {
         Ontology ontology = OntologyLoader.loadOntology(new File(hpoPath));
         if (yparser.phenotypeOnlyMode()) {
             phenotypeOnly=true;
-            LiricalFactory.Builder builder = new LiricalFactory.Builder(ontology).
-                    yaml(yparser,phenotypeOnly);
+            LiricalFactory.Builder builder = LiricalFactory.builder()
+                    .ontology(ontology)
+                    .yaml(yparser,phenotypeOnly);
             return builder.buildForPhenotypeOnlyDiagnostics();
         } else {
             phenotypeOnly=false;
-            LiricalFactory.Builder builder = new LiricalFactory.Builder(ontology).
-                    yaml(yparser);
+            LiricalFactory.Builder builder = LiricalFactory.builder()
+                    .ontology(ontology)
+                    .yaml(yparser);
             return builder.buildForGenomicDiagnostics();
         }
     }

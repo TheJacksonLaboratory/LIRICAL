@@ -1,10 +1,12 @@
 package org.monarchinitiative.lirical.output;
 
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
+import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.lirical.vcf.SimpleVariant;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TsvDifferential {
@@ -28,16 +30,16 @@ public class TsvDifferential {
 
     public TsvDifferential(TestResult result) {
         this.diseaseName=prettifyDiseaseName(result.getDiseaseName());
-        this.diseaseCurie=result.getDiseaseCurie().getValue();
+        this.diseaseCurie=result.diseaseId().getValue();
         this.rank=result.getRank();
-        if (result.getPosttestProbability()>0.9999) {
-            this.posttestprob=String.format("%.5f%%",100*result.getPosttestProbability());
-        } else if (result.getPosttestProbability()>0.999) {
-            this.posttestprob=String.format("%.4f%%",100*result.getPosttestProbability());
-        } else if (result.getPosttestProbability()>0.99) {
-            this.posttestprob=String.format("%.3f%%",100*result.getPosttestProbability());
+        if (result.calculatePosttestProbability()>0.9999) {
+            this.posttestprob=String.format("%.5f%%",100*result.calculatePosttestProbability());
+        } else if (result.calculatePosttestProbability()>0.999) {
+            this.posttestprob=String.format("%.4f%%",100*result.calculatePosttestProbability());
+        } else if (result.calculatePosttestProbability()>0.99) {
+            this.posttestprob=String.format("%.3f%%",100*result.calculatePosttestProbability());
         } else {
-            this.posttestprob=String.format("%.2f%%",100*result.getPosttestProbability());
+            this.posttestprob=String.format("%.2f%%",100*result.calculatePosttestProbability());
         }
 
         double ptp=result.getPretestProbability();
@@ -47,8 +49,9 @@ public class TsvDifferential {
             this.pretestprob = String.format("%.6f",ptp);
         }
         this.compositeLR=result.getCompositeLR();
-        if (result.hasGenotype()) {
-            this.entrezGeneId = result.getEntrezGeneId().getValue();
+        Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
+        if (genotypeLr.isPresent()) {
+            this.entrezGeneId = genotypeLr.get().geneId().getValue();
         } else {
             this.entrezGeneId=NOT_AVAILABLE;
         }

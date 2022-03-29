@@ -1,8 +1,6 @@
 package org.monarchinitiative.lirical.likelihoodratio;
 
-import com.google.common.collect.ImmutableList;
-
-import org.monarchinitiative.lirical.analysis.Gene2Genotype;
+import org.monarchinitiative.lirical.model.Gene2Genotype;
 import org.monarchinitiative.lirical.poisson.PoissonDistribution;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -10,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 
 import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInheritanceTermIds.*;
 
@@ -20,6 +18,7 @@ import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInhe
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
+// TODO - needs to become an interface
 public class GenotypeLikelihoodRatio {
     private static final Logger logger = LoggerFactory.getLogger(GenotypeLikelihoodRatio.class);
     /* Default frequency of called-pathogenic variants in the general population (gnomAD). In the vast majority of
@@ -32,9 +31,6 @@ public class GenotypeLikelihoodRatio {
     final double HEURISTIC_PATH_ALLELE_COUNT_ABOVE_LAMBDA_D = 0.10;
     /** A small-ish number to avoid dividing by zero. */
     private static final double EPSILON = 1e-5;
-    /** Use strict penalties if the genotype does not match the disease model in terms of number of called
-     * pathogenic alleles.*/
-    private final boolean strict;
 
     /**
      * Entrez gene Curie, e.g., NCBIGene:2200; value--corresponding background frequency (ie.,
@@ -54,25 +50,25 @@ public class GenotypeLikelihoodRatio {
      */
     private final PoissonDistribution dominantPoissonDistribution;
 
+    /** Use strict penalties if the genotype does not match the disease model in terms of number of called
+     * pathogenic alleles.*/
+    private final boolean strict;
     /**
-     * @param g2background background frequencies of called pathogenic variants in genes.
+     * Variant with pathogenicity greater than this threshold is considered deleterious.
      */
-    public GenotypeLikelihoodRatio(Map<TermId, Double> g2background) {
-        this.gene2backgroundFrequency = g2background;
-        this.recessivePoissonDistribution = new PoissonDistribution(2.0);
-        this.dominantPoissonDistribution = new PoissonDistribution((1.0));
-        this.strict=false;
-    }
+    private final float pathogenicityThreshold;
 
     /**
-     * @param g2background background frequencies of called pathogenic variants in genes.
-     * @param str strictness of genotype likelihood ratio (see {@link #strict}).
+     * @param geneIdToBackground background frequencies of called pathogenic variants in genes.
+     * @param options genotype LR options
      */
-    public GenotypeLikelihoodRatio(Map<TermId, Double> g2background, boolean str) {
-        this.gene2backgroundFrequency = g2background;
+    public GenotypeLikelihoodRatio(Map<TermId, Double> geneIdToBackground, Options options) {
+        this.gene2backgroundFrequency = Objects.requireNonNull(geneIdToBackground);
+        Objects.requireNonNull(options);
         this.recessivePoissonDistribution = new PoissonDistribution(2.0);
-        this.dominantPoissonDistribution = new PoissonDistribution((1.0));
-        this.strict=str;
+        this.dominantPoissonDistribution = new PoissonDistribution(1.0);
+        this.strict = options.strict;
+        this.pathogenicityThreshold = options.pathogenicityThreshold;
     }
 
     /**
@@ -81,33 +77,29 @@ public class GenotypeLikelihoodRatio {
      * this probability to be 5%. For autosomal recessive diseases, we will estimate the probability at
      * 5% * 5%.
      *
-     * @param inheritancemodes List of all inheritance modes associated with this disease (usually a single one)
+     * @param inheritanceModes List of all inheritance modes associated with this disease (usually a single one)
      * @return genotype likelihood ratio for situation where no variant at all was found in a gene
      */
-    private GenotypeLrWithExplanation getLRifNoVariantAtAllWasIdentified(List<TermId> inheritancemodes, Gene2Genotype g2g) {
-        final TermId autosomalRecessiveInheritance = TermId.of("HP:0000007");
-        final double ESTIMATED_PROB = 0.05d;
-        for (TermId tid : inheritancemodes) {
-            if (tid.equals(autosomalRecessiveInheritance)) {
-                return GenotypeLrWithExplanation.noVariantsDetectedAutosomalRecessive(ESTIMATED_PROB * ESTIMATED_PROB, g2g.getSymbol());
-            }
-        }
-        return GenotypeLrWithExplanation.noVariantsDetectedAutosomalDominant(ESTIMATED_PROB, g2g.getSymbol());
+    private static GenotypeLrWithExplanation getLRifNoVariantAtAllWasIdentified(List<TermId> inheritanceModes, Gene2Genotype g2g) {
+        double ESTIMATED_PROB = 0.05d;
+        if (inheritanceModes.stream().anyMatch(tid -> tid.equals(AUTOSOMAL_RECESSIVE)))
+            // compatible with autosomal recessive inheritance
+            return GenotypeLrWithExplanation.noVariantsDetectedAutosomalRecessive(g2g.id(), ESTIMATED_PROB * ESTIMATED_PROB, g2g.symbol());
+        else
+            return GenotypeLrWithExplanation.noVariantsDetectedAutosomalDominant(g2g.id(), ESTIMATED_PROB, g2g.symbol());
     }
 
     /**
      * Check if the optional has a value already. If not, set it to val. Otherwise, set it to the maximum
-     * @param val New value
-     * @param opt Optional that may or may not already have a value
+     * @param left New value
+     * @param right Optional that may or may not already have a value
      * @return an optional with val or with the max of val and opt.get() if opt has a value
      */
-    private Optional<Double> updateMax(double val, Optional<Double> opt) {
-        if (!opt.isPresent()) {
-            return Optional.of(val);
-        } else if (val > opt.get()){
-            return Optional.of(val);
+    private double updateMax(double left, Double right) {
+        if (right == null) {
+            return left;
         } else {
-            return opt;
+            return Math.max(left, right);
         }
     }
 
@@ -118,12 +110,11 @@ public class GenotypeLikelihoodRatio {
      *
      * @param g2g              {@link Gene2Genotype} object with list of variants in current gene. Can be null if no variants were found in the gene
      * @param inheritancemodes list of modes of inheritance associated with disease being investigated (usually with just one entry).
-     * @param geneId           EntrezGene id of the gene we are investigating.
      * @return likelihood ratio of the genotype given the disease/geniId combination
      */
-    GenotypeLrWithExplanation evaluateGenotype(Gene2Genotype g2g, List<TermId> inheritancemodes, TermId geneId) {
+    public GenotypeLrWithExplanation evaluateGenotype(String sampleId, Gene2Genotype g2g, List<TermId> inheritancemodes) {
         // special case 1: No variant found in this gene
-        if (g2g.equals(Gene2Genotype.NO_IDENTIFIED_VARIANT)) {
+        if (!g2g.hasVariants()) {
             return getLRifNoVariantAtAllWasIdentified(inheritancemodes, g2g);
         }
         // special case 2: Clinvar-pathogenic variant(s) found in this gene.
@@ -131,20 +122,21 @@ public class GenotypeLikelihoodRatio {
         // 2 for autosomal recessive. (If the count of pathogenic alleles does not match
         // the expected count, return 1000.
 
-        if (g2g.hasPathogenicClinvarVar()) {
-            int count = g2g.pathogenicClinVarCount();
+        int pathogenicClinVarAlleleCount = g2g.pathogenicClinVarCount(sampleId);
+        if (pathogenicClinVarAlleleCount > 0) {
             if (inheritancemodes.contains(AUTOSOMAL_RECESSIVE)) {
-                if (count == 2) {
-                    return GenotypeLrWithExplanation.twoPathClinVarAllelesRecessive(Math.pow(1000d, 2), g2g.getSymbol());
+                if (pathogenicClinVarAlleleCount == 2) {
+                    return GenotypeLrWithExplanation.twoPathClinVarAllelesRecessive(g2g.id(),Math.pow(1000d, 2), g2g.symbol());
                 }
             } else { // for all other MoI, including AD, assume that only one ClinVar allele is pathogenic
-                return GenotypeLrWithExplanation.pathClinVar(Math.pow(1000d, 1d), g2g.getSymbol());
+                return GenotypeLrWithExplanation.pathClinVar(g2g.id(), Math.pow(1000d, 1d), g2g.symbol());
             }
         }
-        double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
-        if (!g2g.hasPredictedPathogenicVar() || observedWeightedPathogenicVariantCount < EPSILON) {
+        int pathogenicAlleleCount = g2g.pathogenicAlleleCount(sampleId, pathogenicityThreshold);
+        double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores(sampleId, pathogenicityThreshold);
+        if (pathogenicAlleleCount == 0 || observedWeightedPathogenicVariantCount < EPSILON) {
             // no identified variant or the pathogenicity score of identified variant is close to zero
-            // essentially sam as no identified variant, this should happen rarely if ever.
+            // essentially same as no identified variant, this should happen rarely if ever.
             return getLRifNoVariantAtAllWasIdentified(inheritancemodes, g2g);
         }
 
@@ -154,21 +146,21 @@ public class GenotypeLikelihoodRatio {
         // 3. There was no pathogenic variant listed in ClinVar.
         // Therefore, we apply the main algorithm for calculating the LR genotype score.
 
-        double lambda_background = this.gene2backgroundFrequency.getOrDefault(geneId, DEFAULT_LAMBDA_BACKGROUND);
+        double lambda_background = this.gene2backgroundFrequency.getOrDefault(g2g.id(), DEFAULT_LAMBDA_BACKGROUND);
         if (inheritancemodes == null || inheritancemodes.isEmpty()) {
             // This is probably because the HPO annotation file is incomplete
-            logger.warn("No inheritance mode annotation found for geneId {}, reverting to default", geneId.getValue());
+            logger.warn("No inheritance mode annotation found for geneId {}, reverting to default", g2g.id().getValue());
             // Add a default dominant mode to avoid not ranking this gene at all
-            inheritancemodes = ImmutableList.of(AUTOSOMAL_DOMINANT);
+            inheritancemodes = List.of(AUTOSOMAL_DOMINANT);
         }
         // The following is a heuristic to avoid giving genes with a high background count
         // a better score for pathogenic than background -- the best explanation for
         // a gene with high background is that a variant is background (unless variant is ClinVar-path, see above).
         if (lambda_background > 1.0) {
-            lambda_background = Math.min(lambda_background, g2g.pathogenicAlleleCount());
+            lambda_background = Math.min(lambda_background, pathogenicAlleleCount);
         }
         // Use the following four vars to keep track of which option was the max.
-        Optional<Double> max = Optional.empty();
+        Double max = null;
         TermId maxInheritanceMode = INHERITANCE_ROOT; // MoI associated with the maximum pathogenicity
         boolean heuristicPathCountAboveLambda = false;
         // If these variables are used, they will be specifically initialized.
@@ -191,8 +183,8 @@ public class GenotypeLikelihoodRatio {
             // will take the observed path weighted count to not be more than lambda_disease.
             // this will have the effect of not downweighting these genes
             // the user will have to judge whether one of the variants is truly pathogenic.
-            if (strict && g2g.pathogenicAlleleCount() > (lambda_disease + EPSILON)) {
-                double HEURISTIC = HEURISTIC_PATH_ALLELE_COUNT_ABOVE_LAMBDA_D * (g2g.pathogenicAlleleCount() - lambda_disease);
+            if (strict && pathogenicAlleleCount > (lambda_disease + EPSILON)) {
+                double HEURISTIC = HEURISTIC_PATH_ALLELE_COUNT_ABOVE_LAMBDA_D * (pathogenicAlleleCount - lambda_disease);
                 max = updateMax(HEURISTIC, max);
                 maxInheritanceMode = inheritanceId;
                 heuristicPathCountAboveLambda = true;
@@ -203,12 +195,12 @@ public class GenotypeLikelihoodRatio {
                 B = pdBackground.probability(observedWeightedPathogenicVariantCount);
                 if (B > 0 && D > 0) {
                     double ratio = D / B;
-                    if (max.isPresent() && ratio > max.get()) {
-                        max = Optional.of(ratio);
+                    if (max != null && ratio > max) {
+                        max = ratio;
                         maxInheritanceMode = inheritanceId;
                         heuristicPathCountAboveLambda = false;
-                    } else if (!max.isPresent()) {
-                        max = Optional.of(ratio);
+                    } else if (max == null) {
+                        max = ratio;
                         maxInheritanceMode = inheritanceId;
                         heuristicPathCountAboveLambda = false;
                     }
@@ -218,12 +210,23 @@ public class GenotypeLikelihoodRatio {
         // We should always have some value for max once we get here but
         // there is a default value of 0.05 to avoid null errors so that
         // we do not crash if something unexpected occurs. (Should actually never be used)
-        final double DEFAULTVAL = 0.05;
-        double returnvalue = max.orElse(DEFAULTVAL);
+        double DEFAULTVAL = 0.05;
+        double returnvalue = max == null ? DEFAULTVAL : max;
         if (heuristicPathCountAboveLambda) {
-            return GenotypeLrWithExplanation.explainPathCountAboveLambdaB(returnvalue, g2g, maxInheritanceMode, lambda_background);
+            return GenotypeLrWithExplanation.explainPathCountAboveLambdaB(g2g.id(), g2g.symbol(), returnvalue, maxInheritanceMode, lambda_background, observedWeightedPathogenicVariantCount);
         } else {
-            return GenotypeLrWithExplanation.explanation(returnvalue, g2g, maxInheritanceMode,lambda_background, B, D);
+            return GenotypeLrWithExplanation.explanation(g2g.id(), returnvalue, maxInheritanceMode,lambda_background, B, D, g2g.symbol(), observedWeightedPathogenicVariantCount);
         }
+    }
+
+    public static class Options {
+        private final float pathogenicityThreshold;
+        private final boolean strict;
+
+        public Options(float pathogenicityThreshold, boolean strict) {
+            this.pathogenicityThreshold = pathogenicityThreshold;
+            this.strict = strict;
+        }
+
     }
 }

@@ -1,11 +1,13 @@
 package org.monarchinitiative.lirical.cmd;
 
 
-import org.monarchinitiative.lirical.io.HpoDownloader;
+import org.monarchinitiative.biodownload.BioDownloader;
+import org.monarchinitiative.biodownload.FileDownloadException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
+import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 /**
@@ -20,23 +22,33 @@ import java.util.concurrent.Callable;
         description = "Download files for LIRICAL")
 public class DownloadCommand implements Callable<Integer>{
     private static final Logger logger = LoggerFactory.getLogger(DownloadCommand.class);
-    @CommandLine.Option(names={"-d","--data"}, description ="directory to download data (default: ${DEFAULT-VALUE})" )
-    private String datadir="data";
-    @CommandLine.Option(names={"-w","--overwrite"}, description = "overwrite previously downloaded files (default: ${DEFAULT-VALUE})")
-    private boolean overwrite;
 
-    public DownloadCommand() {
-    }
+    @CommandLine.Option(names={"-d","--data"},
+            description ="directory to download data (default: ${DEFAULT-VALUE})" )
+    public Path datadir = Path.of("data");
 
-
-
+    @CommandLine.Option(names={"-w","--overwrite"},
+            description = "overwrite previously downloaded files (default: ${DEFAULT-VALUE})")
+    public boolean overwrite = false;
 
     @Override
     public Integer call() {
-        logger.info(String.format("Download analysis to %s", datadir));
-        HpoDownloader downloader = new HpoDownloader(datadir, overwrite);
-        downloader.download();
-        return 0;
+        try {
+            logger.info("Downloading data to {}", datadir.toAbsolutePath());
+            BioDownloader downloader = BioDownloader.builder(datadir)
+                    .overwrite(overwrite)
+                    .hpoJson()
+                    .hpDiseaseAnnotations()
+                    .geneInfoHuman()
+                    .medgene2MIM()
+                    .build();
+            downloader.download();
+            logger.info("Done!");
+            return 0;
+        } catch (FileDownloadException e) {
+            logger.error("Error: {}", e.getMessage(), e);
+            return 1;
+        }
     }
 
 }

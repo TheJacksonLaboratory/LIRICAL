@@ -5,16 +5,16 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.io.FilenameUtils;
 import org.monarchinitiative.lirical.configuration.YamlConfig;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
-import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,13 +30,13 @@ public class YamlParser {
 
 
 
-    public YamlParser(String yamlPath) {
-        if (yamlPath==null || !new File(yamlPath).exists()) {
+    public YamlParser(Path yamlPath) {
+        if (yamlPath==null || !Files.isRegularFile(yamlPath)) {
             throw new PhenolRuntimeException("[ERROR] Could not find YAML configuration file at \""+yamlPath+"\"");
         }
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         try {
-            yconfig = mapper.readValue(new File(yamlPath), YamlConfig.class);
+            yconfig = mapper.readValue(yamlPath.toFile(), YamlConfig.class);
         } catch (JsonMappingException e) {
             e.printStackTrace();
             throw new LiricalRuntimeException(String.format("[FATAL] Malformed YAML file: Unrecognized field name in YAML file %s.\n %s" ,
@@ -67,21 +67,6 @@ public class YamlParser {
         }
     }
 
-
-    String getMvStorePath()  {
-        if (yconfig.getAnalysis().containsKey("exomiser")) {
-            String exomiserPath = yconfig.getAnalysis().get("exomiser");
-            // Remove the trailing directory slash if any
-            exomiserPath=getPathWithoutTrailingSeparatorIfPresent(exomiserPath);
-            String basename=FilenameUtils.getBaseName(exomiserPath);
-            String filename=String.format("%s_variants.mv.db", basename);
-            return String.format("%s%s%s", exomiserPath,File.separator,filename);
-        } else {
-            throw new LiricalRuntimeException("exomiser path not found in YAML configuration file");
-        }
-    }
-
-
     private static String getPathWithoutTrailingSeparatorIfPresent(String path) {
         String sep = File.separator;
         if (path.endsWith(sep)) {
@@ -104,23 +89,6 @@ public class YamlParser {
         } else {
             return Optional.empty();
         }
-    }
-
-
-
-
-
-    /**
-     * @return path to the approprioate Jannovar transcript file (UCSC or RefSeq).
-     * @throws LiricalException if there is an error retrieving the Jannovar data object
-     */
-    String jannovarFile() throws LiricalException {
-        String tdb = transcriptdb();
-        switch (tdb) {
-            case "UCSC": return jannovarFileUCSC();
-            case "REFSEQ": return jannovarFileRefSeq();
-        }
-        return jannovarFileUCSC();
     }
 
 
@@ -184,42 +152,6 @@ public class YamlParser {
             return !yconfig.getAnalysis().containsKey("vcf");
     }
 
-
-
-    private String jannovarFileUCSC() throws LiricalException {
-        if (yconfig.getAnalysis().containsKey("exomiser")) {
-            String exomiserPath = yconfig.getAnalysis().get("exomiser");
-            // Remove the trailing directory slash if any
-            exomiserPath=FilenameUtils.getFullPathNoEndSeparator(exomiserPath);
-            String basename=FilenameUtils.getBaseName(exomiserPath);
-            String filename=String.format("%s_transcripts_ucsc.ser", basename);
-            return String.format("%s%s%s", exomiserPath,File.separator,filename);
-        }  else {
-            throw new LiricalException("No jannovar UCSC transcript file path found in YAML configuration file");
-        }
-    }
-
-    private String jannovarFileRefSeq() throws LiricalException {
-        if (yconfig.getAnalysis().containsKey("exomiser")) {
-            String exomiserPath = yconfig.getAnalysis().get("exomiser");
-            // Remove the trailing directory slash if any
-            exomiserPath=FilenameUtils.getFullPathNoEndSeparator(exomiserPath);
-            String basename=FilenameUtils.getBaseName(exomiserPath);
-            String filename=String.format("%s_transcripts_refseq.ser", basename);
-            return String.format("%s%s%s", exomiserPath,File.separator,filename);
-        }  else {
-            throw new LiricalException("No jannovar UCSC transcript file path found in YAML configuration file");
-        }
-    }
-
-
-
-    String getHpOboPath() {
-        String datadir = getDataDir();
-        return String.format("%s%s%s",datadir,File.separator,"hp.obo");
-    }
-
-
     /**@return A String representing the genome assembly of the VCF file (should be hg19 or hg38). */
     public String getGenomeAssembly() {
         if (yconfig.getAnalysis().containsKey("genomeAssembly")) {
@@ -235,9 +167,9 @@ public class YamlParser {
      * In this case, we return an empty Optional object.
      * @return Path to VCF file, if present.
      */
-    public Optional<String> getOptionalVcfPath()  {
+    public Optional<Path> getOptionalVcfPath()  {
         if (yconfig.getAnalysis().containsKey("vcf")) {
-            return Optional.of(yconfig.getAnalysis().get("vcf"));
+            return Optional.of(Path.of(yconfig.getAnalysis().get("vcf")));
         }  else {
             return Optional.empty();
         }

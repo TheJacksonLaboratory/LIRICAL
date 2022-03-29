@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,56 +18,28 @@ import java.util.Map;
  */
 public class GenotypeDataIngestor {
     private static final Logger logger = LoggerFactory.getLogger(GenotypeDataIngestor.class);
-    /** Key: the TermId of a gene. Value. Its background frequency in the current genome build. This variable
-     * is only initialized for runs with a VCF file. */
-    private Map<TermId, Double> gene2freq;
 
     private final static String ENTREZ_GENE_PREFIX="NCBIGene";
 
     private GenotypeDataIngestor() {
     }
 
-    private Map<TermId, Double> getGene2backgroundFrequency(){
-        return gene2freq;
-    }
-
-    public static Map<TermId, Double> fromPath(String backgroundFrequencyPath) {
-        GenotypeDataIngestor gdi = new GenotypeDataIngestor();
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(backgroundFrequencyPath));
-            gdi.parse(br);
-        } catch (IOException e) {
-            logger.error("Could not read background frequency file from {}",backgroundFrequencyPath);
-            throw new RuntimeException("Could not read background frequency file from " + backgroundFrequencyPath);
-        }
-        return gdi.getGene2backgroundFrequency();
-    }
-    public static Map<TermId, Double> fromResource(String resourceString) {
-        ClassLoader classLoader = GenotypeDataIngestor.class.getClassLoader();
-        InputStream is = classLoader.getResourceAsStream(resourceString);
-        InputStreamReader isr = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(isr);
-        GenotypeDataIngestor gdi = new GenotypeDataIngestor();
-        gdi.parse(br);
-        return gdi.getGene2backgroundFrequency();
-    }
-
     /**
      * symbol	geneID	freqsum-benign	count-benign	freqsum-path	count-path
      */
-    private void parse(BufferedReader reader)  {
-        //ImmutableMap.Builder<TermId,Double> builder = new ImmutableMap.Builder<>();
-        this.gene2freq=new HashMap<>();
+    public static Map<TermId, Double> parse(BufferedReader reader)  {
+        // Key: the TermId of a gene.
+        // Value. Its background frequency in the current genome build. This variable is only initialized for runs with a VCF file.
+        Map<TermId, Double> geneFrequency = new HashMap<>();
         try {
-
-            String line = reader.readLine(); // this is the header -- discardR
+            reader.readLine(); // this is the header -- discard
+            String line;
             while ((line=reader.readLine())!=null) {
                 String[] a = line.split("\t");
                 if (a.length <10) {
-                    System.err.println(String.format("[ERROR GenotypeDataIngestor] malformed line with %d instead of 10 fields: %s",
-                            a.length, line));
+                    logger.warn("malformed line with {} instead of 10 fields: {}", a.length, line);
+                    continue;
                 }
-                //String symbol=a[0]; not needed.
                 String entrezNumber=a[1]; // e.g., 2200 for FBN1
                 if (entrezNumber==null || entrezNumber.length()==0) {
                     continue; // no EntrezId available -- this happens with many genes
@@ -75,14 +48,15 @@ public class GenotypeDataIngestor {
                 String fsumpath=a[9];
                 try {
                     Double pathSum = Double.parseDouble(fsumpath);
-                    gene2freq.put(entrezId,pathSum);
+                    geneFrequency.put(entrezId,pathSum);
                 } catch (NumberFormatException e) {
-                    e.printStackTrace();// should really never happen--TODO throw Exception
+                    logger.warn("Skipping line with non-parseable value {}: {}", e.getMessage(), line);
                 }
             }
-            reader.close();
+            return Collections.unmodifiableMap(geneFrequency);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warn("Error {}", e.getMessage(), e);
+            return Map.of();
         }
 
     }

@@ -1,60 +1,48 @@
 package org.monarchinitiative.lirical.likelihoodratio;
 
-import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+
+import java.util.Objects;
 
 import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInheritanceTermIds.*;
 
 
 public class GenotypeLrWithExplanation  {
+    private final TermId geneId;
     /** The likelihood ratio of the genotype. */
-    private final double LR;
+    private final double lr;
     private final String explanation;
 
-
-
-    public GenotypeLrWithExplanation(double lratio, String explain){
-        this.LR = lratio;
-        this.explanation = explain;
-    }
-
-
-
-
-
-
-    static GenotypeLrWithExplanation noVariantsDetectedAutosomalRecessive(double ratio, String geneSymbol) {
+    static GenotypeLrWithExplanation noVariantsDetectedAutosomalRecessive(TermId geneId,double ratio, String geneSymbol) {
         final String expl = String.format("%s: No variants detected with autosomal recessive disease. log<sub>10</sub>(LR)=%.3f.", geneSymbol,  Math.log10(ratio));
-        return new GenotypeLrWithExplanation(ratio, expl);
+        return new GenotypeLrWithExplanation(geneId, ratio, expl);
     }
 
-    static GenotypeLrWithExplanation noVariantsDetectedAutosomalDominant(double ratio, String geneSymbol) {
+    static GenotypeLrWithExplanation noVariantsDetectedAutosomalDominant(TermId geneId,double ratio, String geneSymbol) {
         final String expl = String.format("%s: No variants detected. log<sub>10</sub>(LR)=%.3f.", geneSymbol,  Math.log10(ratio));
-        return new GenotypeLrWithExplanation(ratio, expl);
+        return new GenotypeLrWithExplanation(geneId, ratio, expl);
     }
 
-    static GenotypeLrWithExplanation twoPathClinVarAllelesRecessive(double ratio, String geneSymbol) {
+    static GenotypeLrWithExplanation twoPathClinVarAllelesRecessive(TermId geneId,double ratio, String geneSymbol) {
         final String expl = String.format("%s: Two pathogenic ClinVar variants detected with autosomal recessive disease. log<sub>10</sub>(LR)=%.3f.", geneSymbol,  Math.log10(ratio));
-        return new GenotypeLrWithExplanation(ratio, expl);
+        return new GenotypeLrWithExplanation(geneId, ratio, expl);
     }
 
-    static GenotypeLrWithExplanation pathClinVar(double ratio, String geneSymbol) {
+    static GenotypeLrWithExplanation pathClinVar(TermId geneId,double ratio, String geneSymbol) {
         final String expl = String.format("%s: Pathogenic ClinVar variant detected. log<sub>10</sub>(LR)=%.3f.", geneSymbol,  Math.log10(ratio));
-        return new GenotypeLrWithExplanation(ratio, expl);
+        return new GenotypeLrWithExplanation(geneId, ratio, expl);
     }
 
-     static   GenotypeLrWithExplanation explainOneAlleleRecessive(double ratio, double observedWeightedPathogenicVariantCount, double lambda_background, String geneSymbol) {
-        final int lambda_disease = 2;
-        final String expl = String.format("%s: One pathogenic allele detected with autosomal recessive disease. " +
+     static GenotypeLrWithExplanation explainOneAlleleRecessive(TermId geneId,double ratio, double observedWeightedPathogenicVariantCount, double lambda_background, String geneSymbol) {
+        int lambda_disease = 2;
+        String expl = String.format("%s: One pathogenic allele detected with autosomal recessive disease. " +
              "Observed weighted pathogenic variant count: %.2f. &lambda;<sub>disease</sub>=%d. &lambda;<sub>background</sub>=%.4f. log<sub>10</sub>(LR)=%.3f.",
                 geneSymbol, observedWeightedPathogenicVariantCount, lambda_disease, lambda_background,  Math.log10(ratio));
-         return new GenotypeLrWithExplanation(ratio, expl);
+         return new GenotypeLrWithExplanation(geneId, ratio, expl);
     }
 
 
-    static GenotypeLrWithExplanation explainPathCountAboveLambdaB(double ratio, Gene2Genotype g2g, TermId MoI,  double lambda_background) {
-        double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
-        String geneSymbol = g2g.getSymbol();
+    static GenotypeLrWithExplanation explainPathCountAboveLambdaB(TermId geneId, String geneSymbol, double ratio, TermId MoI, double lambda_background, double observedWeightedPathogenicVariantCount) {
         int lambda_disease = 1;
         if (MoI.equals(AUTOSOMAL_RECESSIVE) || MoI.equals(X_LINKED_RECESSIVE)) {
             lambda_disease = 2;
@@ -62,12 +50,10 @@ public class GenotypeLrWithExplanation  {
         String expl = String.format("%s: %s. Heuristic for high number of observed predicted pathogenic variants. "
                         + "Observed weighted pathogenic variant count: %.2f. &lambda;<sub>disease</sub>=%d. &lambda;<sub>background</sub>=%.4f. log<sub>10</sub>(LR)=%.3f.",
                 geneSymbol, getMoIString(MoI), observedWeightedPathogenicVariantCount, lambda_disease, lambda_background, Math.log10(ratio));
-        return new GenotypeLrWithExplanation(ratio, expl);
+        return new GenotypeLrWithExplanation(geneId, ratio, expl);
     }
 
-    static GenotypeLrWithExplanation explanation(double ratio, Gene2Genotype g2g, TermId modeOfInh, double lambda_b, double D, double B) {
-        double observedWeightedPathogenicVariantCount = g2g.getSumOfPathBinScores();
-        String symbol = g2g.getSymbol();
+    static GenotypeLrWithExplanation explanation(TermId geneId,double ratio, TermId modeOfInh, double lambda_b, double D, double B, String symbol, double observedWeightedPathogenicVariantCount) {
         int lambda_disease = 1;
         if (modeOfInh.equals(AUTOSOMAL_RECESSIVE) || modeOfInh.equals(X_LINKED_RECESSIVE)) {
             lambda_disease = 2;
@@ -75,7 +61,7 @@ public class GenotypeLrWithExplanation  {
         String msg = String.format("%s: P(G|D)=%.4f. P(G|&#172;D)=%.4f", symbol, D, B);
         msg = String.format("%s. %s. Observed weighted pathogenic variant count: %.2f. &lambda;<sub>disease</sub>=%d. &lambda;<sub>background</sub>=%.4f. log<sub>10</sub>(LR)=%.3f",
                msg, getMoIString(modeOfInh), observedWeightedPathogenicVariantCount,  lambda_disease, lambda_b, Math.log10(ratio));
-        return new GenotypeLrWithExplanation(ratio, msg);
+        return new GenotypeLrWithExplanation(geneId, ratio, msg);
     }
 
     private static String getMoIString(TermId MoI) {
@@ -91,12 +77,47 @@ public class GenotypeLrWithExplanation  {
         return " Mode of inheritance: not available"; // should never happen
     }
 
-
-    public double getLR() {
-        return LR;
+    public static GenotypeLrWithExplanation of(TermId geneId, double lr, String explanation) {
+        return new GenotypeLrWithExplanation(geneId, lr, explanation);
     }
 
-    public String getExplanation() {
+    private GenotypeLrWithExplanation(TermId geneId, double lr, String explanation) {
+        this.geneId = Objects.requireNonNull(geneId);
+        this.lr = lr;
+        this.explanation = Objects.requireNonNull(explanation, "Explanation must not be null");
+    }
+
+
+    public TermId geneId() {
+        return geneId;
+    }
+
+    public double lr() {
+        return lr;
+    }
+
+    public String explanation() {
         return explanation;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GenotypeLrWithExplanation that = (GenotypeLrWithExplanation) o;
+        return Double.compare(that.lr, lr) == 0 && Objects.equals(explanation, that.explanation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(lr, explanation);
+    }
+
+    @Override
+    public String toString() {
+        return "GenotypeLrWithExplanation{" +
+                "LR=" + lr +
+                ", explanation='" + explanation + '\'' +
+                '}';
     }
 }
