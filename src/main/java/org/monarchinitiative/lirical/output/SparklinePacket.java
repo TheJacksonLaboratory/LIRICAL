@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.output;
 
 
-import com.google.common.collect.ImmutableList;
+import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
@@ -9,9 +9,11 @@ import org.monarchinitiative.lirical.svg.Sparkline2Svg;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,17 +35,21 @@ public class SparklinePacket {
 
     /** Factory method for genotype-phenotype analysis.*/
     public static List<SparklinePacket> sparklineFactory(HpoCase hcase, int N, Map<TermId,String> geneid2sym, Ontology ontology) {
-        ImmutableList.Builder<SparklinePacket> builder = new ImmutableList.Builder<>();
-        List<TestResult> results = hcase.getResults(); // this is a sorted list!
-        if (results.isEmpty()) {
-            return builder.build();
-        }
-        TermId topCandidateId = results.get(0).diseaseId();
-        int rank = 0;
-        Sparkline2Svg sparkline2Svg = new Sparkline2Svg(hcase,topCandidateId, true, ontology);
-        while (rank < N && rank < results.size()) {
-            TestResult result = results.get(rank);
-            rank++;
+        AnalysisResults results = hcase.results();
+        if (results.isEmpty())
+            return List.of();
+
+        List<SparklinePacket> packets = new ArrayList<>(N);
+        // we're checking that results are not empty
+        //noinspection OptionalGetWithoutIsPresent
+        TestResult topResult = results.resultsWithDescendingPostTestProbability().findFirst().get();
+        TermId topCandidateId = topResult.diseaseId();
+        AtomicInteger r = new AtomicInteger();
+        Sparkline2Svg sparkline2Svg = new Sparkline2Svg(topResult,topCandidateId, true, ontology);
+        results.resultsWithDescendingPostTestProbability().forEachOrdered(result -> {
+            int current = r.incrementAndGet();
+            if (current == N)
+                return;
             TermId diseaseId = result.diseaseId();
             String geneSymbol = EMPTY_STRING;
             Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
@@ -52,42 +58,41 @@ public class SparklinePacket {
                 geneSymbol = geneid2sym.getOrDefault(geneId, EMPTY_STRING);
             }
             double compositeLR = result.getCompositeLR();
-            double posttestProb = result.calculatePosttestProbability();
+            double posttestProb = result.posttestProbability();
             String posttestSVG = sparkline2Svg.getPosttestBar(posttestProb);
-            String sparkSVG = sparkline2Svg.getSparklineSvg(hcase, diseaseId, geneSymbol);
+            String sparkSVG = sparkline2Svg.getSparklineSvg(geneSymbol, result);
             String geneSparkSvg = sparkline2Svg.getGeneSparklineSvg(hcase, diseaseId, geneSymbol);
             String disname = prettifyDiseaseName(result.getDiseaseName());
             String diseaseAnchor = getDiseaseAnchor(diseaseId);
-            SparklinePacket sp = new SparklinePacket(rank, posttestSVG, sparkSVG, geneSparkSvg, compositeLR, geneSymbol, disname, diseaseAnchor);
-            builder.add(sp);
-        }
-        return builder.build();
+            SparklinePacket sp = new SparklinePacket(current, posttestSVG, sparkSVG, geneSparkSvg, compositeLR, geneSymbol, disname, diseaseAnchor);
+            packets.add(sp);
+        });
+
+        return packets;
     }
 
     /** Factory method for phenotype only analysis.*/
-    public static List<SparklinePacket> sparklineFactory(HpoCase hcase, int N, Ontology ontology) {
-        ImmutableList.Builder<SparklinePacket> builder = new ImmutableList.Builder<>();
-        List<TestResult> results = hcase.getResults(); // this is a sorted list!
-        if (results.isEmpty()) {
-            return builder.build();
-        }
-        TermId topCandidateId = results.get(0).diseaseId();
-        int rank = 0;
-        Sparkline2Svg sparkline2Svg = new Sparkline2Svg(hcase,topCandidateId, false, ontology);
-        while (rank < N && rank < results.size()) {
-            TestResult result = results.get(rank);
-            rank++;
-            TermId diseaseId = result.diseaseId();
-            double compositeLR = result.getCompositeLR();
-            double posttestProb = result.calculatePosttestProbability();
-            String posttestSVG = sparkline2Svg.getPosttestBar(posttestProb);
-            String sparkSVG = sparkline2Svg.getSparklineSvg(hcase, diseaseId);
-            String disname = prettifyDiseaseName(result.getDiseaseName());
-            String diseaseAnchor = getDiseaseAnchor(diseaseId);
-            SparklinePacket sp = new SparklinePacket(rank, posttestSVG, sparkSVG, compositeLR, EMPTY_STRING, disname, diseaseAnchor);
-            builder.add(sp);
-        }
-        return builder.build();
+    public static List<SparklinePacket> sparklineFactory(AnalysisResults results, int N, Ontology ontology) {
+        Optional<TestResult> topTestResultOptional = results.resultsWithDescendingPostTestProbability().findFirst();
+        if (topTestResultOptional.isEmpty())
+            return List.of();
+
+        TestResult topCandidate = topTestResultOptional.get();
+        Sparkline2Svg sparkline2Svg = new Sparkline2Svg(topCandidate, topCandidate.diseaseId(),false, ontology);
+        final AtomicInteger r = new AtomicInteger();
+        return results.resultsWithDescendingPostTestProbability()
+                .limit(N)
+                .map(result -> {
+                    int rank = r.incrementAndGet();
+                    TermId diseaseId = result.diseaseId();
+                    double compositeLR = result.getCompositeLR();
+                    double posttestProb = result.posttestProbability();
+                    String posttestSVG = sparkline2Svg.getPosttestBar(posttestProb);
+                    String sparkSVG = sparkline2Svg.getSparklineSvg("", result);
+                    String disname = prettifyDiseaseName(result.getDiseaseName());
+                    String diseaseAnchor = getDiseaseAnchor(diseaseId);
+                    return new SparklinePacket(rank, posttestSVG, sparkSVG, compositeLR, EMPTY_STRING, disname, diseaseAnchor);
+                }).toList();
     }
 
     private static String getDiseaseAnchor(TermId diseaseId) {

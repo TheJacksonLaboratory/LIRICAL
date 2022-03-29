@@ -26,7 +26,7 @@ public class TestResult implements Comparable<TestResult> {
     /**
      * A list of results for the tests performed on observed phenotypes for {@link #disease}.
      */
-    private final List<LrWithExplanation> results;
+    private final List<LrWithExplanation> observedResults;
     /**
      * A list of test results for phenotypes that were excluded.
      */
@@ -52,11 +52,6 @@ public class TestResult implements Comparable<TestResult> {
      * The probability of some result after testing.
      */
     private final double posttestProbability;
-    /**
-     * The overall rank of the result within the differential diagnosis.
-     */
-    // TODO - we should remove the rank - not a business of this class
-    private int rank;
 
     public static TestResult of(List<LrWithExplanation> observed,
                                 List<LrWithExplanation> excluded,
@@ -80,7 +75,7 @@ public class TestResult implements Comparable<TestResult> {
                        HpoDisease disease,
                        double pretestProbability,
                        GenotypeLrWithExplanation genotypeLr) {
-        this.results = Objects.requireNonNull(observed);
+        this.observedResults = Objects.requireNonNull(observed);
         this.excludedResults = Objects.requireNonNull(excluded);
         this.disease = Objects.requireNonNull(disease);
         this.compositeLR = calculateCompositeLR(observed, excluded, genotypeLr);
@@ -98,6 +93,22 @@ public class TestResult implements Comparable<TestResult> {
         return observedLr * excludedLr * genotypeLrForCalculationOfCompositeLr;
     }
 
+    public List<LrWithExplanation> observedResults() {
+        return observedResults;
+    }
+
+    public List<TermId> observedTerms() {
+        return observedResults.stream().map(LrWithExplanation::queryTerm).toList();
+    }
+
+    public List<LrWithExplanation> excludedResults() {
+        return excludedResults;
+    }
+
+    public List<TermId> excludedTerms() {
+        return excludedResults.stream().map(LrWithExplanation::queryTerm).toList();
+    }
+
     /**
      * @return the composite likelihood ratio (product of the LRs of the individual tests).
      */
@@ -109,7 +120,7 @@ public class TestResult implements Comparable<TestResult> {
      * @return the total count of tests performed (excluding genotype).
      */
     public int getNumberOfTests() {
-        return results.size() + excludedResults.size();
+        return observedResults.size() + excludedResults.size();
     }
 
     /**
@@ -128,23 +139,17 @@ public class TestResult implements Comparable<TestResult> {
     }
 
 
-    public double getPretestProbability() {
+    public double pretestProbability() {
         return pretestProbability;
     }
 
-    public double calculatePosttestProbability() {
+    private double calculatePosttestProbability() {
         double po = posttestodds();
         return po / (1 + po);
     }
 
-    @Deprecated(forRemoval = true) // not a business of this class
-    public int getRank() {
-        return rank;
-    }
-
-    @Deprecated(forRemoval = true) // not a business of this class
-    public void setRank(int rank) {
-        this.rank = rank;
+    public double posttestProbability() {
+        return posttestProbability;
     }
 
     /**
@@ -161,7 +166,7 @@ public class TestResult implements Comparable<TestResult> {
 
     @Override
     public String toString() {
-        String resultlist = results.stream().map(String::valueOf).collect(Collectors.joining(";"));
+        String resultlist = observedResults.stream().map(String::valueOf).collect(Collectors.joining(";"));
         String genoResult = hasGenotypeLR() ? String.format("genotype LR: %.4f", genotypeLr.lr()) : "no genotype LR";
         return String.format("%s: %.2f [%s] %s", disease.id(), getCompositeLR(), resultlist, genoResult);
     }
@@ -171,7 +176,7 @@ public class TestResult implements Comparable<TestResult> {
      * @return the likelihood ratio of the i'th test
      */
     public double getObservedPhenotypeRatio(int i) {
-        return this.results.get(i).lr();
+        return this.observedResults.get(i).lr();
     }
 
     /**
@@ -186,7 +191,7 @@ public class TestResult implements Comparable<TestResult> {
      * @return name of the disease being tested.
      */
     public TermId diseaseId() {
-        return disease.getDiseaseDatabaseId();
+        return disease.id();
     }
 
     /**
@@ -217,7 +222,7 @@ public class TestResult implements Comparable<TestResult> {
     @Deprecated(forRemoval = true) // get explanations from results
     public List<String> getObservedPhenotypeExplanation() {
         // TODO - this may need to be provided in reverse order
-        return results.stream()
+        return observedResults.stream()
                 .map(LrWithExplanation::escapedExplanation)
                 .toList();
     }
@@ -241,7 +246,7 @@ public class TestResult implements Comparable<TestResult> {
      * @return maximum abs(LR)
      */
     public double getMaximumIndividualLR() {
-        double m1 = this.results.stream()
+        double m1 = this.observedResults.stream()
                 .map(LrWithExplanation::lr)
                 .map(Math::abs)
                 .max(Double::compare)

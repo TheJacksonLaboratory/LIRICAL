@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.hpo;
 
 import com.google.common.collect.ImmutableList;
 
+import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -30,14 +31,14 @@ public final class HpoCase {
     /** Age of the proband, if known. */
     private final Age age;
 
-    private final Map<TermId,TestResult> disease2resultMap;
+    private final AnalysisResults results;
 
-    private HpoCase(List<TermId> observedAbn,  List<TermId> excludedAbn, Map<TermId,TestResult> d2rmap, Sex sex, Age age) {
-        this.observedAbnormalities=observedAbn;
-        this.excludedAbnormalities=excludedAbn;
-        this.disease2resultMap=d2rmap;
-        this.sex=sex;
-        this.age=age;
+    private HpoCase(List<TermId> observedTerms, List<TermId> excludedTerms, AnalysisResults results, Sex sex, Age age) {
+        this.observedAbnormalities = observedTerms;
+        this.excludedAbnormalities = excludedTerms;
+        this.results = results;
+        this.sex = sex;
+        this.age = age;
     }
 
 
@@ -49,56 +50,21 @@ public final class HpoCase {
     public Sex getSex() { return sex;  }
     /** The {@link Age} of the person being evaluated.*/
     public Age getAge() { return age; }
-    /** @return Sort List of {@link TestResult} objects for each diseases in the differential diagnosis. */
-    public List<TestResult> getResults() {
-        List<TestResult> trlist = new ArrayList<>(this.disease2resultMap.values());
-        trlist.sort(Collections.reverseOrder());
-        return trlist;
+
+    public AnalysisResults results() {
+        return results;
     }
+
     /** * @return total number of positive and negative phenotype observations for this case.*/
     public int getNumberOfObservations() {
         return observedAbnormalities.size() + excludedAbnormalities.size();
     }
 
-    public TestResult getResult(TermId diseaseId) {
-        return this.disease2resultMap.get(diseaseId);
+    public double calculatePosttestProbability(TermId diseaseId) {
+        return this.results.resultByDiseaseId(diseaseId)
+                .map(TestResult::posttestProbability)
+                .orElse(0.);
     }
-
-    /**
-     * The argument to the function is the TermId (e.g., OMIM:600100) of a disease. This function checks to
-     * see what rank the disease was assigned by LIRICAL; the ranks are stored in {@link #disease2resultMap}.
-     * Note that in some cases, the correct disease may be completely removed from the list of results. This can
-     * be the case, fo instance, if we are using the {@code strict} option and only return diseases for which
-     * LIRICAL finds a predicted pathogenic variant in a gene associated with the disease.
-     * Therefore, we return an Optional. If it is not-present, then the disease was not found.
-     * @param diseaseId CURIE (e.g., OMIM:600100) of the disease whose rank we want to know
-     * @return the rank of the disease within all of the test results.
-     *
-     */
-    public Optional<Integer> getRank(TermId diseaseId){
-        TestResult result = this.disease2resultMap.get(diseaseId);
-        if (result==null) {
-            return Optional.empty();
-        }
-        return Optional.of(result.getRank());
-    }
-
-    public double getPosttestProbability(TermId diseaseId) {
-        TestResult result = this.disease2resultMap.get(diseaseId);
-        if (result==null) {
-            return 0.0;
-        }
-        return result.calculatePosttestProbability();
-    }
-
-    /**
-     * If a disease is unranked, then it is tied for the rank after the last rank of the ranked diseases
-     * @return (tied) rank of an unranked disease
-     */
-    public int getRankOfUnrankedDisease() {
-        return 1 + this.disease2resultMap.size();
-    }
-
 
     @Override
     public String toString() {
@@ -109,18 +75,10 @@ public final class HpoCase {
         String excluded=this.excludedAbnormalities.stream().
                 map(TermId::getValue).
                 collect(Collectors.joining("; "));
-        int n_results=this.getResults().size();
+        int n_results=results.size();
         return "HPO Case\n" + "observed: " + observed +"\nexcluded: " + excluded +"\nTests: n="+n_results;
 
     }
-
-
-    public double getBestPosteriorProbability() {
-        return disease2resultMap.values().stream().
-                max(Comparator.comparing(TestResult::calculatePosttestProbability)).
-                get().calculatePosttestProbability();
-    }
-
 
     /** Convenience class to construct an {@link HpoCase} object. */
     public static class Builder {
@@ -129,7 +87,7 @@ public final class HpoCase {
         /** List of excluded Hpo terms for our case. */
         private List<TermId> excludedAbnormalities;
         /** List of results . */
-        private Map<TermId,TestResult> testResultMap;
+        private AnalysisResults analysisResults;
         /** One of Male, Female, Unknown. See {@link Sex}. */
         private Sex sex;
         /** Age of the proband, if known. */
@@ -157,14 +115,14 @@ public final class HpoCase {
             return this;
         }
 
-        public Builder results(Map<TermId,TestResult> trlist) {
-            this.testResultMap =trlist;
+        public Builder results(AnalysisResults analysisResults) {
+            this.analysisResults = analysisResults;
             return this;
         }
 
         public HpoCase build() {
-            Objects.requireNonNull(testResultMap);
-            return new HpoCase(observedAbnormalities,excludedAbnormalities, testResultMap,sex,age);
+            Objects.requireNonNull(analysisResults);
+            return new HpoCase(observedAbnormalities,excludedAbnormalities, analysisResults, sex, age);
         }
     }
 

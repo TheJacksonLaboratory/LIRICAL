@@ -1,21 +1,15 @@
 package org.monarchinitiative.lirical.hpo;
 
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
+import org.monarchinitiative.lirical.analysis.AnalysisResults;
 
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -43,7 +37,7 @@ class HpoCaseTest {
         // We need to provide a list of TestResult objects for the API, but they are not required for this unit test
         // therefore, pass an empty list.
         HpoCase.Builder casebuilder = new HpoCase.Builder(builder).
-                results(Map.of());
+                results(AnalysisResults.empty());
 
         hpocase = casebuilder.build();
     }

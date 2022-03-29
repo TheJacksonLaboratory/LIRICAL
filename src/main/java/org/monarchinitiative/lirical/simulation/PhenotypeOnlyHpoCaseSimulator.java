@@ -299,7 +299,8 @@ public class PhenotypeOnlyHpoCaseSimulator {
         HpoCase hpocase = evaluator.evaluate();
         if (verbose)
             System.err.println(hpocase.toString());
-        return hpocase.getRank(disease.getDiseaseDatabaseId());
+//        return hpocase.getRank(disease.getDiseaseDatabaseId());
+        return Optional.empty();
     }
 
 

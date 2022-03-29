@@ -1,18 +1,18 @@
 package org.monarchinitiative.lirical.svg;
 
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
+import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Posttest2Svg extends Lirical2Svg {
     private static final Logger logger = LoggerFactory.getLogger(Posttest2Svg.class);
 
-    private final List<TestResult> testResults;
+    private final AnalysisResults analysisResults;
 
     private final int MINIMUM_DIFFERENTIALS_TO_SHOW = 3;
 
@@ -57,14 +57,9 @@ public class Posttest2Svg extends Lirical2Svg {
     private final double thresholdPostTestProb;
 
 
-    public Posttest2Svg(List<TestResult> results, double threshold, int totalDetailedToShowText) {
-        this.testResults = results;
-        int n = 0;
-        for (TestResult result : results) {
-            if (result.calculatePosttestProbability() >= threshold) {
-                n++;
-            }
-        }
+    public Posttest2Svg(AnalysisResults results, double threshold, int totalDetailedToShowText) {
+        this.analysisResults = results;
+        int n = Math.toIntExact(results.results().filter(result -> result.posttestProbability()>=threshold).count());
         n_belowThresholdDifferentials = n;
         thresholdPostTestProb = threshold;
         n = Math.max(n, MINIMUM_DIFFERENTIALS_TO_SHOW);
@@ -175,39 +170,45 @@ public class Posttest2Svg extends Lirical2Svg {
 
     private void writePosttestBoxes(Writer writer) throws IOException {
         currentY += 2 * MIN_VERTICAL_OFFSET;
-        int lastY = currentY;
+        AtomicInteger lastY = new AtomicInteger(currentY);
         int xOffset = 5;
-        for (int i = 0; i < numDifferentialsToShowSVG && i < this.testResults.size(); ++i) {
-            TestResult result = this.testResults.get(i);
-            double postprob = result.calculatePosttestProbability();
-            int boxwidth = (int) (scaledWidth * postprob);
-            // either show a b ox or (if the post-test prob is less than 2.5%) show a diamond to symbolize
-            // a small value
-            if (postprob > 0.025) {
-                writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
-                                "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
-                        BOX_HEIGHT,
-                        boxwidth,
-                        currentY,
-                        XSTART,
-                        BRIGHT_GREEN));
-            } else {
-                writeDiamond(writer,XSTART,currentY);
-            }
-            currentY += MIN_VERTICAL_OFFSET;
-            // now write label of disease and HTML anchor
-            String label = String.format("%d. %s", (1 + i), prettifyDiseaseName(result.getDiseaseName()));
-            String anchor = String.format("<a class=\"svg\" href=\"#diagnosis%d\">\n", (1 + i));
-            writer.write(anchor);
-            writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n",
-                    XSTART + xOffset,
-                    currentY + BOX_HEIGHT + BOX_OFFSET,
-                    label));
-            writer.write("</a>\n");
-            lastY = currentY;
-            currentY += TEXTHEIGHT + BOX_HEIGHT + BOX_OFFSET;
-
-        }
+        AtomicInteger rank = new AtomicInteger();
+        analysisResults.resultsWithDescendingPostTestProbability()
+                .limit(numDifferentialsToShowSVG)
+                .forEachOrdered(result -> {
+                    try {
+                        double postprob = result.posttestProbability();
+                        int boxwidth = (int) (scaledWidth * postprob);
+                        // either show a b ox or (if the post-test prob is less than 2.5%) show a diamond to symbolize
+                        // a small value
+                        if (postprob > 0.025) {
+                            writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
+                                            "stroke-width=\"1\" stroke=\"#000000\" fill=\"%s\"/>\n",
+                                    BOX_HEIGHT,
+                                    boxwidth,
+                                    currentY,
+                                    XSTART,
+                                    BRIGHT_GREEN));
+                        } else {
+                            writeDiamond(writer, XSTART, currentY);
+                        }
+                        currentY += MIN_VERTICAL_OFFSET;
+                        // now write label of disease and HTML anchor
+                        int current = rank.incrementAndGet();
+                        String label = String.format("%d. %s", (current), prettifyDiseaseName(result.getDiseaseName()));
+                        String anchor = String.format("<a class=\"svg\" href=\"#diagnosis%d\">\n", current);
+                        writer.write(anchor);
+                        writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n",
+                                XSTART + xOffset,
+                                currentY + BOX_HEIGHT + BOX_OFFSET,
+                                label));
+                        writer.write("</a>\n");
+                        lastY.set(currentY);
+                        currentY += TEXTHEIGHT + BOX_HEIGHT + BOX_OFFSET;
+                    } catch (IOException e) {
+                        logger.warn("Error: {}", e.getMessage(), e);
+                    }
+                });
         if (this.n_belowThresholdDifferentials > this.MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW) {
             String message = String.format("An additional %d diseases were found to have a post-test probability above %.2f",
                     n_belowThresholdDifferentials - MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW,

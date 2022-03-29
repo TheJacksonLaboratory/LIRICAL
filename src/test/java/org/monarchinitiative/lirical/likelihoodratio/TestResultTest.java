@@ -235,7 +235,7 @@ public class TestResultTest {
     @Test
     public void testGetPretestProb() {
         double expected = 0.025;  // in init() we have  double prevalence = 0.025;
-        assertEquals(expected,tresultNoGenotype.getPretestProbability(),EPSILON);
+        assertEquals(expected,tresultNoGenotype.pretestProbability(),EPSILON);
     }
 
     @Test

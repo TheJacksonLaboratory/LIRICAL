@@ -1,21 +1,43 @@
 package org.monarchinitiative.lirical.analysis;
 
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 final class AnalysisResultsDefault implements AnalysisResults {
+
+    private static final AnalysisResultsDefault EMPTY = new AnalysisResultsDefault(List.of());
+
+    static AnalysisResultsDefault empty() {
+        return EMPTY;
+    }
+
     private final List<TestResult> results;
 
+    private final Map<TermId, TestResult> resultByDiseaseId;
+
     AnalysisResultsDefault(List<TestResult> results) {
-        this.results = results;
+        this.results = Objects.requireNonNull(results);
+        this.resultByDiseaseId = results.stream()
+                .collect(Collectors.toMap(TestResult::diseaseId, Function.identity()));
     }
 
     @Override
-    public Stream<TestResult> results() {
-        return results.stream();
+    public Iterator<TestResult> iterator() {
+        return results.iterator();
+    }
+
+    @Override
+    public int size() {
+        return results.size();
+    }
+
+    @Override
+    public Optional<TestResult> resultByDiseaseId(TermId diseaseId) {
+        return Optional.ofNullable(resultByDiseaseId.get(diseaseId));
     }
 
     @Override
@@ -36,6 +58,5 @@ final class AnalysisResultsDefault implements AnalysisResults {
         return "AnalysisResultsDefault[" +
                 "results=" + results + ']';
     }
-
 
 }

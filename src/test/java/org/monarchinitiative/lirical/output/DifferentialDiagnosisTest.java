@@ -29,14 +29,13 @@ public class DifferentialDiagnosisTest {
         TestResult result;
         result = Mockito.mock(TestResult.class);
         when(result.getDiseaseName()).thenReturn(originalName);
-        when(result.calculatePosttestProbability()).thenReturn(0.001);
+        when(result.posttestProbability()).thenReturn(0.001);
         when(result.diseaseId()).thenReturn(TermId.of("OMIM:101600"));
-        when(result.getRank()).thenReturn(1);
-        when(result.calculatePosttestProbability()).thenReturn(0.1);
+        when(result.posttestProbability()).thenReturn(0.1);
         when(result.getCompositeLR()).thenReturn(0.3);
         when(result.genotypeLr()).thenReturn(Optional.empty());
         String expectedShortName="PFEIFFER SYNDROME";
-        DifferentialDiagnosis dd = new DifferentialDiagnosis(result);
+        DifferentialDiagnosis dd = new DifferentialDiagnosis(result, 1);
         assertEquals(expectedShortName,dd.getDiseaseName());
     }
 
@@ -47,13 +46,12 @@ public class DifferentialDiagnosisTest {
         TestResult result;
         result = Mockito.mock(TestResult.class);
         when(result.getDiseaseName()).thenReturn(originalName);
-        when(result.calculatePosttestProbability()).thenReturn(0.001);
+        when(result.posttestProbability()).thenReturn(0.001);
         when(result.diseaseId()).thenReturn(TermId.of("OMIM:101600"));
-        when(result.getRank()).thenReturn(1);
-        when(result.calculatePosttestProbability()).thenReturn(0.1);
+        when(result.posttestProbability()).thenReturn(0.1);
         when(result.getCompositeLR()).thenReturn(0.3);
         when(result.genotypeLr()).thenReturn(Optional.empty());
-        DifferentialDiagnosis dd = new DifferentialDiagnosis(result);
+        DifferentialDiagnosis dd = new DifferentialDiagnosis(result, 1);
         dd.setPhenotypeExplanation(phenotypeExplanation);
         return dd;
     }

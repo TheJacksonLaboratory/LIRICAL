@@ -89,11 +89,11 @@ public class PhenoOnlyCaseSimulator {
         this.hpocase = evaluator.evaluate();
 
 
-        Optional<Integer> optRank = this.hpocase .getRank(simulatedDiseaseId);
-        if (optRank.isPresent()) {
-            rank_of_disease = optRank.get();
-            System.out.println(simulatedDiagnosis.getTerm().getLabel() + ": " + rank_of_disease);
-        }
+//        Optional<Integer> optRank = this.hpocase.getRank(simulatedDiseaseId);
+//        if (optRank.isPresent()) {
+//            rank_of_disease = optRank.get();
+//            System.out.println(simulatedDiagnosis.getTerm().getLabel() + ": " + rank_of_disease);
+//        }
     }
 
 

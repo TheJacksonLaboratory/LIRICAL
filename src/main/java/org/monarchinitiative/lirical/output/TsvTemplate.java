@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class coordinates the output of a TSV file that contains a suymmary of the analysis results.
@@ -71,19 +72,21 @@ public class TsvTemplate extends LiricalTemplate {
         List<TsvDifferential> diff = new ArrayList<>();
         String header= String.join("\t",tsvHeader);
         templateData.put("header",header);
-        // Note the following results are already sorted
-        for (TestResult result : hcase.getResults()) {
-            TsvDifferential tsvdiff = new TsvDifferential(result);
-            Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
-            if (genotypeLr.isPresent()) {
-                TermId geneId = genotypeLr.get().geneId();
-                Gene2Genotype g2g = genotypeMap.get(geneId);
-                if (g2g != null) {
-                    tsvdiff.addG2G(g2g);
-                }
-            }
-            diff.add(tsvdiff);
-        }
+        AtomicInteger rank = new AtomicInteger();
+        hcase.results().resultsWithDescendingPostTestProbability().sequential()
+                .forEachOrdered(result -> {
+                    int current = rank.incrementAndGet();
+                    TsvDifferential tsvdiff = new TsvDifferential(result, current);
+                    Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
+                    if (genotypeLr.isPresent()) {
+                        TermId geneId = genotypeLr.get().geneId();
+                        Gene2Genotype g2g = genotypeMap.get(geneId);
+                        if (g2g != null) {
+                            tsvdiff.addG2G(g2g);
+                        }
+                    }
+                    diff.add(tsvdiff);
+                });
         this.templateData.put("diff",diff);
     }
 

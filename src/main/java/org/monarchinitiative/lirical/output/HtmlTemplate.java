@@ -2,12 +2,12 @@ package org.monarchinitiative.lirical.output;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.configuration.LrThreshold;
 import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.lirical.svg.Lr2Svg;
 import org.monarchinitiative.lirical.svg.Posttest2Svg;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class coordinates getting the data from the analysis into the FreeMark org.monarchinitiative.lirical.output templates.
@@ -78,7 +79,8 @@ public class HtmlTemplate extends LiricalTemplate {
         ClassLoader classLoader = HtmlTemplate.class.getClassLoader();
         cfg.setClassLoaderForTemplateLoading(classLoader, "");
         templateData.put("postprobthreshold", String.format("%.1f%%", 100 * lrThreshold.getThreshold()));
-        int N = totalDetailedDiagnosesToShow(hcase.getResults());
+        AnalysisResults results = hcase.results();
+        int N = totalDetailedDiagnosesToShow(results);
         List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N, geneid2sym, ontology);
         this.templateData.put("sparkline", sparklinePackets);
         this.templateData.put("hasGenotypes", "true");
@@ -88,57 +90,59 @@ public class HtmlTemplate extends LiricalTemplate {
             this.templateData.put("hasGeneSymbolsWithoutIds", "true");
             this.templateData.put("geneSymbolsWithoutIds", symbolsWithoutGeneIds);
         }
-        int counter = 0;
-        for (TestResult result : hcase.getResults()) {
-            String symbol = EMPTY_STRING;
-            Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
-            if (counter < N) {
-                DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
-                logger.trace("Diff diag for " + result.getDiseaseName());
-                if (genotypeLr.isPresent()) {
-                    GenotypeLrWithExplanation genotypeLrWithExplanation = genotypeLr.get();
-                    TermId geneId = genotypeLrWithExplanation.geneId();
-                    Gene2Genotype g2g = genotypeMap.get(geneId);
-                    if (g2g != null) {
-                        symbol = g2g.getSymbol();
-                        ddx.addG2G(g2g);
-                    } else {
-                        ddx.setGenotypeExplanation("no variants found in " + this.geneId2symbol.get(geneId));
-                        symbol = "no variants found in " + this.geneId2symbol.get(geneId);// will be used by SVG
-                    }
-                    ddx.setGenotypeExplanation(genotypeLrWithExplanation.explanation());
-                } else {
-                    ddx.setGenotypeExplanation("No known disease gene");
-                }
-                //ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
-                // now get SVG
-                Lr2Svg lr2svg = new Lr2Svg(hcase, result.diseaseId(), result.getDiseaseName(), ontology, symbol);
-                String svg = lr2svg.getSvgString();
-                ddx.setSvg(svg);
-                diff.add(ddx);
-                counter++;
-                String counterString = String.format("diagnosis%d", counter);
-                this.topDiagnosisAnchors.add(counterString);
-                ddx.setAnchor(counterString);
-                this.topDiagnosisMap.put(counterString, ddx.getDiseaseName());
-            } else {
-                if (genotypeLr.isPresent()) {
-                    TermId geneId = genotypeLr.get().geneId();
-                    if (genotypeMap.containsKey(geneId)) {
-                        symbol = genotypeMap.get(geneId).getSymbol();
-                        int c = genotypeMap.get(geneId).getVarList().size();
-                        String name = shortName(result.getDiseaseName());
-                        String id = result.diseaseId().getId();// This is intended to work with OMIM
-                        if (name == null) {
-                            logger.error("Got null string for disease name from result={}", result);
-                            name = EMPTY_STRING;// avoid errors
+
+        AtomicInteger rank = new AtomicInteger();
+        results.resultsWithDescendingPostTestProbability().sequential()
+                .forEachOrdered(result -> {
+                    int current = rank.incrementAndGet();
+                    String symbol = EMPTY_STRING;
+                    Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
+                    if (current < N) {
+                        DifferentialDiagnosis ddx = new DifferentialDiagnosis(result, current);
+                        if (genotypeLr.isPresent()) {
+                            GenotypeLrWithExplanation genotypeLrWithExplanation = genotypeLr.get();
+                            TermId geneId = genotypeLrWithExplanation.geneId();
+                            Gene2Genotype g2g = genotypeMap.get(geneId);
+                            if (g2g != null) {
+                                symbol = g2g.getSymbol();
+                                ddx.addG2G(g2g);
+                            } else {
+                                ddx.setGenotypeExplanation("no variants found in " + this.geneId2symbol.get(geneId));
+                                symbol = "no variants found in " + this.geneId2symbol.get(geneId);// will be used by SVG
+                            }
+                            ddx.setGenotypeExplanation(genotypeLrWithExplanation.explanation());
+                        } else {
+                            ddx.setGenotypeExplanation("No known disease gene");
                         }
-                        ImprobableDifferential ipd = new ImprobableDifferential(name, id, symbol, result.calculatePosttestProbability(), c);
-                        improbdiff.add(ipd);
+                        //ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
+                        // now get SVG
+
+                        Lr2Svg lr2svg = new Lr2Svg(result, current, result.diseaseId(), result.getDiseaseName(), ontology, symbol);
+                        ddx.setSvg(lr2svg.getSvgString());
+                        diff.add(ddx);
+
+                        String counterString = String.format("diagnosis%d", current);
+                        this.topDiagnosisAnchors.add(counterString);
+                        ddx.setAnchor(counterString);
+                        this.topDiagnosisMap.put(counterString, ddx.getDiseaseName());
+                    } else {
+                        if (genotypeLr.isPresent()) {
+                            TermId geneId = genotypeLr.get().geneId();
+                            if (genotypeMap.containsKey(geneId)) {
+                                symbol = genotypeMap.get(geneId).getSymbol();
+                                int c = genotypeMap.get(geneId).getVarList().size();
+                                String name = shortName(result.getDiseaseName());
+                                String id = result.diseaseId().getId();// This is intended to work with OMIM
+                                if (name == null) {
+                                    logger.error("Got null string for disease name from result={}", result);
+                                    name = EMPTY_STRING;// avoid errors
+                                }
+                                ImprobableDifferential ipd = new ImprobableDifferential(name, id, symbol, result.posttestProbability(), c);
+                                improbdiff.add(ipd);
+                            }
+                        }
                     }
-                }
-            }
-        }
+                });
         this.templateData.put("improbdiff", improbdiff);
         this.templateData.put("diff", diff);
     }
@@ -167,43 +171,44 @@ public class HtmlTemplate extends LiricalTemplate {
         cfg.setClassLoaderForTemplateLoading(classLoader, "");
         templateData.put("postprobthreshold", String.format("%.1f%%", 100 * lrThreshold.getThreshold()));
         // Get SVG for post-test probability list
-        int N = totalDetailedDiagnosesToShow(hcase.getResults());
-        Posttest2Svg pt2svg = new Posttest2Svg(hcase.getResults(), lrThreshold.getThreshold(), N);
+        int N = totalDetailedDiagnosesToShow(hcase.results());
+        Posttest2Svg pt2svg = new Posttest2Svg(hcase.results(), lrThreshold.getThreshold(), N);
         String posttestSVG = pt2svg.getSvgString();
         this.templateData.put("posttestSVG", posttestSVG);
-        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N, ontology);
+        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase.results(), N, ontology);
         this.templateData.put("sparkline", sparklinePackets);
 
+        AtomicInteger rank = new AtomicInteger();
+        hcase.results().resultsWithDescendingPostTestProbability().sequential()
+                .forEachOrdered(result -> {
+                    String symbol = EMPTY_STRING;
+                    int current = rank.incrementAndGet();
+                    if (current < N) {
+                        DifferentialDiagnosis ddx = new DifferentialDiagnosis(result, current);
+                        logger.trace("Diff diag for " + result.getDiseaseName());
+                        ddx.setGenotypeExplanation("Genetic data not available");
 
-        int counter = 0;
-        for (TestResult result : hcase.getResults()) {
-            String symbol = EMPTY_STRING;
-            if (counter < N) {
-                DifferentialDiagnosis ddx = new DifferentialDiagnosis(result);
-                logger.trace("Diff diag for " + result.getDiseaseName());
-                ddx.setGenotypeExplanation("Genetic data not available");
-                // now get SVG
-                Lr2Svg lr2svg = new Lr2Svg(hcase, result.diseaseId(), result.getDiseaseName(), ontology, symbol);
-                String svg = lr2svg.getSvgString();
-                ddx.setSvg(svg);
-                diff.add(ddx);
-                counter++;
-                String counterString = String.format("diagnosis%d", counter);
-                this.topDiagnosisAnchors.add(counterString);
-                ddx.setAnchor(counterString);
-                this.topDiagnosisMap.put(counterString, ddx.getDiseaseName());
-            } else {
-                String name = shortName(result.getDiseaseName());
-                String id = result.diseaseId().getId();// This is intended to work with OMIM
-                if (name == null) {
-                    logger.error("Got null string for disease name from result={}", result);
-                    name = EMPTY_STRING;// avoid errors
-                }
-                int c = 0;
-                ImprobableDifferential ipd = new ImprobableDifferential(name, id, symbol, result.calculatePosttestProbability(), c);
-                improbdiff.add(ipd);
-            }
-        }
+                        // now get SVG
+                        Lr2Svg lr2svg = new Lr2Svg(result, current, result.diseaseId(), result.getDiseaseName(), ontology, symbol);
+                        ddx.setSvg(lr2svg.getSvgString());
+                        diff.add(ddx);
+
+                        String counterString = String.format("diagnosis%d", current);
+                        this.topDiagnosisAnchors.add(counterString);
+                        ddx.setAnchor(counterString);
+                        this.topDiagnosisMap.put(counterString, ddx.getDiseaseName());
+                    } else {
+                        String name = shortName(result.getDiseaseName());
+                        String id = result.diseaseId().getId();// This is intended to work with OMIM
+                        if (name == null) {
+                            logger.error("Got null string for disease name from result={}", result);
+                            name = EMPTY_STRING;// avoid errors
+                        }
+                        int c = 0;
+                        ImprobableDifferential ipd = new ImprobableDifferential(name, id, symbol, result.posttestProbability(), c);
+                        improbdiff.add(ipd);
+                    }
+                });
         this.templateData.put("improbdiff", improbdiff);
         this.templateData.put("diff", diff);
 
@@ -242,14 +247,14 @@ public class HtmlTemplate extends LiricalTemplate {
      * @param results a sorted list of results
      * @return number of diseases to show
      */
-    private int totalDetailedDiagnosesToShow(List<TestResult> results) {
+    private int totalDetailedDiagnosesToShow(AnalysisResults results) {
         double t = lrThreshold.getThreshold();
-        int aboveThreshold = (int) results.stream().filter(r -> r.calculatePosttestProbability() >= t).count();
+        int aboveThreshold = (int) results.results().filter(r -> r.posttestProbability() >= t).count();
         initializeTopDifferentialCount(aboveThreshold);
-        if (! this.minDiagnosisToShowInDetail.isSetByUser() && ! this.lrThreshold.isSetByUser()) {
+        if (!minDiagnosisToShowInDetail.isSetByUser() && !lrThreshold.isSetByUser()) {
             return DEFAULT_MIN_DIAGNOSES_TO_SHOW;
-        } else if (this.minDiagnosisToShowInDetail.isSetByUser()) {
-            return Math.max(aboveThreshold, this.minDiagnosisToShowInDetail.getMinToShow());
+        } else if (minDiagnosisToShowInDetail.isSetByUser()) {
+            return Math.max(aboveThreshold, minDiagnosisToShowInDetail.getMinToShow());
         } else {
             // if we get here, then THRESHOLD was set by the user.
             return Math.max(aboveThreshold, lrThreshold.getMinimumToShowInThresholdMode());

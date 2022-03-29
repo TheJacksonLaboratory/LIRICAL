@@ -195,17 +195,17 @@ public class PhenoGenoCaseSimulator {
         CaseEvaluator evaluator = caseBuilder.build();
         this.hpocase = evaluator.evaluate();
 
-        Optional<Integer> optRank = this.hpocase.getRank(simulatedDiseaseId);
-        this.rank_of_disease = optRank.orElseGet(() -> this.hpocase.getRankOfUnrankedDisease());
+//        Optional<Integer> optRank = this.hpocase.getRank(simulatedDiseaseId);
+//        this.rank_of_disease = optRank.orElseGet(() -> this.hpocase.getRankOfUnrankedDisease());
         this.rank_of_gene = this.rank_of_disease;
-        this.posttest_probability = this.hpocase.getPosttestProbability(simulatedDiseaseId);
-        for (TermId diseaseId : this.gene2diseaseMultimap.get(this.simulatedDiseaseGene)) {
-            optRank = this.hpocase.getRank(diseaseId);
-            int r = optRank.orElseGet(() -> this.hpocase.getRankOfUnrankedDisease());
-            if (r < rank_of_gene) {
-                rank_of_gene = r;
-            }
-        }
+        this.posttest_probability = this.hpocase.calculatePosttestProbability(simulatedDiseaseId);
+//        for (TermId diseaseId : this.gene2diseaseMultimap.get(this.simulatedDiseaseGene)) {
+//            optRank = this.hpocase.getRank(diseaseId);
+//            int r = optRank.orElseGet(() -> this.hpocase.getRankOfUnrankedDisease());
+//            if (r < rank_of_gene) {
+//                rank_of_gene = r;
+//            }
+//        }
         this.metadata.put("genesWithVar", String.valueOf(genotypemap.size()));
         this.metadata.put("exomiserPath", factory.getExomiserPath().map(Path::toAbsolutePath).map(Path::toString).orElse(""));
         this.metadata.put("hpoVersion", factory.getHpoVersion());

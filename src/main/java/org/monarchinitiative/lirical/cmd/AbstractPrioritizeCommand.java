@@ -166,7 +166,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
                 .excluded(analysisData.negatedPhenotypeTerms())
                 .age(analysisData.age())
                 .sex(analysisData.sex())
-                .results(results.resultsByDiseaseId())
+                .results(results)
                 .build();
 
         Map<String, String> metadata = Map.of("analysis_date", getTodaysDate(),

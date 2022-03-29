@@ -2,8 +2,8 @@ package org.monarchinitiative.lirical.svg;
 
 
 import com.google.common.collect.ImmutableList;
-import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
+import org.monarchinitiative.lirical.likelihoodratio.LrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.Term;
@@ -26,10 +26,6 @@ public class Lr2Svg extends Lirical2Svg {
      */
     private final Ontology ontology;
     /**
-     * This is the object that represents the case being analyzed with all results.
-     */
-    private final HpoCase hpocase;
-    /**
      * We show the results as an SVG diagram for this disease.
      */
     private final TermId diseaseCURIE;
@@ -45,6 +41,7 @@ public class Lr2Svg extends Lirical2Svg {
      * This is the {@link TestResult} object that corresponds to {@link #diseaseCURIE} being displayed as SVG.
      */
     private final TestResult result;
+    private final int rank;
     /**
      * Height of entire image in px
      */
@@ -68,27 +65,32 @@ public class Lr2Svg extends Lirical2Svg {
     /** The indices of the original terms according to ordered terms. */
     private final List<Integer> indicesObserved;
     private final List<Integer> indicesExcluded;
-    private final List<TermId> termIdList;
-    private final List<TermId> excludedTermIdList;
+    private final List<LrWithExplanation> observedTerms;
+    private final List<LrWithExplanation> excludedTerms;
 
     private final double maximumIndividualLR;
 
     /**
      * Constructor to draw an SVG representation of the phenotype and genotype likelihood ratios
-     *
-     * @param hcase               The proband (case) we are analyzing
+     * @param result              The test result
+     * @param rank
      * @param diseaseId           The current differential diagnosis id (e.g., OMIM:600123)
      * @param originalDiseaseName The current differential diagnosis name
      * @param ont                 Reference to HPO ontology
      * @param symbol              Gene symbol (if any, can be null)
      */
-    public Lr2Svg(HpoCase hcase, TermId diseaseId, String originalDiseaseName, Ontology ont, String symbol) {
-        this.hpocase = hcase;
+    public Lr2Svg(TestResult result,
+                  int rank,
+                  TermId diseaseId,
+                  String originalDiseaseName,
+                  Ontology ont,
+                  String symbol) {
         this.diseaseCURIE = diseaseId;
         this.diseaseName = prettifyDiseaseName(originalDiseaseName);
-        this.result = hpocase.getResult(diseaseId);
+        this.result = result;
         this.geneSymbol = symbol;
         this.ontology = ont;
+        this.rank = rank;
         this.determineTotalHeightOfSvg();
 
         // Sort the HPO findings according to lieklihood ratio.
@@ -96,8 +98,8 @@ public class Lr2Svg extends Lirical2Svg {
         // after sorting, put the sorted original indices (i.e., as a sorted permutation) into
         // the list "indicesObserved"
         List<Value2Index> observedIndexList = new ArrayList<>();
-        this.termIdList = hcase.getObservedAbnormalities();
-        for (int i=0;i<termIdList.size();i++) {
+        this.observedTerms = result.observedResults();
+        for (int i = 0; i< observedTerms.size(); i++) {
             double ratio = result.getObservedPhenotypeRatio(i);
             observedIndexList.add(new Value2Index(i,ratio));
         }
@@ -108,9 +110,9 @@ public class Lr2Svg extends Lirical2Svg {
         }
         this.indicesObserved = builder.build();
         // Now do the same for the excluded HPO terms
-        this.excludedTermIdList = hcase.getExcludedAbnormalities();
+        this.excludedTerms = result.excludedResults();
         List<Value2Index> excludedIndexList = new ArrayList<>();
-        for (int i=0;i<excludedTermIdList.size();i++) {
+        for (int i = 0; i< excludedTerms.size(); i++) {
             double ratio = result.getExcludedPhenotypeRatio(i);
             excludedIndexList.add(new Value2Index(i, ratio));
         }
@@ -199,8 +201,7 @@ public class Lr2Svg extends Lirical2Svg {
         writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"12px\" style=\"stroke: black; fill: black\">0</text>\n", (midline), Y + 15));
 
 
-        int rank = hpocase.getResult(diseaseCURIE).getRank();
-        double ptp = hpocase.getResult(diseaseCURIE).calculatePosttestProbability();
+        double ptp = result.posttestProbability();
         String diseaseLabel = String.format("%s [%s]", diseaseName, diseaseCURIE.getValue());
         String diseaseResult = String.format("Rank: #%d Posttest probability: %.1f%%", rank, (100.0 * ptp));
         writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"16px\" font-weight=\"bold\">%s</text>\n", (midline - (maxTick - 1) * block), Y + 35, diseaseLabel));
@@ -208,6 +209,9 @@ public class Lr2Svg extends Lirical2Svg {
 
     }
 
+    public int rank() {
+        return rank;
+    }
 
     /**
      * Writes the set of boxes representing the log10 amplitudes of the likelihood ratios for individual
@@ -227,11 +231,9 @@ public class Lr2Svg extends Lirical2Svg {
         // the available space starting from the center line is WIDTH/2
         // and so we calculate a factor
         double scaling = (0.4 * WIDTH) / maxAmp;
-        List<String> explanationObserved = result.getObservedPhenotypeExplanation();
-        List<String> explanationExcluded = result.getExcludedPhenotypeExplanation();
         int explanationIndex = 0;
         for (int originalIndex : indicesObserved) {
-            TermId tid = this.termIdList.get(originalIndex);
+            TermId tid = this.observedTerms.get(originalIndex).queryTerm();
             double ratio = result.getObservedPhenotypeRatio(originalIndex);
             ratio = Math.log10(ratio);
             double boxwidth = ratio * scaling;
@@ -242,13 +244,13 @@ public class Lr2Svg extends Lirical2Svg {
             }
             if ((int) boxwidth == 0) {
                 int X = (int) xstart;
-                writeDiamond(writer, X, currentY, explanationObserved.get(explanationIndex));
+                writeDiamond(writer, X, currentY, observedTerms.get(originalIndex).escapedExplanation());
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " + "stroke-width=\"0\" " +
                         "stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
-                        "onmouseover=\"showTooltip(evt,'%s')\"/>\n", BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanationObserved.get(explanationIndex)));
+                        "onmouseover=\"showTooltip(evt,'%s')\"/>\n", BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, observedTerms.get(originalIndex).escapedExplanation()));
             }
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);
@@ -260,7 +262,7 @@ public class Lr2Svg extends Lirical2Svg {
         // Now add negated terms if any
         explanationIndex = 0;
         for (int originalIndex : indicesExcluded) {
-            TermId tid = this.excludedTermIdList.get(originalIndex);
+            TermId tid = this.excludedTerms.get(originalIndex).queryTerm();
             double ratio = result.getExcludedPhenotypeRatio(originalIndex);
             ratio = Math.log10(ratio);
             double boxwidth = ratio * scaling;
@@ -271,14 +273,14 @@ public class Lr2Svg extends Lirical2Svg {
             }
             if ((int) boxwidth == 0) {
                 int X = (int) xstart;
-                writeDiamond(writer, X, currentY, explanationExcluded.get(explanationIndex));
+                writeDiamond(writer, X, currentY, excludedTerms.get(originalIndex).escapedExplanation());
             } else {
                 // red for features that do not support the diagnosis, green for those that do
                 String color = xstart < midline ? RED : BRIGHT_GREEN;
                 writer.write(String.format("<rect height=\"%d\" width=\"%d\" y=\"%d\" x=\"%d\" " +
                                 "stroke-width=\"0\" stroke=\"#000000\" fill=\"%s\" onmouseout=\"hideTooltip();\" " +
                                 "onmouseover=\"showTooltip(evt,'%s')\"/>\n",
-                        BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, explanationExcluded.get(explanationIndex)));
+                        BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, excludedTerms.get(originalIndex).escapedExplanation()));
             }
             // add label of corresponding HPO term
             Term term = ontology.getTermMap().get(tid);

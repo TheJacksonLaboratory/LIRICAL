@@ -1,34 +1,24 @@
 package org.monarchinitiative.lirical.output;
 
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
-import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.lirical.vcf.SimpleVariant;
 
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * This class stores all the information we need for a detailed differential diagnosis -- the major
  * candidates. It is intended to be used as a Java Bean for the FreeMarker HTML template.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class DifferentialDiagnosis {
+public class DifferentialDiagnosis extends BaseDifferential {
 
     private final static String EMPTY_STRING="";
-    private final String diseaseName;
-    /** The CURIE-like identifier of the disease, e.g., OMIM:600123 */
-    private final String diseaseCurie;
+
     /** This is the anchor that will be used on the HTML page. */
     private  String anchor=EMPTY_STRING;
-    /** The rank of this disease in the current analysis. */
-    private final int rank;
-    private final String pretestprob;
-    private final String posttestprob;
-    /** The base-10 logarithm of the likelihood ratio. */
-    private final double compositeLR;
-    private final String entrezGeneId;
+
     private final String url;
     /** SVG string illustrating the contributions of each feature to the overall score. */
     private String svg;
@@ -42,23 +32,23 @@ public class DifferentialDiagnosis {
 
     private String phenotypeExplanation = EMPTY_STRING;
 
-
-
-    DifferentialDiagnosis(TestResult result) {
-        this.diseaseName=prettifyDiseaseName(result.getDiseaseName());
-        this.diseaseCurie=result.diseaseId().getValue();
-        this.rank=result.getRank();
-        this.posttestprob=String.format("%.1f%%",100*result.calculatePosttestProbability());
-        double ptp=result.getPretestProbability();
-        if (ptp < 0.001) {
-            this.pretestprob = String.format("1/%d",Math.round(1.0/ptp));
-        } else {
-            this.pretestprob = String.format("%.6f",ptp);
-        }
-        this.compositeLR=Math.log10(result.getCompositeLR());
-        Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
-        this.entrezGeneId = genotypeLr.map(lr -> lr.geneId().getValue()).orElse(null);
+    DifferentialDiagnosis(TestResult result, int rank) {
+        super(result, rank);
         url=String.format("https://hpo.jax.org/app/browse/disease/%s",result.diseaseId().getValue());
+    }
+
+    @Override
+    protected String formatPostTestProbability(double postTestProbability) {
+        return String.format("%.1f%%", 100 * postTestProbability);
+    }
+
+    @Override
+    protected String formatPreTestProbability(double preTestProbability) {
+        if (preTestProbability < 0.001) {
+            return String.format("1/%d",Math.round(1.0/preTestProbability));
+        } else {
+            return String.format("%.6f",preTestProbability);
+        }
     }
 
     void addG2G(Gene2Genotype g2g) {
@@ -70,36 +60,7 @@ public class DifferentialDiagnosis {
     public void setSvg(String s) { this.svg=s; }
     public String getSvg() { return this.svg; }
 
-
-    public String getDiseaseName() {
-        return diseaseName;
-    }
-
-    public String getDiseaseCurie() {
-        return diseaseCurie;
-    }
-
     public String getUrl(){ return url;}
-
-    public int getRank() {
-        return rank;
-    }
-
-    public String getPretestprob() {
-        return pretestprob;
-    }
-
-    public String getPosttestprob() {
-        return posttestprob;
-    }
-
-    public double getCompositeLR() {
-        return compositeLR;
-    }
-
-    public String getEntrezGeneId() {
-        return entrezGeneId;
-    }
 
     public List<SimpleVariant> getVarlist() {
         return varlist;
@@ -115,29 +76,6 @@ public class DifferentialDiagnosis {
 
     public String getGeneSymbol() {
         return geneSymbol;
-    }
-
-
-    /**
-     * We are getting the disease names from OMIM (actually from our small files), and so some of them are long and
-     * unweildly strings such as the following:
-     * {@code }#101200 APERT SYNDROME;;ACROCEPHALOSYNDACTYLY, TYPE I; ACS1;;ACS IAPERT-CROUZON DISEASE,
-     * INCLUDED;;ACROCEPHALOSYNDACTYLY, TYPE II, INCLUDED;;ACS II, INCLUDED;;VOGT CEPHALODACTYLY, INCLUDED}. We want to
-     * remove any leading numbers and only show the first part of the name (before the first ";;").
-     * @param originalName original possibly verbose disease name with synonyms
-     * @return prettified disease name intended for display on HTML page
-     */
-    private String prettifyDiseaseName(String originalName) {
-        int i=originalName.indexOf(";;");
-        if (i>0) {
-            originalName=originalName.substring(0,i);
-        }
-        i=0;
-        while (originalName.charAt(i)=='#' || Character.isDigit(originalName.charAt(i)) || Character.isWhitespace(originalName.charAt(i))) {
-            i++;
-            if (i>=originalName.length()) break;
-        }
-        return originalName.substring(i);
     }
 
     /** @param a An HTML anchor that is used for the HTML template. */

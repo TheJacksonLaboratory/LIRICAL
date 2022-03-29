@@ -5,25 +5,39 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.Optional;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-public interface AnalysisResults {
+public interface AnalysisResults extends Iterable<TestResult> {
+
+    static AnalysisResults empty() {
+        return AnalysisResultsDefault.empty();
+    }
 
     static AnalysisResults of(List<TestResult> results) {
+        if (results.isEmpty())
+            return AnalysisResultsDefault.empty();
         return new AnalysisResultsDefault(results);
     }
 
-    Stream<TestResult> results();
+    /**
+     * @return test result count
+     */
+    int size();
 
-    default Stream<TestResult> prioritizedResults() {
-        return results().sorted(Comparator.comparingDouble(TestResult::getCompositeLR).reversed());
+    default boolean isEmpty() {
+        return size() == 0;
     }
 
-    default Map<TermId, TestResult> resultsByDiseaseId() {
-        return results().collect(Collectors.toMap(TestResult::diseaseId, Function.identity()));
+    Optional<TestResult> resultByDiseaseId(TermId diseaseId);
+
+    default Stream<TestResult> results() {
+        return StreamSupport.stream(spliterator(), false);
+    }
+
+    default Stream<TestResult> resultsWithDescendingPostTestProbability() {
+        return results().sorted(Comparator.comparingDouble(TestResult::posttestProbability).reversed());
     }
 
 }

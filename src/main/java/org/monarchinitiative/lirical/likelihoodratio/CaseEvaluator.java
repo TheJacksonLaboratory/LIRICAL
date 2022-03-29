@@ -429,7 +429,8 @@ public class CaseEvaluator {
         Map<TermId, TestResult> results = evaluateRanks(evaluationmap);
         HpoCase.Builder casebuilder = new HpoCase.Builder(phenotypicAbnormalities)
                 .excluded(negatedPhenotypicAbnormalities)
-                .results(results);
+//                .results(results)
+                ;
         return casebuilder.build();
     }
 
@@ -446,7 +447,7 @@ public class CaseEvaluator {
         int rank = 0;
         for (TestResult res : results) {
             rank++;
-            res.setRank(rank);
+//            res.setRank(rank);
         }
         return resultMap;
     }

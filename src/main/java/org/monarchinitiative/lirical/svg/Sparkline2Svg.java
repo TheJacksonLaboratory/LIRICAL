@@ -57,12 +57,12 @@ public class Sparkline2Svg extends Lirical2Svg {
     /**
      * Set up the Sparkline2Svg generator by sorting the HPO terms according to their likelihood
      * ratios in the top diagnosis (diseaseId).
-     * @param hcase A representation of the Case
+     * @param result A representation of the Case
      * @param diseaseId The id of the disease at rank 1.
      */
-    public Sparkline2Svg(HpoCase hcase, TermId diseaseId, boolean useGenotype, Ontology ontology) {
-        this.termIdList = hcase.getObservedAbnormalities();
-        this.excludedTermIdList = hcase.getExcludedAbnormalities();
+    public Sparkline2Svg(TestResult result, TermId diseaseId, boolean useGenotype, Ontology ontology) {
+        this.termIdList = result.observedTerms();
+        this.excludedTermIdList = result.excludedTerms();
         observedTermToolTipLabels = new ArrayList<>();
         for (TermId t : this.termIdList) {
             String label = ontology.getTermMap().get(t).getName();
@@ -75,7 +75,6 @@ public class Sparkline2Svg extends Lirical2Svg {
             String tooltip = String.format("%s [%s]", label, t.getValue());
             this.excludedTermToolTipLabels.add(tooltip);
         }
-        TestResult result = hcase.getResult(diseaseId);
         this.hasGenotype = useGenotype;
         // Sort the HPO findings according to lieklihood ratio.
         // use the internal valss Value2Index to keep track of the original index
@@ -114,20 +113,18 @@ public class Sparkline2Svg extends Lirical2Svg {
     /**
      * This is used by Phenotype only output. We supply an empty string instead of a gene symbol. Note that
      * because the test results know that they do not have a genotype, this will not affect the output.
-     * @param hcase The case we are writing output for
-     * @param diseaseId ID of the current disease
      * @return an SVG string
+     * @param result test result
      */
-    public String getSparklineSvg(HpoCase hcase, TermId diseaseId) {
-        String EMPTY_STRING = "";
-        return getSparklineSvg(hcase, diseaseId, EMPTY_STRING);
+    public String getSparklineSvg(TestResult result) {
+        return getSparklineSvg("", result);
     }
 
-    public String getSparklineSvg(HpoCase hcase, TermId diseaseId, String gsymbol) {
+    public String getSparklineSvg(String gsymbol, TestResult result) {
         try {
             StringWriter swriter = new StringWriter();
             writeHeader(swriter);
-            writeSparkline(hcase, diseaseId, swriter, gsymbol);
+            writeSparkline(result, swriter);
             writeFooter(swriter);
             return swriter.toString();
         } catch (IOException e) {
@@ -142,8 +139,9 @@ public class Sparkline2Svg extends Lirical2Svg {
             //writeHeader(swriter);
             int geneSvgWidth = 150;
             writeHeader(swriter, geneSvgWidth, total_height);
-            TestResult result = hcase.getResult(diseaseId);
-            Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
+            Optional<GenotypeLrWithExplanation> genotypeLr = hcase.results()
+                    .resultByDiseaseId(diseaseId)
+                    .flatMap(TestResult::genotypeLr);
 
             if (genotypeLr.isPresent()) {
                 writeGeneSpark(swriter, gsymbol, genotypeLr.get().lr());
@@ -198,16 +196,13 @@ public class Sparkline2Svg extends Lirical2Svg {
 
     /**
      * Create a String with SVG code for the sparkline
-     * @param hcase The current case
-     * @param diseaseId Disease for which we are writing the sparkline
+     * @param result test result
      * @param swriter file handle (String writer)
-     * @param geneSymbol symbol of gene associated with disease (or EMPTY STRING if there is no gene)
      * @throws IOException if there is an issue creating the SVG
      */
-    private void writeSparkline(HpoCase hcase, TermId diseaseId, StringWriter swriter, String geneSymbol) throws IOException {
+    private void writeSparkline(TestResult result, StringWriter swriter) throws IOException {
         final int MAX_LOG_LR = 4;
         // get the posttest probability
-        TestResult result = hcase.getResult(diseaseId);
         int ybaseline = total_height / 2; // put everything right in the middle
         int xstart = 10;
         int linewidth =  n_hpo_terms * (BAR_WIDTH + INTERBAR_WIDTH) - INTERBAR_WIDTH;

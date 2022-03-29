@@ -36,6 +36,18 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
         this.explanation = explanation;
     }
 
+    public TermId queryTerm() {
+        return queryTerm;
+    }
+
+    public TermId matchingTerm() {
+        return matchingTerm;
+    }
+
+    public LrMatchType matchType() {
+        return matchType;
+    }
+
     public double lr() {
         return lr;
     }

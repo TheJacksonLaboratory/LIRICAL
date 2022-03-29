@@ -436,7 +436,7 @@ a.svg:hover, a.svg:active {
 
     <section>
       <article>
-        <a name="diff"></a>
+        <a id="diff"></a>
         <h2>Top differential diagnoses</h2>
         <p>${topdifferentialcount}</p>
         <div style="text-align:center;">
@@ -461,7 +461,7 @@ a.svg:hover, a.svg:active {
       <section>
       <#list diff as dd>
           <article>
-          <a name="${dd.anchor}"></a>
+          <a id="${dd.anchor}"></a>
             <header>
               <h3>(${dd.rank}) ${dd.diseaseName} [<a href="${dd.url}" target="_blank">${dd.diseaseCurie}</a>]</h3>
             </header>
