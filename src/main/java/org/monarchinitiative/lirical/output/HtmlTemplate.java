@@ -97,7 +97,7 @@ public class HtmlTemplate extends LiricalTemplate {
                     int current = rank.incrementAndGet();
                     String symbol = EMPTY_STRING;
                     Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
-                    if (current < N) {
+                    if (current <= N) {
                         DifferentialDiagnosis ddx = new DifferentialDiagnosis(result, current);
                         if (genotypeLr.isPresent()) {
                             GenotypeLrWithExplanation genotypeLrWithExplanation = genotypeLr.get();
@@ -183,7 +183,7 @@ public class HtmlTemplate extends LiricalTemplate {
                 .forEachOrdered(result -> {
                     String symbol = EMPTY_STRING;
                     int current = rank.incrementAndGet();
-                    if (current < N) {
+                    if (current <= N) {
                         DifferentialDiagnosis ddx = new DifferentialDiagnosis(result, current);
                         logger.trace("Diff diag for " + result.getDiseaseName());
                         ddx.setGenotypeExplanation("Genetic data not available");
