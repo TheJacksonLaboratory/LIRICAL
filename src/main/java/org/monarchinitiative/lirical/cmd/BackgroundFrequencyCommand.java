@@ -67,20 +67,15 @@ public class BackgroundFrequencyCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws LiricalException {
-        /** One of HG38 (default) or HG19. */
-        GenomeAssembly genomeAssembly;
-        /** Name of the output file (e.g., background-hg19.tsv). Determined automatically based on genome build..*/
         String outputFileName;
         if (genomeAssemblyString.toLowerCase().contains("hg19")) {
-            genomeAssembly =GenomeAssembly.HG19;
+
             outputFileName ="background-hg19.tsv";
         } else if (genomeAssemblyString.toLowerCase().contains("hg38")) {
-            genomeAssembly =GenomeAssembly.HG38;
             outputFileName ="background-hg38.tsv";
         } else {
             logger.warn("Could not determine genome assembly from argument: \""+
                     genomeAssemblyString +"\". We will use the default of hg38");
-            genomeAssembly =GenomeAssembly.HG38;
             outputFileName ="background-hg38.tsv";
         }
         if (this.exomiserDataDirectory ==null) {
@@ -89,9 +84,9 @@ public class BackgroundFrequencyCommand implements Callable<Integer> {
 
         LiricalFactory.Builder builder = LiricalFactory.builder()
                 .exomiser(exomiserDataDirectory)
-//                .datadir(this.datadir) // TODO - fix
+//                .datadir(this.datadir)
                 .transcriptdatabase(transcriptDb)
-                .genomeAssembly(genomeAssembly);
+                .genomeAssembly(genomeAssemblyString);
 
         LiricalFactory factory = builder.build();
         factory.qcExomiserFiles();
@@ -102,7 +97,7 @@ public class BackgroundFrequencyCommand implements Callable<Integer> {
         JannovarData jannovarData = factory.jannovarData().get();
         List<RegulatoryFeature> emtpylist = ImmutableList.of();
         ChromosomalRegionIndex<RegulatoryFeature> emptyRegionIndex = ChromosomalRegionIndex.of(emtpylist);
-        JannovarVariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(genomeAssembly, jannovarData, emptyRegionIndex);
+        JannovarVariantAnnotator jannovarVariantAnnotator = new JannovarVariantAnnotator(factory.getAssembly(), jannovarData, emptyRegionIndex);
         String outputpath= outputFileName;
         GenicIntoleranceCalculator calculator = new GenicIntoleranceCalculator(jannovarVariantAnnotator, alleleStore, outputpath, this.doClinvar);
         calculator.run();

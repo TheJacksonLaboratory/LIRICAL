@@ -23,6 +23,7 @@ import org.monarchinitiative.lirical.output.LiricalTemplate;
 import org.monarchinitiative.lirical.service.VariantMetadataService;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
+import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
@@ -76,9 +77,9 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
     public RunConfiguration runConfiguration = new RunConfiguration();
     public static class RunConfiguration {
         @CommandLine.Option(names = {"--assembly"},
-                paramLabel = "{HG19,HG38}",
+                paramLabel = "{hg19,hg38}",
                 description = "Genome assembly (default: ${DEFAULT-VALUE}).")
-        protected GenomeAssembly genomeAssembly = GenomeAssembly.HG38;
+        protected String genomeAssembly = "hg38";
         /**
          * If global is set to true, then LIRICAL will not discard candidate diseases with no known disease gene or
          * candidates for which no predicted pathogenic variant was found in the VCF.
@@ -103,6 +104,19 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         @CommandLine.Option(names = {"--use-orphanet"},
                 description = "Use Orphanet annotation data (default: ${DEFAULT-VALUE}).")
         protected boolean useOrphanet = false;
+
+        @CommandLine.Option(names = {"--strict"},
+                // TODO - add better description
+                description = "Strict mode (default: ${DEFAULT-VALUE}).")
+        private boolean strict = false;
+
+        @CommandLine.Option(names = {"--pathogenicity-threshold"},
+                description = "Variant with pathogenicity score greater than the threshold is considered deleterious (default: ${DEFAULT-VALUE}).")
+        private float pathogenicityThreshold = .8f;
+
+        @CommandLine.Option(names = {"--default-allele-frequency"},
+                description = "Variant with pathogenicity score greater than the threshold is considered deleterious (default: ${DEFAULT-VALUE}).")
+        private float defaultAlleleFrequency = 1E-5f;
     }
 
     // ---------------------------------------------- OUTPUTS ----------------------------------------------------------
@@ -148,7 +162,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         // 1. - bootstrap the app
         LOGGER.info("Spooling up Lirical v{}", LIRICAL_VERSION);
         Lirical lirical = getLirical();
-        LOGGER.info("Preparing analysis data");
+        LOGGER.info("Preparing the analysis data");
         AnalysisData analysisData = prepareAnalysisData(lirical);
         if (analysisData.presentPhenotypeTerms().isEmpty() && analysisData.negatedPhenotypeTerms().isEmpty()) {
             LOGGER.warn("No phenotype terms were provided. Aborting..");
@@ -183,8 +197,21 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
     }
 
     private Lirical getLirical() throws LiricalDataException {
-        // TODO - provide background file - builder?
-        LiricalConfiguration factory = LiricalConfiguration.of(dataSection.liricalDataDirectory, dataSection.exomiserDataDirectory);
+        // DATA
+        LiricalProperties properties = LiricalProperties.builder(dataSection.liricalDataDirectory)
+                .exomiserDataDirectory(dataSection.exomiserDataDirectory)
+                .backgroundFrequencyFile(dataSection.backgroundFrequencyFile)
+                // CONFIGURATION
+                .diseaseDatabases(runConfiguration.useOrphanet
+                        ? DiseaseDatabase.allKnownDiseaseDatabases()
+                        : Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER))
+                .genotypeLrProperties(runConfiguration.strict, runConfiguration.pathogenicityThreshold)
+                .genomeAssembly(runConfiguration.genomeAssembly)
+                .transcriptDatabase(runConfiguration.transcriptDb)
+                .defaultVariantFrequency(runConfiguration.defaultAlleleFrequency)
+                .build();
+
+        LiricalConfiguration factory = LiricalConfiguration.of(properties);
         return factory.getLirical();
     }
 
@@ -210,7 +237,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
     }
 
     protected static GenesAndGenotypes readVariantsFromVcfFile(Path vcfPath,
-                                                               GenomeAssembly genomeAssembly,
+                                                               String genomeAssembly,
                                                                VariantMetadataService metadataService,
                                                                HpoAssociationData associationData) {
         Map<String, GeneIdentifier> symbolToGeneId = associationData.geneIdentifiers().stream()
@@ -244,11 +271,18 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         }
     }
 
-    private static GenomicAssembly parseGenomicAssembly(GenomeAssembly genomeAssembly) {
-        return switch (genomeAssembly) {
-            case HG19 -> GenomicAssemblies.GRCh37p13();
-            case HG38 -> GenomicAssemblies.GRCh38p13();
-        };
+    private static GenomicAssembly parseGenomicAssembly(String genomeAssembly) {
+        switch (genomeAssembly.toUpperCase()) {
+            case "HG19":
+            case "GRCH37":
+                return GenomicAssemblies.GRCh37p13();
+            default:
+                LOGGER.warn("Unknown genome assembly {}. Falling back to GRCh38", genomeAssembly);
+            case "HG38":
+            case "GRCH38":
+                return GenomicAssemblies.GRCh38p13();
+
+        }
     }
 
     private static Properties readProperties() {

@@ -659,8 +659,8 @@ public class LiricalFactory {
         }
 
 
-        public Builder genomeAssembly(GenomeAssembly genomeAssembly) {
-            this.genomeAssembly = genomeAssembly;
+        public Builder genomeAssembly(String genomeAssembly) {
+            this.genomeAssembly = parseAssembly(genomeAssembly);
             return this;
         }
 
