@@ -79,36 +79,12 @@ class VisualizableVariantDefault implements VisualizableVariant {
 
     @Override
     public float getPathogenicityScore() {
-        // Heuristic -- Count ClinVar pathogenic or likely pathogenic as 1.0 (maximum pathogenicity score)
-        // regardless of the Exomiser pathogenicity score
-        return variant.clinvarClnSig().isPathogenicOrLikelyPathogenic()
-                ? 1f
-                // orElse clause returns 1 so that the frequency score is the same as if the frequency was 0.
-                : (variant.pathogenicityScore() * variant.frequencyScore().orElse(1f));
+        return variant.pathogenicityScore().orElse(1.f);
     }
 
     @Override
     public float getFrequency() {
         return variant.frequency().orElse(0f);
-    }
-
-    /**
-     * This is the frequency factor used for the Exomiser like pathogenicity score. It penalizes variants that have a higher
-     * population frequency, with anything above 2% getting a factor of zero.
-     * @return The Exomiser-style frequency factor
-     */
-    private double frequencyScore() {
-        return variant.frequency()
-                .map(frequency -> {
-                    if (frequency <= 0) {
-                        return 1f;
-                    } else if (frequency > 2) {
-                        return 0f;
-                    } else {
-                        return 1.13533f - (0.13533f * (float) Math.exp(frequency));
-                    }
-                })
-                .orElse(1f);
     }
 
     @Override
@@ -119,7 +95,25 @@ class VisualizableVariantDefault implements VisualizableVariant {
     }
 
     private static String genotypeFromAlleleCount(AlleleCount ac) {
-        return ac.ref() + "/" + ac.alt();
+        if (ac.ref() == 2 && ac.alt() == 0) {
+            // HOM_REF
+            return "0/0";
+        } else if (ac.ref() == 1 && ac.alt() == 1) {
+            // HET
+            return "0/1";
+        } else if (ac.ref() == 0 && ac.alt() == 2) {
+            // HOM_ALT
+            return "1/1";
+        } else {
+            // unusual situations
+            if (ac.ref() == 0 && ac.alt() == 1) {
+                return "./1";
+            } else if (ac.ref() == 1 && ac.alt() == 0) {
+                return "./0";
+            } else {
+                return "./.";
+            }
+        }
     }
 
     @Override

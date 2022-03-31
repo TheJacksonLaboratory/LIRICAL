@@ -127,7 +127,7 @@ public abstract class LiricalTemplate {
     }
 
     private boolean isInPathogenicBin(LiricalVariant lv) {
-        return lv.pathogenicityScore() >= liricalProperties.genotypeLrProperties().pathogenicityThreshold();
+        return lv.pathogenicity() >= liricalProperties.genotypeLrProperties().pathogenicityThreshold();
     }
 
     // TODO - should we replace HpoCase with AnalysisData?

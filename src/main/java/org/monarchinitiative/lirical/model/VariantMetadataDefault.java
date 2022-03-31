@@ -37,7 +37,7 @@ public class VariantMetadataDefault implements VariantMetadata {
     }
 
     @Override
-    public float pathogenicityScore() {
+    public float pathogenicity() {
         return pathogenicity;
     }
 

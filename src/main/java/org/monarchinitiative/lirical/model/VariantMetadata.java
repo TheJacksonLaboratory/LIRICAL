@@ -23,7 +23,15 @@ public interface VariantMetadata {
 
     Optional<Float> frequency();
 
-    float pathogenicityScore();
+    float pathogenicity();
+
+    default Optional<Float> pathogenicityScore() {
+        // Heuristic -- Count ClinVar pathogenic or likely pathogenic as 1.0 (maximum pathogenicity score)
+        // regardless of the Exomiser pathogenicity score
+        return clinvarClnSig().isPathogenicOrLikelyPathogenic()
+                ? Optional.of(1f)
+                : frequencyScore().map(fs -> fs * pathogenicity());
+    }
 
     ClinvarClnSig clinvarClnSig();
 
@@ -48,7 +56,7 @@ public interface VariantMetadata {
 
 
     static int compareByPathogenicity(VariantMetadata left, VariantMetadata right) {
-        return Float.compare(left.pathogenicityScore(), right.pathogenicityScore());
+        return Float.compare(left.pathogenicity(), right.pathogenicity());
     }
 
 }

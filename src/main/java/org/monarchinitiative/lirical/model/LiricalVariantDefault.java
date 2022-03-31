@@ -41,8 +41,8 @@ class LiricalVariantDefault implements LiricalVariant {
     }
 
     @Override
-    public float pathogenicityScore() {
-        return variantMetadata.pathogenicityScore();
+    public float pathogenicity() {
+        return variantMetadata.pathogenicity();
     }
 
     @Override

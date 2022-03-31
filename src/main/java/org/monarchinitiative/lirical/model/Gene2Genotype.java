@@ -49,7 +49,7 @@ public interface Gene2Genotype extends Identified {
     }
 
     default int pathogenicAlleleCount(String sampleId, float pathogenicityThreshold) {
-        return variants().filter(var -> var.pathogenicityScore() >= pathogenicityThreshold)
+        return variants().filter(var -> var.pathogenicity() >= pathogenicityThreshold)
                 .map(var -> var.alleleCount(sampleId))
                 .flatMap(Optional::stream)
                 .map(AlleleCount::alt)
@@ -58,10 +58,10 @@ public interface Gene2Genotype extends Identified {
     }
 
     default double getSumOfPathBinScores(String sampleId, float pathogenicityThreshold) {
-        return variants().filter(variant -> variant.pathogenicityScore() >= pathogenicityThreshold)
+        return variants().filter(variant -> variant.pathogenicity() >= pathogenicityThreshold)
                 .mapToDouble(variant -> {
                     int altAlleleCount = variant.alleleCount(sampleId).map(AlleleCount::alt).orElse((byte) 0);
-                    return altAlleleCount * variant.pathogenicityScore();
+                    return altAlleleCount * variant.pathogenicity();
                 })
                 .reduce(0, Double::sum);
     }
