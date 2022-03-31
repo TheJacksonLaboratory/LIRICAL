@@ -3,13 +3,14 @@ package org.monarchinitiative.lirical.output;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.monarchinitiative.lirical.analysis.AnalysisResults;
-import org.monarchinitiative.lirical.analysis.Gene2Genotype;
+import org.monarchinitiative.lirical.configuration.LiricalProperties;
 import org.monarchinitiative.lirical.configuration.LrThreshold;
 import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
+import org.monarchinitiative.lirical.model.Gene2Genotype;
 import org.monarchinitiative.lirical.svg.Lr2Svg;
-import org.monarchinitiative.lirical.svg.Posttest2Svg;
+import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 /**
  * This class coordinates getting the data from the analysis into the FreeMark org.monarchinitiative.lirical.output templates.
@@ -47,27 +49,23 @@ public class HtmlTemplate extends LiricalTemplate {
 
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
-     *
-     * @param hcase       The individual (case) represented in the VCF file
+     * @param hpoCase       The individual (case) represented in the VCF file
      * @param ontology    The HPO ontology
-     * @param genotypeMap A map of genotypes for all genes with variants in the VCF file
-     * @param geneid2sym  A map from the Entrez Gene id to the gene symbol
-     * @param metadat     Metadata about the analysis.
+     * @param metadata     Metadata about the analysis.
      * @param thres       threshold posterior probability to show differential in detail
      */
-    public HtmlTemplate(HpoCase hcase,
+    public HtmlTemplate(LiricalProperties liricalProperties,
+                        HpoCase hpoCase,
                         Ontology ontology,
-                        Map<TermId, Gene2Genotype> genotypeMap,
-                        Map<TermId, String> geneid2sym,
-                        Map<String, String> metadat,
+                        Map<TermId, Gene2Genotype> geneById,
+                        Map<String, String> metadata,
                         LrThreshold thres,
                         MinDiagnosisCount minDifferentials,
-                        String prefix,
                         Path outdir,
+                        String prefix,
                         List<String> errs,
                         Set<String> symbolsWithoutGeneIds) {
-        super(hcase, ontology, geneid2sym, metadat);
-        this.outpath = createOutputFile(outdir, prefix, "%s.html");
+        super(liricalProperties, hpoCase, ontology, geneById, metadata, outdir, prefix);
         this.lrThreshold = thres;
         this.minDiagnosisToShowInDetail = minDifferentials;
         this.templateData.put("errorlist", errs);
@@ -79,9 +77,9 @@ public class HtmlTemplate extends LiricalTemplate {
         ClassLoader classLoader = HtmlTemplate.class.getClassLoader();
         cfg.setClassLoaderForTemplateLoading(classLoader, "");
         templateData.put("postprobthreshold", String.format("%.1f%%", 100 * lrThreshold.getThreshold()));
-        AnalysisResults results = hcase.results();
+        AnalysisResults results = hpoCase.results();
         int N = totalDetailedDiagnosesToShow(results);
-        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase, N, geneid2sym, ontology);
+        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(results, N, ontology);
         this.templateData.put("sparkline", sparklinePackets);
         this.templateData.put("hasGenotypes", "true");
         if (symbolsWithoutGeneIds==null || symbolsWithoutGeneIds.isEmpty()){
@@ -95,28 +93,36 @@ public class HtmlTemplate extends LiricalTemplate {
         results.resultsWithDescendingPostTestProbability().sequential()
                 .forEachOrdered(result -> {
                     int current = rank.incrementAndGet();
-                    String symbol = EMPTY_STRING;
+
                     Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
                     if (current <= N) {
-                        DifferentialDiagnosis ddx = new DifferentialDiagnosis(result, current);
-                        if (genotypeLr.isPresent()) {
-                            GenotypeLrWithExplanation genotypeLrWithExplanation = genotypeLr.get();
-                            TermId geneId = genotypeLrWithExplanation.geneId();
-                            Gene2Genotype g2g = genotypeMap.get(geneId);
-                            if (g2g != null) {
-                                symbol = g2g.getSymbol();
-                                ddx.addG2G(g2g);
-                            } else {
-                                ddx.setGenotypeExplanation("no variants found in " + this.geneId2symbol.get(geneId));
-                                symbol = "no variants found in " + this.geneId2symbol.get(geneId);// will be used by SVG
-                            }
-                            ddx.setGenotypeExplanation(genotypeLrWithExplanation.explanation());
-                        } else {
-                            ddx.setGenotypeExplanation("No known disease gene");
-                        }
-                        //ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
-                        // now get SVG
+                        // Create a full differential diagnosis
 
+                        String symbol = genotypeLr.map(GenotypeLrWithExplanation::geneId)
+                                .map(GeneIdentifier::symbol)
+                                .orElse(EMPTY_STRING);
+
+                        List<VisualizableVariant> variants = genotypeLr.map(GenotypeLrWithExplanation::geneId)
+                                .map(GeneIdentifier::id)
+                                .map(geneById::get)
+                                .map(Gene2Genotype::variants)
+                                .orElse(Stream.empty())
+                                .map(toVisualizableVariant())
+                                .toList();
+
+//                      ddx.setGenotypeExplanation("no variants found in " + geneId.symbol());
+
+//                      ddx.setGenotypeExplanation(genotypeLrWithExplanation.explanation());
+
+//                      ddx.setGenotypeExplanation("No known disease gene");
+
+                        //ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
+
+                        // TODO - create proper genotype/phenotype explanation
+                        String genotypeExplanation = result.getGenotypeExplanation().orElse("No known disease gene/ no variants found in ...");
+                        String phenotypeExplanation = "TEMPORARY PHENOTYPE EXPLANATION";
+                        DifferentialDiagnosis ddx = new DifferentialDiagnosis(hpoCase.sampleId(), result, current, variants, genotypeExplanation, phenotypeExplanation);
+                        // now get SVG
                         Lr2Svg lr2svg = new Lr2Svg(result, current, result.diseaseId(), result.getDiseaseName(), ontology, symbol);
                         ddx.setSvg(lr2svg.getSvgString());
                         diff.add(ddx);
@@ -126,18 +132,18 @@ public class HtmlTemplate extends LiricalTemplate {
                         ddx.setAnchor(counterString);
                         this.topDiagnosisMap.put(counterString, ddx.getDiseaseName());
                     } else {
+                        // Create an improbable diagnosis for the expandable table
                         if (genotypeLr.isPresent()) {
-                            TermId geneId = genotypeLr.get().geneId();
-                            if (genotypeMap.containsKey(geneId)) {
-                                symbol = genotypeMap.get(geneId).getSymbol();
-                                int c = genotypeMap.get(geneId).getVarList().size();
+                            GeneIdentifier geneId = genotypeLr.get().geneId();
+                            if (this.geneById.containsKey(geneId.id())) {
+                                int c = this.geneById.get(geneId.id()).variantCount();
                                 String name = shortName(result.getDiseaseName());
                                 String id = result.diseaseId().getId();// This is intended to work with OMIM
                                 if (name == null) {
                                     logger.error("Got null string for disease name from result={}", result);
                                     name = EMPTY_STRING;// avoid errors
                                 }
-                                ImprobableDifferential ipd = new ImprobableDifferential(name, id, symbol, result.posttestProbability(), c);
+                                ImprobableDifferential ipd = new ImprobableDifferential(name, id, geneId.symbol(), result.posttestProbability(), c);
                                 improbdiff.add(ipd);
                             }
                         }
@@ -148,77 +154,84 @@ public class HtmlTemplate extends LiricalTemplate {
     }
 
 
-    /**
-     * Constructor to initialize the data that will be needed to output an HTML page.
-     * Used for when we have no genetic data
-     *
-     * @param hcase    The individual (case) represented in the VCF file
-     * @param ontology The HPO ontology
-     * @param metadat  Metadata about the analysis.
-     * @param thres    threshold posterior probability to show differential in detail
-     */
-    public HtmlTemplate(HpoCase hcase, Ontology ontology, Map<String, String> metadat, LrThreshold thres, MinDiagnosisCount minDifferentials, String prefix, Path outdir, List<String> errs) {
-        super(hcase, ontology, metadat);
-        this.outpath = createOutputFile(outdir, prefix, "%s.html");
-        this.lrThreshold = thres;
-        this.minDiagnosisToShowInDetail = minDifferentials;
-        this.templateData.put("errorlist", errs);
-        List<DifferentialDiagnosis> diff = new ArrayList<>();
-        List<ImprobableDifferential> improbdiff = new ArrayList<>();
-        this.topDiagnosisMap = new HashMap<>();
-        this.topDiagnosisAnchors = new ArrayList<>();
-        ClassLoader classLoader = HtmlTemplate.class.getClassLoader();
-        cfg.setClassLoaderForTemplateLoading(classLoader, "");
-        templateData.put("postprobthreshold", String.format("%.1f%%", 100 * lrThreshold.getThreshold()));
-        // Get SVG for post-test probability list
-        int N = totalDetailedDiagnosesToShow(hcase.results());
-        Posttest2Svg pt2svg = new Posttest2Svg(hcase.results(), lrThreshold.getThreshold(), N);
-        String posttestSVG = pt2svg.getSvgString();
-        this.templateData.put("posttestSVG", posttestSVG);
-        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase.results(), N, ontology);
-        this.templateData.put("sparkline", sparklinePackets);
-
-        AtomicInteger rank = new AtomicInteger();
-        hcase.results().resultsWithDescendingPostTestProbability().sequential()
-                .forEachOrdered(result -> {
-                    String symbol = EMPTY_STRING;
-                    int current = rank.incrementAndGet();
-                    if (current <= N) {
-                        DifferentialDiagnosis ddx = new DifferentialDiagnosis(result, current);
-                        logger.trace("Diff diag for " + result.getDiseaseName());
-                        ddx.setGenotypeExplanation("Genetic data not available");
-
-                        // now get SVG
-                        Lr2Svg lr2svg = new Lr2Svg(result, current, result.diseaseId(), result.getDiseaseName(), ontology, symbol);
-                        ddx.setSvg(lr2svg.getSvgString());
-                        diff.add(ddx);
-
-                        String counterString = String.format("diagnosis%d", current);
-                        this.topDiagnosisAnchors.add(counterString);
-                        ddx.setAnchor(counterString);
-                        this.topDiagnosisMap.put(counterString, ddx.getDiseaseName());
-                    } else {
-                        String name = shortName(result.getDiseaseName());
-                        String id = result.diseaseId().getId();// This is intended to work with OMIM
-                        if (name == null) {
-                            logger.error("Got null string for disease name from result={}", result);
-                            name = EMPTY_STRING;// avoid errors
-                        }
-                        int c = 0;
-                        ImprobableDifferential ipd = new ImprobableDifferential(name, id, symbol, result.posttestProbability(), c);
-                        improbdiff.add(ipd);
-                    }
-                });
-        this.templateData.put("improbdiff", improbdiff);
-        this.templateData.put("diff", diff);
-
-    }
+//    /**
+//     * Constructor to initialize the data that will be needed to output an HTML page.
+//     * Used for when we have no genetic data
+//     *
+//     * @param hcase    The individual (case) represented in the VCF file
+//     * @param ontology The HPO ontology
+//     * @param metadat  Metadata about the analysis.
+//     * @param thres    threshold posterior probability to show differential in detail
+//     */
+//    public HtmlTemplate(HpoCase hcase,
+//                        Ontology ontology,
+//                        Map<String, String> metadat,
+//                        LrThreshold thres,
+//                        MinDiagnosisCount minDifferentials,
+//                        String prefix,
+//                        Path outdir,
+//                        List<String> errs) {
+//        super(hcase, ontology, metadat);
+//        this.outputPath = createOutputFile(outdir, prefix, "%s.html");
+//        this.lrThreshold = thres;
+//        this.minDiagnosisToShowInDetail = minDifferentials;
+//        this.templateData.put("errorlist", errs);
+//        List<DifferentialDiagnosis> diff = new ArrayList<>();
+//        List<ImprobableDifferential> improbdiff = new ArrayList<>();
+//        this.topDiagnosisMap = new HashMap<>();
+//        this.topDiagnosisAnchors = new ArrayList<>();
+//        ClassLoader classLoader = HtmlTemplate.class.getClassLoader();
+//        cfg.setClassLoaderForTemplateLoading(classLoader, "");
+//        templateData.put("postprobthreshold", String.format("%.1f%%", 100 * lrThreshold.getThreshold()));
+//        // Get SVG for post-test probability list
+//        int N = totalDetailedDiagnosesToShow(hcase.results());
+//        Posttest2Svg pt2svg = new Posttest2Svg(hcase.results(), lrThreshold.getThreshold(), N);
+//        String posttestSVG = pt2svg.getSvgString();
+//        this.templateData.put("posttestSVG", posttestSVG);
+//        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(hcase.results(), N, ontology);
+//        this.templateData.put("sparkline", sparklinePackets);
+//
+//        AtomicInteger rank = new AtomicInteger();
+//        hcase.results().resultsWithDescendingPostTestProbability().sequential()
+//                .forEachOrdered(result -> {
+//                    String symbol = EMPTY_STRING;
+//                    int current = rank.incrementAndGet();
+//                    if (current <= N) {
+//                        DifferentialDiagnosis ddx = new DifferentialDiagnosis(result, current);
+//                        logger.trace("Diff diag for " + result.getDiseaseName());
+//                        ddx.setGenotypeExplanation("Genetic data not available");
+//
+//                        // now get SVG
+//                        Lr2Svg lr2svg = new Lr2Svg(result, current, result.diseaseId(), result.getDiseaseName(), ontology, symbol);
+//                        ddx.setSvg(lr2svg.getSvgString());
+//                        diff.add(ddx);
+//
+//                        String counterString = String.format("diagnosis%d", current);
+//                        this.topDiagnosisAnchors.add(counterString);
+//                        ddx.setAnchor(counterString);
+//                        this.topDiagnosisMap.put(counterString, ddx.getDiseaseName());
+//                    } else {
+//                        String name = shortName(result.getDiseaseName());
+//                        String id = result.diseaseId().getId();// This is intended to work with OMIM
+//                        if (name == null) {
+//                            logger.error("Got null string for disease name from result={}", result);
+//                            name = EMPTY_STRING;// avoid errors
+//                        }
+//                        int c = 0;
+//                        ImprobableDifferential ipd = new ImprobableDifferential(name, id, symbol, result.posttestProbability(), c);
+//                        improbdiff.add(ipd);
+//                    }
+//                });
+//        this.templateData.put("improbdiff", improbdiff);
+//        this.templateData.put("diff", diff);
+//
+//    }
 
 
     @Override
     public void outputFile() {
-        logger.info("Writing HTML file to {}", outpath.toAbsolutePath());
-        try (BufferedWriter out = Files.newBufferedWriter(outpath)) {
+        logger.info("Writing HTML file to {}", outputPath.toAbsolutePath());
+        try (BufferedWriter out = Files.newBufferedWriter(outputPath)) {
             Template template = cfg.getTemplate("liricalHTML.ftl");
             template.process(templateData, out);
         } catch (TemplateException | IOException te) {
@@ -235,6 +248,11 @@ public class HtmlTemplate extends LiricalTemplate {
         } catch (TemplateException | IOException te) {
             logger.warn("Error writing out results {}", te.getMessage(), te);
         }
+    }
+
+    @Override
+    protected String outputFormatString() {
+        return "%s.html";
     }
 
     /**

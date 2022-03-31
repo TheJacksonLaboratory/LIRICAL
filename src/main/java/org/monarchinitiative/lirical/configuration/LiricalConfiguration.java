@@ -11,6 +11,7 @@ import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.LiricalDataResolver;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
+import org.monarchinitiative.lirical.model.GenomeBuild;
 import org.monarchinitiative.lirical.service.ExomiserVariantMetadataService;
 import org.monarchinitiative.lirical.service.NoOpVariantMetadataService;
 import org.monarchinitiative.lirical.service.PhenotypeService;
@@ -52,7 +53,7 @@ public class LiricalConfiguration {
         this.properties = Objects.requireNonNull(properties);
         LiricalDataResolver liricalDataResolver = LiricalDataResolver.of(properties.liricalDataDirectory());
 
-        assembly = parseAssembly(properties.genomeAssembly());
+        assembly = parseAssembly(properties.genomeBuild());
         VariantMetadataService variantMetadataService = createVariantMetadataService(properties, new VariantMetadataService.Options(properties.defaultVariantFrequency()));
 
         Ontology hpo = loadOntology(liricalDataResolver.hpoJson());
@@ -64,19 +65,17 @@ public class LiricalConfiguration {
 
         LiricalAnalysisRunner liricalAnalysisRunner = createLiricalAnalyzer(phenotypeService);
 
-        this.lirical = Lirical.of(variantMetadataService, phenotypeService, liricalAnalysisRunner);
+        this.lirical = Lirical.of(properties.genomeBuild(), variantMetadataService, phenotypeService, liricalAnalysisRunner);
     }
 
-    private static GenomeAssembly parseAssembly(String assembly) {
-        switch (assembly.toUpperCase()) {
-            case "HG19":
-            case "GRCH37":
+    private static GenomeAssembly parseAssembly(GenomeBuild build) {
+        switch (build) {
+            case HG19:
                 LOGGER.debug("Using GRCh37 assembly");
                 return GenomeAssembly.HG19;
             default:
-                LOGGER.warn("Unknown assembly {}, falling back to GRCh38", assembly);
-            case "HG38":
-            case "GRCH38":
+                LOGGER.warn("Unknown assembly {}, falling back to GRCh38", build);
+            case HG38:
                 LOGGER.debug("Using GRCh38 assembly");
                 return GenomeAssembly.HG38;
         }

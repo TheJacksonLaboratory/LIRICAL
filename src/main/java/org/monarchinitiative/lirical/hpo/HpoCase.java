@@ -1,8 +1,6 @@
 package org.monarchinitiative.lirical.hpo;
 
 
-import com.google.common.collect.ImmutableList;
-
 import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -22,6 +20,7 @@ import java.util.stream.Collectors;
  */
 public final class HpoCase {
     private static final Logger logger = LoggerFactory.getLogger(HpoCase.class);
+    private final String sampleId;
     /** List of Hpo terms for our case. */
     private final List<TermId> observedAbnormalities;
     /** List of excluded Hpo terms for our case. */
@@ -33,14 +32,18 @@ public final class HpoCase {
 
     private final AnalysisResults results;
 
-    private HpoCase(List<TermId> observedTerms, List<TermId> excludedTerms, AnalysisResults results, Sex sex, Age age) {
-        this.observedAbnormalities = observedTerms;
-        this.excludedAbnormalities = excludedTerms;
-        this.results = results;
-        this.sex = sex;
-        this.age = age;
+    private HpoCase(String sampleId, List<TermId> observedTerms, List<TermId> excludedTerms, AnalysisResults results, Sex sex, Age age) {
+        this.sampleId = Objects.requireNonNull(sampleId);
+        this.observedAbnormalities = Objects.requireNonNull(observedTerms);
+        this.excludedAbnormalities = Objects.requireNonNull(excludedTerms);
+        this.results = Objects.requireNonNull(results);
+        this.sex = Objects.requireNonNull(sex);
+        this.age = Objects.requireNonNull(age);
     }
 
+    public String sampleId() {
+        return sampleId;
+    }
 
     /** @return A list of the HPO terms representing the phenotypic abnormalities in the person being evaluated.*/
     public List<TermId> getObservedAbnormalities() { return observedAbnormalities;  }
@@ -82,6 +85,7 @@ public final class HpoCase {
 
     /** Convenience class to construct an {@link HpoCase} object. */
     public static class Builder {
+        private final String sampleId;
         /** List of Hpo terms for our case. */
         private final List<TermId> observedAbnormalities;
         /** List of excluded Hpo terms for our case. */
@@ -93,15 +97,16 @@ public final class HpoCase {
         /** Age of the proband, if known. */
         private Age age;
 
-        public Builder(List<TermId> abnormalPhenotypes) {
-            this.observedAbnormalities = ImmutableList.copyOf(abnormalPhenotypes);
-            excludedAbnormalities=ImmutableList.of(); // default empty list
+        public Builder(String sampleId, List<TermId> abnormalPhenotypes) {
+            this.sampleId = Objects.requireNonNull(sampleId);
+            this.observedAbnormalities = List.copyOf(Objects.requireNonNull(abnormalPhenotypes));
+            excludedAbnormalities=List.of(); // default empty list
             sex=Sex.UNKNOWN;
             age=Age.ageNotKnown();
         }
 
         public Builder excluded(List<TermId> excludedPhenotypes) {
-            this.excludedAbnormalities = ImmutableList.copyOf(excludedPhenotypes);
+            this.excludedAbnormalities = List.copyOf(excludedPhenotypes);
             return this;
         }
 
@@ -122,7 +127,7 @@ public final class HpoCase {
 
         public HpoCase build() {
             Objects.requireNonNull(analysisResults);
-            return new HpoCase(observedAbnormalities,excludedAbnormalities, analysisResults, sex, age);
+            return new HpoCase(sampleId, observedAbnormalities,excludedAbnormalities, analysisResults, sex, age);
         }
     }
 

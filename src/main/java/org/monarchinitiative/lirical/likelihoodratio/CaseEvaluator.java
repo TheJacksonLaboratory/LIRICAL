@@ -427,7 +427,7 @@ public class CaseEvaluator {
             evaluationmap = phenotypeOnlyEvaluation();
         }
         Map<TermId, TestResult> results = evaluateRanks(evaluationmap);
-        HpoCase.Builder casebuilder = new HpoCase.Builder(phenotypicAbnormalities)
+        HpoCase.Builder casebuilder = new HpoCase.Builder("sampleId", phenotypicAbnormalities)
                 .excluded(negatedPhenotypicAbnormalities)
 //                .results(results)
                 ;

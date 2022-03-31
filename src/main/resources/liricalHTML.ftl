@@ -485,7 +485,7 @@ a.svg:hover, a.svg:active {
             <th>Annotation</th>
             </tr>
             </thead>
-                <#list  dd.varlist as svar>
+                <#list  dd.vizVariantList as svar>
                 <tr>
                   <td>${svar.ucsc}</td>
                   <#if svar.isInPathogenicBin() >
@@ -494,7 +494,7 @@ a.svg:hover, a.svg:active {
                   <td>${svar.pathogenicityScore!"n/a"}</td>
                   </#if>
                   <td>${svar.frequency}%</td>
-                  <td>${svar.gtype}</td>
+                  <td>${svar.genotype}</td>
                   <td>${svar.clinvar}</td>
                   <td>
                   <ul class="no-list-style">

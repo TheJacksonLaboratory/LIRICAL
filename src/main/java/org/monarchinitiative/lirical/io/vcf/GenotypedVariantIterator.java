@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.io.vcf;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.*;
 import org.monarchinitiative.lirical.model.AlleleCount;
+import org.monarchinitiative.lirical.model.GenomeBuild;
 import org.monarchinitiative.lirical.model.GenotypedVariant;
 import org.monarchinitiative.svart.Contig;
 import org.monarchinitiative.svart.GenomicVariant;
@@ -23,14 +24,18 @@ class GenotypedVariantIterator implements Iterator<GenotypedVariant> {
     private final VcfConverter converter;
 
     private final Queue<GenotypedVariant> queue;
+    private final GenomeBuild genomeBuild;
 
     GenotypedVariantIterator(GenomicAssembly assembly,
+                             GenomeBuild genomeBuild,
                              CloseableIterator<VariantContext> iterator) {
         this.assembly = Objects.requireNonNull(assembly);
         this.iterator = Objects.requireNonNull(iterator);
         // TODO - pull out trimmer config?
         this.converter = new VcfConverter(assembly, VariantTrimmer.leftShiftingTrimmer(VariantTrimmer.retainingCommonBase()));
+        this.genomeBuild = genomeBuild;
         this.queue = new LinkedList<>();
+
         readNextVariant();
     }
 
@@ -65,7 +70,7 @@ class GenotypedVariantIterator implements Iterator<GenotypedVariant> {
                 for (Allele alt : alts) {
                     GenomicVariant variant = converter.convert(contig, vc.getID(), start, ref.getBaseString(), alt.getBaseString());
                     Map<String, AlleleCount> countMap = countGenotypes(ref, alt, vc.getGenotypes());
-                    queue.add(GenotypedVariant.of(variant, countMap));
+                    queue.add(GenotypedVariant.of(genomeBuild, variant, countMap));
                 }
             }
             break;

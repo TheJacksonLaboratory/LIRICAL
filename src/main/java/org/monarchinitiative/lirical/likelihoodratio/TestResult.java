@@ -235,11 +235,6 @@ public class TestResult implements Comparable<TestResult> {
                 .toList();
     }
 
-    @Deprecated(forRemoval = true)
-    public boolean hasGenotypeExplanation() {
-        return genotypeLr != null;
-    }
-
     /**
      * Calculate the maximum absolute value of any individual likelihood ratio. This is used to help layout the SVG
      *

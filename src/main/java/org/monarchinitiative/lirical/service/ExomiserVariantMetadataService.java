@@ -21,6 +21,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.lirical.io.LiricalDataException;
+import org.monarchinitiative.lirical.model.ClinvarClnSig;
 import org.monarchinitiative.lirical.model.VariantMetadata;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicVariant;
@@ -30,15 +31,10 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Set;
 
 public class ExomiserVariantMetadataService implements VariantMetadataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExomiserVariantMetadataService.class);
-    // The following effects are considered pathogenic
-    private static final Set<ClinVarData.ClinSig> CLINVAR_PATHOGENIC = Set.of(ClinVarData.ClinSig.PATHOGENIC,
-            ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC,
-            ClinVarData.ClinSig.LIKELY_PATHOGENIC);
 
     /**
      * A map with data from the Exomiser database.
@@ -100,14 +96,14 @@ public class ExomiserVariantMetadataService implements VariantMetadataService {
         AlleleProto.AlleleKey alleleKey = createAlleleKey(variant);
         AlleleProto.AlleleProperties alleleProp = alleleMap.get(alleleKey);
 
+        float variantEffectPathogenicity = VariantEffectPathogenicityScore.getPathogenicityScoreOf(annotation.getVariantEffect());
         float frequency;
         float pathogenicity;
-        boolean isClinvarPathogenic;
-        float variantEffectPathogenicity = VariantEffectPathogenicityScore.getPathogenicityScoreOf(annotation.getVariantEffect());
+        ClinvarClnSig clinvarClnSig;
         if (alleleProp == null) {
             frequency = options.defaultFrequency();
             pathogenicity = variantEffectPathogenicity;
-            isClinvarPathogenic = false;
+            clinvarClnSig = ClinvarClnSig.NOT_PROVIDED;
         } else {
             FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
             frequency = frequencyData.getMaxFreq();
@@ -117,14 +113,38 @@ public class ExomiserVariantMetadataService implements VariantMetadataService {
             ClinVarData cVarData = pathogenicityData.getClinVarData();
             // Only use ClinVar data if it is backed up by assertions.
             if (cVarData.getReviewStatus().startsWith("no_assertion")) {
-                isClinvarPathogenic = false;
+                clinvarClnSig = ClinvarClnSig.NOT_PROVIDED;
             } else {
-                isClinvarPathogenic = CLINVAR_PATHOGENIC.contains(cVarData.getPrimaryInterpretation());
+                ClinVarData.ClinSig primaryInterpretation = cVarData.getPrimaryInterpretation();
+                clinvarClnSig = mapToClinvarClnSig(primaryInterpretation);
             }
         }
 
+        return VariantMetadata.of(frequency, pathogenicity, clinvarClnSig, annotation.getTranscriptAnnotations());
+    }
 
-        return VariantMetadata.of(frequency, pathogenicity, isClinvarPathogenic, annotation.getTranscriptAnnotations());
+    private ClinvarClnSig mapToClinvarClnSig(ClinVarData.ClinSig primaryInterpretation) {
+        return switch (primaryInterpretation) {
+            case LIKELY_PATHOGENIC -> ClinvarClnSig.LIKELY_PATHOGENIC;
+            case PATHOGENIC_OR_LIKELY_PATHOGENIC -> ClinvarClnSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
+            case PATHOGENIC -> ClinvarClnSig.PATHOGENIC;
+
+            case UNCERTAIN_SIGNIFICANCE -> ClinvarClnSig.UNCERTAIN_SIGNIFICANCE;
+            case CONFLICTING_PATHOGENICITY_INTERPRETATIONS -> ClinvarClnSig.CONFLICTING_PATHOGENICITY_INTERPRETATIONS;
+
+            case BENIGN -> ClinvarClnSig.BENIGN;
+            case BENIGN_OR_LIKELY_BENIGN -> ClinvarClnSig.BENIGN_OR_LIKELY_BENIGN;
+            case LIKELY_BENIGN -> ClinvarClnSig.LIKELY_BENIGN;
+
+            case AFFECTS -> ClinvarClnSig.AFFECTS;
+            case ASSOCIATION -> ClinvarClnSig.ASSOCIATION;
+            case DRUG_RESPONSE -> ClinvarClnSig.DRUG_RESPONSE;
+            case PROTECTIVE -> ClinvarClnSig.PROTECTIVE;
+            case RISK_FACTOR -> ClinvarClnSig.RISK_FACTOR;
+
+            case OTHER -> ClinvarClnSig.OTHER;
+            case NOT_PROVIDED -> ClinvarClnSig.NOT_PROVIDED;
+        };
     }
 
     private static AlleleProto.AlleleKey createAlleleKey(GenomicVariant variant) {

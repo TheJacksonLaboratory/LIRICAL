@@ -2,6 +2,7 @@ package org.monarchinitiative.lirical.model;
 
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.ontology.data.Identified;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -13,10 +14,21 @@ public interface Gene2Genotype extends Identified {
         return Gene2GenotypeImpl.of(id, variants);
     }
 
+    @Override
+    @Deprecated(forRemoval = true)
+    default TermId id() {
+        return geneId().id();
+    }
+
+    GeneIdentifier geneId();
+
     /**
      * @return HGVS gene symbol, e.g. <code>FBN2</code>
      */
-    String symbol();
+    @Deprecated(forRemoval = true)
+    default String symbol() {
+        return geneId().symbol();
+    }
 
     /**
      *
@@ -31,7 +43,7 @@ public interface Gene2Genotype extends Identified {
     }
 
     default int pathogenicClinVarCount(String sampleId) {
-        return variants().filter(LiricalVariant::isClinVarPathogenic)
+        return variants().filter(lv -> lv.clinvarClnSig().isPathogenicOrLikelyPathogenic())
                 .map(var -> var.pathogenicClinVarAlleleCount(sampleId))
                 .reduce(0, Integer::sum);
     }

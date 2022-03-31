@@ -13,11 +13,11 @@ public interface VariantMetadata {
 
     static VariantMetadata of(float frequency,
                               float pathogenicity,
-                              boolean isClinvarPathogenic,
+                              ClinvarClnSig clinvarClnSig,
                               List<TranscriptAnnotation> annotations) {
         return new VariantMetadataDefault(frequency,
                 pathogenicity,
-                isClinvarPathogenic,
+                clinvarClnSig,
                 annotations);
     }
 
@@ -25,7 +25,7 @@ public interface VariantMetadata {
 
     float pathogenicityScore();
 
-    boolean isClinVarPathogenic();
+    ClinvarClnSig clinvarClnSig();
 
     List<TranscriptAnnotation> annotations();
 
@@ -34,7 +34,6 @@ public interface VariantMetadata {
      * population frequency, with anything above 2% getting a factor of zero.
      * @return The Exomiser-style frequency factor
      */
-    // TODO - why is this not used?
     default Optional<Float> frequencyScore() {
         return frequency().map(frequency -> {
             if (frequency <= 0) {

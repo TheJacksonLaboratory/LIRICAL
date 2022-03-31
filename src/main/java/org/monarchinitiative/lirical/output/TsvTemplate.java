@@ -2,10 +2,10 @@ package org.monarchinitiative.lirical.output;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import org.monarchinitiative.lirical.analysis.Gene2Genotype;
+import org.monarchinitiative.lirical.configuration.LiricalProperties;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
+import org.monarchinitiative.lirical.model.Gene2Genotype;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 /**
  * This class coordinates the output of a TSV file that contains a suymmary of the analysis results.
@@ -32,59 +33,41 @@ public class TsvTemplate extends LiricalTemplate {
     /**
      * Constructor for when we do the analysis without genetic data
      * @param hcase The current HPO case whose results we are about to output
-     * @param ontology Reference toHPO Ontology object
+     * @param ontology Reference to HPO Ontology object
+     * @param geneById
      * @param metadata Reference to a map of "metadata"-information we will use for the output file
      */
-    public TsvTemplate(HpoCase hcase,
+    public TsvTemplate(LiricalProperties liricalProperties,
+                       HpoCase hcase,
                        Ontology ontology,
+                       Map<TermId, Gene2Genotype> geneById,
                        Map<String, String> metadata,
                        String prefix,
                        Path outdir) {
-        this(hcase, ontology, Map.of(), Map.of(), metadata, prefix, outdir);
-//        super(hcase,ontology,metadata);
-//        this.outpath = createOutputFile(outdir, prefix, "%s.tsv");
-//        ClassLoader classLoader = TsvTemplate.class.getClassLoader();
-//        cfg.setClassLoaderForTemplateLoading(classLoader,"");
-//        List<TsvDifferential> diff = new ArrayList<>();
-//        String header= String.join("\t",tsvHeader);
-//        templateData.put("header",header);
-//        int counter=0;
-//        // Note the following results are already sorted
-//        for (TestResult result : hcase.getResults()) {
-//            TsvDifferential tsvdiff = new TsvDifferential(result);
-//            diff.add(tsvdiff);
-//            counter++;
-//        }
-//        this.templateData.put("diff",diff);
+        this(liricalProperties, hcase, ontology, geneById, metadata, outdir, prefix);
     }
 
-    public TsvTemplate(HpoCase hcase,
+    public TsvTemplate(LiricalProperties liricalProperties,
+                       HpoCase hcase,
                        Ontology ontology,
-                       Map<TermId, Gene2Genotype> genotypeMap,
-                       Map<TermId, String> geneid2sym,
+                       Map<TermId, Gene2Genotype> geneById,
                        Map<String, String> metadata,
-                       String prefix,
-                       Path outdir) {
-        super(hcase, ontology, geneid2sym, metadata);
-        this.outpath = createOutputFile(outdir, prefix, "%s.tsv");
-        ClassLoader classLoader = TsvTemplate.class.getClassLoader();
-        cfg.setClassLoaderForTemplateLoading(classLoader,"");
-        List<TsvDifferential> diff = new ArrayList<>();
-        String header= String.join("\t",tsvHeader);
-        templateData.put("header",header);
+                       Path outdir, String prefix) {
+        super(liricalProperties, hcase, ontology, geneById, metadata, outdir, prefix);
+        cfg.setClassLoaderForTemplateLoading(TsvTemplate.class.getClassLoader(),"");
+        templateData.put("header", String.join("\t",tsvHeader));
         AtomicInteger rank = new AtomicInteger();
+        List<TsvDifferential> diff = new ArrayList<>();
         hcase.results().resultsWithDescendingPostTestProbability().sequential()
                 .forEachOrdered(result -> {
                     int current = rank.incrementAndGet();
-                    TsvDifferential tsvdiff = new TsvDifferential(result, current);
-                    Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
-                    if (genotypeLr.isPresent()) {
-                        TermId geneId = genotypeLr.get().geneId();
-                        Gene2Genotype g2g = genotypeMap.get(geneId);
-                        if (g2g != null) {
-                            tsvdiff.addG2G(g2g);
-                        }
-                    }
+                    List<VisualizableVariant> variants = result.genotypeLr()
+                            .map(GenotypeLrWithExplanation::geneId)
+                            .map(geneId -> geneById.get(geneId.id()).variants())
+                            .orElse(Stream.empty())
+                            .map(toVisualizableVariant())
+                            .toList();
+                    TsvDifferential tsvdiff = new TsvDifferential(hcase.sampleId(), result, current, variants);
                     diff.add(tsvdiff);
                 });
         this.templateData.put("diff",diff);
@@ -93,8 +76,8 @@ public class TsvTemplate extends LiricalTemplate {
 
     @Override
     public void outputFile() {
-        logger.info("Writing TSV file to {}", outpath.toAbsolutePath());
-        try (BufferedWriter out = Files.newBufferedWriter(outpath)) {
+        logger.info("Writing TSV file to {}", outputPath.toAbsolutePath());
+        try (BufferedWriter out = Files.newBufferedWriter(outputPath)) {
             Template template = cfg.getTemplate("liricalTSV.ftl");
             template.process(templateData, out);
         } catch (TemplateException | IOException te) {
@@ -111,5 +94,10 @@ public class TsvTemplate extends LiricalTemplate {
         } catch (TemplateException | IOException te) {
             te.printStackTrace();
         }
+    }
+
+    @Override
+    protected String outputFormatString() {
+        return "%s.tsv";
     }
 }

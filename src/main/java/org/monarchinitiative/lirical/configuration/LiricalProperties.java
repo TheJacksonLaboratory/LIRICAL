@@ -1,5 +1,6 @@
 package org.monarchinitiative.lirical.configuration;
 
+import org.monarchinitiative.lirical.model.GenomeBuild;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 
 import java.nio.file.Path;
@@ -15,7 +16,7 @@ public class LiricalProperties {
     private final Set<DiseaseDatabase> diseaseDatabases;
     private final GenotypeLrProperties genotypeLrProperties;
     private final float defaultVariantFrequency;
-    private final String genomeAssembly;
+    private final GenomeBuild genomeBuild;
     private final TranscriptDatabase transcriptDatabase;
 
     public static class GenotypeLrProperties {
@@ -39,12 +40,12 @@ public class LiricalProperties {
 
     private LiricalProperties(Builder builder) {
         this.liricalDataDirectory = builder.liricalDataDirectory;
-        this.exomiserDataDirectory = builder.exomiserDataDirectory;
-        this.backgroundFrequencyFile = builder.backgroundFrequencyFile;
-        this.diseaseDatabases = Set.copyOf(builder.diseaseDatabases);
+        this.exomiserDataDirectory = builder.exomiserDataDirectory; // nullable
+        this.backgroundFrequencyFile = builder.backgroundFrequencyFile; // nullable
+        this.diseaseDatabases = Set.copyOf(Objects.requireNonNull(builder.diseaseDatabases));
         this.genotypeLrProperties = new GenotypeLrProperties(builder.pathogenicityThreshold, builder.strict);
         this.defaultVariantFrequency = builder.defaultVariantFrequency;
-        this.genomeAssembly = Objects.requireNonNull(builder.genomeAssembly);
+        this.genomeBuild = Objects.requireNonNull(builder.genomeBuild);
         this.transcriptDatabase = Objects.requireNonNull(builder.transcriptDatabase);
     }
 
@@ -72,8 +73,8 @@ public class LiricalProperties {
         return defaultVariantFrequency;
     }
 
-    public String genomeAssembly() {
-        return genomeAssembly;
+    public GenomeBuild genomeBuild() {
+        return genomeBuild;
     }
 
     public TranscriptDatabase transcriptDatabase() {
@@ -93,7 +94,7 @@ public class LiricalProperties {
         private float pathogenicityThreshold = .8f;
         private boolean strict = false;
         private float defaultVariantFrequency = 0.00001F;
-        private String genomeAssembly = "hg38";
+        private GenomeBuild genomeBuild = GenomeBuild.HG38;
         private TranscriptDatabase transcriptDatabase = TranscriptDatabase.REFSEQ;
 
         private Builder(Path liricalDataDirectory) {
@@ -126,8 +127,8 @@ public class LiricalProperties {
             return this;
         }
 
-        public Builder genomeAssembly(String genomeAssembly) {
-            this.genomeAssembly = genomeAssembly;
+        public Builder genomeAssembly(GenomeBuild genomeBuild) {
+            this.genomeBuild = genomeBuild;
             return this;
         }
 

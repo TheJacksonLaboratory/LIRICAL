@@ -1,25 +1,16 @@
 package org.monarchinitiative.lirical.output;
 
-import org.monarchinitiative.lirical.analysis.Gene2Genotype;
+import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
-import org.monarchinitiative.lirical.vcf.SimpleVariant;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class TsvDifferential extends BaseDifferential {
 
-    private final static String EMPTY_STRING="";
-
-    private List<SimpleVariant> varlist;
-    private String varString=NOT_AVAILABLE;
-    /** Set this to yes as a flag for the template to indicate we can show some variants. */
-    private String hasVariants="No";
-
-    private String geneSymbol=EMPTY_STRING;
-
-    public TsvDifferential(TestResult result, int rank) {
-        super(result, rank);
+    public TsvDifferential(String sampleId, TestResult result, int rank, List<VisualizableVariant> variants) {
+        super(sampleId, result, rank, variants);
     }
 
     @Override
@@ -44,27 +35,16 @@ public class TsvDifferential extends BaseDifferential {
         }
     }
 
-    void addG2G(Gene2Genotype g2g) {
-        this.geneSymbol=g2g.getSymbol();
-        this.hasVariants="yes";
-        this.varlist =g2g.getVarList();
-        this.varString=varlist.stream().map(SimpleVariant::toString).collect(Collectors.joining("; "));
+    private Function<VisualizableVariant, String> formatVariant() {
+        return v -> String.format("%s:%d%s>%s %s pathogenicity:%.1f [%s]", v.contigName(),v.pos(),v.ref(),v.alt(),annotation2string(v.getAnnotationList().get(0)),v.getPathogenicityScore(),v.getGenotype());
+    }
+
+    private static String annotation2string(TranscriptAnnotation annotation) {
+        return String.format("%s:%s:%s",annotation.getAccession(),annotation.getHgvsCdna(),annotation.getHgvsProtein());
     }
 
     public String getVarString() {
-        return varString;
-    }
-
-    public List<SimpleVariant> getVarlist() {
-        return varlist;
-    }
-
-    public String getHasVariants() {
-        return hasVariants;
-    }
-
-    public String getGeneSymbol() {
-        return geneSymbol;
+        return variants.stream().map(formatVariant()).collect(Collectors.joining("; "));
     }
 
 }

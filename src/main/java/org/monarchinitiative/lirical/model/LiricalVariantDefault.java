@@ -16,6 +16,11 @@ class LiricalVariantDefault implements LiricalVariant {
     }
 
     @Override
+    public GenomeBuild genomeBuild() {
+        return genotypedVariant.genomeBuild();
+    }
+
+    @Override
     public GenomicVariant variant() {
         return genotypedVariant.variant();
     }
@@ -41,8 +46,8 @@ class LiricalVariantDefault implements LiricalVariant {
     }
 
     @Override
-    public boolean isClinVarPathogenic() {
-        return variantMetadata.isClinVarPathogenic();
+    public ClinvarClnSig clinvarClnSig() {
+        return variantMetadata.clinvarClnSig();
     }
 
     @Override

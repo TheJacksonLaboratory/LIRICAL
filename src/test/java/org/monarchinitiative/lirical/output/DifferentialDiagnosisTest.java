@@ -1,14 +1,20 @@
 package org.monarchinitiative.lirical.output;
 
-import com.google.common.collect.ImmutableList;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
-import org.monarchinitiative.lirical.vcf.SimpleVariant;
+import org.monarchinitiative.lirical.model.GenomeBuild;
+import org.monarchinitiative.lirical.model.GenotypedVariant;
+import org.monarchinitiative.lirical.model.LiricalVariant;
+import org.monarchinitiative.lirical.model.VariantMetadata;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
+import org.monarchinitiative.svart.assembly.SequenceRole;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,6 +25,14 @@ public class DifferentialDiagnosisTest {
     private final String phenotypeExplanation="example1";
     private final String expectedShortName="BRACHYPHALANGY, POLYDACTYLY, AND TIBIAL APLASIA/HYPOPLASIA";
 
+
+    @BeforeAll
+    public static void beforeAll() {
+        Contig contig = Contig.of(1, "ctg1", SequenceRole.ASSEMBLED_MOLECULE, "ctg1", AssignedMoleculeType.CHROMOSOME, 1000, "", "", "");
+        GenomicVariant gv = GenomicVariant.of(contig, "id", Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 1, 1), "C", "G");
+        GenotypedVariant gtv = GenotypedVariant.of(GenomeBuild.HG38, gv, Map.of());
+        LiricalVariant variant = LiricalVariant.of(gtv, VariantMetadata.empty());
+    }
 
     /** Test that the private function prettifyDiseaseName (which is called from the constructor)
      * can remove all of the grunge from this long original disease name.
@@ -35,7 +49,7 @@ public class DifferentialDiagnosisTest {
         when(result.getCompositeLR()).thenReturn(0.3);
         when(result.genotypeLr()).thenReturn(Optional.empty());
         String expectedShortName="PFEIFFER SYNDROME";
-        DifferentialDiagnosis dd = new DifferentialDiagnosis(result, 1);
+        DifferentialDiagnosis dd = new DifferentialDiagnosis("SampleId", result, 1, List.of(), "", phenotypeExplanation);
         assertEquals(expectedShortName,dd.getDiseaseName());
     }
 
@@ -51,9 +65,7 @@ public class DifferentialDiagnosisTest {
         when(result.posttestProbability()).thenReturn(0.1);
         when(result.getCompositeLR()).thenReturn(0.3);
         when(result.genotypeLr()).thenReturn(Optional.empty());
-        DifferentialDiagnosis dd = new DifferentialDiagnosis(result, 1);
-        dd.setPhenotypeExplanation(phenotypeExplanation);
-        return dd;
+        return new DifferentialDiagnosis("SampleId", result, 1, List.of(), "", phenotypeExplanation);
     }
 
 
@@ -63,32 +75,5 @@ public class DifferentialDiagnosisTest {
         DifferentialDiagnosis dd = brachyphalangy();
         assertEquals(expectedShortName,dd.getDiseaseName());
     }
-
-
-
-
-
-
-    /** Test that we are correctly setting the flag that is used by the FreeMarker to show variants. */
-    @Test
-    public void checkShowVariants() {
-        DifferentialDiagnosis dd = brachyphalangy();
-        Gene2Genotype g2g = Mockito.mock(Gene2Genotype.class);
-        when(g2g.getSymbol()).thenReturn("FakeSymbol");
-        List<SimpleVariant> emptylist= ImmutableList.of();
-        when(g2g.getVarList()).thenReturn(emptylist);
-        dd.addG2G(g2g);
-        assertEquals("yes",dd.getHasVariants());
-    }
-
-
-    @Test
-    public void checkHasPhenotypeExplanation() {
-        DifferentialDiagnosis dd = brachyphalangy();
-        dd.setPhenotypeExplanation(phenotypeExplanation);
-        assertTrue(dd.hasPhenotypeExplanation());
-        assertFalse(dd.hasGenotypeExplanation());
-    }
-
 
 }

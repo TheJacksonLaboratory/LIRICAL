@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.TestResources;
+import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -32,6 +33,8 @@ public class TestResultTest {
         return sensitivity/(1.0 - specificity);
     }
 
+
+    private static final GeneIdentifier MADE_UP_GENE = GeneIdentifier.of(TermId.of("FAKE:123"), "FAKE_GENE");
     private static LrWithExplanationFactory FACTORY;
     private HpoDisease glaucoma;
 
@@ -56,7 +59,7 @@ public class TestResultTest {
         List<LrWithExplanation> list1 = createTestList(some, 2.0, 3.0, 4.0);
         List<LrWithExplanation> excluded = List.of();
         double prevalence = 0.025;
-        GenotypeLrWithExplanation genotypeLr = GenotypeLrWithExplanation.of(TermId.of("FAKE:123"), 2.0, "Explanation");
+        GenotypeLrWithExplanation genotypeLr = GenotypeLrWithExplanation.of(MADE_UP_GENE, 2.0, "Explanation");
         tresultWithGenotype = TestResult.of(list1,excluded,d1, prevalence, genotypeLr);
         tresultNoGenotype = TestResult.of(list1,excluded,d1,prevalence, null);
     }
@@ -180,7 +183,7 @@ public class TestResultTest {
         // The ranks of the objects get set in the evaluate method of HpoCase so cannot be tested here.
         // now add another test result, same as result3 but with additional genotype evidence
         // result4 should now be the top hit
-        GenotypeLrWithExplanation genotypeLr = GenotypeLrWithExplanation.of(TermId.of("NCBI:Fake"), 2.0, "Explanation");
+        GenotypeLrWithExplanation genotypeLr = GenotypeLrWithExplanation.of(MADE_UP_GENE, 2.0, "Explanation");
         TestResult result4= TestResult.of(list3,excluded,d3, prevalence, genotypeLr);
         lst.add(result4);
         assertEquals(lst.get(3),result4);
@@ -240,10 +243,9 @@ public class TestResultTest {
 
     @Test
     public void testGetEntrezGeneId() {
-        TermId expected=TermId.of("FAKE:123");
         Optional<GenotypeLrWithExplanation> genotypeLr = tresultWithGenotype.genotypeLr();
         assertThat(genotypeLr.isPresent(), equalTo(true));
-        assertEquals(expected,genotypeLr.get().geneId());
+        assertEquals(MADE_UP_GENE,genotypeLr.get().geneId());
     }
 
 

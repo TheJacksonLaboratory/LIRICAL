@@ -45,7 +45,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         Map<TermId, List<Gene2Genotype>> diseaseToGenotype = groupDiseasesByGene(data.genes());
 
         List<TestResult> results = phenotypeService.diseases().hpoDiseases().parallel()
-                .map(disease -> analyzeDisease(disease, data.sampleId(), data.presentPhenotypeTerms(), data.negatedPhenotypeTerms(), options, diseaseToGenotype))
+                .map(disease -> analyzeDisease(data.sampleId(), disease, data.presentPhenotypeTerms(), data.negatedPhenotypeTerms(), options, diseaseToGenotype))
                 .flatMap(Optional::stream)
                 .toList();
 
@@ -57,7 +57,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         Map<TermId, List<Gene2Genotype>> diseaseToGenotype = new HashMap<>(genes.size());
 
         for (Gene2Genotype gene : genes) {
-            Collection<TermId> diseaseIds = geneToDisease.getOrDefault(gene.id(), List.of());
+            Collection<TermId> diseaseIds = geneToDisease.getOrDefault(gene.geneId().id(), List.of());
             for (TermId diseaseId : diseaseIds) {
                 diseaseToGenotype.computeIfAbsent(diseaseId, k -> new LinkedList<>())
                         .add(gene);
@@ -67,8 +67,8 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         return diseaseToGenotype;
     }
 
-    private Optional<TestResult> analyzeDisease(HpoDisease disease,
-                                                String sampleId,
+    private Optional<TestResult> analyzeDisease(String sampleId,
+                                                HpoDisease disease,
                                                 List<TermId> observedTerms,
                                                 List<TermId> excludedTerms,
                                                 AnalysisOptions options,

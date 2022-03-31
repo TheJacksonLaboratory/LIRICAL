@@ -29,6 +29,11 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
             description = "Negated phenotype terms (can be specified multiple times).")
     public List<String> negated = List.of();
 
+    @CommandLine.Option(names = {"--assembly"},
+            paramLabel = "{hg19,hg38}",
+            description = "Genome build (default: ${DEFAULT-VALUE}).")
+    protected String genomeBuild = "hg38";
+
     @CommandLine.Option(names = {"--vcf"},
             description = "Path to VCF file (optional).")
     public Path vcfPath = null;
@@ -47,6 +52,11 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
             description = "Proband's sex (default: ${DEFAULT-VALUE}).")
     public Sex sex = Sex.UNKNOWN;
 
+
+    @Override
+    protected String getGenomeBuild() {
+        return genomeBuild;
+    }
 
     @Override
     protected AnalysisData prepareAnalysisData(Lirical lirical) {
@@ -68,7 +78,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
         if (vcfPath == null) {
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(vcfPath, runConfiguration.genomeAssembly, lirical.variantMetadataService(), lirical.phenotypeService().associationData());
+            genes = readVariantsFromVcfFile(vcfPath, lirical.genomeBuild(), lirical.variantMetadataService(), lirical.phenotypeService().associationData());
         }
 
         return AnalysisData.of(sampleId, parseAge(age), sex, observedTerms, negatedTerms, genes);

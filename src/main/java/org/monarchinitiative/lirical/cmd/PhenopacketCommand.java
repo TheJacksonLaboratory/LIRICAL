@@ -30,6 +30,11 @@ import java.util.*;
 public class PhenopacketCommand extends AbstractPrioritizeCommand {
     private static final Logger LOGGER = LoggerFactory.getLogger(PhenopacketCommand.class);
 
+    @CommandLine.Option(names = {"--assembly"},
+            paramLabel = "{hg19,hg38}",
+            description = "Genome build (default: ${DEFAULT-VALUE}).")
+    protected String genomeBuild = "hg38";
+
     @CommandLine.Option(names = {"-p", "--phenopacket"},
             required = true,
             description = "path to phenopacket file")
@@ -218,6 +223,11 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
 //    }
 
     @Override
+    protected String getGenomeBuild() {
+        return genomeBuild;
+    }
+
+    @Override
     protected AnalysisData prepareAnalysisData(Lirical lirical) {
         // Read the Phenopacket
         PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
@@ -251,7 +261,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
         if (vcfPathOpt.isEmpty()) {
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(vcfPathOpt.get(), runConfiguration.genomeAssembly, lirical.variantMetadataService(), lirical.phenotypeService().associationData());
+            genes = readVariantsFromVcfFile(vcfPathOpt.get(), lirical.genomeBuild(), lirical.variantMetadataService(), lirical.phenotypeService().associationData());
         }
 
         return AnalysisData.of(sampleId, age, sex, observedTerms, negatedTerms, genes);

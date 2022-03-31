@@ -84,7 +84,8 @@ public class YamlCommand implements Callable<Integer> {
                 .phenotypeLr(phenoLr);
         CaseEvaluator evaluator = caseBuilder.buildPhenotypeOnlyEvaluator();
         HpoCase hcase = evaluator.evaluate();
-        LiricalTemplate.Builder builder = LiricalTemplate.builder(hcase,ontology,metadata)
+        // TODO - null is supposed to contain real data here, if the command will be used in the real life
+        LiricalTemplate.Builder builder = LiricalTemplate.builder(null,hcase,ontology, null, metadata)
                 .prefix(factory.getOutfilePrefix())
                 .outDirectory(factory.getOutdir())
                 .threshold(factory.getLrThreshold())
@@ -130,11 +131,11 @@ public class YamlCommand implements Callable<Integer> {
         this.metadata.put("exomiserPath",factory.getExomiserPath().map(Path::toAbsolutePath).map(Path::toString).orElse(""));
         CaseEvaluator evaluator = caseBuilder.build();
         HpoCase hcase = evaluator.evaluate();
-        LiricalTemplate.Builder builder = LiricalTemplate.builder(hcase,ontology,metadata)
+        // TODO - null is supposed to contain real data here, if the command will be used in the real life
+        LiricalTemplate.Builder builder = LiricalTemplate.builder(null,hcase,ontology, null, metadata)
                 .prefix(this.factory.getOutfilePrefix())
-                .genotypeMap(genotypeMap)
+//                .genotypeMap(genotypeMap)
                 .outDirectory(this.factory.getOutdir())
-                .geneid2symMap(geneId2symbol)
                 .threshold(this.factory.getLrThreshold())
                 .errors(evaluator.getErrors())
                 .symbolsWithOutIds(symbolsWithoutGeneIds)

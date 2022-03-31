@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public class VariantMetadataDefault implements VariantMetadata {
 
-    private static final VariantMetadataDefault EMPTY = new VariantMetadataDefault(Float.NaN, Float.NaN, false, List.of());
+    private static final VariantMetadataDefault EMPTY = new VariantMetadataDefault(Float.NaN, Float.NaN, ClinvarClnSig.NOT_PROVIDED, List.of());
 
     static VariantMetadataDefault empty() {
         return EMPTY;
@@ -16,17 +16,17 @@ public class VariantMetadataDefault implements VariantMetadata {
 
     private final float frequency;
     private final float pathogenicity;
-    private final boolean isClinvarPathogenic;
+    private final ClinvarClnSig clinvarClnSig;
     private final List<TranscriptAnnotation> annotations;
 
     VariantMetadataDefault(float frequency,
                            float pathogenicity,
-                           boolean isClinvarPathogenic,
+                           ClinvarClnSig clinvarClnSig,
                            List<TranscriptAnnotation> annotations) {
         this.frequency = frequency;
         this.pathogenicity = pathogenicity;
-        this.isClinvarPathogenic = isClinvarPathogenic;
-        this.annotations = annotations;
+        this.clinvarClnSig = Objects.requireNonNull(clinvarClnSig);
+        this.annotations = Objects.requireNonNull(annotations);
     }
 
     @Override
@@ -42,8 +42,8 @@ public class VariantMetadataDefault implements VariantMetadata {
     }
 
     @Override
-    public boolean isClinVarPathogenic() {
-        return isClinvarPathogenic;
+    public ClinvarClnSig clinvarClnSig() {
+        return clinvarClnSig;
     }
 
     @Override
@@ -56,12 +56,12 @@ public class VariantMetadataDefault implements VariantMetadata {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         VariantMetadataDefault that = (VariantMetadataDefault) o;
-        return Float.compare(that.frequency, frequency) == 0 && Float.compare(that.pathogenicity, pathogenicity) == 0 && isClinvarPathogenic == that.isClinvarPathogenic && Objects.equals(annotations, that.annotations);
+        return Float.compare(that.frequency, frequency) == 0 && Float.compare(that.pathogenicity, pathogenicity) == 0 && Objects.equals(clinvarClnSig, that.clinvarClnSig)  && Objects.equals(annotations, that.annotations);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(frequency, pathogenicity, isClinvarPathogenic, annotations);
+        return Objects.hash(frequency, pathogenicity, annotations);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class VariantMetadataDefault implements VariantMetadata {
         return "VariantMetadataDefault{" +
                 "frequency=" + frequency +
                 ", pathogenicity=" + pathogenicity +
-                ", isClinvarPathogenic=" + isClinvarPathogenic +
+                ", clinvarClnSig=" + clinvarClnSig +
                 ", annotations=" + annotations +
                 '}';
     }

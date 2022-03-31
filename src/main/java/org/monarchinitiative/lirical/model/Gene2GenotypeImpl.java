@@ -31,13 +31,8 @@ class Gene2GenotypeImpl {
         }
 
         @Override
-        public TermId id() {
-            return id.id();
-        }
-
-        @Override
-        public String symbol() {
-            return id.symbol();
+        public GeneIdentifier geneId() {
+            return id;
         }
 
         @Override
@@ -60,13 +55,8 @@ class Gene2GenotypeImpl {
         }
 
         @Override
-        public TermId id() {
-            return id.id();
-        }
-
-        @Override
-        public String symbol() {
-            return id.symbol();
+        public GeneIdentifier geneId() {
+            return id;
         }
 
         @Override

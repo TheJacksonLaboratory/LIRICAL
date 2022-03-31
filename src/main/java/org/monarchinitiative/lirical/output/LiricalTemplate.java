@@ -3,12 +3,11 @@ package org.monarchinitiative.lirical.output;
 import com.google.common.collect.ImmutableList;
 import freemarker.template.Configuration;
 import freemarker.template.Version;
-import org.monarchinitiative.lirical.analysis.Gene2Genotype;
-import org.monarchinitiative.lirical.configuration.LiricalFactory;
-import org.monarchinitiative.lirical.configuration.LrThreshold;
-import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
+import org.monarchinitiative.lirical.configuration.*;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.HpoCase;
+import org.monarchinitiative.lirical.model.Gene2Genotype;
+import org.monarchinitiative.lirical.model.LiricalVariant;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -19,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * This is the superclass for {@link TsvTemplate} and {@link HtmlTemplate}, and provides common methods for
@@ -28,6 +28,8 @@ import java.util.*;
 public abstract class LiricalTemplate {
     private static final Logger logger = LoggerFactory.getLogger(LiricalFactory.class);
 
+    protected final LiricalProperties liricalProperties;
+    private final HpoCase hpoCase;
     /** Map of data that will be used for the FreeMark template. */
     protected final Map<String, Object> templateData= new HashMap<>();
     /** FreeMarker configuration object. */
@@ -35,53 +37,44 @@ public abstract class LiricalTemplate {
 
     protected static final String EMPTY_STRING="";
 
-    protected Path outpath;
+    protected Path outputPath;
     /** This map contains the names of the top differential diagnoses that we will show as a list at the
      * top of the page together with anchors to navigate to the detailed analysis.*/
     protected Map<String,String> topDiagnosisMap;
     /** Anchors that are used in the HTML output to navigate to the top differential diagnoses. */
     protected List<String> topDiagnosisAnchors;
-    /** Key: an EntrezGene id; value: corresponding gene symbol. */
-    protected final Map<TermId,String> geneId2symbol;
+    protected final Map<TermId, Gene2Genotype> geneById;
 
-
-
-    /** This version of the constructor should be used for cases without genotype data
-     * @param hcase Data representing the case
-     * @param ontology reference to HP ontology
-     * @param metadata Metadata about the analysis
-     */
-    public LiricalTemplate(HpoCase hcase,
+    public LiricalTemplate(LiricalProperties liricalProperties,
+                           HpoCase hpoCase,
                            Ontology ontology,
-                           Map<String,String> metadata){
-        this(hcase, ontology, Map.of(), metadata);
-    }
-
-    public LiricalTemplate(HpoCase hcase,
-                           Ontology ontology,
-                           Map<TermId,String> geneIdToSymbol,
-                           Map<String,String> metadata){
-
+                           Map<TermId, Gene2Genotype> geneById,
+                           Map<String, String> metadata,
+                           Path outdir,
+                           String prefix) {
+        this.liricalProperties = Objects.requireNonNull(liricalProperties);
+        this.hpoCase = Objects.requireNonNull(hpoCase);
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
-        this.geneId2symbol=geneIdToSymbol;
-        initTemplateData(hcase,ontology,metadata);
+        this.geneById = geneById;
+        this.outputPath = createOutputFile(outdir, prefix, outputFormatString());
+        initTemplateData(hpoCase,ontology,metadata);
     }
 
     abstract public void outputFile();
     abstract public void outputFile(String fname);
 
-    private void initTemplateData(HpoCase hcase, Ontology ontology, Map<String,String> metadata) {
+    private void initTemplateData(HpoCase hpoCase, Ontology ontology, Map<String,String> metadata) {
         templateData.putAll(metadata);
         List<String> observedHPOs = new ArrayList<>();
-        for (TermId id:hcase.getObservedAbnormalities()) {
+        for (TermId id:hpoCase.getObservedAbnormalities()) {
             Term term = ontology.getTermMap().get(id);
             String tstr = String.format("%s (<a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>)",term.getName(),id.getValue(),id.getValue());
             observedHPOs.add(tstr);
         }
         this.templateData.put("observedHPOs",observedHPOs);
         List<String> excludedHpos = new ArrayList<>();
-        for (TermId id:hcase.getExcludedAbnormalities()) {
+        for (TermId id:hpoCase.getExcludedAbnormalities()) {
             Term term = ontology.getTermMap().get(id);
             String tstr = String.format("%s (<a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>)",term.getName(),id.getValue(),id.getValue());
             excludedHpos.add(tstr);
@@ -103,13 +96,15 @@ public abstract class LiricalTemplate {
             return name;
     }
 
-    public Path getOutPath() { return outpath;}
+    public Path getOutPath() { return outputPath;}
 
     protected static Path createOutputFile(Path outdir, String prefix, String format) {
         if (!Files.isDirectory(outdir))
             mkdirIfNotExist(outdir);
         return outdir.resolve(String.format(format, prefix));
     }
+
+    protected abstract String outputFormatString();
 
     protected static void mkdirIfNotExist(Path dir) {
         if (Files.exists(dir)) {
@@ -127,16 +122,25 @@ public abstract class LiricalTemplate {
         }
     }
 
-    public static Builder builder(HpoCase hpoCase, Ontology hpo, Map<String, String> metadata) {
-        return new Builder(hpoCase, hpo, metadata);
+    protected Function<LiricalVariant, VisualizableVariant> toVisualizableVariant() {
+        return lv -> new VisualizableVariantDefault(hpoCase.sampleId(), lv, isInPathogenicBin(lv));
+    }
+
+    private boolean isInPathogenicBin(LiricalVariant lv) {
+        return lv.pathogenicityScore() >= liricalProperties.genotypeLrProperties().pathogenicityThreshold();
+    }
+
+    // TODO - should we replace HpoCase with AnalysisData?
+    public static Builder builder(LiricalProperties liricalProperties, HpoCase hpoCase, Ontology hpo, Map<TermId, Gene2Genotype> genesById, Map<String, String> metadata) {
+        return new Builder(liricalProperties, hpoCase, hpo, genesById, metadata);
     }
 
     public static class Builder {
+        private final LiricalProperties liricalProperties;
         private final HpoCase hpoCase;
         private final Ontology hpo;
+        private final Map<TermId, Gene2Genotype> genesById;
         private final Map<String,String> metadata;
-        private Map<TermId, Gene2Genotype> genotypeMap;
-        private Map<TermId,String> geneid2sym;
         private List<String> errors= ImmutableList.of();
         private Set<String> symbolsWithoutIds;
         private LrThreshold thres;
@@ -145,15 +149,18 @@ public abstract class LiricalTemplate {
         private Path outdir = null;
 
 
-        private Builder(HpoCase hpoCase, Ontology hpo, Map<String,String> metadata){
+        private Builder(LiricalProperties liricalProperties,
+                        HpoCase hpoCase,
+                        Ontology hpo,
+                        Map<TermId, Gene2Genotype> genesById,
+                        Map<String,String> metadata){
+            this.liricalProperties = liricalProperties;
             this.hpoCase = hpoCase;
             this.hpo = hpo;
+            this.genesById = genesById;
             this.metadata = metadata;
         }
 
-
-        public Builder genotypeMap(Map<TermId, Gene2Genotype> gm){ this.genotypeMap=gm; return this; }
-        public Builder geneid2symMap(Map<TermId,String> gsm) { this.geneid2sym=gsm; return this; }
         public Builder threshold(LrThreshold t) { this.thres=t;return this; }
         public Builder mindiff(MinDiagnosisCount md){ this.minDifferentials=md; return this; }
         public Builder prefix(String p){ this.outfileprefix = p; return this; }
@@ -162,48 +169,52 @@ public abstract class LiricalTemplate {
         public Builder symbolsWithOutIds(Set<String> syms) { this.symbolsWithoutIds = syms; return this; }
 
         public HtmlTemplate buildPhenotypeHtmlTemplate() {
-
-            return new HtmlTemplate(this.hpoCase,
-                    this.hpo,
-                    this.metadata,
-                    this.thres,
-                    this.minDifferentials,
-                    this.outfileprefix,
-                    this.outdir,
-                    this.errors);
+            return new HtmlTemplate(liricalProperties,
+                    hpoCase,
+                    hpo,
+                    genesById,
+                    metadata,
+                    thres,
+                    minDifferentials,
+                    outdir,
+                    outfileprefix,
+                    errors,
+                    Set.of());
         }
 
         public HtmlTemplate buildGenoPhenoHtmlTemplate() {
-            return new HtmlTemplate(this.hpoCase,
-                    this.hpo,
-                    this.genotypeMap,
-                    this.geneid2sym,
-                    this.metadata,
-                    this.thres,
-                    this.minDifferentials,
-                    this.outfileprefix,
-                    this.outdir,
-                    this.errors,
-                    this.symbolsWithoutIds);
+            return new HtmlTemplate(liricalProperties,
+                    hpoCase,
+                    hpo,
+                    genesById,
+                    metadata,
+                    thres,
+                    minDifferentials,
+                    outdir,
+                    outfileprefix,
+                    errors,
+                    symbolsWithoutIds);
         }
 
         public TsvTemplate buildPhenotypeTsvTemplate() {
-            return new TsvTemplate(this.hpoCase,
-                    this.hpo,
-                    this.metadata,
-                    this.outfileprefix,
-                    this.outdir);
+            return new TsvTemplate(liricalProperties,
+                    hpoCase,
+                    hpo,
+                    genesById,
+                    metadata,
+                    outfileprefix,
+                    outdir);
         }
 
         public TsvTemplate buildGenoPhenoTsvTemplate() {
-
-            return new TsvTemplate(this.hpoCase,
-                    this.hpo,
-                    this.genotypeMap,
-                    this.geneid2sym,
-                    this.metadata,
-                    this.outfileprefix,
-                    this.outdir);
+            return new TsvTemplate(liricalProperties,
+                    hpoCase,
+                    hpo,
+                    genesById,
+                    metadata,
+                    outdir,
+                    outfileprefix
+            );
 
         }
 

@@ -8,9 +8,11 @@ import java.util.Set;
 
 public interface GenotypedVariant {
 
-    static GenotypedVariant of(GenomicVariant variant, Map<String, AlleleCount> genotypes) {
-        return new GenotypedVariantDefault(variant, genotypes);
+    static GenotypedVariant of(GenomeBuild genomeBuild, GenomicVariant variant, Map<String, AlleleCount> genotypes) {
+        return new GenotypedVariantDefault(genomeBuild, variant, genotypes);
     }
+
+    GenomeBuild genomeBuild();
 
     GenomicVariant variant();
 

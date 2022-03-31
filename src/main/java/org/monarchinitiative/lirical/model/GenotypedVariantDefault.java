@@ -12,12 +12,22 @@ import java.util.Set;
  */
 class GenotypedVariantDefault implements GenotypedVariant {
 
+    private final GenomeBuild genomeBuild;
     private final GenomicVariant variant;
     private final Map<String, AlleleCount> genotypes;
 
-    GenotypedVariantDefault(GenomicVariant variant, Map<String, AlleleCount> genotypes) {
+    GenotypedVariantDefault(GenomeBuild genomeBuild,
+                            GenomicVariant variant,
+                            Map<String, AlleleCount> genotypes) {
+        this.genomeBuild = genomeBuild;
         this.variant = variant;
         this.genotypes = genotypes;
+    }
+
+
+    @Override
+    public GenomeBuild genomeBuild() {
+        return genomeBuild;
     }
 
     @Override
@@ -40,18 +50,19 @@ class GenotypedVariantDefault implements GenotypedVariant {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GenotypedVariantDefault that = (GenotypedVariantDefault) o;
-        return Objects.equals(variant, that.variant) && Objects.equals(genotypes, that.genotypes);
+        return Objects.equals(genomeBuild, that.genomeBuild) && Objects.equals(variant, that.variant) && Objects.equals(genotypes, that.genotypes);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(variant, genotypes);
+        return Objects.hash(genomeBuild, variant, genotypes);
     }
 
     @Override
     public String toString() {
         return "GenotypedVariantDefault{" +
-                "variant=" + variant +
+                "genomeBuild=" + genomeBuild +
+                ", variant=" + variant +
                 ", genotypes=" + genotypes +
                 '}';
     }

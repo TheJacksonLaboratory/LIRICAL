@@ -36,7 +36,7 @@ class HpoCaseTest {
         builder.add(TermId.of(HP_PREFIX, "0000528"));
         // We need to provide a list of TestResult objects for the API, but they are not required for this unit test
         // therefore, pass an empty list.
-        HpoCase.Builder casebuilder = new HpoCase.Builder(builder).
+        HpoCase.Builder casebuilder = new HpoCase.Builder("SampleId", builder).
                 results(AnalysisResults.empty());
 
         hpocase = casebuilder.build();

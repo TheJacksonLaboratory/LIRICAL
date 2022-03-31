@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.svg;
 
 import com.google.common.collect.ImmutableList;
-import org.monarchinitiative.lirical.hpo.HpoCase;
+import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -58,9 +58,9 @@ public class Sparkline2Svg extends Lirical2Svg {
      * Set up the Sparkline2Svg generator by sorting the HPO terms according to their likelihood
      * ratios in the top diagnosis (diseaseId).
      * @param result A representation of the Case
-     * @param diseaseId The id of the disease at rank 1.
+     *
      */
-    public Sparkline2Svg(TestResult result, TermId diseaseId, boolean useGenotype, Ontology ontology) {
+    public Sparkline2Svg(TestResult result, boolean useGenotype, Ontology ontology) {
         this.termIdList = result.observedTerms();
         this.excludedTermIdList = result.excludedTerms();
         observedTermToolTipLabels = new ArrayList<>();
@@ -133,13 +133,13 @@ public class Sparkline2Svg extends Lirical2Svg {
         return ""; // return empty string upon failure
     }
 
-    public String getGeneSparklineSvg(HpoCase hcase, TermId diseaseId, String gsymbol) {
+    public String getGeneSparklineSvg(AnalysisResults results, TermId diseaseId, String gsymbol) {
         try {
             StringWriter swriter = new StringWriter();
             //writeHeader(swriter);
             int geneSvgWidth = 150;
             writeHeader(swriter, geneSvgWidth, total_height);
-            Optional<GenotypeLrWithExplanation> genotypeLr = hcase.results()
+            Optional<GenotypeLrWithExplanation> genotypeLr = results
                     .resultByDiseaseId(diseaseId)
                     .flatMap(TestResult::genotypeLr);
 

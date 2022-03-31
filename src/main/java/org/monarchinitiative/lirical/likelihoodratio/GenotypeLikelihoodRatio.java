@@ -84,9 +84,9 @@ public class GenotypeLikelihoodRatio {
         double ESTIMATED_PROB = 0.05d;
         if (inheritanceModes.stream().anyMatch(tid -> tid.equals(AUTOSOMAL_RECESSIVE)))
             // compatible with autosomal recessive inheritance
-            return GenotypeLrWithExplanation.noVariantsDetectedAutosomalRecessive(g2g.id(), ESTIMATED_PROB * ESTIMATED_PROB, g2g.symbol());
+            return GenotypeLrWithExplanation.noVariantsDetectedAutosomalRecessive(g2g.geneId(), ESTIMATED_PROB * ESTIMATED_PROB);
         else
-            return GenotypeLrWithExplanation.noVariantsDetectedAutosomalDominant(g2g.id(), ESTIMATED_PROB, g2g.symbol());
+            return GenotypeLrWithExplanation.noVariantsDetectedAutosomalDominant(g2g.geneId(), ESTIMATED_PROB);
     }
 
     /**
@@ -126,10 +126,10 @@ public class GenotypeLikelihoodRatio {
         if (pathogenicClinVarAlleleCount > 0) {
             if (inheritancemodes.contains(AUTOSOMAL_RECESSIVE)) {
                 if (pathogenicClinVarAlleleCount == 2) {
-                    return GenotypeLrWithExplanation.twoPathClinVarAllelesRecessive(g2g.id(),Math.pow(1000d, 2), g2g.symbol());
+                    return GenotypeLrWithExplanation.twoPathClinVarAllelesRecessive(g2g.geneId(),Math.pow(1000d, 2));
                 }
             } else { // for all other MoI, including AD, assume that only one ClinVar allele is pathogenic
-                return GenotypeLrWithExplanation.pathClinVar(g2g.id(), Math.pow(1000d, 1d), g2g.symbol());
+                return GenotypeLrWithExplanation.pathClinVar(g2g.geneId(), Math.pow(1000d, 1d));
             }
         }
         int pathogenicAlleleCount = g2g.pathogenicAlleleCount(sampleId, pathogenicityThreshold);
@@ -146,10 +146,10 @@ public class GenotypeLikelihoodRatio {
         // 3. There was no pathogenic variant listed in ClinVar.
         // Therefore, we apply the main algorithm for calculating the LR genotype score.
 
-        double lambda_background = this.gene2backgroundFrequency.getOrDefault(g2g.id(), DEFAULT_LAMBDA_BACKGROUND);
+        double lambda_background = this.gene2backgroundFrequency.getOrDefault(g2g.geneId().id(), DEFAULT_LAMBDA_BACKGROUND);
         if (inheritancemodes == null || inheritancemodes.isEmpty()) {
             // This is probably because the HPO annotation file is incomplete
-            logger.warn("No inheritance mode annotation found for geneId {}, reverting to default", g2g.id().getValue());
+            logger.warn("No inheritance mode annotation found for geneId {}, reverting to default", g2g.geneId().id().getValue());
             // Add a default dominant mode to avoid not ranking this gene at all
             inheritancemodes = List.of(AUTOSOMAL_DOMINANT);
         }
@@ -213,9 +213,9 @@ public class GenotypeLikelihoodRatio {
         double DEFAULTVAL = 0.05;
         double returnvalue = max == null ? DEFAULTVAL : max;
         if (heuristicPathCountAboveLambda) {
-            return GenotypeLrWithExplanation.explainPathCountAboveLambdaB(g2g.id(), g2g.symbol(), returnvalue, maxInheritanceMode, lambda_background, observedWeightedPathogenicVariantCount);
+            return GenotypeLrWithExplanation.explainPathCountAboveLambdaB(g2g.geneId(), returnvalue, maxInheritanceMode, lambda_background, observedWeightedPathogenicVariantCount);
         } else {
-            return GenotypeLrWithExplanation.explanation(g2g.id(), returnvalue, maxInheritanceMode,lambda_background, B, D, g2g.symbol(), observedWeightedPathogenicVariantCount);
+            return GenotypeLrWithExplanation.explanation(g2g.geneId(), returnvalue, maxInheritanceMode,lambda_background, B, D, observedWeightedPathogenicVariantCount);
         }
     }
 

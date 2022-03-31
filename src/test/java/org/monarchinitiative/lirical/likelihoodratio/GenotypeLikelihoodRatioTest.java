@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.model.Gene2Genotype;
 
+import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.*;
@@ -19,6 +20,7 @@ public class GenotypeLikelihoodRatioTest {
 
     private static final String SAMPLE_ID = "JIM";
     private static final float PATHOGENICITY_THRESHOLD = .8f;
+    private static final GeneIdentifier MADE_UP_GENE = GeneIdentifier.of(TermId.of("Fake:123"), "FAKE_SYMBOL");
     private static final GenotypeLikelihoodRatio.Options OPTIONS = new GenotypeLikelihoodRatio.Options(PATHOGENICITY_THRESHOLD, false);
     private static final TermId autosomalDominant = TermId.of("HP:0000006");
     private static final TermId autosomalRecessive = TermId.of("HP:0000007");
@@ -26,7 +28,7 @@ public class GenotypeLikelihoodRatioTest {
 
     private static Gene2Genotype setupGeneToGenotype(int variantCount, int pathogenicClinvarCount, double sumOfPathBinScores) {
         Gene2Genotype g2g = mock(Gene2Genotype.class);
-        when(g2g.id()).thenReturn(TermId.of("Fake:123"));
+        when(g2g.geneId()).thenReturn(MADE_UP_GENE);
         when(g2g.variantCount()).thenReturn(variantCount);
         when(g2g.pathogenicClinVarCount(SAMPLE_ID)).thenReturn(pathogenicClinvarCount);
         when(g2g.hasVariants()).thenReturn(variantCount != 0);

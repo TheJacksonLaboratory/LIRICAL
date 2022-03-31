@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.TestResources;
 import org.monarchinitiative.lirical.model.AlleleCount;
+import org.monarchinitiative.lirical.model.GenomeBuild;
 import org.monarchinitiative.lirical.model.GenotypedVariant;
 import org.monarchinitiative.svart.assembly.GenomicAssemblies;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
@@ -13,7 +14,6 @@ import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import java.nio.file.Path;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
@@ -37,7 +37,7 @@ public class VcfGenotypedVariantParserTest {
 
     @Test
     public void variantStream() {
-        VcfGenotypedVariantParser parser = new VcfGenotypedVariantParser(GENOMIC_ASSEMBLY, reader);
+        VcfGenotypedVariantParser parser = new VcfGenotypedVariantParser(GENOMIC_ASSEMBLY, GenomeBuild.HG38, reader);
 
         List<GenotypedVariant> variants = parser.variantStream().toList();
 
