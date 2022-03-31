@@ -9,7 +9,7 @@ import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
 import org.monarchinitiative.lirical.hpo.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.model.Gene2Genotype;
-import org.monarchinitiative.lirical.svg.Lr2Svg;
+import org.monarchinitiative.lirical.output.svg.Lr2Svg;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;

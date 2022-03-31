@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.svg;
+package org.monarchinitiative.lirical.output.svg;
 
 import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.svg;
+package org.monarchinitiative.lirical.output.svg;
 
 import java.io.IOException;
 import java.io.Writer;
