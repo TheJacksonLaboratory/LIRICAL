@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.backgroundfrequency;
+package org.monarchinitiative.lirical.likelihoodratio.backgroundfrequency;
 
 
 import com.google.common.collect.Sets;

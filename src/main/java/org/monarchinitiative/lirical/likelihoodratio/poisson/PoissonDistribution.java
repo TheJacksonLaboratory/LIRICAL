@@ -1,6 +1,6 @@
-package org.monarchinitiative.lirical.poisson;
+package org.monarchinitiative.lirical.likelihoodratio.poisson;
 
-import static org.monarchinitiative.lirical.poisson.SaddlePointExpansion.TWO_PI;
+import static org.monarchinitiative.lirical.likelihoodratio.poisson.SaddlePointExpansion.TWO_PI;
 
 /**
  * This class and the other classes in this package were adapted and mainly copied from the

@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.backgroundfrequency;
+package org.monarchinitiative.lirical.likelihoodratio.backgroundfrequency;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;

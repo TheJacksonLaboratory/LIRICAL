@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.backgroundfrequency;
+package org.monarchinitiative.lirical.likelihoodratio.backgroundfrequency;
 
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 
@@ -14,7 +14,7 @@ import java.util.Optional;
 class Background {
     /** An object that represents the source of frequency data (a population background, e.g., GNOMAD_E_FIN). */
     private final FrequencySource frequencySource;
-    /** key: A gene symbol; value: corresponding {@link org.monarchinitiative.lirical.backgroundfrequency.Gene2Bin} object. */
+    /** key: A gene symbol; value: corresponding {@link Gene2Bin} object. */
     private final Map<String, Gene2Bin> background2binMap = new HashMap<>();
 
     Background(FrequencySource fSource){
@@ -29,7 +29,7 @@ class Background {
     Map<String, Gene2Bin> getBackground2binMap() {
         return background2binMap;
     }
-    /** @return an optional containing the {@link org.monarchinitiative.lirical.backgroundfrequency.Gene2Bin} object for the gene symbol.*/
+    /** @return an optional containing the {@link Gene2Bin} object for the gene symbol.*/
     Optional<Gene2Bin> getGene2Bin(String symbol) {
         if (! background2binMap.containsKey(symbol)) return Optional.empty();
         else return Optional.of(background2binMap.get(symbol));

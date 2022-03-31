@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.poisson;
+package org.monarchinitiative.lirical.likelihoodratio.poisson;
 
 
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.likelihoodratio;
 
 import org.monarchinitiative.lirical.model.Gene2Genotype;
-import org.monarchinitiative.lirical.poisson.PoissonDistribution;
+import org.monarchinitiative.lirical.likelihoodratio.poisson.PoissonDistribution;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

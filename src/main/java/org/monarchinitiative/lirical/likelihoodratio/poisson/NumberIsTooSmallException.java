@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.poisson;
+package org.monarchinitiative.lirical.likelihoodratio.poisson;
 
 public class NumberIsTooSmallException extends Exception {
     public NumberIsTooSmallException(double mc, double threshold) {

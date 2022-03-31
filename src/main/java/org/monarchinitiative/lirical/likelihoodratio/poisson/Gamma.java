@@ -1,6 +1,4 @@
-package org.monarchinitiative.lirical.poisson;
-
-import static org.monarchinitiative.lirical.poisson.SaddlePointExpansion.PI;
+package org.monarchinitiative.lirical.likelihoodratio.poisson;
 
 public class Gamma {
     /**
@@ -39,7 +37,7 @@ public class Gamma {
     };
 
     /** Avoid repeated computation of log of 2 PI in logGamma */
-    private static final double HALF_LOG_2_PI = 0.5 * Math.log(2.0 * PI);
+    private static final double HALF_LOG_2_PI = 0.5 * Math.log(2.0 * SaddlePointExpansion.PI);
 
   /*
      * Constants for the computation of double invGamma1pm1(double).
