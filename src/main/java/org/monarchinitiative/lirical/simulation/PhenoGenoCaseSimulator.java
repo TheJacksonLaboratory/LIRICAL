@@ -218,7 +218,7 @@ public class PhenoGenoCaseSimulator {
 
 
     public void outputHtml(String prefix, LrThreshold lrThreshold, MinDiagnosisCount minDiff, Path outdir) {
-        LiricalTemplate.Builder builder = LiricalTemplate.builder(null, hpocase,ontology, null , metadata)
+        LiricalTemplate.Builder builder = LiricalTemplate.builder(null, hpocase, null, null , metadata)
 //                .genotypeMap(genotypemap)
                 .outDirectory(outdir)
                 .threshold(factory.getLrThreshold())
@@ -237,7 +237,7 @@ public class PhenoGenoCaseSimulator {
 
     public void outputTsv(String prefix, LrThreshold lrThreshold, MinDiagnosisCount minDiff, Path outdir) {
         String outname=String.format("%s.tsv",prefix);
-        LiricalTemplate.Builder builder = LiricalTemplate.builder(null,hpocase,ontology, null, metadata)
+        LiricalTemplate.Builder builder = LiricalTemplate.builder(null,hpocase, null, null, metadata)
 //                .genotypeMap(genotypemap)
                 .outDirectory(outdir)
                 .prefix(prefix);

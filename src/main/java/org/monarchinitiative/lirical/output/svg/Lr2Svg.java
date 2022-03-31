@@ -24,7 +24,7 @@ public class Lr2Svg extends Lirical2Svg {
     /**
      * An object representing the Human Phenotype Ontology
      */
-    private final Ontology ontology;
+    private final Ontology hpo;
     /**
      * We show the results as an SVG diagram for this disease.
      */
@@ -76,20 +76,20 @@ public class Lr2Svg extends Lirical2Svg {
      * @param rank
      * @param diseaseId           The current differential diagnosis id (e.g., OMIM:600123)
      * @param originalDiseaseName The current differential diagnosis name
-     * @param ont                 Reference to HPO ontology
+     * @param hpo                 Reference to HPO ontology
      * @param symbol              Gene symbol (if any, can be null)
      */
     public Lr2Svg(TestResult result,
                   int rank,
                   TermId diseaseId,
                   String originalDiseaseName,
-                  Ontology ont,
+                  Ontology hpo,
                   String symbol) {
         this.diseaseCURIE = diseaseId;
         this.diseaseName = prettifyDiseaseName(originalDiseaseName);
         this.result = result;
         this.geneSymbol = symbol;
-        this.ontology = ont;
+        this.hpo = hpo;
         this.rank = rank;
         this.determineTotalHeightOfSvg();
 
@@ -253,7 +253,7 @@ public class Lr2Svg extends Lirical2Svg {
                         "onmouseover=\"showTooltip(evt,'%s')\"/>\n", BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, observedTerms.get(originalIndex).escapedExplanation()));
             }
             // add label of corresponding HPO term
-            Term term = ontology.getTermMap().get(tid);
+            Term term = hpo.getTermMap().get(tid);
             String label = String.format("%s [%s]", term.getName(), tid.getValue());
             writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n", XbeginOfText, currentY + BOX_HEIGHT, label));
             currentY += BOX_HEIGHT + BOX_OFFSET;
@@ -283,7 +283,7 @@ public class Lr2Svg extends Lirical2Svg {
                         BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, excludedTerms.get(originalIndex).escapedExplanation()));
             }
             // add label of corresponding HPO term
-            Term term = ontology.getTermMap().get(tid);
+            Term term = hpo.getTermMap().get(tid);
             String label = String.format("Excluded: %s [%s]", term.getName(), tid.getValue());
             writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n", XbeginOfText, currentY + BOX_HEIGHT, label));
             currentY += BOX_HEIGHT + BOX_OFFSET;

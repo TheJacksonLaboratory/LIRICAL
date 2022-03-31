@@ -186,12 +186,11 @@ public class CaseEvaluator {
      * @return The corresponding TestResult.
      */
     private Optional<TestResult> evaluateDiseasePhenotypeOnly(TermId diseaseId) {
-        HpoDisease disease = diseaseMap.get(diseaseId);
         double pretest = pretestProbabilityMap.get(diseaseId);
         List<LrWithExplanation> observedLR = observedPhenotypesLikelihoodRatios(diseaseId);
         List<LrWithExplanation> excludedLR = excludedPhenotypesLikelihoodRatios(diseaseId);
 
-        return Optional.of(TestResult.of(observedLR, excludedLR, disease, pretest, null));
+        return Optional.of(TestResult.of(diseaseId, pretest, observedLR, excludedLR, null));
     }
 
     /**
@@ -265,7 +264,7 @@ public class CaseEvaluator {
                                                  GenotypeLrWithExplanation genotypeLr,
                                                  double pretest,
                                                  String currentGeneExp) {
-        TestResult result = TestResult.of(observedLR, excludedLR, disease, pretest, genotypeLr);
+        TestResult result = TestResult.of(disease.id(), pretest, observedLR, excludedLR, genotypeLr);
 //        result.setGenotypeExplanation(currentGeneExp);
 //        List<String> phenoExpObserved = getObservedPhenotypeExplanation();
 //        List<String> phenoExpExcluded = getExcludedPhenotypeExplanation();
@@ -287,7 +286,7 @@ public class CaseEvaluator {
                                              List<LrWithExplanation> excludedLR,
                                              HpoDisease disease,
                                              double pretest) {
-        TestResult result = TestResult.of(observedLR, excludedLR, disease, pretest, null);
+        TestResult result = TestResult.of(disease.id(), pretest, observedLR, excludedLR, null);
 //        List<String> phenoExpObserved = getObservedPhenotypeExplanation();
 //        List<String> phenoExpExcluded = getExcludedPhenotypeExplanation();
 //        result.setObservedPhenotypeExplanation(phenoExpObserved);

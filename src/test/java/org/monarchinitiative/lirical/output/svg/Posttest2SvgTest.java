@@ -12,6 +12,7 @@ import org.monarchinitiative.lirical.likelihoodratio.LrWithExplanationFactory;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class Posttest2SvgTest {
 
     private static LrWithExplanationFactory FACTORY;
 
+    private static List<HpoDisease> DISEASES;
     private static AnalysisResults RESULTS;
 
     @BeforeAll
@@ -38,16 +40,17 @@ public class Posttest2SvgTest {
         List<HpoAnnotation> annotations = List.of();
         List<TermId> terms = List.of();
         HpoDisease d1 = HpoDisease.of(TermId.of("MONDO:1"), "DISEASE 1",annotations,terms,terms,terms,terms);
-        TestResult result1 = TestResult.of(reslist,excluded,d1,PRETEST_PROB, null);
+        TestResult result1 = TestResult.of(d1.id(), PRETEST_PROB, reslist,excluded, null);
         List<LrWithExplanation> reslist2 = createTestList(some, 10d,100d,1000d);
         HpoDisease d2 = HpoDisease.of(TermId.of("MONDO:2"), "DISEASE 2", annotations,terms,terms,terms,terms);
-        TestResult result2 = TestResult.of(reslist2,excluded,d2,PRETEST_PROB, null);
+        TestResult result2 = TestResult.of(d2.id(), PRETEST_PROB, reslist2,excluded, null);
         List<LrWithExplanation> reslist3 = createTestList(some, 1d,0.1d,0.01d);
         HpoDisease d3 = HpoDisease.of(TermId.of("MONDO:3"), "DISEASE3", annotations,terms,terms,terms,terms);
-        TestResult result3 = TestResult.of(reslist3,excluded,d3,PRETEST_PROB, null);
+        TestResult result3 = TestResult.of(d3.id(), PRETEST_PROB, reslist3,excluded, null);
         results.add(result1);
         results.add(result2);
         results.add(result3);
+        DISEASES = List.of(d1, d2, d3);
         RESULTS = AnalysisResults.of(results);
     }
 
@@ -57,7 +60,8 @@ public class Posttest2SvgTest {
     public void testConstructor() {
         double threshold = 0.02;
         int numtoshow = 3;
-        Posttest2Svg p2svg = new Posttest2Svg(RESULTS, threshold,numtoshow);
+        HpoDiseases diseases = HpoDiseases.of(List.of());
+        Posttest2Svg p2svg = new Posttest2Svg(RESULTS, diseases, threshold,numtoshow);
         assertNotNull(p2svg);
     }
 
@@ -65,7 +69,8 @@ public class Posttest2SvgTest {
     public void testNumberOfDiffsToShow() {
         double threshold = 0.02;
         int numtoshow = 3;
-        Posttest2Svg p2svg = new Posttest2Svg(RESULTS, threshold,numtoshow);
+        HpoDiseases diseases = HpoDiseases.of(DISEASES);
+        Posttest2Svg p2svg = new Posttest2Svg(RESULTS, diseases, threshold,numtoshow);
         assertEquals(3, p2svg.getNumDifferentialsToShowSVG());
        String svg = p2svg.getSvgString();
        assertFalse(svg.isEmpty());

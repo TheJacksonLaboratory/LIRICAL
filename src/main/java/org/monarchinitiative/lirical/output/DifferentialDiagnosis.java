@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.output;
 
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
 
 import java.util.List;
@@ -23,12 +24,14 @@ public class DifferentialDiagnosis extends BaseDifferential {
     private final String genotypeExplanation;
 
     DifferentialDiagnosis(String sampleId,
+                          TermId diseaseId,
+                          String diseaseName,
                           TestResult result,
                           int rank,
                           List<VisualizableVariant> variants,
                           String genotypeExplanation,
                           String svg) {
-        super(sampleId, result, rank, variants);
+        super(sampleId, diseaseId, diseaseName, result, rank, variants);
         url=String.format("https://hpo.jax.org/app/browse/disease/%s",result.diseaseId().getValue());
         this.genotypeExplanation = genotypeExplanation; // nullable
         this.svg = Objects.requireNonNull(svg);

@@ -2,7 +2,6 @@ package org.monarchinitiative.lirical.likelihoodratio;
 
 
 import org.monarchinitiative.lirical.model.HpoCase;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;
@@ -24,7 +23,15 @@ import java.util.stream.Collectors;
  */
 public class TestResult implements Comparable<TestResult> {
     /**
-     * A list of results for the tests performed on observed phenotypes for {@link #disease}.
+     * Reference to the disease that we are testing (e.g., OMIM:600100).
+     */
+    private final TermId diseaseId;
+    /**
+     * The probability of some result before the first test is done.
+     */
+    private final double pretestProbability;
+    /**
+     * A list of results for the tests performed on observed phenotypes for {@link #diseaseId}.
      */
     private final List<LrWithExplanation> observedResults;
     /**
@@ -40,46 +47,37 @@ public class TestResult implements Comparable<TestResult> {
      */
     private final double compositeLR;
     /**
-     * Reference to the disease that we are testing (e.g., OMIM:600100).
-     */
-    // TODO - do we need an entire disease here? How about just ID, or nothing at all?
-    private final HpoDisease disease;
-    /**
-     * The probability of some result before the first test is done.
-     */
-    private final double pretestProbability;
-    /**
      * The probability of some result after testing.
      */
     private final double posttestProbability;
 
-    public static TestResult of(List<LrWithExplanation> observed,
-                                List<LrWithExplanation> excluded,
-                                HpoDisease disease,
+    public static TestResult of(TermId diseaseId,
                                 double pretestProbability,
+                                List<LrWithExplanation> observedResults,
+                                List<LrWithExplanation> excludedResults,
                                 GenotypeLrWithExplanation genotypeLr) {
-        return new TestResult(observed, excluded, disease, pretestProbability, genotypeLr);
+        return new TestResult(diseaseId, pretestProbability, observedResults, excludedResults, genotypeLr);
     }
 
     /**
      * This constructor should be used if we have a genotype for this gene/disease.
      *
-     * @param observed           list of individual test results for observed phenotypes
-     * @param excluded           list of individual test results for excluded phenotypes
-     * @param disease            name of the disease being tested
+     * @param diseaseId          ID of the disease being tested
      * @param pretestProbability pretest probability of the disease
+     * @param observedResults    list of individual test results for observed phenotypes
+     * @param excludedResults    list of individual test results for excluded phenotypes
      * @param genotypeLr         LR result for the genotype
      */
-    private TestResult(List<LrWithExplanation> observed,
-                       List<LrWithExplanation> excluded,
-                       HpoDisease disease,
+    private TestResult(TermId diseaseId,
                        double pretestProbability,
+                       List<LrWithExplanation> observedResults,
+                       List<LrWithExplanation> excludedResults,
                        GenotypeLrWithExplanation genotypeLr) {
-        this.observedResults = Objects.requireNonNull(observed);
-        this.excludedResults = Objects.requireNonNull(excluded);
-        this.disease = Objects.requireNonNull(disease);
-        this.compositeLR = calculateCompositeLR(observed, excluded, genotypeLr);
+        this.diseaseId = Objects.requireNonNull(diseaseId);
         this.pretestProbability = pretestProbability;
+        this.observedResults = Objects.requireNonNull(observedResults);
+        this.excludedResults = Objects.requireNonNull(excludedResults);
+        this.compositeLR = calculateCompositeLR(observedResults, excludedResults, genotypeLr);
         this.posttestProbability = calculatePosttestProbability();
         this.genotypeLr = genotypeLr; // nullable
     }
@@ -168,7 +166,7 @@ public class TestResult implements Comparable<TestResult> {
     public String toString() {
         String resultlist = observedResults.stream().map(String::valueOf).collect(Collectors.joining(";"));
         String genoResult = hasGenotypeLR() ? String.format("genotype LR: %.4f", genotypeLr.lr()) : "no genotype LR";
-        return String.format("%s: %.2f [%s] %s", disease.id(), getCompositeLR(), resultlist, genoResult);
+        return String.format("%s: %.2f [%s] %s", diseaseId, getCompositeLR(), resultlist, genoResult);
     }
 
     /**
@@ -191,16 +189,7 @@ public class TestResult implements Comparable<TestResult> {
      * @return name of the disease being tested.
      */
     public TermId diseaseId() {
-        return disease.id();
-    }
-
-    /**
-     * @return the name of the disease, e.g., Marfan syndrome.
-     * @deprecated use {@link #diseaseId()}
-     */
-    @Deprecated(forRemoval = true)
-    public String getDiseaseName() {
-        return disease.getDiseaseName();
+        return diseaseId;
     }
 
     /**

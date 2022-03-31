@@ -6,7 +6,8 @@ import org.monarchinitiative.lirical.configuration.LiricalProperties;
 import org.monarchinitiative.lirical.model.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.model.Gene2Genotype;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.lirical.service.PhenotypeService;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,35 +31,20 @@ public class TsvTemplate extends LiricalTemplate {
     private static final String[] tsvHeader={"rank","diseaseName","diseaseCurie","pretestprob","posttestprob",
             "compositeLR","entrezGeneId","variants"};
 
-    /**
-     * Constructor for when we do the analysis without genetic data
-     * @param hcase The current HPO case whose results we are about to output
-     * @param ontology Reference to HPO Ontology object
-     * @param geneById
-     * @param metadata Reference to a map of "metadata"-information we will use for the output file
-     */
     public TsvTemplate(LiricalProperties liricalProperties,
-                       HpoCase hcase,
-                       Ontology ontology,
+                       HpoCase hpoCase,
+                       PhenotypeService phenotypeService,
                        Map<TermId, Gene2Genotype> geneById,
                        Map<String, String> metadata,
-                       String prefix,
-                       Path outdir) {
-        this(liricalProperties, hcase, ontology, geneById, metadata, outdir, prefix);
-    }
-
-    public TsvTemplate(LiricalProperties liricalProperties,
-                       HpoCase hcase,
-                       Ontology ontology,
-                       Map<TermId, Gene2Genotype> geneById,
-                       Map<String, String> metadata,
-                       Path outdir, String prefix) {
-        super(liricalProperties, hcase, ontology, geneById, metadata, outdir, prefix);
+                       Path outdir,
+                       String prefix) {
+        super(liricalProperties, hpoCase, phenotypeService, geneById, metadata, outdir, prefix);
         cfg.setClassLoaderForTemplateLoading(TsvTemplate.class.getClassLoader(),"");
         templateData.put("header", String.join("\t",tsvHeader));
         AtomicInteger rank = new AtomicInteger();
+        Map<TermId, HpoDisease> diseaseById = phenotypeService.diseases().diseaseById();
         List<TsvDifferential> diff = new ArrayList<>();
-        hcase.results().resultsWithDescendingPostTestProbability().sequential()
+        hpoCase.results().resultsWithDescendingPostTestProbability().sequential()
                 .forEachOrdered(result -> {
                     int current = rank.incrementAndGet();
                     List<VisualizableVariant> variants = result.genotypeLr()
@@ -67,7 +53,8 @@ public class TsvTemplate extends LiricalTemplate {
                             .orElse(Stream.empty())
                             .map(toVisualizableVariant())
                             .toList();
-                    TsvDifferential tsvdiff = new TsvDifferential(hcase.sampleId(), result, current, variants);
+                    HpoDisease disease = diseaseById.get(result.diseaseId());
+                    TsvDifferential tsvdiff = new TsvDifferential(hpoCase.sampleId(), disease.id(), disease.getDiseaseName(), result, current, variants);
                     diff.add(tsvdiff);
                 });
         this.templateData.put("diff",diff);

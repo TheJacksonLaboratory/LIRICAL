@@ -1,18 +1,24 @@
 package org.monarchinitiative.lirical.output.svg;
 
 import org.monarchinitiative.lirical.analysis.AnalysisResults;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Posttest2Svg extends Lirical2Svg {
     private static final Logger logger = LoggerFactory.getLogger(Posttest2Svg.class);
 
     private final AnalysisResults analysisResults;
+
+    private final HpoDiseases diseases;
 
     private final int MINIMUM_DIFFERENTIALS_TO_SHOW = 3;
 
@@ -57,8 +63,9 @@ public class Posttest2Svg extends Lirical2Svg {
     private final double thresholdPostTestProb;
 
 
-    public Posttest2Svg(AnalysisResults results, double threshold, int totalDetailedToShowText) {
+    public Posttest2Svg(AnalysisResults results, HpoDiseases diseases, double threshold, int totalDetailedToShowText) {
         this.analysisResults = results;
+        this.diseases = diseases;
         int n = Math.toIntExact(results.results().filter(result -> result.posttestProbability()>=threshold).count());
         n_belowThresholdDifferentials = n;
         thresholdPostTestProb = threshold;
@@ -172,6 +179,7 @@ public class Posttest2Svg extends Lirical2Svg {
         currentY += 2 * MIN_VERTICAL_OFFSET;
         AtomicInteger lastY = new AtomicInteger(currentY);
         int xOffset = 5;
+        Map<TermId, HpoDisease> diseaseById = diseases.diseaseById();
         AtomicInteger rank = new AtomicInteger();
         analysisResults.resultsWithDescendingPostTestProbability()
                 .limit(numDifferentialsToShowSVG)
@@ -195,7 +203,8 @@ public class Posttest2Svg extends Lirical2Svg {
                         currentY += MIN_VERTICAL_OFFSET;
                         // now write label of disease and HTML anchor
                         int current = rank.incrementAndGet();
-                        String label = String.format("%d. %s", (current), prettifyDiseaseName(result.getDiseaseName()));
+                        HpoDisease disease = diseaseById.get(result.diseaseId());
+                        String label = String.format("%d. %s", (current), prettifyDiseaseName(disease.getDiseaseName()));
                         String anchor = String.format("<a class=\"svg\" href=\"#diagnosis%d\">\n", current);
                         writer.write(anchor);
                         writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n",

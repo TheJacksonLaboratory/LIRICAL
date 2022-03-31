@@ -60,8 +60,8 @@ public class TestResultTest {
         List<LrWithExplanation> excluded = List.of();
         double prevalence = 0.025;
         GenotypeLrWithExplanation genotypeLr = GenotypeLrWithExplanation.of(MADE_UP_GENE, 2.0, "Explanation");
-        tresultWithGenotype = TestResult.of(list1,excluded,d1, prevalence, genotypeLr);
-        tresultNoGenotype = TestResult.of(list1,excluded,d1,prevalence, null);
+        tresultWithGenotype = TestResult.of(d1.id(), prevalence, list1,excluded, genotypeLr);
+        tresultNoGenotype = TestResult.of(d1.id(), prevalence, list1,excluded, null);
     }
 
     @Test
@@ -74,7 +74,7 @@ public class TestResultTest {
         // we obtain a test result with 60% sensitivity and 97% specifity
         TermId some = TermId.of("HP:0000006");
         LrWithExplanation LR1 = FACTORY.create(some, some, LrMatchType.EXACT_MATCH, ratio(0.60, 0.97));
-        tresult = TestResult.of(List.of(LR1), List.of(), glaucoma,prevalence, null);
+        tresult = TestResult.of(glaucoma.id(), prevalence, List.of(LR1), List.of(), null);
         // There should be a LR of 20 after just one test
         assertEquals(1, tresult.getNumberOfTests());
         // There should be a LR of 20
@@ -105,7 +105,7 @@ public class TestResultTest {
         // The other test is intraocular pressure (IOP)
         // IOP: (50% sensitivity and 92% specificity[9])
         LrWithExplanation LR2 = FACTORY.create(some, some, LrMatchType.EXACT_MATCH, ratio(0.50, 0.92));
-        tresult = TestResult.of(List.of(LR1, LR2), List.of(), glaucoma,prevalence, null);
+        tresult = TestResult.of(glaucoma.id(), prevalence, List.of(LR1, LR2), List.of(), null);
         // the pretest odds are the same as with the first test because they are based only on
         // the population prevalence.
         double expectedPretestOdds = 0.02564103;
@@ -130,7 +130,7 @@ public class TestResultTest {
         double LR3 = ratio(0.60, 0.97);
 
         List<LrWithExplanation> lr1 = createTestList(TermId.of("HP:0000006"), LR1, LR2, LR3);
-        tresult = TestResult.of(lr1, List.of(),glaucoma,prevalence, null);
+        tresult = TestResult.of(glaucoma.id(), prevalence, lr1, List.of(), null);
          //PretestOdds = pretest prob / (1-pretest prob) = 0.95 / 0.05 = 19.0
         double expectedPretestOdds = 0.0256410;
         assertEquals(expectedPretestOdds, tresult.pretestodds(), EPSILON);
@@ -161,12 +161,12 @@ public class TestResultTest {
         TermId some = TermId.of("HP:0000006");
         List<LrWithExplanation> list1 = createTestList(some, 2.0, 3.0, 4.0);
         List<LrWithExplanation> list2 = createTestList(some, 20.0, 3.0, 4.0);
-        List<LrWithExplanation> list3 = createTestList(some, 20.0, 30.0, 4.0);;
+        List<LrWithExplanation> list3 = createTestList(some, 20.0, 30.0, 4.0);
         List<LrWithExplanation> excluded = List.of();
         double prevalence = 0.025;
-        TestResult result1 = TestResult.of(list1,excluded,d1,prevalence, null);
-        TestResult result2 = TestResult.of(list2,excluded,d2,prevalence, null);
-        TestResult result3 = TestResult.of(list3,excluded,d3,prevalence, null);
+        TestResult result1 = TestResult.of(d1.id(), prevalence, list1,excluded, null);
+        TestResult result2 = TestResult.of(d2.id(), prevalence, list2,excluded, null);
+        TestResult result3 = TestResult.of(d3.id(), prevalence, list3,excluded, null);
         assertEquals(24.0,result1.getCompositeLR(),EPSILON);
         assertEquals(240.0,result2.getCompositeLR(),EPSILON);
         assertEquals(2400.0,result3.getCompositeLR(),EPSILON);
@@ -184,7 +184,7 @@ public class TestResultTest {
         // now add another test result, same as result3 but with additional genotype evidence
         // result4 should now be the top hit
         GenotypeLrWithExplanation genotypeLr = GenotypeLrWithExplanation.of(MADE_UP_GENE, 2.0, "Explanation");
-        TestResult result4= TestResult.of(list3,excluded,d3, prevalence, genotypeLr);
+        TestResult result4= TestResult.of(d3.id(), prevalence, list3,excluded, genotypeLr);
         lst.add(result4);
         assertEquals(lst.get(3),result4);
         lst.sort(Comparator.reverseOrder());
@@ -219,12 +219,6 @@ public class TestResultTest {
     public void testGetDiseaseCurie() {
         TermId diseaseCurie = TermId.of("MONDO:1"); // we used this in the init function to create tresultNoGenotype
         assertEquals(diseaseCurie,tresultNoGenotype.diseaseId());
-    }
-
-    @Test
-    public void testGetDiseaseName() {
-        String name="d1"; // set in init() function
-        assertEquals(name,tresultNoGenotype.getDiseaseName());
     }
 
     @Test

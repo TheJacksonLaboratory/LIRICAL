@@ -210,7 +210,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
                 "sample_name", analysisData.sampleId());
         Map<TermId, Gene2Genotype> geneById = analysisData.genes().genes()
                 .collect(Collectors.toMap(g -> g.geneId().id(), Function.identity()));
-        LiricalTemplate.builder(liricalProperties, hpoCase, lirical.phenotypeService().hpo(), geneById, metadata)
+        LiricalTemplate.builder(liricalProperties, hpoCase, lirical.phenotypeService(), geneById, metadata)
                 .outDirectory(output.outdir)
                 .prefix(output.outfilePrefix)
                 .threshold(runConfiguration.lrThreshold == null ? LrThreshold.notInitialized() : LrThreshold.setToUserDefinedThreshold(runConfiguration.lrThreshold))

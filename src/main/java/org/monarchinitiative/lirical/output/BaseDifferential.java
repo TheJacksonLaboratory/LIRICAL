@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.output;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;
 import java.util.Objects;
@@ -12,11 +13,11 @@ abstract class BaseDifferential {
     protected final static String EMPTY_STRING="";
     protected final static String NOT_AVAILABLE="n/a";
     protected final String sampleId;
-    private final String diseaseName;
     /**
      * The CURIE-like identifier of the disease, e.g., OMIM:600123
      */
     private final String diseaseCurie;
+    private final String diseaseName;
     private final String pretestProbability;
     private final String posttestProbability;
     /**
@@ -29,12 +30,14 @@ abstract class BaseDifferential {
 
     @Deprecated // use the other constructor
     protected BaseDifferential(String sampleId,
+                               TermId diseaseId,
+                               String diseaseName,
                                TestResult result,
                                int rank,
                                List<VisualizableVariant> variants) {
         this.sampleId = Objects.requireNonNull(sampleId);
-        this.diseaseName = prettifyDiseaseName(result.getDiseaseName());
-        this.diseaseCurie = result.diseaseId().getValue();
+        this.diseaseCurie = diseaseId.getValue();
+        this.diseaseName = prettifyDiseaseName(diseaseName);
         this.posttestProbability = formatPostTestProbability(result.posttestProbability());
         this.pretestProbability = formatPreTestProbability(result.pretestProbability());
         this.compositeLR = Math.log10(result.getCompositeLR());

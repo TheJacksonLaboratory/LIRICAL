@@ -2,6 +2,7 @@ package org.monarchinitiative.lirical.output;
 
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;
 import java.util.function.Function;
@@ -9,8 +10,13 @@ import java.util.stream.Collectors;
 
 public class TsvDifferential extends BaseDifferential {
 
-    public TsvDifferential(String sampleId, TestResult result, int rank, List<VisualizableVariant> variants) {
-        super(sampleId, result, rank, variants);
+    public TsvDifferential(String sampleId,
+                           TermId diseaseId,
+                           String diseaseName,
+                           TestResult result,
+                           int rank,
+                           List<VisualizableVariant> variants) {
+        super(sampleId, diseaseId, diseaseName, result, rank, variants);
     }
 
     @Override

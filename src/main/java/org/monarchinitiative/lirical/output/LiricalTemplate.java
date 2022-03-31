@@ -8,6 +8,7 @@ import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.model.HpoCase;
 import org.monarchinitiative.lirical.model.Gene2Genotype;
 import org.monarchinitiative.lirical.model.LiricalVariant;
+import org.monarchinitiative.lirical.service.PhenotypeService;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -47,7 +48,7 @@ public abstract class LiricalTemplate {
 
     public LiricalTemplate(LiricalProperties liricalProperties,
                            HpoCase hpoCase,
-                           Ontology ontology,
+                           PhenotypeService phenotypeService,
                            Map<TermId, Gene2Genotype> geneById,
                            Map<String, String> metadata,
                            Path outdir,
@@ -58,7 +59,7 @@ public abstract class LiricalTemplate {
         cfg.setDefaultEncoding("UTF-8");
         this.geneById = geneById;
         this.outputPath = createOutputFile(outdir, prefix, outputFormatString());
-        initTemplateData(hpoCase,ontology,metadata);
+        initTemplateData(hpoCase, phenotypeService.hpo(), metadata);
     }
 
     abstract public void outputFile();
@@ -131,14 +132,14 @@ public abstract class LiricalTemplate {
     }
 
     // TODO - should we replace HpoCase with AnalysisData?
-    public static Builder builder(LiricalProperties liricalProperties, HpoCase hpoCase, Ontology hpo, Map<TermId, Gene2Genotype> genesById, Map<String, String> metadata) {
-        return new Builder(liricalProperties, hpoCase, hpo, genesById, metadata);
+    public static Builder builder(LiricalProperties liricalProperties, HpoCase hpoCase, PhenotypeService phenotypeService, Map<TermId, Gene2Genotype> genesById, Map<String, String> metadata) {
+        return new Builder(liricalProperties, hpoCase, phenotypeService, genesById, metadata);
     }
 
     public static class Builder {
         private final LiricalProperties liricalProperties;
         private final HpoCase hpoCase;
-        private final Ontology hpo;
+        private final PhenotypeService phenotypeService;
         private final Map<TermId, Gene2Genotype> genesById;
         private final Map<String,String> metadata;
         private List<String> errors= ImmutableList.of();
@@ -151,12 +152,12 @@ public abstract class LiricalTemplate {
 
         private Builder(LiricalProperties liricalProperties,
                         HpoCase hpoCase,
-                        Ontology hpo,
+                        PhenotypeService phenotypeService,
                         Map<TermId, Gene2Genotype> genesById,
                         Map<String,String> metadata){
             this.liricalProperties = liricalProperties;
             this.hpoCase = hpoCase;
-            this.hpo = hpo;
+            this.phenotypeService = phenotypeService;
             this.genesById = genesById;
             this.metadata = metadata;
         }
@@ -171,7 +172,7 @@ public abstract class LiricalTemplate {
         public HtmlTemplate buildPhenotypeHtmlTemplate() {
             return new HtmlTemplate(liricalProperties,
                     hpoCase,
-                    hpo,
+                    phenotypeService,
                     genesById,
                     metadata,
                     thres,
@@ -185,7 +186,7 @@ public abstract class LiricalTemplate {
         public HtmlTemplate buildGenoPhenoHtmlTemplate() {
             return new HtmlTemplate(liricalProperties,
                     hpoCase,
-                    hpo,
+                    phenotypeService,
                     genesById,
                     metadata,
                     thres,
@@ -199,22 +200,21 @@ public abstract class LiricalTemplate {
         public TsvTemplate buildPhenotypeTsvTemplate() {
             return new TsvTemplate(liricalProperties,
                     hpoCase,
-                    hpo,
+                    phenotypeService,
                     genesById,
                     metadata,
-                    outfileprefix,
-                    outdir);
+                    outdir,
+                    outfileprefix);
         }
 
         public TsvTemplate buildGenoPhenoTsvTemplate() {
             return new TsvTemplate(liricalProperties,
                     hpoCase,
-                    hpo,
+                    phenotypeService,
                     genesById,
                     metadata,
                     outdir,
-                    outfileprefix
-            );
+                    outfileprefix);
 
         }
 

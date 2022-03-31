@@ -109,7 +109,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
             bestGenotypeLr = null;
         }
 
-        return Optional.of(TestResult.of(observed, excluded, disease, pretestProbability, bestGenotypeLr));
+        return Optional.of(TestResult.of(disease.id(), pretestProbability, observed, excluded, bestGenotypeLr));
     }
 
 

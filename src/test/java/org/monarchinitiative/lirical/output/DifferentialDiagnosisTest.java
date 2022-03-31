@@ -41,14 +41,13 @@ public class DifferentialDiagnosisTest {
         String originalName="#101600 PFEIFFER SYNDROME;;ACROCEPHALOSYNDACTYLY, TYPE V; ACS5;;ACS V;;NOACK SYNDROMECRANIOFACIAL-SKELETAL-DERMATOLOGIC DYSPLASIA, INCLUDED;";
         TestResult result;
         result = Mockito.mock(TestResult.class);
-        when(result.getDiseaseName()).thenReturn(originalName);
         when(result.posttestProbability()).thenReturn(0.001);
         when(result.diseaseId()).thenReturn(TermId.of("OMIM:101600"));
         when(result.posttestProbability()).thenReturn(0.1);
         when(result.getCompositeLR()).thenReturn(0.3);
         when(result.genotypeLr()).thenReturn(Optional.empty());
         String expectedShortName="PFEIFFER SYNDROME";
-        DifferentialDiagnosis dd = new DifferentialDiagnosis("SampleId", result, 1, List.of(), "", "");
+        DifferentialDiagnosis dd = new DifferentialDiagnosis("SampleId", TermId.of("OMIM:101600"), originalName, result, 1, List.of(), "", "");
         assertEquals(expectedShortName,dd.getDiseaseName());
     }
 
@@ -58,13 +57,12 @@ public class DifferentialDiagnosisTest {
         String originalName="609945 BRACHYPHALANGY, POLYDACTYLY, AND TIBIAL APLASIA/HYPOPLASIA";
         TestResult result;
         result = Mockito.mock(TestResult.class);
-        when(result.getDiseaseName()).thenReturn(originalName);
         when(result.posttestProbability()).thenReturn(0.001);
         when(result.diseaseId()).thenReturn(TermId.of("OMIM:101600"));
         when(result.posttestProbability()).thenReturn(0.1);
         when(result.getCompositeLR()).thenReturn(0.3);
         when(result.genotypeLr()).thenReturn(Optional.empty());
-        return new DifferentialDiagnosis("SampleId", result, 1, List.of(), "", "");
+        return new DifferentialDiagnosis("SampleId", TermId.of("OMIM:101600"), originalName, result, 1, List.of(), "", "");
     }
 
 

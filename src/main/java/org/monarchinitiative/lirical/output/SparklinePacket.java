@@ -6,11 +6,14 @@ import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.lirical.output.svg.Sparkline2Svg;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -36,8 +39,9 @@ public class SparklinePacket {
      * Factory method for genotype-phenotype analysis.
      */
     public static List<SparklinePacket> sparklineFactory(AnalysisResults results,
-                                                         int N,
-                                                         Ontology ontology) {
+                                                         HpoDiseases diseases,
+                                                         Ontology ontology,
+                                                         int N) {
         if (results.isEmpty())
             return List.of();
 
@@ -46,6 +50,7 @@ public class SparklinePacket {
         //noinspection OptionalGetWithoutIsPresent
         TestResult topResult = results.resultsWithDescendingPostTestProbability().findFirst().get();
         AtomicInteger rank = new AtomicInteger();
+        Map<TermId, HpoDisease> diseaseById = diseases.diseaseById();
         Sparkline2Svg sparkline2Svg = new Sparkline2Svg(topResult, true, ontology);
         results.resultsWithDescendingPostTestProbability()
                 .limit(N)
@@ -58,7 +63,9 @@ public class SparklinePacket {
                             .orElse(EMPTY_STRING);
                     String sparkSVG = sparkline2Svg.getSparklineSvg(geneSymbol, result);
                     double compositeLR = result.getCompositeLR();
-                    String diseaseName = prettifyDiseaseName(result.getDiseaseName());
+
+                    HpoDisease disease = diseaseById.get(result.diseaseId());
+                    String diseaseName = prettifyDiseaseName(disease.getDiseaseName());
                     TermId diseaseId = result.diseaseId();
                     String diseaseAnchor = getDiseaseAnchor(diseaseId);
                     String geneSparkSvg = genotypeLr.isPresent() ? sparkline2Svg.getGeneSparklineSvg(results, diseaseId, geneSymbol) : EMPTY_STRING;
