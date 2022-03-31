@@ -1,7 +1,5 @@
 package org.monarchinitiative.lirical.cmd;
 
-import htsjdk.variant.vcf.VCFFileReader;
-import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.analysis.AnalysisData;
 import org.monarchinitiative.lirical.analysis.AnalysisOptions;
@@ -11,23 +9,18 @@ import org.monarchinitiative.lirical.configuration.*;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.hpo.Age;
 import org.monarchinitiative.lirical.hpo.HpoCase;
-import org.monarchinitiative.lirical.io.GenotypedVariantParser;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.VariantParser;
-import org.monarchinitiative.lirical.io.vcf.VcfGenotypedVariantParser;
-import org.monarchinitiative.lirical.io.vcf.VcfVariantParser;
+import org.monarchinitiative.lirical.io.VariantParserFactory;
 import org.monarchinitiative.lirical.model.Gene2Genotype;
 import org.monarchinitiative.lirical.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.model.GenomeBuild;
 import org.monarchinitiative.lirical.model.LiricalVariant;
 import org.monarchinitiative.lirical.output.LiricalTemplate;
-import org.monarchinitiative.lirical.service.VariantMetadataService;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.monarchinitiative.svart.assembly.GenomicAssemblies;
-import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -240,27 +233,25 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
 
     protected static GenesAndGenotypes readVariantsFromVcfFile(String sampleId,
                                                                Path vcfPath,
-                                                               GenomeBuild genomeBuild,
-                                                               VariantMetadataService metadataService,
+                                                               VariantParserFactory parserFactory,
                                                                HpoAssociationData associationData) throws LiricalParseException {
         // TODO - RNR1 is an example of a gene with 2 NCBIGene IDs.
         Map<String, List<GeneIdentifier>> symbolToGeneId = associationData.geneIdentifiers().stream()
                 .collect(Collectors.groupingBy(GeneIdentifier::symbol));
 
-        GenomicAssembly genomicAssembly = parseGenomicAssembly(genomeBuild);
-        try (VCFFileReader reader = new VCFFileReader(vcfPath, false)) {
-            GenotypedVariantParser parser = new VcfGenotypedVariantParser(genomicAssembly, genomeBuild, reader);
-            VariantParser variantParser = new VcfVariantParser(parser, metadataService);
-
+        try (VariantParser variantParser = parserFactory.forPath(vcfPath)) {
             // Ensure the VCF file contains the sample
-            VCFHeader header = reader.getFileHeader();
-            if (!header.getGenotypeSamples().contains(sampleId))
-                throw new LiricalParseException("The sample " + sampleId + " is not present in VCF at '" + vcfPath.toAbsolutePath().toString() + '\'');
+            if (!variantParser.sampleNames().contains(sampleId))
+                throw new LiricalParseException("The sample " + sampleId + " is not present in VCF at '" + vcfPath.toAbsolutePath() + '\'');
             LOGGER.debug("Found sample {} in the VCF file at {}", sampleId, vcfPath.toAbsolutePath());
+
+            // Read variants
             LOGGER.info("Reading variants");
             List<LiricalVariant> variants = variantParser.variantStream().toList();
             LOGGER.info("Read {} variants", variants.size());
 
+            // Group variants by gene symbol. It would be better to group the variants by e.g. Entrez ID,
+            // but the ID is not available from TranscriptAnnotation
             Map<GeneIdentifier, List<LiricalVariant>> gene2Genotype = new HashMap<>();
             for (LiricalVariant variant : variants) {
                 variant.annotations().stream()
@@ -278,23 +269,14 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
                         });
             }
 
+            // Collect the variants into Gene2Genotype container
             List<Gene2Genotype> g2g = gene2Genotype.entrySet().stream()
                     .map(e -> Gene2Genotype.of(e.getKey(), e.getValue()))
                     .toList();
 
             return GenesAndGenotypes.of(g2g);
-        }
-    }
-
-    private static GenomicAssembly parseGenomicAssembly(GenomeBuild genomeAssembly) {
-        switch (genomeAssembly) {
-            case HG19:
-                return GenomicAssemblies.GRCh37p13();
-            default:
-                LOGGER.warn("Unknown genome assembly {}. Falling back to GRCh38", genomeAssembly);
-            case HG38:
-                return GenomicAssemblies.GRCh38p13();
-
+        } catch (Exception e) {
+            throw new LiricalParseException(e);
         }
     }
 

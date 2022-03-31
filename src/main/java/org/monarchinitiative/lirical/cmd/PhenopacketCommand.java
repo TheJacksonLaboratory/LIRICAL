@@ -262,7 +262,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
             LOGGER.info("Path to VCF file is not specified");
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(sampleId, vcfPathOpt.get(), lirical.genomeBuild(), lirical.variantMetadataService(), lirical.phenotypeService().associationData());
+            genes = readVariantsFromVcfFile(sampleId, vcfPathOpt.get(), lirical.variantParserFactory(), lirical.phenotypeService().associationData());
         }
 
         return AnalysisData.of(sampleId, age, sex, observedTerms, negatedTerms, genes);

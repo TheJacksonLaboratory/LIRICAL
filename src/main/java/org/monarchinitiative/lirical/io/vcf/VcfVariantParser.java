@@ -1,28 +1,42 @@
 package org.monarchinitiative.lirical.io.vcf;
 
+import htsjdk.variant.vcf.VCFFileReader;
 import org.monarchinitiative.lirical.io.GenotypedVariantParser;
 import org.monarchinitiative.lirical.io.VariantParser;
+import org.monarchinitiative.lirical.model.GenomeBuild;
 import org.monarchinitiative.lirical.model.LiricalVariant;
 import org.monarchinitiative.lirical.service.VariantMetadataService;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
+import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 
-// TODO - improve API
-public class VcfVariantParser implements VariantParser {
+class VcfVariantParser implements VariantParser {
 
-    private final GenotypedVariantParser genotypedVariantParser;
+    private final VCFFileReader reader;
+    private final GenotypedVariantParser parser;
     private final VariantMetadataService metadataService;
 
-    public VcfVariantParser(GenotypedVariantParser genotypedVariantParser, VariantMetadataService metadataService) {
-        this.genotypedVariantParser = Objects.requireNonNull(genotypedVariantParser);
+    VcfVariantParser(Path path, GenomicAssembly genomicAssembly, GenomeBuild genomeBuild, VariantMetadataService metadataService) {
+        this.reader = new VCFFileReader(Objects.requireNonNull(path), false);;
+        this.parser = new VcfGenotypedVariantParser(genomicAssembly, genomeBuild, reader);
         this.metadataService = Objects.requireNonNull(metadataService);
     }
 
     @Override
     public Iterator<LiricalVariant> iterator() {
-        return new LiricalVariantIterator(genotypedVariantParser.iterator(), metadataService);
+        return new LiricalVariantIterator(parser.iterator(), metadataService);
     }
 
+    @Override
+    public List<String> sampleNames() {
+        return reader.getFileHeader().getSampleNamesInOrder();
+    }
 
+    @Override
+    public void close() throws Exception {
+        reader.close();
+    }
 }

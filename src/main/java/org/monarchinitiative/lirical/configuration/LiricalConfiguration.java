@@ -5,10 +5,8 @@ import org.monarchinitiative.lirical.analysis.LiricalAnalysisRunner;
 import org.monarchinitiative.lirical.analysis.LiricalAnalysisRunnerImpl;
 import org.monarchinitiative.lirical.analysis.probability.PretestDiseaseProbabilities;
 import org.monarchinitiative.lirical.analysis.probability.PretestDiseaseProbability;
-import org.monarchinitiative.lirical.io.ExomiserDataResolver;
-import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
-import org.monarchinitiative.lirical.io.LiricalDataException;
-import org.monarchinitiative.lirical.io.LiricalDataResolver;
+import org.monarchinitiative.lirical.io.*;
+import org.monarchinitiative.lirical.io.vcf.VcfVariantParserFactory;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.model.GenomeBuild;
@@ -24,6 +22,8 @@ import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.svart.assembly.GenomicAssemblies;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +51,15 @@ public class LiricalConfiguration {
 
     private LiricalConfiguration(LiricalProperties properties) throws LiricalDataException {
         this.properties = Objects.requireNonNull(properties);
-        LiricalDataResolver liricalDataResolver = LiricalDataResolver.of(properties.liricalDataDirectory());
+        this.assembly = parseExomiserAssembly(properties.genomeBuild());
 
-        assembly = parseAssembly(properties.genomeBuild());
+        GenomicAssembly genomicAssembly = parseSvartGenomicAssembly(properties.genomeBuild());
+        LiricalDataResolver liricalDataResolver = LiricalDataResolver.of(properties.liricalDataDirectory());
         VariantMetadataService variantMetadataService = createVariantMetadataService(properties, new VariantMetadataService.Options(properties.defaultVariantFrequency()));
+        VariantParserFactory variantParserFactory = new VcfVariantParserFactory(genomicAssembly, variantMetadataService);
+
 
         Ontology hpo = loadOntology(liricalDataResolver.hpoJson());
-
         HpoDiseases diseases = loadHpoDiseases(liricalDataResolver.phenotypeAnnotations(), hpo);
         HpoAssociationData associationData = loadAssociationData(hpo, liricalDataResolver.homoSapiensGeneInfo(), liricalDataResolver.mim2geneMedgen(), liricalDataResolver.phenotypeAnnotations());
         PhenotypeService phenotypeService = PhenotypeService.of(hpo, diseases, associationData);
@@ -65,10 +67,10 @@ public class LiricalConfiguration {
 
         LiricalAnalysisRunner liricalAnalysisRunner = createLiricalAnalyzer(phenotypeService);
 
-        this.lirical = Lirical.of(properties.genomeBuild(), variantMetadataService, phenotypeService, liricalAnalysisRunner);
+        this.lirical = Lirical.of(variantParserFactory, phenotypeService, liricalAnalysisRunner);
     }
 
-    private static GenomeAssembly parseAssembly(GenomeBuild build) {
+    private static GenomeAssembly parseExomiserAssembly(GenomeBuild build) {
         switch (build) {
             case HG19:
                 LOGGER.debug("Using GRCh37 assembly");
@@ -78,6 +80,17 @@ public class LiricalConfiguration {
             case HG38:
                 LOGGER.debug("Using GRCh38 assembly");
                 return GenomeAssembly.HG38;
+        }
+    }
+
+    private static GenomicAssembly parseSvartGenomicAssembly(GenomeBuild genomeAssembly) {
+        switch (genomeAssembly) {
+            case HG19:
+                return GenomicAssemblies.GRCh37p13();
+            default:
+                LOGGER.warn("Unknown genome assembly {}. Falling back to GRCh38", genomeAssembly);
+            case HG38:
+                return GenomicAssemblies.GRCh38p13();
         }
     }
 

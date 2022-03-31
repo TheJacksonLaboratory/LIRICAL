@@ -77,7 +77,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
         if (vcfPath == null) {
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.genomeBuild(), lirical.variantMetadataService(), lirical.phenotypeService().associationData());
+            genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.variantParserFactory(), lirical.phenotypeService().associationData());
         }
 
         return AnalysisData.of(sampleId, parseAge(age), sex, observedTerms, negatedTerms, genes);
