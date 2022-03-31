@@ -24,7 +24,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
             description = "Observed phenotype terms (can be specified multiple times).")
     public List<String> observed = List.of();
 
-    @CommandLine.Option(names = {"-n", "--negated-phenotype."},
+    @CommandLine.Option(names = {"-n", "--negated-phenotype"},
             arity = "0..*",
             description = "Negated phenotype terms (can be specified multiple times).")
     public List<String> negated = List.of();
