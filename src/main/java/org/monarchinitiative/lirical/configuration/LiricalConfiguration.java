@@ -73,7 +73,8 @@ public class LiricalConfiguration {
         PhenotypeService phenotypeService = PhenotypeService.of(hpo, diseases, associationData);
 
 
-        LiricalAnalysisRunner liricalAnalysisRunner = createLiricalAnalyzer(phenotypeService);
+        PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(phenotypeService.diseases());
+        LiricalAnalysisRunner liricalAnalysisRunner = createLiricalAnalyzer(phenotypeService, pretestDiseaseProbability);
 
         this.lirical = Lirical.of(variantParserFactory, phenotypeService, liricalAnalysisRunner);
     }
@@ -134,9 +135,9 @@ public class LiricalConfiguration {
     }
 
     private HpoAssociationData loadAssociationData(Ontology hpo,
-                                                          Path homoSapiensGeneInfo,
-                                                          Path mim2geneMedgen,
-                                                          Path phenotypeHpoa) throws LiricalDataException {
+                                                   Path homoSapiensGeneInfo,
+                                                   Path mim2geneMedgen,
+                                                   Path phenotypeHpoa) throws LiricalDataException {
         try {
             return HpoAssociationLoader.loadHpoAssociationData(hpo,
                     homoSapiensGeneInfo,
@@ -149,8 +150,8 @@ public class LiricalConfiguration {
         }
     }
 
-    private LiricalAnalysisRunner createLiricalAnalyzer(PhenotypeService phenotypeService) throws LiricalDataException {
-        PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(phenotypeService.diseases());
+    private LiricalAnalysisRunner createLiricalAnalyzer(PhenotypeService phenotypeService,
+                                                        PretestDiseaseProbability pretestDiseaseProbability) throws LiricalDataException {
         PhenotypeLikelihoodRatio phenotypeLikelihoodRatio = new PhenotypeLikelihoodRatio(phenotypeService.hpo(), phenotypeService.diseases().diseaseById());
         GenotypeLikelihoodRatio genotypeLrEvaluator = createGenotypeLrEvaluator();
 
