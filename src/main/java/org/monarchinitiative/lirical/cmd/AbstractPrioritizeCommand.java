@@ -34,6 +34,8 @@ import java.time.Period;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -256,8 +258,11 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
             LOGGER.debug("Found sample {} in the VCF file at {}", sampleId, vcfPath.toAbsolutePath());
 
             // Read variants
-            LOGGER.info("Reading variants");
-            List<LiricalVariant> variants = variantParser.variantStream().toList();
+            LOGGER.info("Reading variants from {}", vcfPath.toAbsolutePath());
+            AtomicInteger counter = new AtomicInteger();
+            List<LiricalVariant> variants = variantParser.variantStream()
+                    .peek(logProgress(counter))
+                    .toList();
             LOGGER.info("Read {} variants", variants.size());
 
             // Group variants by gene symbol. It would be better to group the variants by e.g. Entrez ID,
@@ -288,6 +293,14 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         } catch (Exception e) {
             throw new LiricalParseException(e);
         }
+    }
+
+    private static Consumer<LiricalVariant> logProgress(AtomicInteger counter) {
+        return v -> {
+            int current = counter.incrementAndGet();
+            if (current % 5000 == 0)
+                LOGGER.info("Read {} variants", current);
+        };
     }
 
     private static Properties readProperties() {
