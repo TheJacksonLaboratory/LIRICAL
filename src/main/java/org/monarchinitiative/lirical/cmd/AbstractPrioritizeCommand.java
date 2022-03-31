@@ -52,12 +52,12 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
 
     // ---------------------------------------------- RESOURCES --------------------------------------------------------
     @CommandLine.ArgGroup(validate = false, heading="Resource paths:%n")
-    public DataSection dataSection;
+    public DataSection dataSection = new DataSection();
     public static class DataSection {
         @CommandLine.Option(names = {"-d", "--data"},
                 required = true,
                 description = "Path to Lirical data directory.")
-        protected Path liricalDataDirectory = Path.of("data");
+        protected Path liricalDataDirectory;
 
         @CommandLine.Option(names = {"-e", "--exomiser"},
                 description = "Path to the Exomiser data directory.")
@@ -133,23 +133,33 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         protected String outfilePrefix = "lirical";
     }
 
-    protected void checkThresholds() {
+    protected int checkInput() {
+        // resources
+        if (dataSection.liricalDataDirectory == null) {
+            LOGGER.error("Path to Lirical data directory must be provided via `-d | --data` option");
+            return 1;
+        }
+
+        // thresholds
         if (runConfiguration.lrThreshold != null && runConfiguration.minDifferentialsToShow != null) {
             LOGGER.error("Only one of the options -t/--threshold and -m/--mindiff can be used at once.");
-            throw new LiricalRuntimeException("Only one of the options -t/--threshold and -m/--mindiff can be used at once.");
+            return 1;
         }
         if (runConfiguration.lrThreshold != null) {
             if (runConfiguration.lrThreshold < 0.0 || runConfiguration.lrThreshold > 1.0) {
                 LOGGER.error("Post-test probability (-t/--threshold) must be between 0.0 and 1.0.");
-                throw new LiricalRuntimeException("Post-test probability (-t/--threshold) must be between 0.0 and 1.0.");
+                return 1;
             }
         }
+        return 0;
     }
 
     @Override
     public Integer call() throws Exception {
         // 0. - check input
-        checkThresholds();
+        int status = checkInput();
+        if (status != 0)
+            return status;
 
         // 1. - bootstrap the app
         LOGGER.info("Spooling up Lirical v{}", LIRICAL_VERSION);

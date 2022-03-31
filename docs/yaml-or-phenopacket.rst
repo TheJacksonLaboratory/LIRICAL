@@ -21,14 +21,9 @@ The data represents an individual with some characteristic manifestations of
 `Tibial pseudoarthrosis <https://hpo.jax.org/app/browse/term/HP:0009736>`_ (``HP:0009736``), a characteristic feature of
 neurofibromatosis type 1, has been ruled out. ::
 
-    analysis:
-        mindiff: 50
-        threshold: 0.05
-        tsv: true
-        orphanet: true
+    sampleId: NF2-example
     hpoIds: ['HP:0002321', 'HP:0000365', 'HP:0000360', 'HP:0009589', 'HP:0002858']
     negatedHpoIds: ['HP:0009736']
-    prefix: NF2-example
 
 Save this file as ``example.yml`` and then run LIRICAL as ::
 
@@ -94,5 +89,5 @@ Save this file as ``example.json`` and then run LIRICAL as ::
 
     $ java -jar LIRICAL.jar phenopacket -p example.json
 
-Identical results should be obtained for both cases. See :ref:`rstphenopackethpo` and :ref:`rstyamlhpo` for more
+Identical results should be obtained for both cases. See :ref:`rstphenopackethpo` and :ref:`rstyaml` for more
 information about parameters and running LIRICAL with genomic data from VCF files.

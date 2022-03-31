@@ -12,7 +12,6 @@ import org.monarchinitiative.lirical.analysis.Vcf2GenotypeMap;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
-import org.monarchinitiative.lirical.io.YamlParser;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.vcf.SimpleVariant;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
@@ -587,58 +586,58 @@ public class LiricalFactory {
             return this;
         }
 
-        /**
-         * Create a Builder object from the YAML Parser. By default, phenotypeOnly mode is set to false
-         *
-         * @param yp YamlParser
-         * @return a Builder object
-         */
-        public Builder yaml(YamlParser yp) {
-            return yaml(yp, false);
-        }
-
-        /**
-         * Create a Builder object from the YAML Parser.
-         *
-         * @param yp            YamlParser
-         * @param phenotypeOnly If false, expect to see information about the VCF file and Exomiser build.
-         * @return Builder object
-         */
-        public Builder yaml(YamlParser yp, boolean phenotypeOnly) {
-            this.observedHpoTerms = yp.getHpoTermList();
-            this.negatedHpoTerms = yp.getNegatedHpoTermList();
-            switch (yp.transcriptdb().toUpperCase()) {
-                case "REFSEQ":
-                    this.transcriptdatabase = TranscriptDatabase.REFSEQ;
-                    break;
-                case "UCSC":
-                default:
-                    this.transcriptdatabase = TranscriptDatabase.UCSC;
-            }
-            if (yp.getPrefix() != null) {
-                this.outfilePrefix = yp.getPrefix();
-            }
-            Optional<Double> threshold = yp.threshold();
-            threshold.ifPresent(d -> this.lrThreshold = d);
-            if (yp.mindiff().isPresent()) {
-                this.minDifferentials = yp.mindiff().get();
-            }
-            this.outputDirectory = yp.getOutDirectory().orElse(null);
-            if (phenotypeOnly) return this;
-            // if we get here, then we add stuff that is relevant to VCF analysis
-            this.exomiserDataDir = Path.of(yp.getExomiserDataDir());
-            this.genomeAssembly = parseAssembly(yp.getGenomeAssembly());
-            Optional<Path> vcfOpt = yp.getOptionalVcfPath();
-            if (vcfOpt.isPresent()) {
-                this.vcfPath = vcfOpt.get();
-            } else {
-                vcfPath = null;
-            }
-            yp.getBackgroundPath().ifPresent(s -> this.backgroundFrequencyPath = Path.of(s));
-
-            this.global = yp.global();
-            return this;
-        }
+//        /**
+//         * Create a Builder object from the YAML Parser. By default, phenotypeOnly mode is set to false
+//         *
+//         * @param yp YamlParser
+//         * @return a Builder object
+//         */
+//        public Builder yaml(YamlParser yp) {
+//            return yaml(yp, false);
+//        }
+//
+//        /**
+//         * Create a Builder object from the YAML Parser.
+//         *
+//         * @param yp            YamlParser
+//         * @param phenotypeOnly If false, expect to see information about the VCF file and Exomiser build.
+//         * @return Builder object
+//         */
+//        public Builder yaml(YamlParser yp, boolean phenotypeOnly) {
+//            this.observedHpoTerms = yp.getHpoTermList();
+//            this.negatedHpoTerms = yp.getNegatedHpoTermList();
+//            switch (yp.transcriptdb().toUpperCase()) {
+//                case "REFSEQ":
+//                    this.transcriptdatabase = TranscriptDatabase.REFSEQ;
+//                    break;
+//                case "UCSC":
+//                default:
+//                    this.transcriptdatabase = TranscriptDatabase.UCSC;
+//            }
+//            if (yp.getPrefix() != null) {
+//                this.outfilePrefix = yp.getPrefix();
+//            }
+//            Optional<Double> threshold = yp.threshold();
+//            threshold.ifPresent(d -> this.lrThreshold = d);
+//            if (yp.mindiff().isPresent()) {
+//                this.minDifferentials = yp.mindiff().get();
+//            }
+//            this.outputDirectory = yp.getOutDirectory().orElse(null);
+//            if (phenotypeOnly) return this;
+//            // if we get here, then we add stuff that is relevant to VCF analysis
+//            this.exomiserDataDir = Path.of(yp.getExomiserDataDir());
+//            this.genomeAssembly = parseAssembly(yp.getGenomeAssembly());
+//            Optional<Path> vcfOpt = yp.getOptionalVcfPath();
+//            if (vcfOpt.isPresent()) {
+//                this.vcfPath = vcfOpt.get();
+//            } else {
+//                vcfPath = null;
+//            }
+//            yp.getBackgroundPath().ifPresent(s -> this.backgroundFrequencyPath = Path.of(s));
+//
+//            this.global = yp.global();
+//            return this;
+//        }
 
         private GenomeAssembly parseAssembly(String genomeAssembly) {
             return switch (genomeAssembly.toLowerCase()) {

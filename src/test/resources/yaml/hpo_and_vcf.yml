@@ -2,12 +2,9 @@
 # These are all the possible options for running LIRICAL. Use this as a template for
 # your own set-up.
 ---
-analysis:
-# hg19 or hg38 is supported
-    genomeAssembly: hg19
-#    vcf: /path/to/example.vcf
-#    exomiser: /path/to/1811_hg19/
-    vcf: example_data/pfeiffer/Pfeiffer.vcf
-    exomiser: data/1909_hg19
-hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']
-# prefix: example
+sampleId: NF2-example
+hpoIds: ['HP:0002321', 'HP:0000365', 'HP:0000360', 'HP:0009589', 'HP:0002858']
+negatedHpoIds: ['HP:0009736']
+age: P20Y6M
+sex: FEMALE
+vcf: /path/to/example.vcf

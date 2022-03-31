@@ -55,8 +55,16 @@ public class LiricalConfiguration {
 
         GenomicAssembly genomicAssembly = parseSvartGenomicAssembly(properties.genomeBuild());
         LiricalDataResolver liricalDataResolver = LiricalDataResolver.of(properties.liricalDataDirectory());
-        VariantMetadataService variantMetadataService = createVariantMetadataService(properties, new VariantMetadataService.Options(properties.defaultVariantFrequency()));
-        VariantParserFactory variantParserFactory = new VcfVariantParserFactory(genomicAssembly, variantMetadataService);
+
+        VariantParserFactory variantParserFactory;
+        if (properties.exomiserDataDirectory().isPresent()) {
+            VariantMetadataService variantMetadataService = createVariantMetadataService(properties, new VariantMetadataService.Options(properties.defaultVariantFrequency()));
+            variantParserFactory = new VcfVariantParserFactory(genomicAssembly, variantMetadataService);
+        } else {
+            LOGGER.info("Path to Exomiser data is unset, variants will not be included into the analysis");
+            variantParserFactory = null;
+        }
+
 
 
         Ontology hpo = loadOntology(liricalDataResolver.hpoJson());
@@ -101,7 +109,7 @@ public class LiricalConfiguration {
             ExomiserDataResolver resolver = ExomiserDataResolver.of(exomiserDataDirectory.get());
             return ExomiserVariantMetadataService.of(resolver.mvStorePath(), resolver.refseqTranscriptCache(), assembly, options);
         } else {
-            LOGGER.debug("Exomiser data directory is not available");
+            LOGGER.info("Exomiser data directory is not available, variant data will not be used");
             return NoOpVariantMetadataService.instance();
         }
     }

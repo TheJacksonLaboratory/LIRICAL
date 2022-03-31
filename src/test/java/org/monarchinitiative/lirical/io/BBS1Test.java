@@ -4,6 +4,8 @@ import com.google.protobuf.util.JsonFormat;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.TestResources;
+import org.monarchinitiative.lirical.cmd.yaml.YamlConfig;
+import org.monarchinitiative.lirical.cmd.yaml.YamlParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.Phenopacket;
 
@@ -24,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * They should provide equivalent information (although the Phenopacket provides richer information)
  */
 public class BBS1Test {
-    private static YamlParser yamlparser;
+    private static YamlConfig yamlConfig;
     private static PhenopacketImporter phenopacketimporter;
 
     private static final Path TEST_PHENOPACKET_DIR = TestResources.TEST_BASE.resolve("phenopacket");
@@ -32,13 +34,12 @@ public class BBS1Test {
 
 
     private final String expectedId = "IV-5/family A";
-    private final String expectedGenomeAssembly = "GRCh37";
     private final Path expectedVcf=Path.of("/path/to/examples/BBS1.vcf");
 
 
     @BeforeAll
     public static void init() throws IOException {
-        yamlparser = new YamlParser(TEST_YAML_DIR.resolve("BBS1.yml"));
+        yamlConfig = YamlParser.parse(TEST_YAML_DIR.resolve("BBS1.yml"));
 
         try (BufferedReader reader = Files.newBufferedReader(TEST_PHENOPACKET_DIR.resolve("BBS1.json"))) {
             Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
@@ -54,19 +55,15 @@ public class BBS1Test {
 
     @Test
     public void getIdYaml() {
-        assertEquals(expectedId,yamlparser.getSampleId());
+        assertEquals(expectedId, yamlConfig.getSampleId());
     }
 
     @Test
     public void getGenomeAssemblyPhenopacket() {
         Optional<String> assemblyOptional = phenopacketimporter.getGenomeAssembly();
         assertThat(assemblyOptional.isPresent(), equalTo(true));
+        String expectedGenomeAssembly = "GRCh37";
         assertEquals(expectedGenomeAssembly, assemblyOptional.get());
-    }
-
-    @Test
-    public void testGetGenomeAssemblyYaml() {
-        assertEquals(expectedGenomeAssembly,yamlparser.getGenomeAssembly());
     }
 
     @Test
@@ -78,23 +75,15 @@ public class BBS1Test {
 
     @Test
     public void testGetVcfYaml() {
-        Optional<Path> vcfOpt = yamlparser.getOptionalVcfPath();
+        Optional<Path> vcfOpt = yamlConfig.vcfPath();
         assertTrue(vcfOpt.isPresent());
         assertEquals(expectedVcf, vcfOpt.get());
-    }
-
-    /**
-     * Note that the YAML Parser removes the trailing slash of the exomiser data directory path, if present.
-     */
-    @Test
-    public void testGetExomiserPathYaml() {
-        assertEquals("/path/to/exomiser_data/1802_hg19",yamlparser.getExomiserDataDir());
     }
 
     @Test
     public void testGetHpoIdsYaml() {
         String [] expected = {"HP:0007843","HP:0001513","HP:0000608","HP:0000486"};
-        List<String> termList = yamlparser.getHpoTermList();
+        List<String> termList = yamlConfig.getHpoIds();
         assertEquals(4,termList.size());
         assertEquals(termList.get(0),expected[0]);
         assertEquals(termList.get(1),expected[1]);
@@ -118,7 +107,7 @@ public class BBS1Test {
     @Test
     public void testGetExlucedTermYaml() {
         final String expected = "HP:0001328"; // only one excluded term
-        final List<String> excludedlist = yamlparser.getNegatedHpoTermList();
+        final List<String> excludedlist = yamlConfig.getNegatedHpoIds();
         assertEquals(1,excludedlist.size());
         assertEquals(expected,excludedlist.get(0));
     }
@@ -130,13 +119,6 @@ public class BBS1Test {
         assertEquals(1,excluded.size());
         assertEquals(expected,excluded.get(0));
     }
-
-    @Test
-    public void testGetPrefixYaml() {
-        final String expectedPrefix = "BBS1";
-        assertEquals(expectedPrefix,yamlparser.getPrefix());
-    }
-
 
 
 }

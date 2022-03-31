@@ -1,8 +1,6 @@
 package org.monarchinitiative.lirical.cmd;
 
 
-import org.monarchinitiative.lirical.analysis.AnalysisData;
-import org.monarchinitiative.lirical.configuration.Lirical;
 import org.monarchinitiative.lirical.simulation.PhenoGenoCaseSimulator;
 import org.monarchinitiative.lirical.simulation.PhenoOnlyCaseSimulator;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
@@ -311,7 +309,7 @@ public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand {
         detailedResultLineList = new ArrayList<>();
         rank2countMap=new HashMap<>();
         geneRank2CountMap = new HashMap<>();
-        checkThresholds();
+        checkInput();
         if (phenotypeOnly) {
             runPhenotypeOnly(metadata);
         } else {

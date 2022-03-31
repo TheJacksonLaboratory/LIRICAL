@@ -3,13 +3,13 @@ package org.monarchinitiative.lirical.configuration;
 import org.monarchinitiative.lirical.analysis.LiricalAnalysisRunner;
 import org.monarchinitiative.lirical.io.VariantParserFactory;
 import org.monarchinitiative.lirical.service.PhenotypeService;
-import org.monarchinitiative.lirical.service.VariantMetadataService;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class Lirical {
 
-    private final VariantParserFactory variantParserFactory;
+    private final VariantParserFactory variantParserFactory; // nullable
     private final PhenotypeService phenotypeService;
     private final LiricalAnalysisRunner analyzer;
 
@@ -22,13 +22,13 @@ public class Lirical {
     private Lirical(VariantParserFactory variantParserFactory,
                     PhenotypeService phenotypeService,
                     LiricalAnalysisRunner analyzer) {
-        this.variantParserFactory = Objects.requireNonNull(variantParserFactory);
+        this.variantParserFactory = variantParserFactory;
         this.phenotypeService = Objects.requireNonNull(phenotypeService);
         this.analyzer = Objects.requireNonNull(analyzer);
     }
 
-    public VariantParserFactory variantParserFactory() {
-        return variantParserFactory;
+    public Optional<VariantParserFactory> variantParserFactory() {
+        return Optional.ofNullable(variantParserFactory);
     }
 
     public PhenotypeService phenotypeService() {
