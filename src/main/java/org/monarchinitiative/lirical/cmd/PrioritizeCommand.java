@@ -38,7 +38,6 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
             description = "Path to VCF file (optional).")
     public Path vcfPath = null;
 
-    // TODO - If provided, ensure the sample ID is present in the VCF file.
     @CommandLine.Option(names = {"--sample-id"},
             description = "Proband's identifier (default: ${DEFAULT-VALUE}).")
     public String sampleId = "Sample";
@@ -59,7 +58,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
     }
 
     @Override
-    protected AnalysisData prepareAnalysisData(Lirical lirical) {
+    protected AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException {
         HpoTermSanitizer sanitizer = new HpoTermSanitizer(lirical.phenotypeService().hpo());
 
         List<TermId> observedTerms = observed.stream()
@@ -78,7 +77,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
         if (vcfPath == null) {
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(vcfPath, lirical.genomeBuild(), lirical.variantMetadataService(), lirical.phenotypeService().associationData());
+            genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.genomeBuild(), lirical.variantMetadataService(), lirical.phenotypeService().associationData());
         }
 
         return AnalysisData.of(sampleId, parseAge(age), sex, observedTerms, negatedTerms, genes);

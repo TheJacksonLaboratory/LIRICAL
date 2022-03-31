@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.cmd;
 
 import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFHeader;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.analysis.AnalysisData;
 import org.monarchinitiative.lirical.analysis.AnalysisOptions;
@@ -177,6 +178,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
                 .build();
         LiricalConfiguration factory = LiricalConfiguration.of(liricalProperties);
         Lirical lirical = factory.getLirical();
+
         LOGGER.info("Preparing the analysis data");
         AnalysisData analysisData = prepareAnalysisData(lirical);
         if (analysisData.presentPhenotypeTerms().isEmpty() && analysisData.negatedPhenotypeTerms().isEmpty()) {
@@ -215,7 +217,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
     }
 
     protected abstract String getGenomeBuild();
-    protected abstract AnalysisData prepareAnalysisData(Lirical lirical);
+    protected abstract AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException;
 
     protected AnalysisOptions prepareAnalysisOptions() {
         return new AnalysisOptions(runConfiguration.globalAnalysisMode);
@@ -236,10 +238,11 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         }
     }
 
-    protected static GenesAndGenotypes readVariantsFromVcfFile(Path vcfPath,
+    protected static GenesAndGenotypes readVariantsFromVcfFile(String sampleId,
+                                                               Path vcfPath,
                                                                GenomeBuild genomeBuild,
                                                                VariantMetadataService metadataService,
-                                                               HpoAssociationData associationData) {
+                                                               HpoAssociationData associationData) throws LiricalParseException {
         // TODO - RNR1 is an example of a gene with 2 NCBIGene IDs.
         Map<String, List<GeneIdentifier>> symbolToGeneId = associationData.geneIdentifiers().stream()
                 .collect(Collectors.groupingBy(GeneIdentifier::symbol));
@@ -248,7 +251,13 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         try (VCFFileReader reader = new VCFFileReader(vcfPath, false)) {
             GenotypedVariantParser parser = new VcfGenotypedVariantParser(genomicAssembly, genomeBuild, reader);
             VariantParser variantParser = new VcfVariantParser(parser, metadataService);
-            LOGGER.info("Reading variants from {}", vcfPath.toAbsolutePath());
+
+            // Ensure the VCF file contains the sample
+            VCFHeader header = reader.getFileHeader();
+            if (!header.getGenotypeSamples().contains(sampleId))
+                throw new LiricalParseException("The sample " + sampleId + " is not present in VCF at '" + vcfPath.toAbsolutePath().toString() + '\'');
+            LOGGER.debug("Found sample {} in the VCF file at {}", sampleId, vcfPath.toAbsolutePath());
+            LOGGER.info("Reading variants");
             List<LiricalVariant> variants = variantParser.variantStream().toList();
             LOGGER.info("Read {} variants", variants.size());
 

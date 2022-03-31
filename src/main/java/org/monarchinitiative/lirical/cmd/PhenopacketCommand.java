@@ -228,7 +228,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
     }
 
     @Override
-    protected AnalysisData prepareAnalysisData(Lirical lirical) {
+    protected AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException {
         // Read the Phenopacket
         PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
 
@@ -259,9 +259,10 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
         GenesAndGenotypes genes;
         Optional<Path> vcfPathOpt = importer.getVcfPath();
         if (vcfPathOpt.isEmpty()) {
+            LOGGER.info("Path to VCF file is not specified");
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(vcfPathOpt.get(), lirical.genomeBuild(), lirical.variantMetadataService(), lirical.phenotypeService().associationData());
+            genes = readVariantsFromVcfFile(sampleId, vcfPathOpt.get(), lirical.genomeBuild(), lirical.variantMetadataService(), lirical.phenotypeService().associationData());
         }
 
         return AnalysisData.of(sampleId, age, sex, observedTerms, negatedTerms, genes);
