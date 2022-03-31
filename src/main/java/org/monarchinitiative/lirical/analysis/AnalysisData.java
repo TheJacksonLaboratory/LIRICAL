@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.analysis;
 
-import org.monarchinitiative.lirical.hpo.Age;
-import org.monarchinitiative.lirical.hpo.Sex;
+import org.monarchinitiative.lirical.model.Age;
+import org.monarchinitiative.lirical.model.Sex;
 import org.monarchinitiative.lirical.model.GenesAndGenotypes;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 

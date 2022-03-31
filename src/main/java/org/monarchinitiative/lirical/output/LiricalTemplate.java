@@ -5,7 +5,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Version;
 import org.monarchinitiative.lirical.configuration.*;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
-import org.monarchinitiative.lirical.hpo.HpoCase;
+import org.monarchinitiative.lirical.model.HpoCase;
 import org.monarchinitiative.lirical.model.Gene2Genotype;
 import org.monarchinitiative.lirical.model.LiricalVariant;
 import org.monarchinitiative.phenol.ontology.data.Ontology;

@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.hpo;
+package org.monarchinitiative.lirical.model;
 
 import java.time.Period;
 import java.util.Objects;

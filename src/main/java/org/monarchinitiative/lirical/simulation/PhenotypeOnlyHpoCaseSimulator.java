@@ -3,7 +3,7 @@ package org.monarchinitiative.lirical.simulation;
 
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.lirical.exception.LiricalException;
-import org.monarchinitiative.lirical.hpo.HpoCase;
+import org.monarchinitiative.lirical.model.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;

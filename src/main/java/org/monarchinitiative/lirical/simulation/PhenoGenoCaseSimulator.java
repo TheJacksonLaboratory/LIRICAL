@@ -8,7 +8,7 @@ import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.configuration.LrThreshold;
 import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
-import org.monarchinitiative.lirical.hpo.HpoCase;
+import org.monarchinitiative.lirical.model.HpoCase;
 import org.monarchinitiative.lirical.io.PhenopacketImporter;
 import org.monarchinitiative.lirical.likelihoodratio.CaseEvaluator;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;

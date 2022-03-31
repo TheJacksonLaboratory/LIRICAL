@@ -3,7 +3,7 @@ package org.monarchinitiative.lirical.output;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.monarchinitiative.lirical.configuration.LiricalProperties;
-import org.monarchinitiative.lirical.hpo.HpoCase;
+import org.monarchinitiative.lirical.model.HpoCase;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.model.Gene2Genotype;
 import org.monarchinitiative.phenol.ontology.data.Ontology;

@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.analysis.LiricalAnalysisRunner;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
-import org.monarchinitiative.lirical.hpo.HpoCase;
+import org.monarchinitiative.lirical.model.HpoCase;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;

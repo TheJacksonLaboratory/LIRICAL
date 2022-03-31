@@ -245,15 +245,15 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
 
         // Parse sample attributes
         String sampleId = importer.getSampleId();
-        org.monarchinitiative.lirical.hpo.Age age = importer.getAge().filter(a -> Age.getDefaultInstance().equals(a))
+        org.monarchinitiative.lirical.model.Age age = importer.getAge().filter(a -> Age.getDefaultInstance().equals(a))
                 .map(Age::getAge)
                 .map(Period::parse)
-                .map(org.monarchinitiative.lirical.hpo.Age::parse)
-                .orElse(org.monarchinitiative.lirical.hpo.Age.ageNotKnown());
+                .map(org.monarchinitiative.lirical.model.Age::parse)
+                .orElse(org.monarchinitiative.lirical.model.Age.ageNotKnown());
 
-        org.monarchinitiative.lirical.hpo.Sex sex = importer.getSex()
+        org.monarchinitiative.lirical.model.Sex sex = importer.getSex()
                 .map(this::toSex)
-                .orElse(org.monarchinitiative.lirical.hpo.Sex.UNKNOWN);
+                .orElse(org.monarchinitiative.lirical.model.Sex.UNKNOWN);
 
         // Go through VCF file (if present)
         GenesAndGenotypes genes;
@@ -267,11 +267,11 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
         return AnalysisData.of(sampleId, age, sex, observedTerms, negatedTerms, genes);
     }
 
-    private org.monarchinitiative.lirical.hpo.Sex toSex(Sex sex) {
+    private org.monarchinitiative.lirical.model.Sex toSex(Sex sex) {
         return switch (sex) {
-            case MALE -> org.monarchinitiative.lirical.hpo.Sex.MALE;
-            case FEMALE -> org.monarchinitiative.lirical.hpo.Sex.FEMALE;
-            case OTHER_SEX, UNKNOWN_SEX, UNRECOGNIZED -> org.monarchinitiative.lirical.hpo.Sex.UNKNOWN;
+            case MALE -> org.monarchinitiative.lirical.model.Sex.MALE;
+            case FEMALE -> org.monarchinitiative.lirical.model.Sex.FEMALE;
+            case OTHER_SEX, UNKNOWN_SEX, UNRECOGNIZED -> org.monarchinitiative.lirical.model.Sex.UNKNOWN;
         };
     }
 

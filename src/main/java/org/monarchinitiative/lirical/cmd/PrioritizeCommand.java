@@ -2,7 +2,7 @@ package org.monarchinitiative.lirical.cmd;
 
 import org.monarchinitiative.lirical.analysis.AnalysisData;
 import org.monarchinitiative.lirical.configuration.Lirical;
-import org.monarchinitiative.lirical.hpo.Sex;
+import org.monarchinitiative.lirical.model.Sex;
 import org.monarchinitiative.lirical.io.HpoTermSanitizer;
 import org.monarchinitiative.lirical.model.GenesAndGenotypes;
 import org.monarchinitiative.phenol.ontology.data.TermId;
