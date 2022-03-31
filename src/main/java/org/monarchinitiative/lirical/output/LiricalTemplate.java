@@ -27,7 +27,7 @@ import java.util.function.Function;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public abstract class LiricalTemplate {
-    private static final Logger logger = LoggerFactory.getLogger(LiricalFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(LiricalTemplate.class);
 
     protected final LiricalProperties liricalProperties;
     private final HpoCase hpoCase;

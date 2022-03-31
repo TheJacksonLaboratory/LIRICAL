@@ -145,6 +145,10 @@ public class PhenopacketImporter {
     public List<Variant> getVariantList() { return phenopacket.getVariantsList(); }
 
 
+    public Phenopacket phenopacket() {
+        return phenopacket;
+    }
+
     public Optional<Disease> getDiagnosis() {
         if (phenopacket.getDiseasesCount() == 0) {
             logger.info("No diseases found in phenopacket");
@@ -152,23 +156,6 @@ public class PhenopacketImporter {
         } else if (phenopacket.getDiseasesCount() > 1)
             logger.warn("Phenopacket associated with {} diseases. Getting the first disease", phenopacket.getDiseasesCount());
         return Optional.of(phenopacket.getDiseases(0));
-    }
-
-
-    @Deprecated(forRemoval = true) // inline the QC where it is actually used
-    public boolean qcPhenopacket() {
-        if (phenopacket.getDiseasesCount() != 1) {
-            System.err.println("[ERROR] to run this simulation a phenopacket must have exactly one disease diagnosis");
-            System.err.println("[ERROR]  " + phenopacket.getSubject().getId() + " had " + phenopacket.getDiseasesCount());
-            return false; // skip to next Phenopacket
-        }
-        List<PhenotypicFeature> phenolist = phenopacket.getPhenotypicFeaturesList();
-        int n_observed = (int) phenolist.stream().filter(p -> !p.getNegated()).count();
-        if (n_observed==0) {
-            System.err.println("[ERROR] phenopackets must have at least one observed HPO term. ");
-            return false; // skip to next Phenopacket
-        }
-        return true;
     }
 
 }

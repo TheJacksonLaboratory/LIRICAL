@@ -20,8 +20,10 @@ import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.Disease;
 import org.phenopackets.schema.v1.core.HtsFile;
+import org.phenopackets.schema.v1.core.PhenotypicFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,7 +148,7 @@ public class PhenoGenoCaseSimulator {
         this.metadata.put("analysis_date", dateFormat.format(date));
         this.metadata.put("phenopacket_file", phenopacketPath.toAbsolutePath().toString());
         metadata.put("sample_name", sampleName);
-        if (!importer.qcPhenopacket() ){
+        if (!qcPhenopacket(importer.phenopacket())){
             System.err.println("[ERROR] Could not simulate VCF for "+ phenopacketPath.toFile().getName());
             return;
         }
@@ -170,6 +172,20 @@ public class PhenoGenoCaseSimulator {
         return phenotypeterms.get(r);
     }
 
+    private static boolean qcPhenopacket(Phenopacket phenopacket) {
+        if (phenopacket.getDiseasesCount() != 1) {
+            System.err.println("[ERROR] to run this simulation a phenopacket must have exactly one disease diagnosis");
+            System.err.println("[ERROR]  " + phenopacket.getSubject().getId() + " had " + phenopacket.getDiseasesCount());
+            return false; // skip to next Phenopacket
+        }
+        List<PhenotypicFeature> phenolist = phenopacket.getPhenotypicFeaturesList();
+        int n_observed = (int) phenolist.stream().filter(p -> !p.getNegated()).count();
+        if (n_observed==0) {
+            System.err.println("[ERROR] phenopackets must have at least one observed HPO term. ");
+            return false; // skip to next Phenopacket
+        }
+        return true;
+    }
 
     /**
      * This method coordinates

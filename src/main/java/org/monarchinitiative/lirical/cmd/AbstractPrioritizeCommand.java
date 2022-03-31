@@ -196,7 +196,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         LiricalAnalysisRunner analyzer = lirical.analyzer();
         AnalysisResults results = analyzer.run(analysisData, analysisOptions);
 
-        // TODO - Do we need HpoCase or we can get along with AnalysiData and pass it
+        // TODO - Do we need HpoCase or we can get along with AnalysisData and pass it along
         LOGGER.info("Writing out the results");
         HpoCase hpoCase = new HpoCase.Builder(analysisData.sampleId(), analysisData.presentPhenotypeTerms())
                 .excluded(analysisData.negatedPhenotypeTerms())
