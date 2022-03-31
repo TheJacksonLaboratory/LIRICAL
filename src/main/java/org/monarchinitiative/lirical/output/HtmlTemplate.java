@@ -94,15 +94,16 @@ public class HtmlTemplate extends LiricalTemplate {
                 .forEachOrdered(result -> {
                     int current = rank.incrementAndGet();
 
-                    Optional<GenotypeLrWithExplanation> genotypeLr = result.genotypeLr();
+                    Optional<GenotypeLrWithExplanation> genotypeLrOpt = result.genotypeLr();
                     if (current <= N) {
                         // Create a full differential diagnosis
 
-                        String symbol = genotypeLr.map(GenotypeLrWithExplanation::geneId)
+                        String symbol = genotypeLrOpt.map(GenotypeLrWithExplanation::geneId)
                                 .map(GeneIdentifier::symbol)
                                 .orElse(EMPTY_STRING);
 
-                        List<VisualizableVariant> variants = genotypeLr.map(GenotypeLrWithExplanation::geneId)
+                        // Remap `LiricalVariant`s to `VisualizableVariant`s
+                        List<VisualizableVariant> variants = genotypeLrOpt.map(GenotypeLrWithExplanation::geneId)
                                 .map(GeneIdentifier::id)
                                 .map(geneById::get)
                                 .map(Gene2Genotype::variants)
@@ -110,31 +111,25 @@ public class HtmlTemplate extends LiricalTemplate {
                                 .map(toVisualizableVariant())
                                 .toList();
 
-//                      ddx.setGenotypeExplanation("no variants found in " + geneId.symbol());
+                        String genotypeExplanation = createGenotypeExplanation(genotypeLrOpt.orElse(null), variants.isEmpty());
 
-//                      ddx.setGenotypeExplanation(genotypeLrWithExplanation.explanation());
-
-//                      ddx.setGenotypeExplanation("No known disease gene");
-
-                        //ddx.setPhenotypeExplanation(result.getPhenotypeExplanation());
-
-                        // TODO - create proper genotype/phenotype explanation
-                        String genotypeExplanation = result.getGenotypeExplanation().orElse("No known disease gene/ no variants found in ...");
-                        String phenotypeExplanation = "TEMPORARY PHENOTYPE EXPLANATION";
-                        DifferentialDiagnosis ddx = new DifferentialDiagnosis(hpoCase.sampleId(), result, current, variants, genotypeExplanation, phenotypeExplanation);
-                        // now get SVG
                         Lr2Svg lr2svg = new Lr2Svg(result, current, result.diseaseId(), result.getDiseaseName(), ontology, symbol);
-                        ddx.setSvg(lr2svg.getSvgString());
-                        diff.add(ddx);
+                        DifferentialDiagnosis ddx = new DifferentialDiagnosis(hpoCase.sampleId(),
+                                result,
+                                current,
+                                variants,
+                                genotypeExplanation,
+                                lr2svg.getSvgString());
 
                         String counterString = String.format("diagnosis%d", current);
                         this.topDiagnosisAnchors.add(counterString);
                         ddx.setAnchor(counterString);
                         this.topDiagnosisMap.put(counterString, ddx.getDiseaseName());
+                        diff.add(ddx);
                     } else {
                         // Create an improbable diagnosis for the expandable table
-                        if (genotypeLr.isPresent()) {
-                            GeneIdentifier geneId = genotypeLr.get().geneId();
+                        if (genotypeLrOpt.isPresent()) {
+                            GeneIdentifier geneId = genotypeLrOpt.get().geneId();
                             if (this.geneById.containsKey(geneId.id())) {
                                 int c = this.geneById.get(geneId.id()).variantCount();
                                 String name = shortName(result.getDiseaseName());
@@ -151,6 +146,19 @@ public class HtmlTemplate extends LiricalTemplate {
                 });
         this.templateData.put("improbdiff", improbdiff);
         this.templateData.put("diff", diff);
+    }
+
+    private static String createGenotypeExplanation(GenotypeLrWithExplanation genotypeLr, boolean noVariantsInGene) {
+        if (genotypeLr != null) {
+            if (noVariantsInGene) {
+                GeneIdentifier geneId = genotypeLr.geneId();
+                return "No variants found in %s [%s]".formatted(geneId.symbol(), geneId.id().getValue());
+            } else {
+                return genotypeLr.explanation();
+            }
+        } else {
+            return "No known disease gene";
+        }
     }
 
 

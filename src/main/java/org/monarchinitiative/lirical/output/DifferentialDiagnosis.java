@@ -4,6 +4,7 @@ import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class stores all the information we need for a detailed differential diagnosis -- the major
@@ -17,22 +18,20 @@ public class DifferentialDiagnosis extends BaseDifferential {
 
     private final String url;
     /** SVG string illustrating the contributions of each feature to the overall score. */
-    private String svg;
+    private final String svg;
 
     private final String genotypeExplanation;
-
-    private final String phenotypeExplanation;
 
     DifferentialDiagnosis(String sampleId,
                           TestResult result,
                           int rank,
                           List<VisualizableVariant> variants,
                           String genotypeExplanation,
-                          String phenotypeExplanation) {
+                          String svg) {
         super(sampleId, result, rank, variants);
         url=String.format("https://hpo.jax.org/app/browse/disease/%s",result.diseaseId().getValue());
         this.genotypeExplanation = genotypeExplanation; // nullable
-        this.phenotypeExplanation = phenotypeExplanation; // nullable
+        this.svg = Objects.requireNonNull(svg);
     }
 
     @Override
@@ -49,7 +48,6 @@ public class DifferentialDiagnosis extends BaseDifferential {
         }
     }
 
-    public void setSvg(String s) { this.svg=s; }
     public String getSvg() { return this.svg; }
 
     public String getUrl(){ return url;}
@@ -67,6 +65,5 @@ public class DifferentialDiagnosis extends BaseDifferential {
     }
     /** @return An genotypeExplanation of how the genotype score was calculated (for the HTML template). */
     public String getGenotypeExplanation() { return genotypeExplanation == null ? EMPTY_STRING : genotypeExplanation; }
-    public String getPhenotypeExplanation(){ return phenotypeExplanation == null ? EMPTY_STRING : phenotypeExplanation; }
 
 }

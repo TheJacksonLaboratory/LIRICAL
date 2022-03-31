@@ -22,7 +22,6 @@ import static org.mockito.Mockito.when;
 
 public class DifferentialDiagnosisTest {
 
-    private final String phenotypeExplanation="example1";
     private final String expectedShortName="BRACHYPHALANGY, POLYDACTYLY, AND TIBIAL APLASIA/HYPOPLASIA";
 
 
@@ -49,7 +48,7 @@ public class DifferentialDiagnosisTest {
         when(result.getCompositeLR()).thenReturn(0.3);
         when(result.genotypeLr()).thenReturn(Optional.empty());
         String expectedShortName="PFEIFFER SYNDROME";
-        DifferentialDiagnosis dd = new DifferentialDiagnosis("SampleId", result, 1, List.of(), "", phenotypeExplanation);
+        DifferentialDiagnosis dd = new DifferentialDiagnosis("SampleId", result, 1, List.of(), "", "");
         assertEquals(expectedShortName,dd.getDiseaseName());
     }
 
@@ -65,7 +64,7 @@ public class DifferentialDiagnosisTest {
         when(result.posttestProbability()).thenReturn(0.1);
         when(result.getCompositeLR()).thenReturn(0.3);
         when(result.genotypeLr()).thenReturn(Optional.empty());
-        return new DifferentialDiagnosis("SampleId", result, 1, List.of(), "", phenotypeExplanation);
+        return new DifferentialDiagnosis("SampleId", result, 1, List.of(), "", "");
     }
 
 
