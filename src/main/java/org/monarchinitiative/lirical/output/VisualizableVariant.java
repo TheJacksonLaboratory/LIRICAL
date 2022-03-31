@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * The variant data for displaying in SVG widget.
  */
-public interface VisualizableVariant {
+interface VisualizableVariant {
 
     String contigName();
 
