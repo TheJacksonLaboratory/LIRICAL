@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.configuration;
+package org.monarchinitiative.lirical.output;
 
 import java.util.Objects;
 

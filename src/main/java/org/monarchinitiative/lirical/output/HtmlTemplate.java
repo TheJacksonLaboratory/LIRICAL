@@ -5,8 +5,6 @@ import freemarker.template.TemplateException;
 import org.monarchinitiative.lirical.analysis.AnalysisData;
 import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.configuration.LiricalProperties;
-import org.monarchinitiative.lirical.configuration.LrThreshold;
-import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.model.Gene2Genotype;
 import org.monarchinitiative.lirical.output.svg.Lr2Svg;

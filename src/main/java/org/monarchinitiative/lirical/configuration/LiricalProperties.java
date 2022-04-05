@@ -8,6 +8,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Properties needed to initialize {@link Lirical}.
+ */
 public class LiricalProperties {
 
     private final Path liricalDataDirectory;
@@ -19,23 +22,7 @@ public class LiricalProperties {
     private final GenomeBuild genomeBuild;
     private final TranscriptDatabase transcriptDatabase;
 
-    public static class GenotypeLrProperties {
-        private final float pathogenicityThreshold;
-        private final boolean strict;
-
-        private GenotypeLrProperties(float pathogenicityThreshold, boolean strict) {
-            this.pathogenicityThreshold = pathogenicityThreshold;
-            this.strict = strict;
-        }
-
-        public float pathogenicityThreshold() {
-            return pathogenicityThreshold;
-        }
-
-        public boolean strict() {
-            return strict;
-        }
-
+    public record GenotypeLrProperties(float pathogenicityThreshold, boolean strict) {
     }
 
     private LiricalProperties(Builder builder) {
@@ -81,6 +68,10 @@ public class LiricalProperties {
         return transcriptDatabase;
     }
 
+    /**
+     * Build {@link LiricalProperties} based on a single mandatory argument.
+     * @param liricalDataDirectory path to Lirical data directory.
+     */
     public static Builder builder(Path liricalDataDirectory) {
         return new Builder(liricalDataDirectory);
     }

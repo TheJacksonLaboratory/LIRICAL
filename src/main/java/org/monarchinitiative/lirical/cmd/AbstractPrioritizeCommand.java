@@ -11,6 +11,8 @@ import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.VariantParser;
 import org.monarchinitiative.lirical.io.VariantParserFactory;
 import org.monarchinitiative.lirical.model.*;
+import org.monarchinitiative.lirical.output.LrThreshold;
+import org.monarchinitiative.lirical.output.MinDiagnosisCount;
 import org.monarchinitiative.lirical.output.OutputFormat;
 import org.monarchinitiative.lirical.output.OutputOptions;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;

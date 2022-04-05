@@ -13,6 +13,8 @@ import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.exception.LiricalException;
 import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
+import org.monarchinitiative.lirical.output.LrThreshold;
+import org.monarchinitiative.lirical.output.MinDiagnosisCount;
 import org.monarchinitiative.lirical.vcf.SimpleVariant;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
