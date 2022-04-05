@@ -17,7 +17,9 @@ import java.util.stream.Collectors;
  * likelihood ratio analysis.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  * @version 0.0.2 (2018-04-04)
+ * @deprecated use {@link org.monarchinitiative.lirical.analysis.AnalysisData} and {@link AnalysisResults} instead.
  */
+@Deprecated
 public final class HpoCase {
     private static final Logger logger = LoggerFactory.getLogger(HpoCase.class);
     private final String sampleId;

@@ -234,36 +234,37 @@ public class PhenoGenoCaseSimulator {
 
 
     public void outputHtml(String prefix, LrThreshold lrThreshold, MinDiagnosisCount minDiff, Path outdir) {
-        LiricalTemplate.Builder builder = LiricalTemplate.builder(null, hpocase, null, null , metadata)
+//        LiricalTemplate.Builder builder = LiricalTemplate.builder(null, null, hpocase, null , metadata)
 //                .genotypeMap(genotypemap)
-                .outDirectory(outdir)
-                .threshold(factory.getLrThreshold())
-                .mindiff(factory.getMinDifferentials())
-                .symbolsWithOutIds(factory.getSymbolsWithoutGeneIds())
-                .prefix(prefix);
-        if (lrThreshold != null) {
-            builder = builder.threshold(lrThreshold);
-        } else if (minDiff != null) {
-            builder = builder.mindiff(minDiff);
-        }
-        HtmlTemplate htemplate = builder.buildGenoPhenoHtmlTemplate();
-        htemplate.outputFile();
+//                .outDirectory(outdir)
+//                .threshold(factory.getLrThreshold())
+//                .mindiff(factory.getMinDifferentials())
+//                .symbolsWithOutIds(factory.getSymbolsWithoutGeneIds())
+//                .prefix(prefix);
+//        if (lrThreshold != null) {
+//            builder = builder.threshold(lrThreshold);
+//        } else if (minDiff != null) {
+//            builder = builder.mindiff(minDiff);
+//        }
+//        HtmlTemplate htemplate = builder.buildGenoPhenoHtmlTemplate();
+//        htemplate.outputFile();
     }
 
 
     public void outputTsv(String prefix, LrThreshold lrThreshold, MinDiagnosisCount minDiff, Path outdir) {
-        String outname=String.format("%s.tsv",prefix);
-        LiricalTemplate.Builder builder = LiricalTemplate.builder(null,hpocase, null, null, metadata)
+//        String outname=String.format("%s.tsv",prefix);
+//        LiricalTemplate.Builder builder = LiricalTemplate.builder(null, null, hpocase, null, metadata)
 //                .genotypeMap(genotypemap)
-                .outDirectory(outdir)
-                .prefix(prefix);
-        if (lrThreshold != null) {
-            builder = builder.threshold(lrThreshold);
-        } else if (minDiff != null) {
-            builder = builder.mindiff(minDiff);
-        }
-        TsvTemplate tsvtemplate = builder.buildGenoPhenoTsvTemplate();
-        tsvtemplate.outputFile(outname);
+//                .outDirectory(outdir)
+//                .prefix(prefix);
+//        if (lrThreshold != null) {
+//            builder = builder.threshold(lrThreshold);
+//        } else if (minDiff != null) {
+//            builder = builder.mindiff(minDiff);
+//        }
+//        TsvTemplate tsvtemplate = builder.buildGenoPhenoTsvTemplate();
+//        tsvtemplate.outputFile();
+//        tsvtemplate.outputFile(outname);
     }
 
 

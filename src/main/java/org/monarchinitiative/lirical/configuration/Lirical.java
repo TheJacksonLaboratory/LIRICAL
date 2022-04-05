@@ -2,6 +2,7 @@ package org.monarchinitiative.lirical.configuration;
 
 import org.monarchinitiative.lirical.analysis.LiricalAnalysisRunner;
 import org.monarchinitiative.lirical.io.VariantParserFactory;
+import org.monarchinitiative.lirical.output.AnalysisResultWriterFactory;
 import org.monarchinitiative.lirical.service.PhenotypeService;
 
 import java.util.Objects;
@@ -12,19 +13,23 @@ public class Lirical {
     private final VariantParserFactory variantParserFactory; // nullable
     private final PhenotypeService phenotypeService;
     private final LiricalAnalysisRunner analyzer;
+    private final AnalysisResultWriterFactory analysisResultWriterFactory;
 
     public static Lirical of(VariantParserFactory variantParserFactory,
                              PhenotypeService phenotypeService,
-                             LiricalAnalysisRunner analyzer) {
-        return new Lirical(variantParserFactory, phenotypeService, analyzer);
+                             LiricalAnalysisRunner analyzer,
+                             AnalysisResultWriterFactory analysisResultWriterFactory) {
+        return new Lirical(variantParserFactory, phenotypeService, analyzer, analysisResultWriterFactory);
     }
 
     private Lirical(VariantParserFactory variantParserFactory,
                     PhenotypeService phenotypeService,
-                    LiricalAnalysisRunner analyzer) {
+                    LiricalAnalysisRunner analyzer,
+                    AnalysisResultWriterFactory analysisResultWriterFactory) {
         this.variantParserFactory = variantParserFactory;
         this.phenotypeService = Objects.requireNonNull(phenotypeService);
         this.analyzer = Objects.requireNonNull(analyzer);
+        this.analysisResultWriterFactory = Objects.requireNonNull(analysisResultWriterFactory);
     }
 
     public Optional<VariantParserFactory> variantParserFactory() {
@@ -39,4 +44,7 @@ public class Lirical {
         return analyzer;
     }
 
+    public AnalysisResultWriterFactory analysisResultsWriterFactory() {
+        return analysisResultWriterFactory;
+    }
 }

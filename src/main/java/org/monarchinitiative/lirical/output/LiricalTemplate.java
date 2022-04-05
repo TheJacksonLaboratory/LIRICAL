@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.output;
 import com.google.common.collect.ImmutableList;
 import freemarker.template.Configuration;
 import freemarker.template.Version;
+import org.monarchinitiative.lirical.analysis.AnalysisData;
 import org.monarchinitiative.lirical.configuration.*;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.model.HpoCase;
@@ -20,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * This is the superclass for {@link TsvTemplate} and {@link HtmlTemplate}, and provides common methods for
@@ -30,7 +32,7 @@ public abstract class LiricalTemplate {
     private static final Logger logger = LoggerFactory.getLogger(LiricalTemplate.class);
 
     protected final LiricalProperties liricalProperties;
-    private final HpoCase hpoCase;
+    private final AnalysisData analysisData;
     /** Map of data that will be used for the FreeMark template. */
     protected final Map<String, Object> templateData= new HashMap<>();
     /** FreeMarker configuration object. */
@@ -47,35 +49,34 @@ public abstract class LiricalTemplate {
     protected final Map<TermId, Gene2Genotype> geneById;
 
     public LiricalTemplate(LiricalProperties liricalProperties,
-                           HpoCase hpoCase,
                            PhenotypeService phenotypeService,
-                           Map<TermId, Gene2Genotype> geneById,
+                           AnalysisData analysisData,
                            Map<String, String> metadata,
-                           Path outdir,
-                           String prefix) {
+                           OutputOptions outputOptions) {
         this.liricalProperties = Objects.requireNonNull(liricalProperties);
-        this.hpoCase = Objects.requireNonNull(hpoCase);
+        this.analysisData = Objects.requireNonNull(analysisData);
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
-        this.geneById = geneById;
-        this.outputPath = createOutputFile(outdir, prefix, outputFormatString());
-        initTemplateData(hpoCase, phenotypeService.hpo(), metadata);
+        this.geneById = analysisData.genes().genes().collect(Collectors.toMap(g -> g.geneId().id(), Function.identity()));
+        this.outputPath = createOutputFile(outputOptions.outputDirectory(), outputOptions.prefix(), outputFormatString());
+        initTemplateData(analysisData, phenotypeService.hpo(), metadata);
     }
 
-    abstract public void outputFile();
-    abstract public void outputFile(String fname);
+    abstract void outputFile();
 
-    private void initTemplateData(HpoCase hpoCase, Ontology ontology, Map<String,String> metadata) {
+    protected abstract String outputFormatString();
+
+    private void initTemplateData(AnalysisData analysisData, Ontology ontology, Map<String,String> metadata) {
         templateData.putAll(metadata);
         List<String> observedHPOs = new ArrayList<>();
-        for (TermId id:hpoCase.getObservedAbnormalities()) {
+        for (TermId id:analysisData.presentPhenotypeTerms()) {
             Term term = ontology.getTermMap().get(id);
             String tstr = String.format("%s (<a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>)",term.getName(),id.getValue(),id.getValue());
             observedHPOs.add(tstr);
         }
         this.templateData.put("observedHPOs",observedHPOs);
         List<String> excludedHpos = new ArrayList<>();
-        for (TermId id:hpoCase.getExcludedAbnormalities()) {
+        for (TermId id:analysisData.negatedPhenotypeTerms()) {
             Term term = ontology.getTermMap().get(id);
             String tstr = String.format("%s (<a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>)",term.getName(),id.getValue(),id.getValue());
             excludedHpos.add(tstr);
@@ -105,8 +106,6 @@ public abstract class LiricalTemplate {
         return outdir.resolve(String.format(format, prefix));
     }
 
-    protected abstract String outputFormatString();
-
     protected static void mkdirIfNotExist(Path dir) {
         if (Files.exists(dir)) {
             if (Files.isDirectory(dir)) {
@@ -124,102 +123,11 @@ public abstract class LiricalTemplate {
     }
 
     protected Function<LiricalVariant, VisualizableVariant> toVisualizableVariant() {
-        return lv -> new VisualizableVariantDefault(hpoCase.sampleId(), lv, isInPathogenicBin(lv));
+        return lv -> new VisualizableVariantDefault(analysisData.sampleId(), lv, isInPathogenicBin(lv));
     }
 
     private boolean isInPathogenicBin(LiricalVariant lv) {
         return lv.pathogenicity() >= liricalProperties.genotypeLrProperties().pathogenicityThreshold();
     }
-
-    // TODO - should we replace HpoCase with AnalysisData?
-    public static Builder builder(LiricalProperties liricalProperties, HpoCase hpoCase, PhenotypeService phenotypeService, Map<TermId, Gene2Genotype> genesById, Map<String, String> metadata) {
-        return new Builder(liricalProperties, hpoCase, phenotypeService, genesById, metadata);
-    }
-
-    public static class Builder {
-        private final LiricalProperties liricalProperties;
-        private final HpoCase hpoCase;
-        private final PhenotypeService phenotypeService;
-        private final Map<TermId, Gene2Genotype> genesById;
-        private final Map<String,String> metadata;
-        private List<String> errors= ImmutableList.of();
-        private Set<String> symbolsWithoutIds;
-        private LrThreshold thres;
-        private MinDiagnosisCount minDifferentials;
-        String outfileprefix = "lirical";
-        private Path outdir = null;
-
-
-        private Builder(LiricalProperties liricalProperties,
-                        HpoCase hpoCase,
-                        PhenotypeService phenotypeService,
-                        Map<TermId, Gene2Genotype> genesById,
-                        Map<String,String> metadata){
-            this.liricalProperties = liricalProperties;
-            this.hpoCase = hpoCase;
-            this.phenotypeService = phenotypeService;
-            this.genesById = genesById;
-            this.metadata = metadata;
-        }
-
-        public Builder threshold(LrThreshold t) { this.thres=t;return this; }
-        public Builder mindiff(MinDiagnosisCount md){ this.minDifferentials=md; return this; }
-        public Builder prefix(String p){ this.outfileprefix = p; return this; }
-        public Builder outDirectory(Path od){ this.outdir=od; return this; }
-        public Builder errors(List<String> e) { this.errors = e; return this; }
-        public Builder symbolsWithOutIds(Set<String> syms) { this.symbolsWithoutIds = syms; return this; }
-
-        public HtmlTemplate buildPhenotypeHtmlTemplate() {
-            return new HtmlTemplate(liricalProperties,
-                    hpoCase,
-                    phenotypeService,
-                    genesById,
-                    metadata,
-                    thres,
-                    minDifferentials,
-                    outdir,
-                    outfileprefix,
-                    errors,
-                    Set.of());
-        }
-
-        public HtmlTemplate buildGenoPhenoHtmlTemplate() {
-            return new HtmlTemplate(liricalProperties,
-                    hpoCase,
-                    phenotypeService,
-                    genesById,
-                    metadata,
-                    thres,
-                    minDifferentials,
-                    outdir,
-                    outfileprefix,
-                    errors,
-                    symbolsWithoutIds);
-        }
-
-        public TsvTemplate buildPhenotypeTsvTemplate() {
-            return new TsvTemplate(liricalProperties,
-                    hpoCase,
-                    phenotypeService,
-                    genesById,
-                    metadata,
-                    outdir,
-                    outfileprefix);
-        }
-
-        public TsvTemplate buildGenoPhenoTsvTemplate() {
-            return new TsvTemplate(liricalProperties,
-                    hpoCase,
-                    phenotypeService,
-                    genesById,
-                    metadata,
-                    outdir,
-                    outfileprefix);
-
-        }
-
-
-    }
-
 
 }

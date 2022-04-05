@@ -10,6 +10,7 @@ import org.monarchinitiative.lirical.io.vcf.VcfVariantParserFactory;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.model.GenomeBuild;
+import org.monarchinitiative.lirical.output.AnalysisResultWriterFactory;
 import org.monarchinitiative.lirical.service.ExomiserVariantMetadataService;
 import org.monarchinitiative.lirical.service.NoOpVariantMetadataService;
 import org.monarchinitiative.lirical.service.PhenotypeService;
@@ -76,7 +77,9 @@ public class LiricalConfiguration {
         PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(phenotypeService.diseases());
         LiricalAnalysisRunner liricalAnalysisRunner = createLiricalAnalyzer(phenotypeService, pretestDiseaseProbability);
 
-        this.lirical = Lirical.of(variantParserFactory, phenotypeService, liricalAnalysisRunner);
+        AnalysisResultWriterFactory analysisResultWriterFactory = new AnalysisResultWriterFactory(phenotypeService, properties);
+
+        this.lirical = Lirical.of(variantParserFactory, phenotypeService, liricalAnalysisRunner, analysisResultWriterFactory);
     }
 
     private static GenomeAssembly parseExomiserAssembly(GenomeBuild build) {

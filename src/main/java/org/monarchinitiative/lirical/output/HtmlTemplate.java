@@ -2,13 +2,13 @@ package org.monarchinitiative.lirical.output;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import org.monarchinitiative.lirical.analysis.AnalysisData;
 import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.configuration.LiricalProperties;
 import org.monarchinitiative.lirical.configuration.LrThreshold;
 import org.monarchinitiative.lirical.configuration.MinDiagnosisCount;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.model.Gene2Genotype;
-import org.monarchinitiative.lirical.model.HpoCase;
 import org.monarchinitiative.lirical.output.svg.Lr2Svg;
 import org.monarchinitiative.lirical.service.PhenotypeService;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
@@ -18,10 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -55,24 +53,19 @@ public class HtmlTemplate extends LiricalTemplate {
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
      *
-     * @param hpoCase     The individual (case) represented in the VCF file
      * @param metadata    Metadata about the analysis.
-     * @param lrThreshold threshold posterior probability to show differential in detail
      */
     public HtmlTemplate(LiricalProperties liricalProperties,
-                        HpoCase hpoCase,
                         PhenotypeService phenotypeService,
-                        Map<TermId, Gene2Genotype> geneById,
+                        AnalysisData analysisData,
+                        AnalysisResults analysisResults,
                         Map<String, String> metadata,
-                        LrThreshold lrThreshold,
-                        MinDiagnosisCount minDifferentials,
-                        Path outdir,
-                        String prefix,
+                        OutputOptions outputOptions,
                         List<String> errors,
                         Set<String> symbolsWithoutGeneIds) {
-        super(liricalProperties, hpoCase, phenotypeService, geneById, metadata, outdir, prefix);
-        this.lrThreshold = lrThreshold;
-        this.minDiagnosisToShowInDetail = minDifferentials;
+        super(liricalProperties, phenotypeService, analysisData, metadata, outputOptions);
+        this.lrThreshold = outputOptions.lrThreshold();
+        this.minDiagnosisToShowInDetail = outputOptions.minDiagnosisCount();
         this.templateData.put("errorlist", errors);
         this.symbolsWithoutGeneIds = symbolsWithoutGeneIds;
         List<DifferentialDiagnosis> diff = new ArrayList<>();
@@ -82,9 +75,8 @@ public class HtmlTemplate extends LiricalTemplate {
         ClassLoader classLoader = HtmlTemplate.class.getClassLoader();
         cfg.setClassLoaderForTemplateLoading(classLoader, "");
         templateData.put("postprobthreshold", String.format("%.1f%%", 100 * this.lrThreshold.getThreshold()));
-        AnalysisResults results = hpoCase.results();
-        int N = totalDetailedDiagnosesToShow(results);
-        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(results, phenotypeService.diseases(), phenotypeService.hpo(), N);
+        int N = totalDetailedDiagnosesToShow(analysisResults);
+        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(analysisResults, phenotypeService.diseases(), phenotypeService.hpo(), N);
         this.templateData.put("sparkline", sparklinePackets);
         this.templateData.put("hasGenotypes", "true");
         if (symbolsWithoutGeneIds == null || symbolsWithoutGeneIds.isEmpty()) {
@@ -96,7 +88,7 @@ public class HtmlTemplate extends LiricalTemplate {
         Map<TermId, HpoDisease> diseaseById = phenotypeService.diseases().diseaseById();
 
         AtomicInteger rank = new AtomicInteger();
-        results.resultsWithDescendingPostTestProbability().sequential()
+        analysisResults.resultsWithDescendingPostTestProbability().sequential()
                 .forEachOrdered(result -> {
                     int current = rank.incrementAndGet();
 
@@ -120,7 +112,7 @@ public class HtmlTemplate extends LiricalTemplate {
                         String genotypeExplanation = createGenotypeExplanation(genotypeLrOpt.orElse(null), variants.isEmpty());
                         HpoDisease disease = diseaseById.get(result.diseaseId());
                         Lr2Svg lr2svg = new Lr2Svg(result, current, disease.id(), disease.getDiseaseName(), phenotypeService.hpo(), symbol);
-                        DifferentialDiagnosis ddx = new DifferentialDiagnosis(hpoCase.sampleId(),
+                        DifferentialDiagnosis ddx = new DifferentialDiagnosis(analysisData.sampleId(),
                                 disease.id(),
                                 disease.getDiseaseName(),
                                 result,
@@ -175,17 +167,6 @@ public class HtmlTemplate extends LiricalTemplate {
         logger.info("Writing HTML file to {}", outputPath.toAbsolutePath());
         try (BufferedWriter out = Files.newBufferedWriter(outputPath)) {
             Template template = cfg.getTemplate("liricalHTML.ftl");
-            template.process(templateData, out);
-        } catch (TemplateException | IOException te) {
-            logger.warn("Error writing out results {}", te.getMessage(), te);
-        }
-    }
-
-    @Override
-    public void outputFile(String fname) {
-        logger.info("Writing HTML file to {}", fname);
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(fname))) {
-            Template template = cfg.getTemplate("liricalTSV.html");
             template.process(templateData, out);
         } catch (TemplateException | IOException te) {
             logger.warn("Error writing out results {}", te.getMessage(), te);

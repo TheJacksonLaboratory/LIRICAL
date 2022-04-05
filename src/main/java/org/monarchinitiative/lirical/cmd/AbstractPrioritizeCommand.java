@@ -7,20 +7,15 @@ import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.analysis.LiricalAnalysisRunner;
 import org.monarchinitiative.lirical.configuration.*;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
-import org.monarchinitiative.lirical.model.Age;
-import org.monarchinitiative.lirical.model.HpoCase;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.VariantParser;
 import org.monarchinitiative.lirical.io.VariantParserFactory;
-import org.monarchinitiative.lirical.model.Gene2Genotype;
-import org.monarchinitiative.lirical.model.GenesAndGenotypes;
-import org.monarchinitiative.lirical.model.GenomeBuild;
-import org.monarchinitiative.lirical.model.LiricalVariant;
-import org.monarchinitiative.lirical.output.LiricalTemplate;
+import org.monarchinitiative.lirical.model.*;
+import org.monarchinitiative.lirical.output.OutputFormat;
+import org.monarchinitiative.lirical.output.OutputOptions;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
-import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -53,8 +48,9 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
     private static final String LIRICAL_VERSION = PROPERTIES.getProperty("lirical.version", "unknown version");
 
     // ---------------------------------------------- RESOURCES --------------------------------------------------------
-    @CommandLine.ArgGroup(validate = false, heading="Resource paths:%n")
+    @CommandLine.ArgGroup(validate = false, heading = "Resource paths:%n")
     public DataSection dataSection = new DataSection();
+
     public static class DataSection {
         @CommandLine.Option(names = {"-d", "--data"},
                 required = true,
@@ -71,8 +67,9 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
     }
 
     // ---------------------------------------------- CONFIGURATION ----------------------------------------------------
-    @CommandLine.ArgGroup(validate = false, heading="Configuration options:%n")
+    @CommandLine.ArgGroup(validate = false, heading = "Configuration options:%n")
     public RunConfiguration runConfiguration = new RunConfiguration();
+
     public static class RunConfiguration {
         /**
          * If global is set to true, then LIRICAL will not discard candidate diseases with no known disease gene or
@@ -90,7 +87,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
                 description = "Minimal number of differential diagnoses to show.")
         protected Integer minDifferentialsToShow = null;
 
-        @CommandLine.Option(names={"--transcript-db"},
+        @CommandLine.Option(names = {"--transcript-db"},
                 paramLabel = "{REFSEQ,UCSC}",
                 description = "Transcript database (default: ${DEFAULT-VALUE}).")
         protected TranscriptDatabase transcriptDb = TranscriptDatabase.REFSEQ;
@@ -102,20 +99,21 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         @CommandLine.Option(names = {"--strict"},
                 // TODO - add better description
                 description = "Strict mode (default: ${DEFAULT-VALUE}).")
-        private boolean strict = false;
+        private final boolean strict = false;
 
         @CommandLine.Option(names = {"--pathogenicity-threshold"},
                 description = "Variant with pathogenicity score greater than the threshold is considered deleterious (default: ${DEFAULT-VALUE}).")
-        private float pathogenicityThreshold = .8f;
+        private final float pathogenicityThreshold = .8f;
 
         @CommandLine.Option(names = {"--default-allele-frequency"},
                 description = "Variant with pathogenicity score greater than the threshold is considered deleterious (default: ${DEFAULT-VALUE}).")
-        private float defaultAlleleFrequency = 1E-5f;
+        private final float defaultAlleleFrequency = 1E-5f;
     }
 
     // ---------------------------------------------- OUTPUTS ----------------------------------------------------------
-    @CommandLine.ArgGroup(validate = false, heading="Output options:%n")
+    @CommandLine.ArgGroup(validate = false, heading = "Output options:%n")
     public Output output = new Output();
+
     public static class Output {
         @CommandLine.Option(names = {"-o", "--output-directory"},
                 description = "Directory into which to write output (default: ${DEFAULT-VALUE}).")
@@ -133,6 +131,62 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         @CommandLine.Option(names = {"-x", "--prefix"},
                 description = "Prefix of outfile (default: ${DEFAULT-VALUE}).")
         protected String outfilePrefix = "lirical";
+    }
+
+    @Override
+    public Integer call() throws Exception {
+        // 0 - check input
+        int status = checkInput();
+        if (status != 0)
+            return status;
+
+        // 1 - bootstrap the app
+        LOGGER.info("Spooling up Lirical v{}", LIRICAL_VERSION);
+        Optional<GenomeBuild> genomeBuildOptional = GenomeBuild.parse(getGenomeBuild());
+        if (genomeBuildOptional.isEmpty())
+            throw new LiricalDataException("Unknown genome build: '" + getGenomeBuild() + "'");
+
+        LiricalProperties liricalProperties = LiricalProperties.builder(dataSection.liricalDataDirectory)
+                .exomiserDataDirectory(dataSection.exomiserDataDirectory)
+                .genomeAssembly(genomeBuildOptional.get())
+                .backgroundFrequencyFile(dataSection.backgroundFrequencyFile)
+                // CONFIGURATION
+                .diseaseDatabases(runConfiguration.useOrphanet
+                        ? DiseaseDatabase.allKnownDiseaseDatabases()
+                        : Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER))
+                .genotypeLrProperties(runConfiguration.strict, runConfiguration.pathogenicityThreshold)
+                .transcriptDatabase(runConfiguration.transcriptDb)
+                .defaultVariantFrequency(runConfiguration.defaultAlleleFrequency)
+                .build();
+        LiricalConfiguration factory = LiricalConfiguration.of(liricalProperties);
+        Lirical lirical = factory.getLirical();
+
+        // 2 - prepare inputs
+        LOGGER.info("Preparing the analysis data");
+        AnalysisData analysisData = prepareAnalysisData(lirical);
+        if (analysisData.presentPhenotypeTerms().isEmpty() && analysisData.negatedPhenotypeTerms().isEmpty()) {
+            LOGGER.warn("No phenotype terms were provided. Aborting..");
+            return 1;
+        }
+
+        // 3 - run the analysis
+        AnalysisOptions analysisOptions = prepareAnalysisOptions();
+        LOGGER.info("Starting the analysis");
+        LiricalAnalysisRunner analyzer = lirical.analyzer();
+        AnalysisResults results = analyzer.run(analysisData, analysisOptions);
+
+        // 4 - write out the results
+        LOGGER.info("Writing out the results");
+        // TODO - richer metadata
+        Map<String, String> metadata = Map.of("analysis_date", getTodaysDate(),
+                "sample_name", analysisData.sampleId());
+
+        OutputOptions outputOptions = createOutputOptions();
+        lirical.analysisResultsWriterFactory()
+                .getWriter(analysisData, results, metadata)
+                .process(outputOptions);
+
+        return 0;
     }
 
     protected int checkInput() {
@@ -156,78 +210,20 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         return 0;
     }
 
-    @Override
-    public Integer call() throws Exception {
-        // 0. - check input
-        int status = checkInput();
-        if (status != 0)
-            return status;
-
-        // 1. - bootstrap the app
-        LOGGER.info("Spooling up Lirical v{}", LIRICAL_VERSION);
-        Optional<GenomeBuild> genomeBuildOptional = GenomeBuild.parse(getGenomeBuild());
-        if (genomeBuildOptional.isEmpty())
-            throw new LiricalDataException("Unknown genome build: '" + getGenomeBuild() + "'");
-
-        LiricalProperties liricalProperties = LiricalProperties.builder(dataSection.liricalDataDirectory)
-                .exomiserDataDirectory(dataSection.exomiserDataDirectory)
-                .genomeAssembly(genomeBuildOptional.get())
-                .backgroundFrequencyFile(dataSection.backgroundFrequencyFile)
-                // CONFIGURATION
-                .diseaseDatabases(runConfiguration.useOrphanet
-                        ? DiseaseDatabase.allKnownDiseaseDatabases()
-                        : Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER))
-                .genotypeLrProperties(runConfiguration.strict, runConfiguration.pathogenicityThreshold)
-                .transcriptDatabase(runConfiguration.transcriptDb)
-                .defaultVariantFrequency(runConfiguration.defaultAlleleFrequency)
-                .build();
-        LiricalConfiguration factory = LiricalConfiguration.of(liricalProperties);
-        Lirical lirical = factory.getLirical();
-
-        LOGGER.info("Preparing the analysis data");
-        AnalysisData analysisData = prepareAnalysisData(lirical);
-        if (analysisData.presentPhenotypeTerms().isEmpty() && analysisData.negatedPhenotypeTerms().isEmpty()) {
-            LOGGER.warn("No phenotype terms were provided. Aborting..");
-            return 1;
-        }
-
-        AnalysisOptions analysisOptions = prepareAnalysisOptions();
-        LOGGER.info("Starting the analysis");
-        LiricalAnalysisRunner analyzer = lirical.analyzer();
-        AnalysisResults results = analyzer.run(analysisData, analysisOptions);
-
-        // TODO - Do we need HpoCase or we can get along with AnalysisData and pass it along
-        LOGGER.info("Writing out the results");
-        HpoCase hpoCase = new HpoCase.Builder(analysisData.sampleId(), analysisData.presentPhenotypeTerms())
-                .excluded(analysisData.negatedPhenotypeTerms())
-                .age(analysisData.age())
-                .sex(analysisData.sex())
-                .results(results)
-                .build();
-
-        // TODO - richer metadata
-        Map<String, String> metadata = Map.of("analysis_date", getTodaysDate(),
-                "sample_name", analysisData.sampleId());
-        Map<TermId, Gene2Genotype> geneById = analysisData.genes().genes()
-                .collect(Collectors.toMap(g -> g.geneId().id(), Function.identity()));
-        LiricalTemplate.builder(liricalProperties, hpoCase, lirical.phenotypeService(), geneById, metadata)
-                .outDirectory(output.outdir)
-                .prefix(output.outfilePrefix)
-                .threshold(runConfiguration.lrThreshold == null ? LrThreshold.notInitialized() : LrThreshold.setToUserDefinedThreshold(runConfiguration.lrThreshold))
-                .mindiff(runConfiguration.minDifferentialsToShow == null ? MinDiagnosisCount.notInitialized() : MinDiagnosisCount.setToUserDefinedMinCount(runConfiguration.minDifferentialsToShow))
-                .buildPhenotypeHtmlTemplate()
-                .outputFile();
-
-        return 0;
-    }
-
     protected abstract String getGenomeBuild();
+
     protected abstract AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException;
 
     protected AnalysisOptions prepareAnalysisOptions() {
         return new AnalysisOptions(runConfiguration.globalAnalysisMode);
     }
 
+    protected OutputOptions createOutputOptions() {
+        LrThreshold lrThreshold = runConfiguration.lrThreshold == null ? LrThreshold.notInitialized() : LrThreshold.setToUserDefinedThreshold(runConfiguration.lrThreshold);
+        MinDiagnosisCount minDiagnosisCount = runConfiguration.minDifferentialsToShow == null ? MinDiagnosisCount.notInitialized() : MinDiagnosisCount.setToUserDefinedMinCount(runConfiguration.minDifferentialsToShow);
+        List<OutputFormat> outputFormats = parseOutputFormats(output.outputFormats);
+        return new OutputOptions(lrThreshold, minDiagnosisCount, output.outdir, output.outfilePrefix, outputFormats);
+    }
 
     protected static Age parseAge(String age) {
         if (age == null) {
@@ -322,4 +318,24 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         Date date = new Date();
         return dateFormat.format(date);
     }
+
+    private List<OutputFormat> parseOutputFormats(String outputFormats) {
+        return Arrays.stream(outputFormats.split(","))
+                .map(String::trim)
+                .map(toOutputFormat())
+                .flatMap(Optional::stream)
+                .toList();
+    }
+
+    private static Function<String, Optional<OutputFormat>> toOutputFormat() {
+        return payload -> switch (payload.toUpperCase()) {
+            case "HTML" -> Optional.of(OutputFormat.HTML);
+            case "TSV" -> Optional.of(OutputFormat.TSV);
+            default -> {
+                LOGGER.warn("Unknown output format {}", payload);
+                yield Optional.empty();
+            }
+        };
+    }
+
 }

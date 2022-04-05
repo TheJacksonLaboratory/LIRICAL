@@ -98,25 +98,26 @@ public class PhenoOnlyCaseSimulator {
 
 
     public void outputHtml(String prefix, double lrThreshold,int minDiff, Path outdir) {
-        LiricalTemplate.Builder builder = LiricalTemplate.builder(null,hpocase,null, null, metadata)
-                .threshold(factory.getLrThreshold())
-                .mindiff(factory.getMinDifferentials())
-                .outDirectory(outdir)
-                .prefix(prefix);
-        HtmlTemplate htemplate = builder.buildPhenotypeHtmlTemplate();
-        htemplate.outputFile();
+//        LiricalTemplate.Builder builder = LiricalTemplate.builder(null, null, hpocase, null, metadata)
+//                .threshold(factory.getLrThreshold())
+//                .mindiff(factory.getMinDifferentials())
+//                .outDirectory(outdir)
+//                .prefix(prefix);
+//        HtmlTemplate htemplate = builder.buildPhenotypeHtmlTemplate();
+//        htemplate.outputFile();
     }
 
 
     public void outputTsv(String prefix, double lrThreshold,int minDiff, Path outdir) {
-        String outname=String.format("%s.tsv",prefix);
-        LiricalTemplate.Builder builder = LiricalTemplate.builder(null,hpocase,null, null, metadata)
-                .threshold(factory.getLrThreshold())
-                .mindiff(factory.getMinDifferentials())
-                .outDirectory(outdir)
-                .prefix(prefix);
-        TsvTemplate tsvtemplate = builder.buildPhenotypeTsvTemplate();
-        tsvtemplate.outputFile(outname);
+//        String outname=String.format("%s.tsv",prefix);
+//        LiricalTemplate.Builder builder = LiricalTemplate.builder(null, null, hpocase, null, metadata)
+//                .threshold(factory.getLrThreshold())
+//                .mindiff(factory.getMinDifferentials())
+//                .outDirectory(outdir)
+//                .prefix(prefix);
+//        TsvTemplate tsvtemplate = builder.buildTsvTemplate();
+//        tsvtemplate.outputFile(outname);
+//        tsvtemplate.outputFile();
 
     }
 
