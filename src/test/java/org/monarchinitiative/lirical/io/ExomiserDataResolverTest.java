@@ -1,8 +1,10 @@
 package org.monarchinitiative.lirical.io;
 
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lirical.TestResources;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
+import org.monarchinitiative.lirical.model.GenomeBuild;
 
 import java.nio.file.Path;
 
@@ -21,6 +23,9 @@ public class ExomiserDataResolverTest {
 
         assertThat(resolver.version(), equalTo("1710"));
         assertThat(resolver.assembly(), equalTo("hg38"));
+        assertThat(resolver.genomeBuild().isPresent(), equalTo(true));
+        assertThat(resolver.genomeBuild().get(), equalTo(GenomeBuild.HG38));
+
         assertThat(resolver.mvStorePath(), equalTo(dataDirectory.resolve("1710_hg38_variants.mv.db")));
         assertThat(resolver.refseqTranscriptCache(), equalTo(dataDirectory.resolve("1710_hg38_transcripts_refseq.ser")));
         assertThat(resolver.ucscTranscriptCache(), equalTo(dataDirectory.resolve("1710_hg38_transcripts_ucsc.ser")));
@@ -28,7 +33,7 @@ public class ExomiserDataResolverTest {
 
     @Test
     public void missingMvStoreFileThrowsException() {
-        LiricalRuntimeException e = assertThrows(LiricalRuntimeException.class, () -> ExomiserDataResolver.of(TestResources.TEST_BASE));
+        LiricalDataException e = assertThrows(LiricalDataException.class, () -> ExomiserDataResolver.of(TestResources.TEST_BASE));
 
         assertThat(e.getMessage(), containsString("Did not find Exomiser MV store file in"));
     }

@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.io;
 
-import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
+import org.monarchinitiative.lirical.model.GenomeBuild;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +38,7 @@ public class ExomiserDataResolver {
                     .filter(Matcher::matches)
                     .findFirst();
             if (mvStoreMatcherOptional.isEmpty())
-                throw new LiricalRuntimeException(String.format("Did not find Exomiser MV store file in `%s`", exomiserDataDirectory.toAbsolutePath()));
+                throw new LiricalDataException(String.format("Did not find Exomiser MV store file in `%s`", exomiserDataDirectory.toAbsolutePath()));
             Matcher matcher = mvStoreMatcherOptional.get();
             version = matcher.group("version");
             assembly = matcher.group("assembly");
@@ -58,7 +58,15 @@ public class ExomiserDataResolver {
         return assembly;
     }
 
-    private void checkAllResourcesArePresent() {
+    public Optional<GenomeBuild> genomeBuild() {
+        return switch (assembly.toUpperCase()) {
+            case "HG19" -> Optional.of(GenomeBuild.HG19);
+            case "HG38" -> Optional.of(GenomeBuild.HG38);
+            default -> Optional.empty();
+        };
+    }
+
+    private void checkAllResourcesArePresent() throws LiricalDataException {
         List<Path> required = List.of(mvStorePath(), refseqTranscriptCache(), ucscTranscriptCache());
         boolean error = false;
         for (Path path : required) {
@@ -68,7 +76,7 @@ public class ExomiserDataResolver {
             }
         }
         if (error)
-            throw new LiricalRuntimeException("One or more Exomiser resource files is missing in " + exomiserDataDirectory.toAbsolutePath());
+            throw new LiricalDataException("One or more Exomiser resource files is missing in " + exomiserDataDirectory.toAbsolutePath());
     }
 
     public Path mvStorePath() {

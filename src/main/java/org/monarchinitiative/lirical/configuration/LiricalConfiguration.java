@@ -111,6 +111,13 @@ public class LiricalConfiguration {
         Optional<Path> exomiserDataDirectory = properties.exomiserDataDirectory();
         if (exomiserDataDirectory.isPresent()) {
             ExomiserDataResolver resolver = ExomiserDataResolver.of(exomiserDataDirectory.get());
+            Optional<GenomeBuild> buildOptional = resolver.genomeBuild();
+            if (buildOptional.isPresent()) {
+                GenomeBuild build = buildOptional.get();
+                if (!build.equals(properties.genomeBuild()))
+                    LOGGER.warn("Genome build mismatch between the indicated genome build ({}) and genome build of the Exomiser resources ({})",
+                            properties.genomeBuild(), build);
+            }
             return ExomiserVariantMetadataService.of(resolver.mvStorePath(), resolver.refseqTranscriptCache(), assembly, options);
         } else {
             LOGGER.info("Exomiser data directory is not available, variant data will not be used");
