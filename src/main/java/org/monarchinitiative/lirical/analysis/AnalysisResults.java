@@ -1,6 +1,5 @@
 package org.monarchinitiative.lirical.analysis;
 
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.Comparator;
@@ -9,6 +8,9 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+/**
+ * A container for the likelihood ratio test results.
+ */
 public interface AnalysisResults extends Iterable<TestResult> {
 
     static AnalysisResults empty() {

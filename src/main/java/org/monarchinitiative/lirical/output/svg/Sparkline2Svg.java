@@ -3,7 +3,7 @@ package org.monarchinitiative.lirical.output.svg;
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
+import org.monarchinitiative.lirical.analysis.TestResult;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;

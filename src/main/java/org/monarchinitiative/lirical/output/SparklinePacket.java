@@ -3,7 +3,7 @@ package org.monarchinitiative.lirical.output;
 
 import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
+import org.monarchinitiative.lirical.analysis.TestResult;
 import org.monarchinitiative.lirical.output.svg.Sparkline2Svg;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;

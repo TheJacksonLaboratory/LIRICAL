@@ -2,7 +2,7 @@ package org.monarchinitiative.lirical.model;
 
 
 import org.monarchinitiative.lirical.analysis.AnalysisResults;
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
+import org.monarchinitiative.lirical.analysis.TestResult;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

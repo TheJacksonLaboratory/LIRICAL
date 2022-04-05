@@ -1,6 +1,8 @@
-package org.monarchinitiative.lirical.likelihoodratio;
+package org.monarchinitiative.lirical.analysis;
 
 
+import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
+import org.monarchinitiative.lirical.likelihoodratio.LrWithExplanation;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;

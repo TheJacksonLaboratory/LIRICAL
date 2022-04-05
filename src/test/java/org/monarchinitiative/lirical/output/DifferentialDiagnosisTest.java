@@ -3,7 +3,7 @@ package org.monarchinitiative.lirical.output;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
+import org.monarchinitiative.lirical.analysis.TestResult;
 import org.monarchinitiative.lirical.model.GenomeBuild;
 import org.monarchinitiative.lirical.model.GenotypedVariant;
 import org.monarchinitiative.lirical.model.LiricalVariant;

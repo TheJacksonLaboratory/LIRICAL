@@ -1,6 +1,5 @@
 package org.monarchinitiative.lirical.analysis;
 
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.*;

@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.output;
 
 import org.monarchinitiative.lirical.likelihoodratio.GenotypeLrWithExplanation;
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
+import org.monarchinitiative.lirical.analysis.TestResult;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 

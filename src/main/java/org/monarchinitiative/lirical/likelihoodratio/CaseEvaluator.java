@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.monarchinitiative.lirical.analysis.Gene2Genotype;
 import org.monarchinitiative.lirical.analysis.LiricalAnalysisRunner;
+import org.monarchinitiative.lirical.analysis.TestResult;
 import org.monarchinitiative.lirical.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.model.HpoCase;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;

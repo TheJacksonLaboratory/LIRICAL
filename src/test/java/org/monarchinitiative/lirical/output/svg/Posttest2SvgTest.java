@@ -9,7 +9,7 @@ import org.monarchinitiative.lirical.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.likelihoodratio.LrMatchType;
 import org.monarchinitiative.lirical.likelihoodratio.LrWithExplanation;
 import org.monarchinitiative.lirical.likelihoodratio.LrWithExplanationFactory;
-import org.monarchinitiative.lirical.likelihoodratio.TestResult;
+import org.monarchinitiative.lirical.analysis.TestResult;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
