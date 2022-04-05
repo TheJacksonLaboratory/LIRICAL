@@ -10,11 +10,13 @@ import java.util.stream.StreamSupport;
 public interface GenesAndGenotypes extends Iterable<Gene2Genotype> {
 
     static GenesAndGenotypes empty() {
-        return GenesAndGenotypesEmpty.instance();
+        return GenesAndGenotypesDefault.empty();
     }
 
     static GenesAndGenotypes of(List<Gene2Genotype> genes) {
-        return new GenesAndGenotypesDefault(genes);
+        return genes.isEmpty()
+                ? empty()
+                : GenesAndGenotypesDefault.of(genes);
     }
 
     /**

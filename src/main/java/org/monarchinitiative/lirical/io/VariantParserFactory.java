@@ -10,7 +10,8 @@ public interface VariantParserFactory {
     GenomicAssembly genomicAssembly();
 
     default GenomeBuild genomeBuild() {
-        return GenomeBuild.parse(genomicAssembly().name()).orElseThrow(() -> new IllegalArgumentException("Unknown genomic assembly '" + genomicAssembly().name()+  '\''));
+        return GenomeBuild.parse(genomicAssembly().name())
+                .orElseThrow(() -> new IllegalArgumentException("Unknown genomic assembly '" + genomicAssembly().name()+  '\''));
     }
 
     VariantParser forPath(Path variantResource);

@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.io;
+package org.monarchinitiative.lirical.service;
 
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;

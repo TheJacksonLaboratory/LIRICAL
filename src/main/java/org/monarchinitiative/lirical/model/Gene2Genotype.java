@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 public interface Gene2Genotype extends Identified {
 
     static Gene2Genotype of(GeneIdentifier id, Collection<LiricalVariant> variants) {
-        return Gene2GenotypeImpl.of(id, variants);
+        return Gene2GenotypeDefault.of(id, variants);
     }
 
     @Override
