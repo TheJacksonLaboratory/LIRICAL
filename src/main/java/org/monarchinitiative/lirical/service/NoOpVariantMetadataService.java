@@ -3,6 +3,9 @@ package org.monarchinitiative.lirical.service;
 import org.monarchinitiative.lirical.model.VariantMetadata;
 import org.monarchinitiative.svart.GenomicVariant;
 
+/**
+ * A {@link VariantMetadataService} implementation used when the variant data is not available.
+ */
 public class NoOpVariantMetadataService implements VariantMetadataService {
 
     private static final NoOpVariantMetadataService INSTANCE = new NoOpVariantMetadataService();

@@ -35,6 +35,9 @@ public interface VariantMetadata {
 
     ClinvarClnSig clinvarClnSig();
 
+    /**
+     * @return list of functional variant annotations.
+     */
     List<TranscriptAnnotation> annotations();
 
     /**

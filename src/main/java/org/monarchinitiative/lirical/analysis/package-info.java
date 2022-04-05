@@ -1,2 +1,4 @@
-/** Classes for coordinating the main analysis goals of LR2PG. */
+/**
+ * Classes for coordinating the main Lirical analysis goals.
+ */
 package org.monarchinitiative.lirical.analysis;
