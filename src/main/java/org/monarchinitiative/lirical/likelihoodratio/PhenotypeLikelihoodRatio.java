@@ -1,9 +1,9 @@
 package org.monarchinitiative.lirical.likelihoodratio;
 
 
-import org.monarchinitiative.lirical.model.HpoCase;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -11,19 +11,19 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.*;
-
 /**
  * This class is designed to calculate the background and foreground frequencies of any HPO term in any disease
  * (This is calculated by {@link #initializeFrequencyMap()} and stored in {@link #hpoTerm2OverallFrequency}).
  * The main entry point into this class is the function {@link #lrForObservedTerm}, which is called by
- * {@link HpoCase} once for each HPO term to which the case is annotation; it calls it once for each disease in our
+ * {@link org.monarchinitiative.lirical.analysis.LiricalAnalysisRunner} once for each HPO term
+ * to which the case is annotation; it calls it once for each disease in our
  * database and calculates the likelihood ratio for each HPO term in the query for each of the diseases.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 // TODO - should be an interface
 public class PhenotypeLikelihoodRatio {
     private static final Logger logger = LoggerFactory.getLogger(PhenotypeLikelihoodRatio.class);
+    // TODO - the constants below should be parameters?
     /**
      * The default probability for an HPO term annotating a disease if we cannot find in the dataset.
      */
@@ -32,6 +32,7 @@ public class PhenotypeLikelihoodRatio {
     private static final double EXCLUDED_IN_DISEASE_BUT_PRESENT_IN_QUERY_PROBABILITY = 1.0/1000;
     /** The default likelihood ratio for an excluded query term that is explicitly excluded in a disease.*/
     private static final double EXCLUDED_IN_DISEASE_AND_EXCLUDED_IN_QUERY_PROBABILITY = 1000.0;
+    private static final double FALSE_NEGATIVE_OBSERVATION_OF_PHENOTYPE_PROB = 0.01;
     /** The HPO ontology with all of its subontologies. */
     private final Ontology ontology;
     /** This map has one entry for each disease in our database. Key--the disease ID, e.g., OMIM:600200.*/
@@ -72,18 +73,18 @@ public class PhenotypeLikelihoodRatio {
      */
     public LrWithExplanation lrForObservedTerm(TermId queryTid, InducedDiseaseGraph idg) {
         HpoDisease disease = idg.getDisease();
-        Set<TermId> queryAncestors = getAncestorTerms(ontology,queryTid,true);
+        Set<TermId> queryAncestors = OntologyAlgorithm.getAncestorTerms(ontology,queryTid,true);
         List<TermId> diseaseExcludedTerms = disease.getNegativeAnnotations();
-        if (!diseaseExcludedTerms.isEmpty()) {
-            for (TermId excl : diseaseExcludedTerms) {
-                if (queryAncestors.contains(excl)) {
-                    // i.e., the query term is explicitly EXCLUDED in the disease definition
-                    return explanationFactory.create(queryTid,
-                            LrMatchType.QUERY_TERM_PRESENT_BUT_EXCLUDED_IN_DISEASE,
-                            EXCLUDED_IN_DISEASE_BUT_PRESENT_IN_QUERY_PROBABILITY);
-                }
+
+        for (TermId excl : diseaseExcludedTerms) {
+            if (queryAncestors.contains(excl)) {
+                // i.e., the query term is explicitly EXCLUDED in the disease definition
+                return explanationFactory.create(queryTid,
+                        LrMatchType.QUERY_TERM_PRESENT_BUT_EXCLUDED_IN_DISEASE,
+                        EXCLUDED_IN_DISEASE_BUT_PRESENT_IN_QUERY_PROBABILITY);
             }
         }
+
         if (disease.isDirectlyAnnotatedTo(queryTid)) {
             HpoAnnotation hpoTid = disease.getAnnotation(queryTid);
             double numerator = hpoTid.getFrequency();
@@ -101,7 +102,7 @@ public class PhenotypeLikelihoodRatio {
             TermId diseaseMatchingTerm=null;
             for (HpoAnnotation hpoTermId : disease.getPhenotypicAbnormalities()) {
                 // is query an ancestor of a term that annotates the disease?
-                if (isSubclass(ontology,hpoTermId.id(),queryTid)) {
+                if (OntologyAlgorithm.isSubclass(ontology,hpoTermId.id(),queryTid)) {
                     maximumFrequencyOfDescendantTerm=Math.max(maximumFrequencyOfDescendantTerm,hpoTermId.getFrequency());
                     diseaseMatchingTerm=hpoTermId.id();
                     isAncestor=true;
@@ -130,7 +131,7 @@ public class PhenotypeLikelihoodRatio {
             TermId bestMatchTermId = null;
             double denominatorForNonRootCommandAnc = getBackgroundFrequency(queryTid);
             for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
-                if (isSubclass(ontology, queryTid, annot.id())){
+                if (OntologyAlgorithm.isSubclass(ontology, queryTid, annot.id())){
                     double proportionalFrequency = getProportionInChildren(queryTid,annot.id());
                     double queryFrequency = annot.getFrequency();
                     double f = proportionalFrequency*queryFrequency;
@@ -180,7 +181,6 @@ public class PhenotypeLikelihoodRatio {
         }
         double backgroundFrequency=getBackgroundFrequency(queryTid);
         // probability a feature is present but not recorded or not noticed.
-        final double FALSE_NEGATIVE_OBSERVATION_OF_PHENOTYPE_PROB=0.01;
         if (backgroundFrequency>0.99) {
             logger.error("Warning, unusually high background frequency calculated for {} of {} (should never happen)",
                     backgroundFrequency,queryTid.getValue());
@@ -222,21 +222,19 @@ public class PhenotypeLikelihoodRatio {
     /**
      * Get the frequency of a term in the disease. This includes if any disease term is an ancestor of the
      * query term -- we take the maximum of any ancestor term.
-     * @param queryTid Term ID of an HPO term whose frequency we want to know
+     * @param query Term ID of an HPO term whose frequency we want to know
      * @param disease The disease in which we want to know the frequency of tid
      * @param ontology Reference to the HPO ontology
      * @return frequency of the term in the disease (including annotation propagation)
      */
-    private double getFrequencyOfTermInDiseaseWithAnnotationPropagation(TermId queryTid, HpoDisease disease, Ontology ontology) {
-        double freq=0.0;
+    private static double getFrequencyOfTermInDiseaseWithAnnotationPropagation(TermId query, HpoDisease disease, Ontology ontology) {
+        double maxFrequency = 0.0;
         for (TermId diseaseTermId :  disease.getPhenotypicAbnormalityTermIdList() ) {
-            Set<TermId> ancs = ontology.getAncestorTermIds(diseaseTermId,true);
-            if (ancs.contains(queryTid)) {
-                double f = disease.getFrequencyOfTermInDisease(diseaseTermId);
-                freq = Math.max(f,freq);
-            }
+            Set<TermId> ancestors = ontology.getAncestorTermIds(diseaseTermId,true);
+            if (ancestors.contains(query))
+                maxFrequency = Math.max(maxFrequency, disease.getFrequencyOfTermInDisease(diseaseTermId));
         }
-        return freq;
+        return maxFrequency;
     }
 
     /** The intuition is that a patient has been observed to have a phenotype to which the disease
@@ -274,11 +272,11 @@ public class PhenotypeLikelihoodRatio {
         if (queryTid.getId().equals(diseaseTid.getId())) {
             return 1.0;
         }
-        Set<TermId> directChildren= getChildTerms(ontology,diseaseTid,false);
+        Set<TermId> directChildren= OntologyAlgorithm.getChildTerms(ontology,diseaseTid,false);
         if (directChildren.isEmpty()) {
             return 0.0;
         }     
-        double f=0.0;
+
         for (TermId tid : directChildren) {
             if (queryTid.equals(tid)) {
                 return 1.0/(double)directChildren.size();
@@ -328,7 +326,7 @@ public class PhenotypeLikelihoodRatio {
                 // therefore, add this to their background frequencies.
                 // Note we also include the original term here (third arg: true)
                 tid=ontology.getPrimaryTermId(tid);
-                Set<TermId> ancs = getAncestorTerms(ontology,tid,true);
+                Set<TermId> ancs = OntologyAlgorithm.getAncestorTerms(ontology,tid,true);
                 for (TermId at : ancs) {
                     updateMap.putIfAbsent(at,termFrequency);
                     // put the maximum frequency for this term given it is

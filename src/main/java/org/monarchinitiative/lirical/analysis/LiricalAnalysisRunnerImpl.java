@@ -87,7 +87,10 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         List<LrWithExplanation> excluded = excludedPhenotypesLikelihoodRatios(excludedTerms, idg);
 
         GenotypeLrWithExplanation bestGenotypeLr;
-        if (!diseaseToGenotype.isEmpty()) { // We're using the genotype data
+        if (diseaseToGenotype.isEmpty()) {
+            // phenotype only
+            bestGenotypeLr = null;
+        } else { // We're using the genotype data
             Optional<GenotypeLrWithExplanation> bestGenotype = genotypes.stream()
                     .map(g2g -> genotypeLikelihoodRatio.evaluateGenotype(sampleId, g2g, disease.getModesOfInheritance()))
                     .max(Comparator.comparingDouble(GenotypeLrWithExplanation::lr));
@@ -95,7 +98,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
                 // This is a disease with no known disease gene.
                 if (options.useGlobal()) {
                     // If useGlobal is true then the user wants to keep differentials with no associated gene.
-                    // We create the TestResult based solely on the Phenotype data.
+                    // We create the TestResult based solely on the Phenotype data below.
                     bestGenotypeLr = null;
                 } else {
                     // If useGlobal is false, we skip this differential because there is no associated gene
@@ -104,9 +107,6 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
             } else {
                 bestGenotypeLr = bestGenotype.get();
             }
-        } else {
-            // phenotype only
-            bestGenotypeLr = null;
         }
 
         return Optional.of(TestResult.of(disease.id(), pretestProbability, observed, excluded, bestGenotypeLr));

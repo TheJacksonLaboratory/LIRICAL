@@ -1,7 +1,6 @@
 package org.monarchinitiative.lirical.likelihoodratio;
 
 
-import org.monarchinitiative.lirical.model.HpoCase;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;
@@ -11,7 +10,8 @@ import java.util.stream.Collectors;
 
 /**
  * This class organizes information about the result of a test. The class is intended to be used together
- * with the class {@link HpoCase}, which contains lists of observed and excluded HPO terms. For each
+ * with the class {@link org.monarchinitiative.lirical.analysis.AnalysisData}, which contains lists
+ * of observed and excluded HPO terms. For each
  * disease in the database, the likelihood ratios of these phenotypes is calculated, and the result
  * for each disease is stored in an object of this class.
  * This object can include the result of a likelihood ratio for a genotype test. However,
@@ -39,7 +39,8 @@ public class TestResult implements Comparable<TestResult> {
      */
     private final List<LrWithExplanation> excludedResults;
     /**
-     * Gene id and the result of the likelhood ratio test for the genotype.
+     * Gene id and the result of the likelihood ratio test for the genotype.
+     * Null if there is no known gene for the disease.
      */
     private final GenotypeLrWithExplanation genotypeLr;
     /**
@@ -124,16 +125,15 @@ public class TestResult implements Comparable<TestResult> {
     /**
      * @return the pretest odds.
      */
-    public double pretestodds() {
+    public double pretestOdds() {
         return pretestProbability / (1.0 - pretestProbability);
     }
 
     /**
      * @return the post-test odds.
      */
-    public double posttestodds() {
-        double pretestodds = pretestodds();
-        return pretestodds * getCompositeLR();
+    public double posttestOdds() {
+        return pretestOdds() * getCompositeLR();
     }
 
 
@@ -142,7 +142,7 @@ public class TestResult implements Comparable<TestResult> {
     }
 
     private double calculatePosttestProbability() {
-        double po = posttestodds();
+        double po = posttestOdds();
         return po / (1 + po);
     }
 

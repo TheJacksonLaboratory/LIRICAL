@@ -82,11 +82,11 @@ public class TestResultTest {
         //pretest odds = pretest probability / (1-pretest probability)
         // pretest odds are 0.025/0.975=0.02564103
         double expectedPretestOdds = 0.02564103;
-        assertEquals(expectedPretestOdds, tresult.pretestodds(), EPSILON);
+        assertEquals(expectedPretestOdds, tresult.pretestOdds(), EPSILON);
         //Posttest odds = pretest odds * LR
         //20*0.02564103 =0.5128206
         double expectedPosttestOdds = 0.5128206;
-        assertEquals(expectedPosttestOdds, tresult.posttestodds(), EPSILON);
+        assertEquals(expectedPosttestOdds, tresult.posttestOdds(), EPSILON);
         //Posttest probability = posttest odds / (posttest odds+1)
         //0.3389831
         double expectedPosttestProb = 0.3389831;
@@ -109,7 +109,7 @@ public class TestResultTest {
         // the pretest odds are the same as with the first test because they are based only on
         // the population prevalence.
         double expectedPretestOdds = 0.02564103;
-        assertEquals(expectedPretestOdds, tresult.pretestodds(), EPSILON);
+        assertEquals(expectedPretestOdds, tresult.pretestOdds(), EPSILON);
         //Positive LR of IOP: = sensitivity / 1- specificity =
         // //0.5/ 100 − 92 = 0.5 /.08 = 6.25
         double expected = 6.25 * 20;  // LR is product of LRs of individual tests
@@ -133,11 +133,11 @@ public class TestResultTest {
         tresult = TestResult.of(glaucoma.id(), prevalence, lr1, List.of(), null);
          //PretestOdds = pretest prob / (1-pretest prob) = 0.95 / 0.05 = 19.0
         double expectedPretestOdds = 0.0256410;
-        assertEquals(expectedPretestOdds, tresult.pretestodds(), EPSILON);
+        assertEquals(expectedPretestOdds, tresult.pretestOdds(), EPSILON);
 
         //PosttestOdds = PrestestOdds * Compositelikelihoodratio = 0.03 * 6.25 * 20 * 20
         double expected = 64.102564;
-        assertEquals(expected, tresult.posttestodds(), EPSILON);
+        assertEquals(expected, tresult.posttestOdds(), EPSILON);
 
         //PosttestProb = PosttestOdds / (1+ PosttestOdds)
         double ptodds=expected;
