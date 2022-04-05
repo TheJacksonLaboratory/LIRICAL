@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
  * It provides functions that can be used to calculate the genotype likelihood ratio.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
+@Deprecated(forRemoval = true)
 public class Gene2Genotype {
 
 
