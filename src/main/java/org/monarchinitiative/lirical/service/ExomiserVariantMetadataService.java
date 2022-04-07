@@ -30,15 +30,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.List;
+import java.util.*;
 
-public class ExomiserVariantMetadataService implements VariantMetadataService {
+/**
+ * Implementation of {@link VariantMetadataService} that is backed by Exomiser resources and uses {@link MVMap}.
+ */
+public class ExomiserVariantMetadataService implements VariantMetadataService, VariantFrequencyService, VariantPathogenicityService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExomiserVariantMetadataService.class);
 
-    /**
-     * A map with data from the Exomiser database.
-     */
+    // Note: Repeated retrieval of AlleleProperties from MVMap will hopefully not pose a huge performance issue
+    // since MVMap uses caching (16MB, 16 segments) by default.
+    /** Cache size in MB. */
+    private static final int CACHE_SIZE = 16;
+
+    /** A map with data from the Exomiser database. */
     private final MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap;
     private final JannovarVariantAnnotator variantAnnotator;
     private final Options options;
@@ -62,6 +68,7 @@ public class ExomiserVariantMetadataService implements VariantMetadataService {
     public static ExomiserVariantMetadataService of(MVStore mvStore,
                                                     JannovarVariantAnnotator variantAnnotator,
                                                     Options options) {
+        mvStore.setCacheSize(CACHE_SIZE); // ensure the cache size
         return new ExomiserVariantMetadataService(mvStore, variantAnnotator, options);
     }
 
@@ -79,7 +86,7 @@ public class ExomiserVariantMetadataService implements VariantMetadataService {
         }
     }
 
-    public ExomiserVariantMetadataService(MVStore mvStore,
+    private ExomiserVariantMetadataService(MVStore mvStore,
                                           JannovarVariantAnnotator variantAnnotator,
                                           Options options) {
         this.alleleMap = MvStoreUtil.openAlleleMVMap(mvStore);
@@ -89,41 +96,79 @@ public class ExomiserVariantMetadataService implements VariantMetadataService {
 
     @Override
     public VariantMetadata metadata(GenomicVariant variant) {
-        int pos = variant.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.oneBased());
+        VariantAnnotation annotation = calculateVariantAnnotation(variant);
 
-        VariantAnnotation annotation = variantAnnotator.annotate(variant.contigName(), pos, variant.ref(), variant.alt());
+        AlleleProto.AlleleProperties alleleProp = getAlleleProperties(variant);
 
-        AlleleProto.AlleleKey alleleKey = createAlleleKey(variant);
-        AlleleProto.AlleleProperties alleleProp = alleleMap.get(alleleKey);
-
-        float variantEffectPathogenicity = VariantEffectPathogenicityScore.getPathogenicityScoreOf(annotation.getVariantEffect());
         float frequency;
         float pathogenicity;
         ClinvarClnSig clinvarClnSig;
         if (alleleProp == null) {
             frequency = options.defaultFrequency();
-            pathogenicity = variantEffectPathogenicity;
+            pathogenicity = VariantEffectPathogenicityScore.getPathogenicityScoreOf(annotation.getVariantEffect());
             clinvarClnSig = ClinvarClnSig.NOT_PROVIDED;
         } else {
             FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
             frequency = frequencyData.getMaxFreq();
 
             PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);
-            pathogenicity = calculatePathogenicity(annotation.getVariantEffect(), pathogenicityData, variantEffectPathogenicity);
-            ClinVarData cVarData = pathogenicityData.getClinVarData();
-            // Only use ClinVar data if it is backed up by assertions.
-            if (cVarData.getReviewStatus().startsWith("no_assertion")) {
-                clinvarClnSig = ClinvarClnSig.NOT_PROVIDED;
-            } else {
-                ClinVarData.ClinSig primaryInterpretation = cVarData.getPrimaryInterpretation();
-                clinvarClnSig = mapToClinvarClnSig(primaryInterpretation);
-            }
+            pathogenicity = calculatePathogenicity(annotation.getVariantEffect(), pathogenicityData);
+
+            clinvarClnSig = processClinicalSignificance(pathogenicityData);
         }
 
         return VariantMetadata.of(frequency, pathogenicity, clinvarClnSig, annotation.getTranscriptAnnotations());
     }
 
-    private ClinvarClnSig mapToClinvarClnSig(ClinVarData.ClinSig primaryInterpretation) {
+    private VariantAnnotation calculateVariantAnnotation(GenomicVariant variant) {
+        int pos = variant.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.oneBased());
+        return variantAnnotator.annotate(variant.contigName(), pos, variant.ref(), variant.alt());
+    }
+
+    private AlleleProto.AlleleProperties getAlleleProperties(GenomicVariant variant) {
+        AlleleProto.AlleleKey alleleKey = createAlleleKey(variant);
+        return alleleMap.get(alleleKey);
+    }
+
+    @Override
+    public Optional<Float> getFrequency(GenomicVariant variant) {
+        AlleleProto.AlleleProperties alleleProperties = getAlleleProperties(variant);
+        if (alleleProperties != null) {
+            return Optional.of(AlleleProtoAdaptor.toFrequencyData(alleleProperties).getMaxFreq());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<VariantPathogenicity> getPathogenicity(GenomicVariant variant) {
+        VariantAnnotation annotation = calculateVariantAnnotation(variant);
+        AlleleProto.AlleleProperties alleleProperties = getAlleleProperties(variant);
+        if (alleleProperties != null) {
+            PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
+            VariantEffect variantEffect = annotation.getVariantEffect();
+            float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
+            ClinvarClnSig clinvarClnSig = processClinicalSignificance(pathogenicityData);
+            return Optional.of(VariantPathogenicity.of(pathogenicity, clinvarClnSig));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private static ClinvarClnSig processClinicalSignificance(PathogenicityData pathogenicityData) {
+        ClinvarClnSig clinvarClnSig;
+        ClinVarData cVarData = pathogenicityData.getClinVarData();
+        // Only use ClinVar data if it is backed up by assertions.
+        if (cVarData.getReviewStatus().startsWith("no_assertion")) {
+            clinvarClnSig = ClinvarClnSig.NOT_PROVIDED;
+        } else {
+            ClinVarData.ClinSig primaryInterpretation = cVarData.getPrimaryInterpretation();
+            clinvarClnSig = mapToClinvarClnSig(primaryInterpretation);
+        }
+        return clinvarClnSig;
+    }
+
+    private static ClinvarClnSig mapToClinvarClnSig(ClinVarData.ClinSig primaryInterpretation) {
         return switch (primaryInterpretation) {
             case LIKELY_PATHOGENIC -> ClinvarClnSig.LIKELY_PATHOGENIC;
             case PATHOGENIC_OR_LIKELY_PATHOGENIC -> ClinvarClnSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
@@ -161,12 +206,11 @@ public class ExomiserVariantMetadataService implements VariantMetadataService {
      *
      * @param variantEffect     class of variant such as Missense, Nonsense, Synonymous, etc.
      * @param pathogenicityData Object representing the predicted pathogenicity of the data.
-     * @param variantEffectPathogenicityScore pathogenicity score based on {@code variantEffect}
      * @return the predicted pathogenicity score.
      */
     private static float calculatePathogenicity(VariantEffect variantEffect,
-                                                PathogenicityData pathogenicityData,
-                                                float variantEffectPathogenicityScore) {
+                                                PathogenicityData pathogenicityData) {
+        float variantEffectPathogenicityScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
         if (pathogenicityData.isEmpty())
             return variantEffectPathogenicityScore;
         float predictedScore = pathogenicityData.getScore();
