@@ -8,7 +8,7 @@ import org.monarchinitiative.lirical.cli.output.MinDiagnosisCount;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.core.model.HpoCase;
-import org.monarchinitiative.lirical.io.PhenopacketImporter;
+import org.monarchinitiative.lirical.io.analysis.PhenopacketImporter;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -94,7 +94,7 @@ public class PhenoGenoCaseSimulator {
         this.simulatedDiseaseId = TermId.of(disId);
 
         // TODO - sanitize with HpoTermSanitizer
-        List<TermId> hpoTerms = importer.getHpoTerms();
+        List<TermId> hpoTerms = importer.getHpoTerms().toList();
         if (rand) {
             Set<TermId> descendents=getDescendents(factory.hpoOntology(), PHENOTYPIC_ABNORMALITY);
             ImmutableList.Builder<TermId> termbuilder = new ImmutableList.Builder<>();
@@ -109,14 +109,14 @@ public class PhenoGenoCaseSimulator {
             }
             this.hpoIdList = builder.build();
             builder = new ImmutableList.Builder<>();
-            for (int i=0;i<importer.getNegatedHpoTerms().size();i++) {
+            for (int i=0;i<importer.getNegatedHpoTerms().toList().size();i++) {
                 builder.add(getRandomPhenotypeTerm());
             }
             negatedHpoIdList = builder.build();
         } else {
             this.phenotypeterms = ImmutableList.of(); // not needed
             hpoIdList = hpoTerms;
-            negatedHpoIdList = importer.getNegatedHpoTerms();
+            negatedHpoIdList = importer.getNegatedHpoTerms().toList();
         }
 
         VcfSimulator vcfSimulator = new VcfSimulator(Paths.get(vcfpath));

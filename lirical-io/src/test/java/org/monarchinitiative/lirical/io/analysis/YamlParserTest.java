@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.io.yaml;
+package org.monarchinitiative.lirical.io.analysis;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.io.TestResources;

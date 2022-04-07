@@ -1,8 +1,8 @@
-package org.monarchinitiative.lirical.cli.cmd;
+package org.monarchinitiative.lirical.core.exception;
 
-
-import org.monarchinitiative.lirical.core.exception.LiricalException;
-
+/**
+ * An exception thrown when user-provided input is invalid.
+ */
 public class LiricalParseException extends LiricalException {
 
     public LiricalParseException() {

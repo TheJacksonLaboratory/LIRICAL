@@ -3,8 +3,9 @@ package org.monarchinitiative.lirical.io;
 import com.google.protobuf.util.JsonFormat;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.lirical.io.yaml.YamlConfig;
-import org.monarchinitiative.lirical.io.yaml.YamlParser;
+import org.monarchinitiative.lirical.io.analysis.PhenopacketImporter;
+import org.monarchinitiative.lirical.io.analysis.YamlConfig;
+import org.monarchinitiative.lirical.io.analysis.YamlParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.Phenopacket;
 
@@ -92,7 +93,7 @@ public class BBS1Test {
 
     @Test
     public void testGetHpoIdsPhenopacket() {
-        List<TermId> terms = phenopacketimporter.getHpoTerms();
+        List<TermId> terms = phenopacketimporter.getHpoTerms().toList();
         TermId expected1 = TermId.of("HP:0007843");
         TermId expected2 = TermId.of("HP:0001513");
         TermId expected3 = TermId.of("HP:0000608");
@@ -114,7 +115,7 @@ public class BBS1Test {
     @Test
     public void testGetExcludedTermsPhenopacket() {
         TermId expected = TermId.of("HP:0001328"); // only one excluded term
-        List<TermId> excluded = phenopacketimporter.getNegatedHpoTerms();
+        List<TermId> excluded = phenopacketimporter.getNegatedHpoTerms().toList();
         assertEquals(1,excluded.size());
         assertEquals(expected,excluded.get(0));
     }

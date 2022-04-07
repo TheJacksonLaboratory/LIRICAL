@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.io.yaml;
+package org.monarchinitiative.lirical.io.analysis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;

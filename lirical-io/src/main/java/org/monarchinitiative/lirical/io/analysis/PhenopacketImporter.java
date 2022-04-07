@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.io;
+package org.monarchinitiative.lirical.io.analysis;
 
 import com.google.protobuf.util.JsonFormat;
 
@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 
 /**
@@ -72,22 +73,20 @@ public class PhenopacketImporter {
         return vcfFile != null;
     }
 
-    public List<TermId> getHpoTerms() {
+    public Stream<TermId> getHpoTerms() {
         return phenopacket.getPhenotypicFeaturesList().stream()
                 .filter(pf -> !pf.getNegated())
                 .map(PhenotypicFeature::getType)
                 .map(type -> createTermId(type.getId()))
-                .flatMap(Optional::stream)
-                .toList();
+                .flatMap(Optional::stream);
     }
 
-    public List<TermId> getNegatedHpoTerms() {
+    public Stream<TermId> getNegatedHpoTerms() {
         return phenopacket.getPhenotypicFeaturesList().stream()
                 .filter(PhenotypicFeature::getNegated)
                 .map(PhenotypicFeature::getType)
                 .map(type -> createTermId(type.getId()))
-                .flatMap(Optional::stream)
-                .toList();
+                .flatMap(Optional::stream);
     }
 
     private static Optional<TermId> createTermId(String termId) {
@@ -124,7 +123,7 @@ public class PhenopacketImporter {
                 .map(Path::of);
     }
 
-    private Optional<URI> toUri(String uri) {
+    private static Optional<URI> toUri(String uri) {
         try {
             return Optional.of(new URI(uri));
         } catch (URISyntaxException e) {

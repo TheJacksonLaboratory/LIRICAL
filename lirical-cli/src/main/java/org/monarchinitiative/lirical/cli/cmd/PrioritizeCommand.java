@@ -2,6 +2,7 @@ package org.monarchinitiative.lirical.cli.cmd;
 
 import org.monarchinitiative.lirical.cli.configuration.Lirical;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
+import org.monarchinitiative.lirical.core.exception.LiricalParseException;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.model.Sex;
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;

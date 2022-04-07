@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.io.yaml;
+package org.monarchinitiative.lirical.io.analysis;
 
 import java.nio.file.Path;
 import java.util.List;

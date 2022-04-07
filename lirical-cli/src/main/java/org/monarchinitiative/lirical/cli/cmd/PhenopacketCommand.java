@@ -1,20 +1,19 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
-import org.monarchinitiative.lirical.cli.configuration.Lirical;
+import com.google.protobuf.InvalidProtocolBufferException;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
-import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
-import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
-import org.monarchinitiative.lirical.io.PhenopacketImporter;
-import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.phenopackets.schema.v1.core.Age;
-import org.phenopackets.schema.v1.core.Sex;
+import org.monarchinitiative.lirical.core.analysis.AnalysisDataParser;
+import org.monarchinitiative.lirical.core.exception.LiricalParseException;
+import org.monarchinitiative.lirical.io.analysis.AnalysisDataFormat;
+import org.monarchinitiative.lirical.io.analysis.AnalysisDataParserFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Period;
-import java.util.*;
 
 /**
  * Run LIRICAL from a Phenopacket -- with or without accompanying VCF file.
@@ -27,7 +26,8 @@ import java.util.*;
         sortOptions = false,
         mixinStandardHelpOptions = true,
         description = "Run LIRICAL from a Phenopacket")
-public class PhenopacketCommand extends AbstractPrioritizeCommand {
+public class PhenopacketCommand extends AnalysisDataParserAwareCommand {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(PhenopacketCommand.class);
 
     @CommandLine.Option(names = {"--assembly"},
@@ -46,51 +46,35 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
     }
 
     @Override
-    protected AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException {
-        // Read the Phenopacket
-        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
+    protected AnalysisData prepareAnalysisData(AnalysisDataParserFactory factory) throws LiricalParseException {
+        LOGGER.info("Reading phenopacket from {}", phenopacketPath.toAbsolutePath());
+        AnalysisData data = null;
 
-        // Parse & sanitize HPO terms
-        HpoTermSanitizer sanitizer = new HpoTermSanitizer(lirical.phenotypeService().hpo());
-        List<TermId> observedTerms = importer.getHpoTerms().stream()
-                .map(sanitizer::replaceIfObsolete)
-                .flatMap(Optional::stream)
-                .toList();
-        List<TermId> negatedTerms = importer.getNegatedHpoTerms().stream()
-                .map(sanitizer::replaceIfObsolete)
-                .flatMap(Optional::stream)
-                .toList();
-
-        // Parse sample attributes
-        String sampleId = importer.getSampleId();
-        org.monarchinitiative.lirical.core.model.Age age = importer.getAge().filter(a -> Age.getDefaultInstance().equals(a))
-                .map(Age::getAge)
-                .map(Period::parse)
-                .map(org.monarchinitiative.lirical.core.model.Age::parse)
-                .orElse(org.monarchinitiative.lirical.core.model.Age.ageNotKnown());
-
-        org.monarchinitiative.lirical.core.model.Sex sex = importer.getSex()
-                .map(this::toSex)
-                .orElse(org.monarchinitiative.lirical.core.model.Sex.UNKNOWN);
-
-        // Go through VCF file (if present)
-        GenesAndGenotypes genes;
-        Optional<Path> vcfPathOpt = importer.getVcfPath();
-        if (vcfPathOpt.isEmpty() || lirical.variantParserFactory().isEmpty()) {
-            genes = GenesAndGenotypes.empty();
-        } else {
-            genes = readVariantsFromVcfFile(sampleId, vcfPathOpt.get(), lirical.variantParserFactory().get(), lirical.phenotypeService().associationData());
+        // Try v2 first
+        LOGGER.debug("Trying to decode using Phenopacket v2 format");
+        try (InputStream is = Files.newInputStream(phenopacketPath)) {
+            AnalysisDataParser parser = factory.forFormat(AnalysisDataFormat.PHENOPACKET_v2);
+            data = parser.parse(is);
+            LOGGER.debug("Success!");
+        } catch (IOException e) {
+            if (!(e instanceof InvalidProtocolBufferException))
+                throw new LiricalParseException(e);
         }
 
-        return AnalysisData.of(sampleId, age, sex, observedTerms, negatedTerms, genes);
-    }
+        // Try v1 if v2 failed
+        if (data == null) {
+            LOGGER.debug("That did not work. Trying to decode using Phenopacket v1 format");
+            try (InputStream is = Files.newInputStream(phenopacketPath)) {
+                AnalysisDataParser parser = factory.forFormat(AnalysisDataFormat.PHENOPACKET_v1);
+                data = parser.parse(is);
+                LOGGER.debug("Success!");
+            } catch (IOException e) {
+                LOGGER.debug("That failed too");
+                throw new LiricalParseException(e);
+            }
+        }
 
-    private org.monarchinitiative.lirical.core.model.Sex toSex(Sex sex) {
-        return switch (sex) {
-            case MALE -> org.monarchinitiative.lirical.core.model.Sex.MALE;
-            case FEMALE -> org.monarchinitiative.lirical.core.model.Sex.FEMALE;
-            case OTHER_SEX, UNKNOWN_SEX, UNRECOGNIZED -> org.monarchinitiative.lirical.core.model.Sex.UNKNOWN;
-        };
+        return data;
     }
 
 }

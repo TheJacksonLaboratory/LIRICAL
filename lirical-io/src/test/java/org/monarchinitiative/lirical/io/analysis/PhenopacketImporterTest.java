@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.io;
+package org.monarchinitiative.lirical.io.analysis;
 
 
 
@@ -142,30 +142,30 @@ public class PhenopacketImporterTest {
     public void testNumberOfObservedTerms() {
         PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
         int expected=4;
-        Assertions.assertEquals(expected,importer.getHpoTerms().size());
+        Assertions.assertEquals(expected,importer.getHpoTerms().toList().size());
     }
 
     @Test
     public void testNumberOfNegatedTerms() {
         PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
         int expected=1;
-        Assertions.assertEquals(expected,importer.getNegatedHpoTerms().size());
+        Assertions.assertEquals(expected,importer.getNegatedHpoTerms().toList().size());
     }
 
     @Test
     public void testIdentifyOfNegatedTerm() {
         TermId tid = TermId.of("HP:0031508");
         PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
-        Assertions.assertTrue(importer.getNegatedHpoTerms().contains(tid));
+        Assertions.assertTrue(importer.getNegatedHpoTerms().toList().contains(tid));
     }
 
     @Test
     public void testIdentifyObservedTerm() {
         TermId tid = TermId.of("HP:0031508");
         PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
-        assertFalse(importer.getHpoTerms().contains(tid)); // should not include negated term
+        assertFalse(importer.getHpoTerms().toList().contains(tid)); // should not include negated term
         TermId tid2 = TermId.of("HP:0001510"); // this os one of the observed terms
-        Assertions.assertTrue(importer.getHpoTerms().contains(tid2));
+        Assertions.assertTrue(importer.getHpoTerms().toList().contains(tid2));
     }
 
     @Test

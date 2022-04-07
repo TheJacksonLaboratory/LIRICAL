@@ -10,6 +10,7 @@ import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.AnalysisOptions;
 import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
+import org.monarchinitiative.lirical.core.exception.LiricalParseException;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.lirical.io.LiricalDataException;

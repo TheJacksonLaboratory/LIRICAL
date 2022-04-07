@@ -1,13 +1,10 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
-import org.monarchinitiative.lirical.core.model.Age;
-import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
-import org.monarchinitiative.lirical.core.model.Sex;
-import org.monarchinitiative.lirical.io.yaml.YamlConfig;
-import org.monarchinitiative.lirical.io.yaml.YamlParser;
-import org.monarchinitiative.lirical.cli.configuration.Lirical;
-import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.lirical.core.analysis.AnalysisDataParser;
+import org.monarchinitiative.lirical.core.exception.LiricalParseException;
+import org.monarchinitiative.lirical.io.analysis.AnalysisDataFormat;
+import org.monarchinitiative.lirical.io.analysis.AnalysisDataParserFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -16,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
 
 /**
  * This class coordinates the main analysis of a VCF file plus list of observed HPO terms. This
@@ -27,7 +23,7 @@ import java.util.*;
         aliases = {"Y"},
         mixinStandardHelpOptions = true,
         description = "Run LIRICAL from YAML file")
-public class YamlCommand extends AbstractPrioritizeCommand {
+public class YamlCommand extends AnalysisDataParserAwareCommand {
     private static final Logger LOGGER = LoggerFactory.getLogger(YamlCommand.class);
 
     @CommandLine.Option(names = {"-y","--yaml"},
@@ -46,47 +42,14 @@ public class YamlCommand extends AbstractPrioritizeCommand {
     }
 
     @Override
-    protected AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException {
+    protected AnalysisData prepareAnalysisData(AnalysisDataParserFactory factory) throws LiricalParseException {
+        AnalysisDataParser parser = factory.forFormat(AnalysisDataFormat.YAML);
+
         LOGGER.info("Parsing YAML input file at {}", yamlPath);
-        YamlConfig config;
         try (InputStream is = Files.newInputStream(yamlPath)) {
-            config = YamlParser.parse(is);
+            return parser.parse(is);
         } catch (IOException e) {
             throw new LiricalParseException(e);
         }
-
-        String sampleId = config.getSampleId();
-        Age age = parseAge(config.age());
-        Sex sex = parseSex(config.sex());
-        List<TermId> presentTerms, absentTerms;
-        try {
-            presentTerms = config.getHpoIds().stream().map(TermId::of).toList();
-            absentTerms = config.getNegatedHpoIds().stream().map(TermId::of).toList();
-        } catch (RuntimeException e) {
-            LOGGER.error("Error parsing phenotype terms: {}", e.getMessage(), e);
-            throw new LiricalParseException(e);
-        }
-
-        GenesAndGenotypes genes;
-        Optional<Path> vcfPathOptional = config.vcfPath();
-        if (vcfPathOptional.isPresent() && lirical.variantParserFactory().isPresent()) {
-            genes = readVariantsFromVcfFile(sampleId, vcfPathOptional.get(), lirical.variantParserFactory().get(), lirical.phenotypeService().associationData());
-        } else {
-            genes = GenesAndGenotypes.empty();
-        }
-
-        return AnalysisData.of(sampleId, age, sex, presentTerms, absentTerms, genes);
     }
-
-    private static Sex parseSex(String sex) {
-        return switch (sex.toLowerCase()) {
-            case "male" -> Sex.MALE;
-            case "female" -> Sex.FEMALE;
-            default -> {
-                LOGGER.info("Unknown sex {}", sex);
-                yield Sex.UNKNOWN;
-            }
-        };
-    }
-
 }

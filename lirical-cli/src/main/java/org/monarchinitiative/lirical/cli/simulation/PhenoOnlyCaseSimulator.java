@@ -4,7 +4,7 @@ import org.monarchinitiative.lirical.cli.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.core.model.HpoCase;
-import org.monarchinitiative.lirical.io.PhenopacketImporter;
+import org.monarchinitiative.lirical.io.analysis.PhenopacketImporter;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -58,8 +58,8 @@ public class PhenoOnlyCaseSimulator {
         String disId = simulatedDiagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
         this.simulatedDiseaseId = TermId.of(disId);
         // TODO - sanitize with HpoTermSanitizer
-        hpoIdList = importer.getHpoTerms();
-        negatedHpoIdList = importer.getNegatedHpoTerms();
+        hpoIdList = importer.getHpoTerms().toList();
+        negatedHpoIdList = importer.getNegatedHpoTerms().toList();
         this.ontology = factory.hpoOntology();
         this.diseaseMap = factory.diseaseMap(ontology);
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
