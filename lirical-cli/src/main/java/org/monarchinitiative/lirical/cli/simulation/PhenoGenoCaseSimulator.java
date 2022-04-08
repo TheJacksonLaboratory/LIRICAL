@@ -2,9 +2,9 @@ package org.monarchinitiative.lirical.cli.simulation;
 
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.lirical.cli.configuration.LiricalFactory;
-import org.monarchinitiative.lirical.cli.output.LrThreshold;
-import org.monarchinitiative.lirical.cli.output.MinDiagnosisCount;
+import org.monarchinitiative.lirical.bootstrap.LiricalFactory;
+import org.monarchinitiative.lirical.core.output.LrThreshold;
+import org.monarchinitiative.lirical.core.output.MinDiagnosisCount;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.core.model.HpoCase;

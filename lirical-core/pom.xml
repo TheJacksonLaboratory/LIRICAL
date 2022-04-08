@@ -56,6 +56,10 @@
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
         </dependency>
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.monarchinitiative.phenol</groupId>

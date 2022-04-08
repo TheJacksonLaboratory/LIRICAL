@@ -1,8 +1,8 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
 
+import org.monarchinitiative.lirical.bootstrap.LiricalFactory;
 import org.monarchinitiative.lirical.cli.simulation.GridSearch;
-import org.monarchinitiative.lirical.cli.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;

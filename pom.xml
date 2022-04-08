@@ -10,6 +10,7 @@
     <modules>
         <module>lirical-core</module>
         <module>lirical-io</module>
+        <module>lirical-bootstrap</module>
         <module>lirical-cli</module>
     </modules>
 

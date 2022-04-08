@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.cli.simulation;
 
-import org.monarchinitiative.lirical.cli.configuration.LiricalFactory;
+import org.monarchinitiative.lirical.bootstrap.LiricalFactory;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.core.model.HpoCase;

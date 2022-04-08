@@ -1,10 +1,10 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
 
-import org.monarchinitiative.lirical.cli.output.LiricalRanking;
+import org.monarchinitiative.lirical.bootstrap.LiricalFactory;
+import org.monarchinitiative.lirical.core.output.LiricalRanking;
 import org.monarchinitiative.lirical.cli.simulation.PhenoGenoCaseSimulator;
 import org.monarchinitiative.lirical.cli.simulation.PhenoOnlyCaseSimulator;
-import org.monarchinitiative.lirical.cli.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.slf4j.Logger;

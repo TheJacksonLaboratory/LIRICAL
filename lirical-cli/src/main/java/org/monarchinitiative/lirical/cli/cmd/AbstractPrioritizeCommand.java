@@ -1,11 +1,14 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.lirical.cli.configuration.*;
-import org.monarchinitiative.lirical.cli.output.LrThreshold;
-import org.monarchinitiative.lirical.cli.output.MinDiagnosisCount;
-import org.monarchinitiative.lirical.cli.output.OutputFormat;
-import org.monarchinitiative.lirical.cli.output.OutputOptions;
+import org.monarchinitiative.lirical.bootstrap.Lirical;
+import org.monarchinitiative.lirical.bootstrap.LiricalConfiguration;
+import org.monarchinitiative.lirical.bootstrap.LiricalProperties;
+import org.monarchinitiative.lirical.bootstrap.TranscriptDatabase;
+import org.monarchinitiative.lirical.core.output.LrThreshold;
+import org.monarchinitiative.lirical.core.output.MinDiagnosisCount;
+import org.monarchinitiative.lirical.core.output.OutputFormat;
+import org.monarchinitiative.lirical.core.output.OutputOptions;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.AnalysisOptions;
 import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
@@ -225,7 +228,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         LrThreshold lrThreshold = runConfiguration.lrThreshold == null ? LrThreshold.notInitialized() : LrThreshold.setToUserDefinedThreshold(runConfiguration.lrThreshold);
         MinDiagnosisCount minDiagnosisCount = runConfiguration.minDifferentialsToShow == null ? MinDiagnosisCount.notInitialized() : MinDiagnosisCount.setToUserDefinedMinCount(runConfiguration.minDifferentialsToShow);
         List<OutputFormat> outputFormats = parseOutputFormats(output.outputFormats);
-        return new OutputOptions(lrThreshold, minDiagnosisCount, output.outdir, output.outfilePrefix, outputFormats);
+        return new OutputOptions(lrThreshold, minDiagnosisCount, runConfiguration.pathogenicityThreshold, output.outdir, output.outfilePrefix, outputFormats);
     }
 
     protected static Age parseAge(String age) {
