@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.bootstrap;
+package org.monarchinitiative.lirical.configuration;
 
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
@@ -11,6 +11,8 @@ import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
+import org.monarchinitiative.lirical.core.service.BackgroundVariantFrequencyService;
+import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
 import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
@@ -390,7 +392,8 @@ public class LiricalFactory {
         boolean strict = !globalAnalysisMode;
         float pathoThreshold = 0.8f;
         GenotypeLikelihoodRatio.Options options = new GenotypeLikelihoodRatio.Options(pathoThreshold, strict);
-        return new GenotypeLikelihoodRatio(gene2backgroundFrequency, options);
+        BackgroundVariantFrequencyService backgroundVariantFrequencyService = BackgroundVariantFrequencyService.of(Map.of(), .1);
+        return new GenotypeLikelihoodRatio(backgroundVariantFrequencyService, options);
     }
 
 

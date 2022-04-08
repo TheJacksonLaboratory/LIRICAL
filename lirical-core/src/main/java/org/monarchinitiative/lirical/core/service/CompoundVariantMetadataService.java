@@ -15,7 +15,13 @@ public class CompoundVariantMetadataService implements VariantMetadataService {
     private final VariantFrequencyService frequencyService;
     private final VariantPathogenicityService pathogenicityService;
 
-    public CompoundVariantMetadataService(FunctionalVariantAnnotator variantAnnotator,
+    public static CompoundVariantMetadataService of(FunctionalVariantAnnotator variantAnnotator,
+                                                    VariantFrequencyService frequencyService,
+                                                    VariantPathogenicityService pathogenicityService) {
+        return new CompoundVariantMetadataService(variantAnnotator, frequencyService, pathogenicityService);
+    }
+
+    private CompoundVariantMetadataService(FunctionalVariantAnnotator variantAnnotator,
                                           VariantFrequencyService frequencyService,
                                           VariantPathogenicityService pathogenicityService) {
         this.variantAnnotator = Objects.requireNonNull(variantAnnotator);

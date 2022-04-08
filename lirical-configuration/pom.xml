@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>lirical-bootstrap</artifactId>
+    <artifactId>lirical-configuration</artifactId>
 
     <dependencies>
         <dependency>

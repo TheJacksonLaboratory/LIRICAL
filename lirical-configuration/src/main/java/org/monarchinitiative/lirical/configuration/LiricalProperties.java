@@ -1,6 +1,7 @@
-package org.monarchinitiative.lirical.bootstrap;
+package org.monarchinitiative.lirical.configuration;
 
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
+import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 
 import java.nio.file.Path;
@@ -22,15 +23,12 @@ public class LiricalProperties {
     private final GenomeBuild genomeBuild;
     private final TranscriptDatabase transcriptDatabase;
 
-    public record GenotypeLrProperties(float pathogenicityThreshold, boolean strict) {
-    }
-
     private LiricalProperties(Builder builder) {
         this.liricalDataDirectory = builder.liricalDataDirectory;
         this.exomiserDataDirectory = builder.exomiserDataDirectory; // nullable
         this.backgroundFrequencyFile = builder.backgroundFrequencyFile; // nullable
         this.diseaseDatabases = Set.copyOf(Objects.requireNonNull(builder.diseaseDatabases));
-        this.genotypeLrProperties = new GenotypeLrProperties(builder.pathogenicityThreshold, builder.strict);
+        this.genotypeLrProperties = new GenotypeLrProperties(builder.pathogenicityThreshold, builder.defaultBackgroundVariantFrequency, builder.strict);
         this.defaultVariantFrequency = builder.defaultVariantFrequency;
         this.genomeBuild = Objects.requireNonNull(builder.genomeBuild);
         this.transcriptDatabase = Objects.requireNonNull(builder.transcriptDatabase);
@@ -83,6 +81,7 @@ public class LiricalProperties {
         private Path backgroundFrequencyFile;
         private Set<DiseaseDatabase> diseaseDatabases = Set.of(DiseaseDatabase.OMIM);
         private float pathogenicityThreshold = .8f;
+        private double defaultBackgroundVariantFrequency = 0.1;
         private boolean strict = false;
         private float defaultVariantFrequency = 0.00001F;
         private GenomeBuild genomeBuild = GenomeBuild.HG38;
@@ -107,8 +106,9 @@ public class LiricalProperties {
             return this;
         }
 
-        public Builder genotypeLrProperties(boolean strict, float pathogenicityThreshold) {
+        public Builder genotypeLrProperties(boolean strict, double defaultBackgroundVariantFrequency, float pathogenicityThreshold) {
             this.strict = strict;
+            this.defaultBackgroundVariantFrequency = defaultBackgroundVariantFrequency;
             this.pathogenicityThreshold = pathogenicityThreshold;
             return this;
         }

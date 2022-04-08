@@ -1,8 +1,7 @@
 package org.monarchinitiative.lirical.cli.simulation;
 
-import org.monarchinitiative.lirical.bootstrap.LiricalFactory;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
-import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.core.model.HpoCase;
 import org.monarchinitiative.lirical.io.analysis.PhenopacketImporter;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
@@ -74,7 +73,7 @@ public class PhenoOnlyCaseSimulator {
 
 
     public void run(){
-        PhenotypeLikelihoodRatio phenoLr =  new PhenotypeLikelihoodRatio(ontology, diseaseMap);
+//        PhenotypeLikelihoodRatio phenoLr =  new PhenotypeLikelihoodRatio(ontology, diseaseMap);
 //        CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(hpoIdList)
 //                .ontology(ontology)
 //                .negated(negatedHpoIdList)

@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.bootstrap;
+package org.monarchinitiative.lirical.core.service;
 
 public enum TranscriptDatabase {
     UCSC, REFSEQ;
@@ -8,7 +8,6 @@ public enum TranscriptDatabase {
         return switch (this) {
             case UCSC -> "ucsc";
             case REFSEQ -> "RefSeq";
-            default -> "unknown";//should never happen.
         };
     }
 }

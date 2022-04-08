@@ -2,11 +2,10 @@ package org.monarchinitiative.lirical.cli.simulation;
 
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.lirical.bootstrap.LiricalFactory;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.core.output.LrThreshold;
 import org.monarchinitiative.lirical.core.output.MinDiagnosisCount;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
-import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.core.model.HpoCase;
 import org.monarchinitiative.lirical.io.analysis.PhenopacketImporter;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
@@ -187,7 +186,7 @@ public class PhenoGenoCaseSimulator {
 
 
 //        GenotypeLikelihoodRatio genoLr = factory.getGenotypeLR();
-        PhenotypeLikelihoodRatio phenoLr =  new PhenotypeLikelihoodRatio(ontology, diseaseMap);
+//        PhenotypeLikelihoodRatio phenoLr =  new PhenotypeLikelihoodRatio(ontology, HpoDiseases.of(List.of()));
 
 
 //        CaseEvaluator.Builder caseBuilder = new CaseEvaluator.Builder(hpoIdList)

@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
 
-import org.monarchinitiative.lirical.bootstrap.LiricalFactory;
+import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.core.output.LiricalRanking;
 import org.monarchinitiative.lirical.cli.simulation.PhenoGenoCaseSimulator;
 import org.monarchinitiative.lirical.cli.simulation.PhenoOnlyCaseSimulator;

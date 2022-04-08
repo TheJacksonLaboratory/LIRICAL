@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.io;
 
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
+import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,5 +90,12 @@ public class ExomiserDataResolver {
 
     public Path ucscTranscriptCache() {
         return exomiserDataDirectory.resolve(String.format("%s_%s_transcripts_ucsc.ser", version, assembly));
+    }
+
+    public Path transcriptCacheForTranscript(TranscriptDatabase transcriptDatabase) {
+        return switch (transcriptDatabase) {
+            case REFSEQ -> refseqTranscriptCache();
+            case UCSC -> ucscTranscriptCache();
+        };
     }
 }

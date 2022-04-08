@@ -6,6 +6,7 @@ import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -70,7 +71,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
         this.n_noise_terms=noise_terms;
         this.ontology=ontology;
         this.diseaseMap=diseaseMap;
-        this.phenotypeLrEvaluator = new PhenotypeLikelihoodRatio(ontology,diseaseMap);
+        this.phenotypeLrEvaluator = new PhenotypeLikelihoodRatio(ontology, HpoDiseases.of(List.copyOf(diseaseMap.values())));
         Set<TermId> descendents=getDescendents(ontology,PHENOTYPIC_ABNORMALITY);
         ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
         for (TermId t: descendents) {

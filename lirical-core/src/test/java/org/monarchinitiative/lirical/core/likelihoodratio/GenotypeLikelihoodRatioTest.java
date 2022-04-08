@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.core.likelihoodratio;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
+import org.monarchinitiative.lirical.core.service.BackgroundVariantFrequencyService;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -44,7 +45,7 @@ public class GenotypeLikelihoodRatioTest {
     @Test
     public void testOneClinVarVariant() {
         Gene2Genotype g2g = setupGeneToGenotype(1, 1, 0.8);
-        GenotypeLikelihoodRatio genoLRmap = new GenotypeLikelihoodRatio(Map.of(), OPTIONS);
+        GenotypeLikelihoodRatio genoLRmap = new GenotypeLikelihoodRatio(BackgroundVariantFrequencyService.of(Map.of(), 0.1), OPTIONS);
         double result = genoLRmap.evaluateGenotype(SAMPLE_ID, g2g, List.of(AUTOSOMAL_DOMINANT)).lr();
         double expected = 1000;
         Assertions.assertEquals(expected,result,EPSILON);
@@ -58,7 +59,7 @@ public class GenotypeLikelihoodRatioTest {
     @Test
     public void testTwoClinVarVariants() {
         Gene2Genotype g2g = setupGeneToGenotype(2, 2, 1.6);
-        GenotypeLikelihoodRatio genoLRmap = new GenotypeLikelihoodRatio(Map.of(), OPTIONS);
+        GenotypeLikelihoodRatio genoLRmap = new GenotypeLikelihoodRatio(BackgroundVariantFrequencyService.of(Map.of(), 0.1), OPTIONS);
         double result = genoLRmap.evaluateGenotype(SAMPLE_ID, g2g, List.of(AUTOSOMAL_RECESSIVE)).lr();
         double expected = (double)1000*1000;
         Assertions.assertEquals(expected,result,EPSILON);
@@ -75,7 +76,7 @@ public class GenotypeLikelihoodRatioTest {
         Map <TermId,Double> g2background = new HashMap<>();
         TermId HLAB = TermId.of("NCBIGene:3106");
         g2background.put(HLAB,8.7418); // very high lambda-background for HLAB
-        GenotypeLikelihoodRatio glr = new GenotypeLikelihoodRatio(g2background, OPTIONS);
+        GenotypeLikelihoodRatio glr = new GenotypeLikelihoodRatio(BackgroundVariantFrequencyService.of(Map.of(), 0.1), OPTIONS);
         Gene2Genotype g2g = setupGeneToGenotype(0, 0, 0.);
         double score = glr.evaluateGenotype(SAMPLE_ID, g2g, List.of(autosomalDominant)).lr();
         double expected = 0.05; // heuristic score
@@ -92,7 +93,7 @@ public class GenotypeLikelihoodRatioTest {
         Map <TermId,Double> g2background = new HashMap<>();
         TermId madeUpGene = TermId.of("NCBIGene:42");
         g2background.put(madeUpGene,8.7418); // very high lambda-background for TTN
-        GenotypeLikelihoodRatio glr = new GenotypeLikelihoodRatio(g2background, OPTIONS);
+        GenotypeLikelihoodRatio glr = new GenotypeLikelihoodRatio(BackgroundVariantFrequencyService.of(Map.of(), 0.1), OPTIONS);
         Gene2Genotype g2g = setupGeneToGenotype(0, 0, 0.);
         double score = glr.evaluateGenotype(SAMPLE_ID, g2g,List.of(autosomalRecessive)).lr();
         double expected = 0.05*0.05; // heuristic score for AR

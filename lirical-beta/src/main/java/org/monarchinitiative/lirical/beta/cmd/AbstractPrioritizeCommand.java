@@ -1,14 +1,8 @@
-package org.monarchinitiative.lirical.cli.cmd;
+package org.monarchinitiative.lirical.beta.cmd;
 
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.configuration.Lirical;
-import org.monarchinitiative.lirical.configuration.LiricalConfiguration;
-import org.monarchinitiative.lirical.configuration.LiricalProperties;
 import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
-import org.monarchinitiative.lirical.core.output.LrThreshold;
-import org.monarchinitiative.lirical.core.output.MinDiagnosisCount;
-import org.monarchinitiative.lirical.core.output.OutputFormat;
-import org.monarchinitiative.lirical.core.output.OutputOptions;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.AnalysisOptions;
 import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
@@ -16,12 +10,15 @@ import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
 import org.monarchinitiative.lirical.core.exception.LiricalParseException;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.*;
+import org.monarchinitiative.lirical.core.output.LrThreshold;
+import org.monarchinitiative.lirical.core.output.MinDiagnosisCount;
+import org.monarchinitiative.lirical.core.output.OutputFormat;
+import org.monarchinitiative.lirical.core.output.OutputOptions;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.VariantParser;
 import org.monarchinitiative.lirical.io.VariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
-import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -41,36 +38,18 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * This is a common superclass for {@link YamlCommand} and {@link PhenopacketCommand}.
+ * This is a common superclass for {@link PrioritizeWithSquirls}.
  * Its purpose is to provide command line parameters and variables that are used
- * in the same way by both of the subclasses.
+ * in the same way by all the subclasses.
  *
  * @author Peter N Robinson
+ * @author Daniel Danis
  */
 abstract class AbstractPrioritizeCommand implements Callable<Integer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPrioritizeCommand.class);
     private static final Properties PROPERTIES = readProperties();
     private static final String LIRICAL_VERSION = PROPERTIES.getProperty("lirical.version", "unknown version");
-
-    // ---------------------------------------------- RESOURCES --------------------------------------------------------
-    @CommandLine.ArgGroup(validate = false, heading = "Resource paths:%n")
-    public DataSection dataSection = new DataSection();
-
-    public static class DataSection {
-        @CommandLine.Option(names = {"-d", "--data"},
-                required = true,
-                description = "Path to Lirical data directory.")
-        protected Path liricalDataDirectory;
-
-        @CommandLine.Option(names = {"-e", "--exomiser"},
-                description = "Path to the Exomiser data directory.")
-        protected Path exomiserDataDirectory = null;
-
-        @CommandLine.Option(names = {"-b", "--background"},
-                description = "Path to non-default background frequency file.")
-        protected Path backgroundFrequencyFile = null;
-    }
 
     // ---------------------------------------------- CONFIGURATION ----------------------------------------------------
     @CommandLine.ArgGroup(validate = false, heading = "Configuration options:%n")
@@ -83,29 +62,29 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
          */
         @CommandLine.Option(names = {"-g", "--global"},
                 description = "Global analysis (default: ${DEFAULT-VALUE}).")
-        protected boolean globalAnalysisMode = false;
+        public boolean globalAnalysisMode = false;
 
         @CommandLine.Option(names = {"-t", "--threshold"},
                 description = "Minimum post-test probability to show diagnosis in HTML output. The value should range between [0,1].")
-        protected Double lrThreshold = null;
+        public Double lrThreshold = null;
 
         @CommandLine.Option(names = {"-m", "--mindiff"},
                 description = "Minimal number of differential diagnoses to show.")
-        protected Integer minDifferentialsToShow = null;
+        public Integer minDifferentialsToShow = null;
 
         @CommandLine.Option(names = {"--transcript-db"},
                 paramLabel = "{REFSEQ,UCSC}",
                 description = "Transcript database (default: ${DEFAULT-VALUE}).")
-        protected TranscriptDatabase transcriptDb = TranscriptDatabase.REFSEQ;
+        public TranscriptDatabase transcriptDb = TranscriptDatabase.REFSEQ;
 
         @CommandLine.Option(names = {"--use-orphanet"},
                 description = "Use Orphanet annotation data (default: ${DEFAULT-VALUE}).")
-        protected boolean useOrphanet = false;
+        public boolean useOrphanet = false;
 
         @CommandLine.Option(names = {"--strict"},
                 // TODO - add better description
                 description = "Strict mode (default: ${DEFAULT-VALUE}).")
-        private boolean strict = false;
+        public boolean strict = false;
 
         /* Default frequency of called-pathogenic variants in the general population (gnomAD). In the vast majority of
          * cases, we can derive this information from gnomAD. This constant is used if for whatever reason,
@@ -117,12 +96,12 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         public double defaultVariantBackgroundFrequency = 0.1;
 
         @CommandLine.Option(names = {"--pathogenicity-threshold"},
-                description = "Variant with greater pathogenicity score is considered deleterious (default: ${DEFAULT-VALUE}).")
-        private float pathogenicityThreshold = .8f;
+                description = "Variant with pathogenicity score greater than the threshold is considered deleterious (default: ${DEFAULT-VALUE}).")
+        public float pathogenicityThreshold = .8f;
 
         @CommandLine.Option(names = {"--default-allele-frequency"},
-                description = "Variant with greater allele frequency in at least one population is considered common (default: ${DEFAULT-VALUE}).")
-        private float defaultAlleleFrequency = 1E-5f;
+                description = "Variant with allele frequency greater than the threshold in at least one population is considered common (default: ${DEFAULT-VALUE}).")
+        public float defaultVariantAlleleFrequency = 1E-5f;
     }
 
     // ---------------------------------------------- OUTPUTS ----------------------------------------------------------
@@ -132,7 +111,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
     public static class Output {
         @CommandLine.Option(names = {"-o", "--output-directory"},
                 description = "Directory into which to write output (default: ${DEFAULT-VALUE}).")
-        protected Path outdir = Path.of("");
+        public Path outdir = Path.of("");
 
         @CommandLine.Option(names = {"-f", "--output-format"},
                 paramLabel = "{html,tsv}",
@@ -145,7 +124,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
          */
         @CommandLine.Option(names = {"-x", "--prefix"},
                 description = "Prefix of outfile (default: ${DEFAULT-VALUE}).")
-        protected String outfilePrefix = "lirical";
+        public String outfilePrefix = "lirical";
     }
 
     @Override
@@ -161,20 +140,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         if (genomeBuildOptional.isEmpty())
             throw new LiricalDataException("Unknown genome build: '" + getGenomeBuild() + "'");
 
-        LiricalProperties liricalProperties = LiricalProperties.builder(dataSection.liricalDataDirectory)
-                .exomiserDataDirectory(dataSection.exomiserDataDirectory)
-                .genomeAssembly(genomeBuildOptional.get())
-                .backgroundFrequencyFile(dataSection.backgroundFrequencyFile)
-                // CONFIGURATION
-                .diseaseDatabases(runConfiguration.useOrphanet
-                        ? DiseaseDatabase.allKnownDiseaseDatabases()
-                        : Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER))
-                .genotypeLrProperties(runConfiguration.strict, runConfiguration.defaultVariantBackgroundFrequency, runConfiguration.pathogenicityThreshold)
-                .transcriptDatabase(runConfiguration.transcriptDb)
-                .defaultVariantFrequency(runConfiguration.defaultAlleleFrequency)
-                .build();
-        LiricalConfiguration factory = LiricalConfiguration.of(liricalProperties);
-        Lirical lirical = factory.getLirical();
+        Lirical lirical = bootstrapLirical(genomeBuildOptional.get());
 
         // 2 - prepare inputs
         LOGGER.info("Preparing the analysis data");
@@ -204,26 +170,9 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         return 0;
     }
 
-    protected int checkInput() {
-        // resources
-        if (dataSection.liricalDataDirectory == null) {
-            LOGGER.error("Path to Lirical data directory must be provided via `-d | --data` option");
-            return 1;
-        }
+    protected abstract Lirical bootstrapLirical(GenomeBuild genomeBuild) throws LiricalDataException;
 
-        // thresholds
-        if (runConfiguration.lrThreshold != null && runConfiguration.minDifferentialsToShow != null) {
-            LOGGER.error("Only one of the options -t/--threshold and -m/--mindiff can be used at once.");
-            return 1;
-        }
-        if (runConfiguration.lrThreshold != null) {
-            if (runConfiguration.lrThreshold < 0.0 || runConfiguration.lrThreshold > 1.0) {
-                LOGGER.error("Post-test probability (-t/--threshold) must be between 0.0 and 1.0.");
-                return 1;
-            }
-        }
-        return 0;
-    }
+    protected abstract int checkInput();
 
     protected abstract String getGenomeBuild();
 

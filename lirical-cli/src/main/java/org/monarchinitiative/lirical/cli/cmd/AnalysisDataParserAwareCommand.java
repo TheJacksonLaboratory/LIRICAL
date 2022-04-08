@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
-import org.monarchinitiative.lirical.bootstrap.Lirical;
+import org.monarchinitiative.lirical.configuration.Lirical;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.exception.LiricalParseException;
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;

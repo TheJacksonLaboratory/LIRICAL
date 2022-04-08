@@ -11,19 +11,13 @@ import org.monarchinitiative.exomiser.core.genome.JannovarVariantAnnotator;
 import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
 import org.monarchinitiative.exomiser.core.genome.jannovar.InvalidFileFormatException;
 import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
-import org.monarchinitiative.exomiser.core.model.AlleleProtoAdaptor;
-import org.monarchinitiative.exomiser.core.model.ChromosomalRegionIndex;
-import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
-import org.monarchinitiative.exomiser.core.model.VariantAnnotation;
+import org.monarchinitiative.exomiser.core.model.*;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
-import org.monarchinitiative.lirical.core.service.VariantFrequencyService;
-import org.monarchinitiative.lirical.core.service.VariantMetadataService;
-import org.monarchinitiative.lirical.core.service.VariantPathogenicity;
-import org.monarchinitiative.lirical.core.service.VariantPathogenicityService;
+import org.monarchinitiative.lirical.core.service.*;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.core.model.ClinvarClnSig;
 import org.monarchinitiative.lirical.core.model.VariantMetadata;
@@ -39,7 +33,7 @@ import java.util.*;
 /**
  * Implementation of {@link VariantMetadataService} that is backed by Exomiser resources and uses {@link MVMap}.
  */
-public class ExomiserVariantMetadataService implements VariantMetadataService, VariantFrequencyService, VariantPathogenicityService {
+public class ExomiserVariantMetadataService implements VariantMetadataService, FunctionalVariantAnnotator, VariantFrequencyService, VariantPathogenicityService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExomiserVariantMetadataService.class);
 
@@ -132,6 +126,11 @@ public class ExomiserVariantMetadataService implements VariantMetadataService, V
     private AlleleProto.AlleleProperties getAlleleProperties(GenomicVariant variant) {
         AlleleProto.AlleleKey alleleKey = createAlleleKey(variant);
         return alleleMap.get(alleleKey);
+    }
+
+    @Override
+    public List<TranscriptAnnotation> annotate(GenomicVariant variant) {
+        return calculateVariantAnnotation(variant).getTranscriptAnnotations();
     }
 
     @Override

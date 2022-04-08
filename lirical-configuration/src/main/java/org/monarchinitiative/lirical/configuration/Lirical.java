@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.bootstrap;
+package org.monarchinitiative.lirical.configuration;
 
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
 import org.monarchinitiative.lirical.core.output.AnalysisResultWriterFactory;

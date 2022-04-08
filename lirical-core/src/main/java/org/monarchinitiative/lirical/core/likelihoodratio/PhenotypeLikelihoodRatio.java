@@ -4,6 +4,7 @@ package org.monarchinitiative.lirical.core.likelihoodratio;
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -57,9 +58,9 @@ public class PhenotypeLikelihoodRatio {
      * @param ontology The HPO ontology object
      * @param diseases List of all diseases for this simulation
      */
-    public PhenotypeLikelihoodRatio(Ontology ontology, Map<TermId, HpoDisease> diseases) {
+    public PhenotypeLikelihoodRatio(Ontology ontology, HpoDiseases diseases) {
         this.ontology = ontology;
-        this.diseaseMap = diseases;
+        this.diseaseMap = diseases.diseaseById();
         this.explanationFactory = new LrWithExplanationFactory(ontology); // TODO - DI?
         initializeFrequencyMap();
     }

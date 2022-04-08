@@ -22,7 +22,8 @@ public class PhenotypeLikelihoodRatioTest {
 
     private static PhenotypeLikelihoodRatio phenotypeLrCalculator =null;
 
-    private static Map<TermId, HpoDisease> diseaseMap;
+    private static HpoDiseases hpoDiseases = TestResources.hpoDiseases();
+    private static Map<TermId, HpoDisease> diseaseMap = hpoDiseases.diseaseById();
 
 
     private static final double EPSILON=0.000001;
@@ -30,9 +31,7 @@ public class PhenotypeLikelihoodRatioTest {
 
     @BeforeAll
     public static void setup() {
-        HpoDiseases hpoDiseases = TestResources.hpoDiseases();
-        diseaseMap = hpoDiseases.diseaseById();
-        phenotypeLrCalculator =new PhenotypeLikelihoodRatio(TestResources.hpo(), diseaseMap);
+        phenotypeLrCalculator =new PhenotypeLikelihoodRatio(TestResources.hpo(), hpoDiseases);
     }
 
 

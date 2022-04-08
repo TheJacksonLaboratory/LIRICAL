@@ -2,12 +2,12 @@ package org.monarchinitiative.lirical.core.likelihoodratio;
 
 import org.monarchinitiative.lirical.core.likelihoodratio.poisson.PoissonDistribution;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
+import org.monarchinitiative.lirical.core.service.BackgroundVariantFrequencyService;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInheritanceTermIds.*;
@@ -21,11 +21,6 @@ import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInhe
 // TODO - needs to become an interface
 public class GenotypeLikelihoodRatio {
     private static final Logger logger = LoggerFactory.getLogger(GenotypeLikelihoodRatio.class);
-    /* Default frequency of called-pathogenic variants in the general population (gnomAD). In the vast majority of
-     * cases, we can derive this information from gnomAD. This constant is used if for whatever reason,
-     * data was not available.
-     */
-    private static final double DEFAULT_LAMBDA_BACKGROUND = 0.1;
     /** A heuristic to downweight an  disease by a factor of 1/10 if the number of predicted pathogenic alleles in
      * the VCF file is above lambda_d. */
     final double HEURISTIC_PATH_ALLELE_COUNT_ABOVE_LAMBDA_D = 0.10;
@@ -36,7 +31,7 @@ public class GenotypeLikelihoodRatio {
      * Entrez gene Curie, e.g., NCBIGene:2200; value--corresponding background frequency (ie.,
      * lambda-background), the sum of pathogenic bin variants in the population (gnomAD).
      */
-    private final Map<TermId, Double> gene2backgroundFrequency;
+    private final BackgroundVariantFrequencyService backgroundVariantFrequencyService;
     /**
      * This is a Poisson distribution object that is used to help calculate the genotype likelihood ratio for cases
      * with autosomal recessive inheritance. We can construct this object once and reuse it. This is
@@ -59,11 +54,10 @@ public class GenotypeLikelihoodRatio {
     private final float pathogenicityThreshold;
 
     /**
-     * @param geneIdToBackground background frequencies of called pathogenic variants in genes.
      * @param options genotype LR options
      */
-    public GenotypeLikelihoodRatio(Map<TermId, Double> geneIdToBackground, Options options) {
-        this.gene2backgroundFrequency = Objects.requireNonNull(geneIdToBackground);
+    public GenotypeLikelihoodRatio(BackgroundVariantFrequencyService backgroundVariantFrequencyService, Options options) {
+        this.backgroundVariantFrequencyService = backgroundVariantFrequencyService;
         Objects.requireNonNull(options);
         this.recessivePoissonDistribution = new PoissonDistribution(2.0);
         this.dominantPoissonDistribution = new PoissonDistribution(1.0);
@@ -146,7 +140,8 @@ public class GenotypeLikelihoodRatio {
         // 3. There was no pathogenic variant listed in ClinVar.
         // Therefore, we apply the main algorithm for calculating the LR genotype score.
 
-        double lambda_background = this.gene2backgroundFrequency.getOrDefault(g2g.geneId().id(), DEFAULT_LAMBDA_BACKGROUND);
+        double lambda_background = backgroundVariantFrequencyService.frequencyForGene(g2g.geneId().id())
+                .orElse(backgroundVariantFrequencyService.defaultVariantFrequency());
         if (inheritancemodes == null || inheritancemodes.isEmpty()) {
             // This is probably because the HPO annotation file is incomplete
             logger.warn("No inheritance mode annotation found for geneId {}, reverting to default", g2g.geneId().id().getValue());

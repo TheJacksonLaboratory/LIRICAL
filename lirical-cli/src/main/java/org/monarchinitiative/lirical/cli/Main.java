@@ -16,7 +16,7 @@ import java.util.concurrent.Callable;
  * @version 1.3.1 (2020-08-13)
  */
 
-@CommandLine.Command(name = "java -jar LIRICAL", mixinStandardHelpOptions = true,
+@CommandLine.Command(name = "java -jar lirical-cli.jar", mixinStandardHelpOptions = true,
         version = "1.3.4",
         description = "LIkelihood Ratio Interpretation of Clinical AbnormaLities")
 public class Main implements Callable<Integer> {
