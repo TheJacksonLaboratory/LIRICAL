@@ -24,7 +24,7 @@ abstract class BaseDifferential {
      * The base-10 logarithm of the likelihood ratio.
      */
     private final double compositeLR;
-    private final GeneIdentifier geneId; // nullable
+    protected final GeneIdentifier geneId; // nullable
     private final int rank;
     protected final List<VisualizableVariant> variants;
 

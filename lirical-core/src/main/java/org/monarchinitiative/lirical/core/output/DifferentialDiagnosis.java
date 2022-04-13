@@ -55,6 +55,12 @@ public class DifferentialDiagnosis extends BaseDifferential {
 
     public String getUrl(){ return url;}
 
+    public String getGeneUrl() {
+        return geneId == null
+                ? ""
+                : String.format("https://hpo.jax.org/app/browse/gene/%s", geneId.id().getId());
+    }
+
     public List<VisualizableVariant> getVisualizableVariants() {
         return variants;
     }

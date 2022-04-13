@@ -351,6 +351,11 @@ a.svg:hover, a.svg:active {
   display: none;
 }
 
+.lr-contributions {
+    border:1px solid black;
+    text-align:center;
+}
+
 </style>
 </head>
 
@@ -376,8 +381,8 @@ a.svg:hover, a.svg:active {
       </div>
   </nav>
   <main>
-    <section>
-      <a name="sample"></a>
+    <section class="sample-summary">
+      <a id="sample"></a>
       <h2 class="center">Sample name: ${sample_name!"n/a"}</h2>
       <article>
         <div class="row">
@@ -434,7 +439,7 @@ a.svg:hover, a.svg:active {
       </article>
     </section>
 
-    <section>
+    <section class="diff-dg-sparklines">
       <article>
         <a id="diff"></a>
         <h2>Top differential diagnoses</h2>
@@ -460,20 +465,25 @@ a.svg:hover, a.svg:active {
       </section>
       <section>
       <#list differentialDiagnoses as dd>
-          <article>
+          <article class="diff-dg">
           <a id="${dd.anchor}"></a>
             <header>
-              <h3>(${dd.rank}) ${dd.diseaseName} [<a href="${dd.url}" target="_blank">${dd.diseaseCurie}</a>]</h3>
+                <h3>(${dd.rank}) ${dd.diseaseName} [<a href="${dd.url}" target="_blank">${dd.diseaseCurie}</a>]</h3>
             </header>
-            <p>
+
             <table class="redTable">
               <tr><th>Pretest probability</th><th>Log<sub>10</sub> composite likelihood ratio</th><th>Posttest probability</th></tr>
               <tr><td>${dd.pretestprob}</td><td>${dd.compositeLR}</td><td>${dd.posttestprob}</td></tr>
             </table>
-            </p>
+
             <br/>
             <#if dd.hasVariants=="yes">
+			<div class="genotype">
 
+			<div class="genotype-head" >
+            	<h4><i><span class="hgvs-symbol">${dd.geneSymbol}</span></i> [<a href="${dd.geneUrl}" target="_blank"><span class="entrez-id">${dd.entrezGeneId}</span></a>]</h4>
+			</div>
+			<div class="genotype-body">
             <table class="minimalistBlack">
             <thead>
             <tr>
@@ -508,18 +518,20 @@ a.svg:hover, a.svg:active {
                 <#if dd.hasGenotypeExplanation() >
                 <tr><td>Genotype score LR:</td><td colspan="5">${dd.genotypeExplanation}</td></tr>
                 </#if>
-                </table>
+            </table>
+			</div>
+            </div>
             <#else>
             </#if>
             <br/>
-            <div style="border:1px solid black; text-align:center;">
+            <div class="lr-contributions">
             ${dd.svg}
             </div>
           </article>
         </#list>
     </section>
     <section>
-      <a name="othergenes"></a>
+      <a id="othergenes"></a>
       <article>
         <h2>Genes/Diseases with low posttest probability:</h2>
         <p>Variants were identified in the following genes. The posttest probability of diseases
@@ -559,7 +571,7 @@ a.svg:hover, a.svg:active {
 
 
     <section>
-      <a name="explain"></a>
+      <a id="explain"></a>
       <article>
         <h2>Definitions</h2>
         <p>LIRICAL calculates likelihood ratios for each HPO feature and for the genotype (if applicable).
@@ -593,7 +605,7 @@ a.svg:hover, a.svg:active {
       results of LIRICAL should not be construed as medical advice and should always be reviewed by medical professionals.</p>
       <p>See LIRICAL's <a href="https://lirical.readthedocs.io/en/latest/" target="_blank">online documentation</a>.</p>
 
-          <h4><i>This LIRICAL run had the following configuration.<i></h4>
+          <h4><i>This LIRICAL run had the following configuration:</i></h4>
           <ul>
             <#if hpoVersion?has_content>
               <li>Human Phenotype Ontology version: ${hpoVersion}</li>
