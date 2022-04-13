@@ -110,10 +110,11 @@ public class PrioritizeWithSquirls extends AbstractPrioritizeCommand {
         return LiricalBuilder.builder(dataSection.liricalDataDirectory)
                 .genomeBuild(genomeBuild)
                 .backgroundVariantFrequency(dataSection.backgroundFrequencyFile)
-                .exomiserDataDirectory(dataSection.exomiserDataDirectory)
                 .clearDiseaseDatabases().useDiseaseDatabases(diseaseDatabases)
                 .transcriptDatabase(runConfiguration.transcriptDb)
                 .defaultVariantAlleleFrequency(runConfiguration.defaultVariantAlleleFrequency)
+                .functionalVariantAnnotator(exomiser)
+                .variantFrequencyService(exomiser)
                 .variantPathogenicityService(squirlsAwarePathogenicityService)
                 .build();
     }

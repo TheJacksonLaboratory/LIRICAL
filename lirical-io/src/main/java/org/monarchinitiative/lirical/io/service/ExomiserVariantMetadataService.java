@@ -71,17 +71,23 @@ public class ExomiserVariantMetadataService implements VariantMetadataService, F
     }
 
     private static JannovarData deserializeJannovar(Path jannovarCache) throws LiricalDataException {
+        JannovarData data = null;
         try {
-            return JannovarDataProtoSerialiser.load(jannovarCache);
+            data = JannovarDataProtoSerialiser.load(jannovarCache);
         } catch (InvalidFileFormatException e) {
-            LOGGER.info("Could not deserialize Jannovar file with Protobuf deserializer, trying legacy deserializer...");
+            LOGGER.info("Could not deserialize Jannovar file with Protobuf deserializer: {} Trying legacy deserializer...", e.getMessage());
         }
-        try {
-            return new JannovarDataSerializer(jannovarCache.toAbsolutePath().toString()).load();
-        } catch (SerializationException e) {
-            LOGGER.error("Could not deserialize Jannovar file with legacy deserializer...");
-            throw new LiricalDataException(String.format("Could not load Jannovar data from %s", jannovarCache.toAbsolutePath()), e);
+        if (data == null) {
+            try {
+                data = new JannovarDataSerializer(jannovarCache.toAbsolutePath().toString()).load();
+            } catch (SerializationException e) {
+                LOGGER.error("Could not deserialize Jannovar file with legacy deserializer...");
+                throw new LiricalDataException(String.format("Could not load Jannovar data from %s", jannovarCache.toAbsolutePath()), e);
+            }
         }
+
+        LOGGER.info("Transcript database was loaded!");
+        return data;
     }
 
     private ExomiserVariantMetadataService(MVStore mvStore,

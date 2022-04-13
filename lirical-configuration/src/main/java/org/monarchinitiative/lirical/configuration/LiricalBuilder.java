@@ -195,6 +195,8 @@ public class LiricalBuilder {
                 // Right now we cannot do anything else but fail
                 throw new LiricalDataException("Functional variant annotator must not be null");
             }
+        } else {
+            LOGGER.debug("Found variant functional annotator.");
         }
         if (variantFrequencyService == null) {
             if (exomiserDataDirectory != null) {
@@ -205,6 +207,8 @@ public class LiricalBuilder {
                 // Right now we cannot do anything else but fail
                 throw new LiricalDataException("Variant frequency service must not be null");
             }
+        } else {
+            LOGGER.debug("Found variant frequency service.");
         }
 
         if (variantPathogenicityService == null) {
@@ -216,6 +220,8 @@ public class LiricalBuilder {
                 // Right now we cannot do anything else but fail
                 throw new LiricalDataException("Variant pathogenicity service must not be null");
             }
+        } else {
+            LOGGER.debug("Found variant pathogenicity service.");
         }
 
         return CompoundVariantMetadataService.of(functionalVariantAnnotator, variantFrequencyService, variantPathogenicityService);
