@@ -41,7 +41,7 @@ public class VcfGenotypedVariantParserTest {
 
         List<GenotypedVariant> variants = parser.variantStream().toList();
 
-        assertThat(variants, hasSize(4));
+        assertThat(variants, hasSize(5));
         GenotypedVariant a0 = variants.get(0);
         assertThat(a0.alleleCount("Holly").isPresent(), equalTo(true));
         assertThat(a0.alleleCount("Holly").get(), equalTo(AlleleCount.of(0, 1)));
@@ -51,6 +51,7 @@ public class VcfGenotypedVariantParserTest {
 
         assertThat(a0.alleleCount("Skyler").isPresent(), equalTo(true));
         assertThat(a0.alleleCount("Skyler").get(), equalTo(AlleleCount.of(0, 0)));
+        assertThat(a0.passedFilters(), equalTo(true));
 
         GenotypedVariant a1 = variants.get(1);
         assertThat(a1.alleleCount("Holly").isPresent(), equalTo(true));
@@ -61,6 +62,7 @@ public class VcfGenotypedVariantParserTest {
 
         assertThat(a1.alleleCount("Skyler").isPresent(), equalTo(true));
         assertThat(a1.alleleCount("Skyler").get(), equalTo(AlleleCount.of(0, 2)));
+        assertThat(a1.passedFilters(), equalTo(true));
 
         GenotypedVariant c = variants.get(3);
         assertThat(c.alleleCount("Holly").isPresent(), equalTo(true));
@@ -70,5 +72,11 @@ public class VcfGenotypedVariantParserTest {
 
         assertThat(c.alleleCount("Skyler").isPresent(), equalTo(true));
         assertThat(c.alleleCount("Skyler").get(), equalTo(AlleleCount.of(2, 0)));
+        assertThat(c.passedFilters(), equalTo(true));
+
+        // Variant `d` failed QC filters
+        GenotypedVariant d = variants.get(4);
+        assertThat(d.passedFilters(), equalTo(false));
+
     }
 }

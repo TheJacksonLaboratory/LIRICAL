@@ -8,8 +8,11 @@ import java.util.Set;
 
 public interface GenotypedVariant {
 
-    static GenotypedVariant of(GenomeBuild genomeBuild, GenomicVariant variant, Map<String, AlleleCount> genotypes) {
-        return new GenotypedVariantDefault(genomeBuild, variant, genotypes);
+    static GenotypedVariant of(GenomeBuild genomeBuild,
+                               GenomicVariant variant,
+                               Map<String, AlleleCount> genotypes,
+                               boolean passedFilters) {
+        return new GenotypedVariantDefault(genomeBuild, variant, genotypes, passedFilters);
     }
 
     GenomeBuild genomeBuild();
@@ -20,4 +23,8 @@ public interface GenotypedVariant {
 
     Optional<AlleleCount> alleleCount(String sample);
 
+    /**
+     * @return true if the variant passed the filters in the variant source
+     */
+    boolean passedFilters();
 }

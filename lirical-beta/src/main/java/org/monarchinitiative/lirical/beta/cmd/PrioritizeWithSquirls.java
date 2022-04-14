@@ -8,6 +8,7 @@ import org.monarchinitiative.lirical.core.exception.LiricalParseException;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.model.Sex;
+import org.monarchinitiative.lirical.core.output.AnalysisResultsMetadata;
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
 import org.monarchinitiative.lirical.io.ExomiserDataResolver;
@@ -177,5 +178,10 @@ public class PrioritizeWithSquirls extends AbstractPrioritizeCommand {
         }
 
         return AnalysisData.of(sampleId, parseAge(age), sex, observedTerms, negatedTerms, genes);
+    }
+
+    protected AnalysisResultsMetadata.Builder fillDataSection(AnalysisResultsMetadata.Builder builder) {
+        return builder.setLiricalPath(dataSection.liricalDataDirectory.toAbsolutePath().toString())
+                .setExomiserPath(dataSection.exomiserDataDirectory == null ? "" : dataSection.exomiserDataDirectory.toAbsolutePath().toString());
     }
 }

@@ -15,13 +15,16 @@ class GenotypedVariantDefault implements GenotypedVariant {
     private final GenomeBuild genomeBuild;
     private final GenomicVariant variant;
     private final Map<String, AlleleCount> genotypes;
+    private final boolean passedFilters;
 
     GenotypedVariantDefault(GenomeBuild genomeBuild,
                             GenomicVariant variant,
-                            Map<String, AlleleCount> genotypes) {
-        this.genomeBuild = genomeBuild;
-        this.variant = variant;
-        this.genotypes = genotypes;
+                            Map<String, AlleleCount> genotypes,
+                            boolean passedFilters) {
+        this.genomeBuild = Objects.requireNonNull(genomeBuild);
+        this.variant = Objects.requireNonNull(variant);
+        this.genotypes = Objects.requireNonNull(genotypes);
+        this.passedFilters = passedFilters;
     }
 
 
@@ -46,16 +49,21 @@ class GenotypedVariantDefault implements GenotypedVariant {
     }
 
     @Override
+    public boolean passedFilters() {
+        return passedFilters;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GenotypedVariantDefault that = (GenotypedVariantDefault) o;
-        return Objects.equals(genomeBuild, that.genomeBuild) && Objects.equals(variant, that.variant) && Objects.equals(genotypes, that.genotypes);
+        return genomeBuild == that.genomeBuild && Objects.equals(variant, that.variant) && Objects.equals(genotypes, that.genotypes) && passedFilters == that.passedFilters;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(genomeBuild, variant, genotypes);
+        return Objects.hash(genomeBuild, variant, genotypes, passedFilters);
     }
 
     @Override
@@ -64,6 +72,7 @@ class GenotypedVariantDefault implements GenotypedVariant {
                 "genomeBuild=" + genomeBuild +
                 ", variant=" + variant +
                 ", genotypes=" + genotypes +
+                ", passedFilters=" + passedFilters +
                 '}';
     }
 }

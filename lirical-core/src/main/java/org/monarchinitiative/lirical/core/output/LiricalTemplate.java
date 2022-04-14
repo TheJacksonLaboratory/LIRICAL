@@ -45,24 +45,26 @@ public abstract class LiricalTemplate {
     protected final Map<TermId, Gene2Genotype> geneById;
 
     protected LiricalTemplate(Ontology hpo,
-                           AnalysisData analysisData,
-                           Map<String, String> metadata,
-                           OutputOptions outputOptions) {
+                              AnalysisData analysisData,
+                              AnalysisResultsMetadata resultsMetadata,
+                              OutputOptions outputOptions) {
         this.analysisData = Objects.requireNonNull(analysisData);
         this.cfg = new Configuration(new Version("2.3.23"));
         cfg.setDefaultEncoding("UTF-8");
         this.geneById = analysisData.genes().genes().collect(Collectors.toMap(g -> g.geneId().id(), Function.identity()));
         this.outputPath = createOutputFile(outputOptions.outputDirectory(), outputOptions.prefix(), outputFormatString());
         this.pathogenicityThreshold = outputOptions.pathogenicityThreshold();
-        initTemplateData(analysisData, hpo, metadata);
+        initTemplateData(analysisData, hpo, resultsMetadata);
     }
 
     abstract void outputFile();
 
     protected abstract String outputFormatString();
 
-    private void initTemplateData(AnalysisData analysisData, Ontology ontology, Map<String,String> metadata) {
-        templateData.putAll(metadata);
+    private void initTemplateData(AnalysisData analysisData,
+                                  Ontology ontology,
+                                  AnalysisResultsMetadata resultsMetadata) {
+        templateData.put("resultsMeta", resultsMetadata);
         List<String> observedHPOs = new ArrayList<>();
         for (TermId id:analysisData.presentPhenotypeTerms()) {
             Term term = ontology.getTermMap().get(id);

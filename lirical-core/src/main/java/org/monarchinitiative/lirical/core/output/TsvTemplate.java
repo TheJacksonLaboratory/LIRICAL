@@ -36,9 +36,9 @@ public class TsvTemplate extends LiricalTemplate {
                 HpoDiseases diseases,
                 AnalysisData analysisData,
                 AnalysisResults analysisResults,
-                Map<String, String> metadata,
+                AnalysisResultsMetadata resultsMetadata,
                 OutputOptions outputOptions) {
-        super(hpo, analysisData, metadata, outputOptions);
+        super(hpo, analysisData, resultsMetadata, outputOptions);
         cfg.setClassForTemplateLoading(TsvTemplate.class, "");
         templateData.put("header", String.join("\t", tsvHeader));
         AtomicInteger rank = new AtomicInteger();

@@ -36,6 +36,11 @@ class LiricalVariantDefault implements LiricalVariant {
     }
 
     @Override
+    public boolean passedFilters() {
+        return genotypedVariant.passedFilters();
+    }
+
+    @Override
     public Optional<Float> frequency() {
         return variantMetadata.frequency();
     }

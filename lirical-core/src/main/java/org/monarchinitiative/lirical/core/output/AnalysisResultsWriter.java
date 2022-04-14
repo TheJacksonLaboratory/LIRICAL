@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -20,20 +19,19 @@ public class AnalysisResultsWriter {
     private final HpoDiseases diseases;
     private final AnalysisData analysisData;
     private final AnalysisResults analysisResults;
-    private final Map<String, String> metadata;
+    private final AnalysisResultsMetadata metadata;
 
 
     AnalysisResultsWriter(Ontology hpo,
                           HpoDiseases diseases,
                           AnalysisData analysisData,
                           AnalysisResults analysisResults,
-                          Map<String, String> metadata) {
+                          AnalysisResultsMetadata metadata) {
         this.hpo = hpo;
         this.diseases = diseases;
         this.analysisData = analysisData;
         this.analysisResults = analysisResults;
         this.metadata = metadata;
-
     }
 
     public void process(OutputOptions options) {

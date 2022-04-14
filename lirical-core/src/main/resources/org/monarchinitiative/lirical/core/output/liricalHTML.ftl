@@ -383,7 +383,7 @@ a.svg:hover, a.svg:active {
   <main>
     <section class="sample-summary">
       <a id="sample"></a>
-      <h2 class="center">Sample name: ${sample_name!"n/a"}</h2>
+      <h2 class="center">Sample name: ${resultsMeta.sampleName!"n/a"}</h2>
       <article>
         <div class="row">
           <div class="column features-title center">
@@ -435,7 +435,7 @@ a.svg:hover, a.svg:active {
         <#if yaml?has_content>
             <p>YAML configuration file: ${yaml}</p>
         </#if>
-        <p>LIRICAL analysis performed on ${analysis_date}.</p>
+        <p>LIRICAL analysis performed on ${resultsMeta.analysisDate}.</p>
       </article>
     </section>
 
@@ -594,7 +594,7 @@ a.svg:hover, a.svg:active {
       </article>
       </section>
       <section>
-        <a name="about"></a>
+        <a id="about"></a>
         <article>
           <h2>About</h2>
             <p>LIRICAL is a tool for exploring exome or genome sequencing data obtained for an individual with suspected rare genetic disease.
@@ -607,32 +607,35 @@ a.svg:hover, a.svg:active {
 
           <h4><i>This LIRICAL run had the following configuration:</i></h4>
           <ul>
-            <#if hpoVersion?has_content>
-              <li>Human Phenotype Ontology version: ${hpoVersion}</li>
+            <#if resultsMeta.hpoVersion?has_content>
+              <li>Human Phenotype Ontology version: ${resultsMeta.hpoVersion}</li>
             </#if>
-            <#if transcriptDatabase?has_content>
-              <li>Transcript database: ${transcriptDatabase}</li>
+            <#if resultsMeta.transcriptDatabase?has_content>
+              <li>Transcript database: ${resultsMeta.transcriptDatabase}</li>
             </#if>
-            <#if n_good_quality_variants?has_content>
-              <li>High-quality variants: ${n_good_quality_variants}</li>
+            <#if resultsMeta.nGoodQualityVariants?has_content>
+              <li>Good quality variants: ${resultsMeta.nGoodQualityVariants}</li>
             </#if>
-            <#if n_filtered_variants?has_content>
-              <li>Variants removed due to quality filter: ${n_filtered_variants}</li>
+            <#if resultsMeta.nFilteredVariants?has_content>
+              <li>Variants removed due to failing quality filter: ${resultsMeta.nFilteredVariants}</li>
             </#if>
-            <#if genesWithVar?has_content>
-                <li>Genes found to have at least one variant: ${genesWithVar}</li>
+            <#if resultsMeta.genesWithVar?has_content>
+                <li>Genes found to have at least one variant: ${resultsMeta.genesWithVar}</li>
             </#if>
-              <#if exomiserPath?has_content>
-              <li>Path to Exomiser database: ${exomiserPath}</li>
+            <#if resultsMeta.liricalPath?has_content>
+                  <li>Path to Lirical data directory: ${resultsMeta.liricalPath}</li>
             </#if>
-              <#if global_mode?has_content>
-              <li>Global analysis mode: ${global_mode}</li>
+            <#if resultsMeta.exomiserPath?has_content>
+              <li>Path to Exomiser data directory: ${resultsMeta.exomiserPath}</li>
+            </#if>
+              <#if resultsMeta.globalMode?has_content>
+              <li>Global analysis mode: ${resultsMeta.globalMode?string("Yes", "No")}</li>
               </#if>
           </ul>
           </p>
         </article>
       </section>
-      <span id="tooltip" display="none" style="position: absolute; display: none;"></span>
+      <span id="tooltip" style="position: absolute; display: none;"></span>
   </main>
   <footer>
     <p>LIRICAL &copy; 2019</p>

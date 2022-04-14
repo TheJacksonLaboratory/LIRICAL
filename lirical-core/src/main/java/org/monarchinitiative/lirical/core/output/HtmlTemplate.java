@@ -50,18 +50,16 @@ public class HtmlTemplate extends LiricalTemplate {
 
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
-     *
-     * @param metadata Metadata about the analysis.
      */
     HtmlTemplate(Ontology hpo,
                  HpoDiseases diseases,
                  AnalysisData analysisData,
                  AnalysisResults analysisResults,
-                 Map<String, String> metadata,
+                 AnalysisResultsMetadata resultsMetadata,
                  OutputOptions outputOptions,
                  List<String> errors,
                  Set<String> symbolsWithoutGeneIds) {
-        super(hpo, analysisData, metadata, outputOptions);
+        super(hpo, analysisData, resultsMetadata, outputOptions);
         this.lrThreshold = outputOptions.lrThreshold();
         this.minDiagnosisToShowInDetail = outputOptions.minDiagnosisCount();
         this.templateData.put("errorlist", errors);

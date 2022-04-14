@@ -5,7 +5,6 @@ import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 
-import java.util.Map;
 import java.util.Objects;
 
 public class AnalysisResultWriterFactory {
@@ -21,7 +20,7 @@ public class AnalysisResultWriterFactory {
 
     public AnalysisResultsWriter getWriter(AnalysisData analysisData,
                                            AnalysisResults analysisResults,
-                                           Map<String, String> metadata) {
+                                           AnalysisResultsMetadata metadata) {
         return new AnalysisResultsWriter(hpo, diseases, analysisData, analysisResults, metadata);
     }
 

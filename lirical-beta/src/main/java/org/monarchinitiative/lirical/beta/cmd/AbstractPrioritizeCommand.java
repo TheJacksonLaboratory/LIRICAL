@@ -2,6 +2,7 @@ package org.monarchinitiative.lirical.beta.cmd;
 
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.configuration.Lirical;
+import org.monarchinitiative.lirical.core.output.*;
 import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.AnalysisOptions;
@@ -10,10 +11,6 @@ import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
 import org.monarchinitiative.lirical.core.exception.LiricalParseException;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.*;
-import org.monarchinitiative.lirical.core.output.LrThreshold;
-import org.monarchinitiative.lirical.core.output.MinDiagnosisCount;
-import org.monarchinitiative.lirical.core.output.OutputFormat;
-import org.monarchinitiative.lirical.core.output.OutputOptions;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.VariantParser;
 import org.monarchinitiative.lirical.io.VariantParserFactory;
@@ -158,9 +155,17 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
 
         // 4 - write out the results
         LOGGER.info("Writing out the results");
-        // TODO - richer metadata
-        Map<String, String> metadata = Map.of("analysis_date", getTodaysDate(),
-                "sample_name", analysisData.sampleId());
+        FilteringStats filteringStats = analysisData.genes().computeFilteringStats();
+        AnalysisResultsMetadata metadata = fillDataSection(AnalysisResultsMetadata.builder())
+                .setHpoVersion(lirical.phenotypeService().hpo().getMetaInfo().getOrDefault("release", "UNKNOWN RELEASE"))
+                .setTranscriptDatabase(runConfiguration.transcriptDb.toString())
+                .setAnalysisDate(getTodaysDate())
+                .setSampleName(analysisData.sampleId())
+                .setnGoodQualityVariants(filteringStats.nGoodQualityVariants())
+                .setnFilteredVariants(filteringStats.nFilteredVariants())
+//                .setGenesWithVar(0) // TODO
+                .setGlobalMode(runConfiguration.globalAnalysisMode)
+                .build();
 
         OutputOptions outputOptions = createOutputOptions();
         lirical.analysisResultsWriterFactory()
@@ -181,6 +186,8 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
     protected AnalysisOptions prepareAnalysisOptions() {
         return new AnalysisOptions(runConfiguration.globalAnalysisMode);
     }
+
+    protected abstract AnalysisResultsMetadata.Builder fillDataSection(AnalysisResultsMetadata.Builder builder);
 
     protected OutputOptions createOutputOptions() {
         LrThreshold lrThreshold = runConfiguration.lrThreshold == null ? LrThreshold.notInitialized() : LrThreshold.setToUserDefinedThreshold(runConfiguration.lrThreshold);

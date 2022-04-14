@@ -1,5 +1,5 @@
 ! LIRICAL TSV Output
-! Sample: ${sample_name!"n/a"}
+! Sample: ${resultsMeta.sampleName!"n/a"}
 ! Observed HPO terms
 <#assign tab="\t">
 <#list  observedHPOs as hpo>

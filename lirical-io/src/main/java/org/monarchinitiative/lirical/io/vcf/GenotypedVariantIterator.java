@@ -70,7 +70,7 @@ class GenotypedVariantIterator implements Iterator<GenotypedVariant> {
                 for (Allele alt : alts) {
                     GenomicVariant variant = converter.convert(contig, vc.getID(), start, ref.getBaseString(), alt.getBaseString());
                     Map<String, AlleleCount> countMap = countGenotypes(ref, alt, vc.getGenotypes());
-                    queue.add(GenotypedVariant.of(genomeBuild, variant, countMap));
+                    queue.add(GenotypedVariant.of(genomeBuild, variant, countMap, vc.isNotFiltered()));
                 }
             }
             break;
