@@ -28,13 +28,15 @@ public class Main implements Callable<Integer> {
         }
 
         CommandLine cline = new CommandLine(new Main())
-                .addSubcommand("background", new BackgroundFrequencyCommand())
                 .addSubcommand("download", new DownloadCommand())
+
+                .addSubcommand("background", new BackgroundFrequencyCommand())
                 .addSubcommand("grid", new GridSearchCommand())
-                .addSubcommand("phenopacket", new PhenopacketCommand())
-                .addSubcommand("prioritize", new PrioritizeCommand())
                 .addSubcommand("simulate", new SimulatePhenotypeOnlyCommand())
                 .addSubcommand("simulate-vcf", new SimulatePhenopacketWithVcfCommand())
+
+                .addSubcommand("prioritize", new PrioritizeCommand())
+                .addSubcommand("phenopacket", new PhenopacketCommand())
                 .addSubcommand("yaml", new YamlCommand());
         cline.setToggleBooleanFlags(false);
         long startTime = System.currentTimeMillis();
