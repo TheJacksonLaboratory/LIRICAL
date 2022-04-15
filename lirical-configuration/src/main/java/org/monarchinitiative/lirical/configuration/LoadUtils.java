@@ -6,8 +6,8 @@ import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.phenol.annotations.assoc.HpoAssociationLoader;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
-import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseAnnotationLoader;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoader;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.util.Set;
 
 class LoadUtils {
 
@@ -40,10 +39,13 @@ class LoadUtils {
         }
     }
 
-    static HpoDiseases loadHpoDiseases(Path annotationPath, Ontology hpo, Set<DiseaseDatabase> diseaseDatabases) throws LiricalDataException {
+    static HpoDiseases loadHpoDiseases(Path annotationPath,
+                                       Ontology hpo,
+                                       HpoDiseaseLoaderOptions options) throws LiricalDataException {
         try {
             LOGGER.debug("Loading HPO annotations from {}", annotationPath.toAbsolutePath());
-            return HpoDiseaseAnnotationLoader.loadHpoDiseases(annotationPath, hpo, diseaseDatabases);
+            HpoDiseaseLoader loader = HpoDiseaseLoader.of(hpo, options);
+            return loader.load(annotationPath);
         } catch (IOException e) {
             throw new LiricalDataException(e);
         }
@@ -52,15 +54,13 @@ class LoadUtils {
     static HpoAssociationData loadAssociationData(Ontology hpo,
                                                   Path homoSapiensGeneInfo,
                                                   Path mim2geneMedgen,
-                                                  Path phenotypeHpoa,
-                                                  Set<DiseaseDatabase> diseaseDatabases) throws LiricalDataException {
+                                                  HpoDiseases diseases) throws LiricalDataException {
         try {
             return HpoAssociationLoader.loadHpoAssociationData(hpo,
                     homoSapiensGeneInfo,
                     mim2geneMedgen,
                     null,
-                    phenotypeHpoa,
-                    diseaseDatabases);
+                    diseases);
         } catch (IOException e) {
             throw new LiricalDataException(e);
         }

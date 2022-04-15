@@ -2,7 +2,7 @@
 #date: 2018-07-24
 #tracker: https://github.com/obophenotype/human-phenotype-ontology
 #HPO-version: http://purl.obolibrary.org/obo/hp/releases/2018-06-13/hp.owl
-DatabaseID	DiseaseName	Qualifier	HPO_ID	Reference	Evidence	Onset	Frequency	Sex	Modifier	Aspect	Biocuration
+#DatabaseID	DiseaseName	Qualifier	HPO_ID	Reference	Evidence	Onset	Frequency	Sex	Modifier	Aspect	Biocuration
 OMIM:216300	CLEFT PALATE, DEAFNESS, AND OLIGODONTIA		HP:0000007	OMIM:216300	IEA					I	HPO:iea[2009-02-17]
 OMIM:216300	CLEFT PALATE, DEAFNESS, AND OLIGODONTIA		HP:0000185	OMIM:216300	IEA					P	HPO:iea[2009-02-17]
 OMIM:216300	CLEFT PALATE, DEAFNESS, AND OLIGODONTIA		HP:0001852	OMIM:216300	IEA					P	HPO:iea[2009-02-17]

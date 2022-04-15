@@ -2,7 +2,8 @@ package org.monarchinitiative.lirical.core;
 
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
-import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseAnnotationLoader;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoader;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 
@@ -35,7 +36,9 @@ public class TestResources {
 
     private static HpoDiseases loadHpoDiseases() {
         try {
-            return HpoDiseaseAnnotationLoader.loadHpoDiseases(ANNOTATION_PATH, hpo(), Set.of(DiseaseDatabase.OMIM));
+            HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(Set.of(DiseaseDatabase.OMIM), true, HpoDiseaseLoaderOptions.DEFAULT_COHORT_SIZE);
+            HpoDiseaseLoader loader = HpoDiseaseLoader.of(hpo(), options);
+            return loader.load(ANNOTATION_PATH);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

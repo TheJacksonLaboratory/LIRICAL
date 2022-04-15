@@ -16,6 +16,7 @@ import org.monarchinitiative.lirical.io.vcf.VcfVariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
@@ -151,8 +152,10 @@ public class LiricalBuilder {
 
     public Lirical build() throws LiricalDataException {
         // First, services
-        if (phenotypeService == null)
-            phenotypeService = configurePhenotypeService(dataDirectory, diseaseDatabases);
+        if (phenotypeService == null) {
+            HpoDiseaseLoaderOptions diseaseLoaderOptions = HpoDiseaseLoaderOptions.of(diseaseDatabases, true, HpoDiseaseLoaderOptions.DEFAULT_COHORT_SIZE);
+            phenotypeService = configurePhenotypeService(dataDirectory, diseaseLoaderOptions);
+        }
 
         if (variantMetadataService == null) {
             LOGGER.debug("Variant metadata service is unset. Trying to create the service from variant annotator, frequency service, and pathogenicity service.");
@@ -235,11 +238,11 @@ public class LiricalBuilder {
         return ExomiserVariantMetadataService.of(resolver.mvStorePath(), transcriptCache, genomeAssembly, options);
     }
 
-    private static PhenotypeService configurePhenotypeService(Path dataDirectory, Set<DiseaseDatabase> diseaseDatabases) throws LiricalDataException {
+    private static PhenotypeService configurePhenotypeService(Path dataDirectory, HpoDiseaseLoaderOptions options) throws LiricalDataException {
         LiricalDataResolver liricalDataResolver = LiricalDataResolver.of(dataDirectory);
         Ontology hpo = LoadUtils.loadOntology(liricalDataResolver.hpoJson());
-        HpoDiseases diseases = LoadUtils.loadHpoDiseases(liricalDataResolver.phenotypeAnnotations(), hpo, diseaseDatabases);
-        HpoAssociationData associationData = LoadUtils.loadAssociationData(hpo, liricalDataResolver.homoSapiensGeneInfo(), liricalDataResolver.mim2geneMedgen(), liricalDataResolver.phenotypeAnnotations(), diseaseDatabases);
+        HpoDiseases diseases = LoadUtils.loadHpoDiseases(liricalDataResolver.phenotypeAnnotations(), hpo, options);
+        HpoAssociationData associationData = LoadUtils.loadAssociationData(hpo, liricalDataResolver.homoSapiensGeneInfo(), liricalDataResolver.mim2geneMedgen(), diseases);
         return PhenotypeService.of(hpo, diseases, associationData);
     }
 

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.core.TestResources;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -83,7 +84,7 @@ public class PhenotypeLikelihoodRatioTest {
         HpoDisease disease = diseaseMap.get(diseaseName);
         assertNotNull(disease);
         double expected =1.0;
-        double frq = disease.getAnnotation(tid).getFrequency();
+        double frq = disease.getAnnotation(tid).flatMap(HpoDiseaseAnnotation::frequency).get();
         assertEquals(expected,  frq,EPSILON);
     }
 

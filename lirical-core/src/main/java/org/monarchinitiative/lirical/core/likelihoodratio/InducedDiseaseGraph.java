@@ -1,14 +1,15 @@
 package org.monarchinitiative.lirical.core.likelihoodratio;
 
 
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoSubOntologyRootTermIds;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
+import org.monarchinitiative.phenol.constants.hpo.HpoSubOntologyRootTermIds;
 import org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * For some calculations of the phenotype likelihood ratio, we need to traverse the graph induced by the HPO terms to
@@ -41,11 +42,12 @@ public class InducedDiseaseGraph {
     private record CandidateMatch(TermId termId, int distance) {
     }
 
-    public static InducedDiseaseGraph create(HpoDisease disease, Ontology ontology) {
-        Map<TermId, Double> termFrequencies = new HashMap<>(disease.getNumberOfPhenotypeAnnotations());
+    public static InducedDiseaseGraph create(HpoDisease disease, Ontology ontology, float defaultPhenotypeTermFrequency) {
+        Map<TermId, Double> termFrequencies = new HashMap<>(disease.phenotypicAbnormalitiesCount());
 
-        for (HpoAnnotation annotation : disease.getPhenotypicAbnormalities()) {
-            double f = annotation.getFrequency();
+        for (Iterator<HpoDiseaseAnnotation> iterator = disease.phenotypicAbnormalities(); iterator.hasNext();) {
+            HpoDiseaseAnnotation annotation = iterator.next();
+            double frequency = annotation.frequency().orElse(defaultPhenotypeTermFrequency);
             CandidateMatch cmatch = new CandidateMatch(annotation.id(), 0); // distance is zero
             Stack<CandidateMatch> stack = new Stack<>();
             stack.push(cmatch);
@@ -57,7 +59,7 @@ public class InducedDiseaseGraph {
                         continue;
                     }
                     int distance = cm.distance + 1;
-                    double adjustedFrequency = f / Math.pow(10.0, distance);
+                    double adjustedFrequency = frequency / Math.pow(10.0, distance);
                     // Store the adjustedFrequency if no frequency is associated with termId.
                     // Otherwise, choose the greater frequency.
                     termFrequencies.compute(parentTermId, (termId, freq) -> (freq == null)
@@ -67,7 +69,10 @@ public class InducedDiseaseGraph {
                 }
             }
         }
-        Set<TermId> negativeInducedGraph = OntologyAlgorithm.getAncestorTerms(ontology, Set.copyOf(disease.getNegativeAnnotations()), true);
+        Set<TermId> absentPhenotypeTerms = disease.absentPhenotypicAbnormalitiesStream()
+                .map(HpoDiseaseAnnotation::id)
+                .collect(Collectors.toUnmodifiableSet());
+        Set<TermId> negativeInducedGraph = OntologyAlgorithm.getAncestorTerms(ontology, absentPhenotypeTerms, true);
 
         return new InducedDiseaseGraph(disease, termFrequencies, negativeInducedGraph);
     }
@@ -79,14 +84,14 @@ public class InducedDiseaseGraph {
      *
      * @param hpoDisease        The disease we are currently investigating.
      * @param term2frequencyMap
-     * @param ancestorTerms
+     * @param negativeInducedGraph
      */
-    InducedDiseaseGraph(HpoDisease hpoDisease,
-                        Map<TermId, Double> term2frequencyMap,
-                        Set<TermId> ancestorTerms) {
+    private InducedDiseaseGraph(HpoDisease hpoDisease,
+                            Map<TermId, Double> term2frequencyMap,
+                            Set<TermId> negativeInducedGraph) {
         this.disease = hpoDisease;
         this.term2frequencyMap = term2frequencyMap;
-        this.inducedNegativeGraph = ancestorTerms;
+        this.inducedNegativeGraph = negativeInducedGraph;
     }
 
     /**

@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.core.TestResources;
 import org.monarchinitiative.lirical.core.analysis.TestResult;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.ArrayList;
@@ -48,11 +48,11 @@ public class TestResultTest {
     @BeforeEach
     public void init() {
         TermId glaucomaId = TermId.of("MONDO:123");
-        List<TermId> emptyList = List.of();
-        List<HpoAnnotation> emptyAnnot = List.of();
-        glaucoma = HpoDisease.of(glaucomaId, "Glaucoma",emptyAnnot,emptyList,emptyList,emptyList,emptyList);
+        List<HpoDiseaseAnnotation> emptyAnnot = List.of();
+        List<TermId> modesOfInheritance = List.of();
+        glaucoma = HpoDisease.of(glaucomaId, "Glaucoma",null, emptyAnnot, modesOfInheritance);
 
-        HpoDisease d1 = HpoDisease.of(TermId.of("MONDO:1"), "d1",emptyAnnot,emptyList,emptyList,emptyList,emptyList);
+        HpoDisease d1 = HpoDisease.of(TermId.of("MONDO:1"), "d1",null, emptyAnnot, modesOfInheritance);
 
         TermId some = TermId.of("HP:0000006");
         List<LrWithExplanation> list1 = createTestList(some, 2.0, 3.0, 4.0);
@@ -152,10 +152,11 @@ public class TestResultTest {
         TermId testId2 = TermId.of("MONDO:2");
         TermId testId3 = TermId.of("MONDO:3");
         List<TermId> emptyList = List.of();
-        List<HpoAnnotation> emptyAnnot = List.of();
-        HpoDisease d2 = HpoDisease.of(testId2,"d2",emptyAnnot,emptyList,emptyList,emptyList,emptyList);
-        HpoDisease d1 = HpoDisease.of(testId1,"d1",emptyAnnot,emptyList,emptyList,emptyList,emptyList);
-        HpoDisease d3 = HpoDisease.of(testId3,"d3",emptyAnnot,emptyList,emptyList,emptyList,emptyList);
+        List<HpoDiseaseAnnotation> emptyAnnot = List.of();
+        List<TermId> modesOfInheritance = List.of();
+        HpoDisease d2 = HpoDisease.of(testId2, "d2",null, emptyAnnot, modesOfInheritance);
+        HpoDisease d1 = HpoDisease.of(testId1, "d1",null, emptyAnnot, modesOfInheritance);
+        HpoDisease d3 = HpoDisease.of(testId3, "d3",null, emptyAnnot, modesOfInheritance);
 
         TermId some = TermId.of("HP:0000006");
         List<LrWithExplanation> list1 = createTestList(some, 2.0, 3.0, 4.0);

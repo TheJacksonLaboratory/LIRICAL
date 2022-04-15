@@ -18,6 +18,7 @@ import org.monarchinitiative.lirical.io.service.ExomiserVariantMetadataService;
 import org.monarchinitiative.lirical.io.vcf.VcfVariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
@@ -63,8 +64,9 @@ public class LiricalConfiguration {
 
 
         Ontology hpo = LoadUtils.loadOntology(liricalDataResolver.hpoJson());
-        HpoDiseases diseases = LoadUtils.loadHpoDiseases(liricalDataResolver.phenotypeAnnotations(), hpo, properties.diseaseDatabases());
-        HpoAssociationData associationData = LoadUtils.loadAssociationData(hpo, liricalDataResolver.homoSapiensGeneInfo(), liricalDataResolver.mim2geneMedgen(), liricalDataResolver.phenotypeAnnotations(), properties.diseaseDatabases());
+        HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(properties.diseaseDatabases(), true, HpoDiseaseLoaderOptions.DEFAULT_COHORT_SIZE);
+        HpoDiseases diseases = LoadUtils.loadHpoDiseases(liricalDataResolver.phenotypeAnnotations(), hpo, options);
+        HpoAssociationData associationData = LoadUtils.loadAssociationData(hpo, liricalDataResolver.homoSapiensGeneInfo(), liricalDataResolver.mim2geneMedgen(), diseases);
         PhenotypeService phenotypeService = PhenotypeService.of(hpo, diseases, associationData);
 
 

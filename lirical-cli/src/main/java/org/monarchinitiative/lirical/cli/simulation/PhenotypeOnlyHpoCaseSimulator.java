@@ -4,8 +4,8 @@ package org.monarchinitiative.lirical.cli.simulation;
 import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getParentTerms;
@@ -111,7 +112,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
         int i = r.nextInt(diseaseMap.size());
         TermId tid = termIndices[i];
         HpoDisease disease = diseaseMap.get(tid);
-        while (disease.getPhenotypicAbnormalities().size() < this.n_terms_per_case) {
+        while (disease.phenotypicAbnormalitiesCount() < n_terms_per_case) {
             i = r.nextInt(diseaseMap.size());
             tid = termIndices[i];
             disease = diseaseMap.get(tid);
@@ -140,17 +141,15 @@ public class PhenotypeOnlyHpoCaseSimulator {
             TermId diseaseToSimulate = getNextRandomDisease(r);//termIndices[randomIndices[i]];
             HpoDisease disease = diseaseMap.get(diseaseToSimulate);
             //logger.trace("Simulating disease "+diseasename);
-            if (disease.getNumberOfPhenotypeAnnotations() <this.n_terms_per_case) {
-                logger.trace(String.format("Skipping disease %s [%s] because it has no phenotypic annotations",
-                        disease.getDiseaseName(),
-                        disease.getDiseaseDatabaseId()));
+            if (disease.phenotypicAbnormalitiesCount() < this.n_terms_per_case) {
+                logger.trace("Skipping disease {} [{}] because it has no phenotypic annotations", disease.diseaseName(), disease.id());
                 continue;
             }
             Optional<Integer> optionalRank = simulateCase(disease);
             if (optionalRank.isPresent()) {
                 int rank = optionalRank.get();
                 if (verbose) {
-                    System.err.println(String.format("%s: rank=%d", disease.getDiseaseName(), rank));
+                    System.err.println(String.format("%s: rank=%d", disease.diseaseName(), rank));
                 }
                 ranks.putIfAbsent(rank,0);
                 ranks.put(rank, ranks.get(rank) + 1);
@@ -255,7 +254,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
         //We already checked to make sure disease have at least n_terms_per_case, so the following line is unnecessary and confusing to read--Aaron
         logger.trace("Creating simulated case with n_terms="+n_terms_per_case + ", n_random=" + n_noise_terms);
         // the creation of a new ArrayList is needed because disease returns an immutable list.
-        List<HpoAnnotation> abnormalities = new ArrayList<>(disease.getPhenotypicAbnormalities());
+        List<HpoDiseaseAnnotation> abnormalities = disease.phenotypicAbnormalitiesStream().collect(Collectors.toList());
         ImmutableList.Builder<TermId> termIdBuilder = new ImmutableList.Builder<>();
         Collections.shuffle(abnormalities); // randomize order of phenotypes
         // take the first n_random terms of the randomized list

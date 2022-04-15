@@ -75,14 +75,14 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
                                                 Map<TermId, List<Gene2Genotype>> diseaseToGenotype) {
         Optional<Double> pretestOptional = pretestDiseaseProbability.pretestProbability(disease.id());
         if (pretestOptional.isEmpty()) {
-            LOGGER.warn("Missing pretest probability for {} ({})", disease.getDiseaseName(), disease.id());
+            LOGGER.warn("Missing pretest probability for {} ({})", disease.diseaseName(), disease.id());
             return Optional.empty();
         }
         double pretestProbability = pretestOptional.get();
 
         List<Gene2Genotype> genotypes = diseaseToGenotype.getOrDefault(disease.id(), List.of());
 
-        InducedDiseaseGraph idg = InducedDiseaseGraph.create(disease, phenotypeService.hpo());
+        InducedDiseaseGraph idg = InducedDiseaseGraph.create(disease, phenotypeService.hpo(), PhenotypeLikelihoodRatio.DEFAULT_TERM_FREQUENCY); // TODO - is this the right thing to do?
         List<LrWithExplanation> observed = observedPhenotypesLikelihoodRatios(observedTerms, idg);
         List<LrWithExplanation> excluded = excludedPhenotypesLikelihoodRatios(excludedTerms, idg);
 
@@ -92,7 +92,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
             bestGenotypeLr = null;
         } else { // We're using the genotype data
             Optional<GenotypeLrWithExplanation> bestGenotype = genotypes.stream()
-                    .map(g2g -> genotypeLikelihoodRatio.evaluateGenotype(sampleId, g2g, disease.getModesOfInheritance()))
+                    .map(g2g -> genotypeLikelihoodRatio.evaluateGenotype(sampleId, g2g, disease.modesOfInheritance()))
                     .max(Comparator.comparingDouble(GenotypeLrWithExplanation::lr));
             if (bestGenotype.isEmpty()) {
                 // This is a disease with no known disease gene.

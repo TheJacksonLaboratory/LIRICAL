@@ -2,8 +2,9 @@ package org.monarchinitiative.lirical.core.likelihoodratio;
 
 
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAnnotation;
+import org.monarchinitiative.phenol.annotations.base.Ratio;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -35,6 +36,8 @@ public class PhenotypeLikelihoodRatio {
     /** The default likelihood ratio for an excluded query term that is explicitly excluded in a disease.*/
     private static final double EXCLUDED_IN_DISEASE_AND_EXCLUDED_IN_QUERY_PROBABILITY = 1000.0;
     private static final double FALSE_NEGATIVE_OBSERVATION_OF_PHENOTYPE_PROB = 0.01;
+    /** The default frequency of a term in a disease if the explicit frequency is not available. */
+    public static final float DEFAULT_TERM_FREQUENCY = 1.f; // TODO - is this the right thing to do?
     /** The HPO ontology with all of its subontologies. */
     private final Ontology ontology;
     /** This map has one entry for each disease in our database. Key--the disease ID, e.g., OMIM:600200.*/
@@ -76,20 +79,18 @@ public class PhenotypeLikelihoodRatio {
     public LrWithExplanation lrForObservedTerm(TermId queryTid, InducedDiseaseGraph idg) {
         HpoDisease disease = idg.getDisease();
         Set<TermId> queryAncestors = OntologyAlgorithm.getAncestorTerms(ontology,queryTid,true);
-        List<TermId> diseaseExcludedTerms = disease.getNegativeAnnotations();
-
-        for (TermId excl : diseaseExcludedTerms) {
-            if (queryAncestors.contains(excl)) {
-                // i.e., the query term is explicitly EXCLUDED in the disease definition
-                return explanationFactory.create(queryTid,
-                        LrMatchType.QUERY_TERM_PRESENT_BUT_EXCLUDED_IN_DISEASE,
-                        EXCLUDED_IN_DISEASE_BUT_PRESENT_IN_QUERY_PROBABILITY);
-            }
+        if (disease.absentPhenotypicAbnormalitiesStream().anyMatch(a -> queryAncestors.contains(a.id()))) {
+            // i.e., the query term is explicitly EXCLUDED in the disease definition
+            return explanationFactory.create(queryTid,
+                    LrMatchType.QUERY_TERM_PRESENT_BUT_EXCLUDED_IN_DISEASE,
+                    EXCLUDED_IN_DISEASE_BUT_PRESENT_IN_QUERY_PROBABILITY);
         }
 
         if (disease.isDirectlyAnnotatedTo(queryTid)) {
-            HpoAnnotation hpoTid = disease.getAnnotation(queryTid);
-            double numerator = hpoTid.getFrequency();
+            // The optional must be present since the disease is directly annotated to the query term.
+            //noinspection OptionalGetWithoutIsPresent
+            HpoDiseaseAnnotation annotation = disease.getAnnotation(queryTid).get();
+            double numerator = annotation.frequency().orElse(DEFAULT_TERM_FREQUENCY);
             double denominator = getBackgroundFrequency(queryTid);
             double lr = numerator / denominator;
             return explanationFactory.create(queryTid, LrMatchType.EXACT_MATCH, lr);
@@ -102,11 +103,13 @@ public class PhenotypeLikelihoodRatio {
             double maximumFrequencyOfDescendantTerm = 0.0;
             boolean isAncestor=false;
             TermId diseaseMatchingTerm=null;
-            for (HpoAnnotation hpoTermId : disease.getPhenotypicAbnormalities()) {
+            for (Iterator<HpoDiseaseAnnotation> iter = disease.phenotypicAbnormalities(); iter.hasNext();) {
+                HpoDiseaseAnnotation annotation = iter.next();
+                double frequency = annotation.frequency().orElse(DEFAULT_TERM_FREQUENCY);
                 // is query an ancestor of a term that annotates the disease?
-                if (OntologyAlgorithm.isSubclass(ontology,hpoTermId.id(),queryTid)) {
-                    maximumFrequencyOfDescendantTerm=Math.max(maximumFrequencyOfDescendantTerm,hpoTermId.getFrequency());
-                    diseaseMatchingTerm=hpoTermId.id();
+                if (OntologyAlgorithm.isSubclass(ontology,annotation.id(),queryTid)) {
+                    maximumFrequencyOfDescendantTerm=Math.max(maximumFrequencyOfDescendantTerm,frequency);
+                    diseaseMatchingTerm=annotation.id();
                     isAncestor=true;
                 }
             }
@@ -132,10 +135,11 @@ public class PhenotypeLikelihoodRatio {
             double maxF = 0f;
             TermId bestMatchTermId = null;
             double denominatorForNonRootCommandAnc = getBackgroundFrequency(queryTid);
-            for (HpoAnnotation annot : disease.getPhenotypicAbnormalities()) {
+            for (Iterator<HpoDiseaseAnnotation> iterator = disease.phenotypicAbnormalities(); iterator.hasNext();) {
+                HpoDiseaseAnnotation annot = iterator.next();
                 if (OntologyAlgorithm.isSubclass(ontology, queryTid, annot.id())){
                     double proportionalFrequency = getProportionInChildren(queryTid,annot.id());
-                    double queryFrequency = annot.getFrequency();
+                    double queryFrequency = annot.frequency().orElse(DEFAULT_TERM_FREQUENCY);
                     double f = proportionalFrequency*queryFrequency;
                     if (f > maxF) {
                         bestMatchTermId = annot.id();
@@ -215,8 +219,8 @@ public class PhenotypeLikelihoodRatio {
      * @param ontology reference to HPO Ontology
      * @return true if the disease has a direct (explicit) or indirect (implicit) annotation to tid
      */
-    private boolean isIndirectlyAnnotatedTo(TermId queryTid, HpoDisease disease, Ontology ontology) {
-        List<TermId> direct = disease.getPhenotypicAbnormalityTermIdList();
+    private static boolean isIndirectlyAnnotatedTo(TermId queryTid, HpoDisease disease, Ontology ontology) {
+        List<TermId> direct = disease.phenotypicAbnormalityTermIds().toList();
         Set<TermId> ancs = ontology.getAllAncestorTermIds(direct,true);
         return ancs.contains(queryTid);
     }
@@ -231,10 +235,11 @@ public class PhenotypeLikelihoodRatio {
      */
     private static double getFrequencyOfTermInDiseaseWithAnnotationPropagation(TermId query, HpoDisease disease, Ontology ontology) {
         double maxFrequency = 0.0;
-        for (TermId diseaseTermId :  disease.getPhenotypicAbnormalityTermIdList() ) {
-            Set<TermId> ancestors = ontology.getAncestorTermIds(diseaseTermId,true);
+        for (Iterator<HpoDiseaseAnnotation> iterator = disease.phenotypicAbnormalities(); iterator.hasNext(); ) {
+            HpoDiseaseAnnotation annotation = iterator.next();
+            Set<TermId> ancestors = ontology.getAncestorTermIds(annotation.id(),true);
             if (ancestors.contains(query))
-                maxFrequency = Math.max(maxFrequency, disease.getFrequencyOfTermInDisease(diseaseTermId));
+                maxFrequency = Math.max(maxFrequency, disease.getFrequencyOfTermInDisease(annotation.id()).map(Ratio::frequency).orElse(DEFAULT_TERM_FREQUENCY));
         }
         return maxFrequency;
     }
@@ -321,14 +326,19 @@ public class PhenotypeLikelihoodRatio {
             // given ancestor term, also in order to avoid double counting.
             Map<TermId, Double> updateMap=new HashMap<>();
 
-            for (HpoAnnotation tidm : dis.getPhenotypicAbnormalities()) {
-                TermId tid = tidm.id();
-                double termFrequency = tidm.getFrequency();
+            for (Iterator<HpoDiseaseAnnotation> iterator= dis.phenotypicAbnormalities(); iterator.hasNext();) {
+                HpoDiseaseAnnotation annotation = iterator.next();
+                TermId tid = annotation.id();
+                double termFrequency = annotation.frequency().orElse(DEFAULT_TERM_FREQUENCY);
+                TermId primaryTermId = ontology.getPrimaryTermId(tid);
+                if (primaryTermId == null) {
+                    logger.warn("Primary term ID for {} was not found!", tid.getValue());
+                    continue;
+                }
                 // All of the ancestor terms are implicitly annotated to tid
                 // therefore, add this to their background frequencies.
                 // Note we also include the original term here (third arg: true)
-                tid=ontology.getPrimaryTermId(tid);
-                Set<TermId> ancs = OntologyAlgorithm.getAncestorTerms(ontology,tid,true);
+                Set<TermId> ancs = OntologyAlgorithm.getAncestorTerms(ontology,primaryTermId,true);
                 for (TermId at : ancs) {
                     updateMap.putIfAbsent(at,termFrequency);
                     // put the maximum frequency for this term given it is
