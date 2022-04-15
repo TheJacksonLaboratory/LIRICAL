@@ -191,6 +191,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         LOGGER.info("Writing out the results");
         FilteringStats filteringStats = analysisData.genes().computeFilteringStats();
         AnalysisResultsMetadata metadata = AnalysisResultsMetadata.builder()
+                .setLiricalVersion(LIRICAL_VERSION)
                 .setHpoVersion(lirical.phenotypeService().hpo().getMetaInfo().getOrDefault("release", "UNKNOWN RELEASE"))
                 .setTranscriptDatabase(runConfiguration.transcriptDb.toString())
                 .setLiricalPath(dataSection.liricalDataDirectory.toAbsolutePath().toString())

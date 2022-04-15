@@ -1,4 +1,4 @@
-! LIRICAL TSV Output
+! LIRICAL TSV Output (${resultsMeta.liricalVersion})
 ! Sample: ${resultsMeta.sampleName!"n/a"}
 ! Observed HPO terms
 <#assign tab="\t">

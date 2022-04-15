@@ -638,7 +638,7 @@ a.svg:hover, a.svg:active {
       <span id="tooltip" style="position: absolute; display: none;"></span>
   </main>
   <footer>
-    <p>LIRICAL &copy; 2019</p>
+    <p>LIRICAL ${resultsMeta.liricalVersion!""} &copy; 2019</p>
   </footer>
 
   <script>

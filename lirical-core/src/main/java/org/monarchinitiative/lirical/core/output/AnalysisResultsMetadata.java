@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.core.output;
 
 public class AnalysisResultsMetadata {
+    private String liricalVersion;
     private String hpoVersion;
     private String transcriptDatabase;
     private String liricalPath;
@@ -12,7 +13,8 @@ public class AnalysisResultsMetadata {
     private int genesWithVar;
     private boolean globalMode;
 
-    private AnalysisResultsMetadata(String hpoVersion,
+    private AnalysisResultsMetadata(String liricalVersion,
+                                    String hpoVersion,
                                     String transcriptDatabase,
                                     String liricalPath,
                                     String exomiserPath,
@@ -22,6 +24,7 @@ public class AnalysisResultsMetadata {
                                     long nFilteredVariants,
                                     int genesWithVar,
                                     boolean globalMode) {
+        this.liricalVersion = liricalVersion;
         this.hpoVersion = hpoVersion;
         this.transcriptDatabase = transcriptDatabase;
         this.liricalPath = liricalPath;
@@ -32,6 +35,10 @@ public class AnalysisResultsMetadata {
         this.nFilteredVariants = nFilteredVariants;
         this.genesWithVar = genesWithVar;
         this.globalMode = globalMode;
+    }
+
+    public String getLiricalVersion() {
+        return liricalVersion;
     }
 
     public String getHpoVersion() {
@@ -121,7 +128,8 @@ public class AnalysisResultsMetadata {
     @Override
     public String toString() {
         return "AnalysisResultsMetadata{" +
-                "hpoVersion='" + hpoVersion + '\'' +
+                "liricalVersion='" + liricalVersion + '\'' +
+                ", hpoVersion='" + hpoVersion + '\'' +
                 ", transcriptDatabase='" + transcriptDatabase + '\'' +
                 ", liricalPath='" + liricalPath + '\'' +
                 ", exomiserPath='" + exomiserPath + '\'' +
@@ -135,6 +143,7 @@ public class AnalysisResultsMetadata {
     }
 
     public static class Builder {
+        private String liricalVersion;
         private String hpoVersion;
         private String transcriptDatabase;
         private String liricalPath;
@@ -147,6 +156,11 @@ public class AnalysisResultsMetadata {
         private boolean globalMode;
 
         private Builder() {
+        }
+
+        public Builder setLiricalVersion(String liricalVersion) {
+            this.liricalVersion = liricalVersion;
+            return this;
         }
 
         public Builder setHpoVersion(String hpoVersion) {
@@ -200,7 +214,17 @@ public class AnalysisResultsMetadata {
         }
 
         public AnalysisResultsMetadata build() {
-            return new AnalysisResultsMetadata(hpoVersion, transcriptDatabase, liricalPath, exomiserPath, analysisDate, sampleName, nGoodQualityVariants, nFilteredVariants, genesWithVar, globalMode);
+            return new AnalysisResultsMetadata(liricalVersion,
+                    hpoVersion,
+                    transcriptDatabase,
+                    liricalPath,
+                    exomiserPath,
+                    analysisDate,
+                    sampleName,
+                    nGoodQualityVariants,
+                    nFilteredVariants,
+                    genesWithVar,
+                    globalMode);
         }
     }
 }
