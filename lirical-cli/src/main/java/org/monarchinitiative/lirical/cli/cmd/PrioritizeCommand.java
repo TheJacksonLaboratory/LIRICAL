@@ -10,6 +10,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,15 +21,13 @@ import java.util.Optional;
         description = "Prioritize diseases based on observed/negated phenotype terms and a VCF file.")
 public class PrioritizeCommand extends AbstractPrioritizeCommand {
 
-    @CommandLine.Option(names = {"-p", "--observed-phenotype"},
-            arity = "0..*",
-            description = "Observed phenotype terms (can be specified multiple times).")
-    public List<String> observed = List.of();
+    @CommandLine.Option(names = {"-p", "--observed-phenotypes"},
+            description = "Comma-separated IDs of the observed phenotype terms.")
+    public String observed;
 
-    @CommandLine.Option(names = {"-n", "--negated-phenotype"},
-            arity = "0..*",
-            description = "Negated phenotype terms (can be specified multiple times).")
-    public List<String> negated = List.of();
+    @CommandLine.Option(names = {"-n", "--negated-phenotypes"},
+            description = "Comma-separated IDs of the negated/excluded phenotype terms.")
+    public String negated;
 
     @CommandLine.Option(names = {"--assembly"},
             paramLabel = "{hg19,hg38}",
@@ -62,17 +61,27 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
     protected AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException {
         HpoTermSanitizer sanitizer = new HpoTermSanitizer(lirical.phenotypeService().hpo());
 
-        List<TermId> observedTerms = observed.stream()
-                .map(TermId::of)
-                .map(sanitizer::replaceIfObsolete)
-                .flatMap(Optional::stream)
-                .toList();
+        List<TermId> observedTerms;
+        if (observed != null)
+            observedTerms = Arrays.stream(observed.split(","))
+                    .map(String::trim)
+                    .map(TermId::of)
+                    .map(sanitizer::replaceIfObsolete)
+                    .flatMap(Optional::stream)
+                    .toList();
+        else
+            observedTerms = List.of();
 
-        List<TermId> negatedTerms = negated.stream()
-                .map(TermId::of)
-                .map(sanitizer::replaceIfObsolete)
-                .flatMap(Optional::stream)
-                .toList();
+        List<TermId> negatedTerms;
+        if (negated != null)
+            negatedTerms = Arrays.stream(negated.split(","))
+                    .map(String::trim)
+                    .map(TermId::of)
+                    .map(sanitizer::replaceIfObsolete)
+                    .flatMap(Optional::stream)
+                    .toList();
+        else
+            negatedTerms = List.of();
 
         GenesAndGenotypes genes;
         if (vcfPath == null || lirical.variantParserFactory().isEmpty()) {
