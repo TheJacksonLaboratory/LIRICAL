@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.Period;
 import java.time.format.DateTimeParseException;
@@ -47,6 +48,7 @@ import java.util.stream.Collectors;
 abstract class AbstractPrioritizeCommand implements Callable<Integer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPrioritizeCommand.class);
+    private static final NumberFormat NF = NumberFormat.getIntegerInstance();
     private static final Properties PROPERTIES = readProperties();
     private static final String LIRICAL_VERSION = PROPERTIES.getProperty("lirical.version", "unknown version");
 
@@ -282,7 +284,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
             List<LiricalVariant> variants = variantParser.variantStream()
                     .peek(logProgress(counter))
                     .toList();
-            LOGGER.info("Read {} variants", variants.size());
+            LOGGER.info("Read {} variants", NF.format(variants.size()));
 
             // Group variants by gene symbol. It would be better to group the variants by e.g. Entrez ID,
             // but the ID is not available from TranscriptAnnotation
@@ -318,7 +320,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         return v -> {
             int current = counter.incrementAndGet();
             if (current % 5000 == 0)
-                LOGGER.info("Read {} variants", current);
+                LOGGER.info("Read {} variants", NF.format(current));
         };
     }
 
