@@ -9,6 +9,8 @@ import java.util.Objects;
 
 public class AnalysisDataParserFactory {
 
+    private static final PhenopacketImporter V1_PHENOPACKET_IMPORTER = PhenopacketImporters.v1();
+    private static final PhenopacketImporter V2_PHENOPACKET_IMPORTER = PhenopacketImporters.v2();
     private final HpoTermSanitizer sanitizer;
     private final VariantParserFactory variantParserFactory;
     private final HpoAssociationData associationData;
@@ -23,8 +25,8 @@ public class AnalysisDataParserFactory {
 
     public AnalysisDataParser forFormat(AnalysisDataFormat format) {
         return switch (format) {
-            case PHENOPACKET_v1 -> new PhenopacketV1AnalysisDataParser(sanitizer, variantParserFactory, associationData);
-            case PHENOPACKET_v2 -> new PhenopacketV2AnalysisDataParser(sanitizer, variantParserFactory, associationData);
+            case PHENOPACKET_v1 -> new PhenopacketAnalysisDataParser(sanitizer, variantParserFactory, associationData, V1_PHENOPACKET_IMPORTER);
+            case PHENOPACKET_v2 -> new PhenopacketAnalysisDataParser(sanitizer, variantParserFactory, associationData, V2_PHENOPACKET_IMPORTER);
             case YAML -> new YamlAnalysisDataParser(sanitizer, variantParserFactory, associationData);
         };
     }

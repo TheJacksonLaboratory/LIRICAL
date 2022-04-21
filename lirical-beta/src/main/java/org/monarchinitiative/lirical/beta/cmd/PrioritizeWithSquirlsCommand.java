@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.cli.cmd;
+package org.monarchinitiative.lirical.beta.cmd;
 
 import org.monarchinitiative.lirical.configuration.Lirical;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
@@ -7,6 +7,8 @@ import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.model.Sex;
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
@@ -14,12 +16,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-@CommandLine.Command(name = "prioritize",
-        aliases = {"R"},
+@CommandLine.Command(name = "prioritize-squirls",
         sortOptions = false,
         mixinStandardHelpOptions = true,
-        description = "Prioritize diseases based on observed/negated phenotype terms and a VCF file.")
-public class PrioritizeCommand extends AbstractPrioritizeCommand {
+        description = "Prioritize diseases using Squirls and Exomiser.")
+public class PrioritizeWithSquirlsCommand extends BaseSquirlsAwareCommand {
+
+    // TODO - this command may be removed if it will not used in the near future.
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PrioritizeWithSquirlsCommand.class);
 
     @CommandLine.Option(names = {"-p", "--observed-phenotypes"},
             description = "Comma-separated IDs of the observed phenotype terms.")
@@ -28,11 +33,6 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
     @CommandLine.Option(names = {"-n", "--negated-phenotypes"},
             description = "Comma-separated IDs of the negated/excluded phenotype terms.")
     public String negated;
-
-    @CommandLine.Option(names = {"--assembly"},
-            paramLabel = "{hg19,hg38}",
-            description = "Genome build (default: ${DEFAULT-VALUE}).")
-    protected String genomeBuild = "hg38";
 
     @CommandLine.Option(names = {"--vcf"},
             description = "Path to VCF file (optional).")
@@ -50,12 +50,6 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
             paramLabel = "{MALE,FEMALE,UNKNOWN}",
             description = "Proband's sex (default: ${DEFAULT-VALUE}).")
     public Sex sex = Sex.UNKNOWN;
-
-
-    @Override
-    protected String getGenomeBuild() {
-        return genomeBuild;
-    }
 
     @Override
     protected AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException {

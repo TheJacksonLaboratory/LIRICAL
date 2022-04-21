@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.beta;
 
-import org.monarchinitiative.lirical.beta.cmd.PrioritizeWithSquirls;
+import org.monarchinitiative.lirical.beta.cmd.PhenopacketCommand;
+import org.monarchinitiative.lirical.beta.cmd.PrioritizeWithSquirlsCommand;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
@@ -35,7 +36,8 @@ public class Main implements Callable<Integer> {
 
         CommandLine cline = new CommandLine(new Main())
                 .setColorScheme(COLOR_SCHEME)
-                .addSubcommand("prioritize-squirls", new PrioritizeWithSquirls());
+                .addSubcommand("prioritize-squirls", new PrioritizeWithSquirlsCommand())
+                .addSubcommand("phenopacket-squirls", new PhenopacketCommand());
         System.exit(cline.execute(args));
 
     }

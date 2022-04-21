@@ -1,49 +1,41 @@
 package org.monarchinitiative.lirical.io.analysis;
 
 
-
 import com.google.protobuf.util.JsonFormat;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import java.io.*;
-import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class PhenopacketImporterTest {
-
-    @TempDir
-    static Path tempDir;
-
+public class PhenopacketV1ImporterTest {
+    private static byte[] DATA;
     private static final String fakeGenomeAssembly = "GRCH_37";
 
-    private static Phenopacket ppacket;
-
-    private static String phenopacketAbsolutePathOfTempFile;
-
-    private static OntologyClass ontologyClass(String id, String label ){
+    private static OntologyClass ontologyClass(String id, String label) {
         return OntologyClass.newBuilder().
                 setId(id).setLabel(label).
                 build();
     }
 
+    private PhenopacketData data;
+
     @BeforeAll
     public static void init() throws IOException {
-
-        OntologyClass homoSapiens = ontologyClass("NCBITaxon:9606","Homo sapiens");
+        OntologyClass homoSapiens = ontologyClass("NCBITaxon:9606", "Homo sapiens");
         Gene kmt2d = Gene.newBuilder().setId("ENTREZ:8085").setSymbol("KMT2D").build();
         Individual subject = Individual.newBuilder().
                 setId("proband a").
@@ -52,11 +44,11 @@ public class PhenopacketImporterTest {
                 setTaxonomy(homoSapiens).
                 build();
         Evidence evi = Evidence.newBuilder().
-                setEvidenceCode(ontologyClass("ECO:0000033","author statement supported by traceable reference")).
+                setEvidenceCode(ontologyClass("ECO:0000033", "author statement supported by traceable reference")).
                 setReference(ExternalReference.newBuilder().setId("PMID:30509212")).
                 build();
         PhenotypicFeature depressedNasalTip = PhenotypicFeature.newBuilder().
-                setType(ontologyClass("HP:0000437","Depressed nasal tip")).
+                setType(ontologyClass("HP:0000437", "Depressed nasal tip")).
                 addEvidence(evi).
                 build();
         PhenotypicFeature growthDelay = PhenotypicFeature.newBuilder().
@@ -89,9 +81,9 @@ public class PhenopacketImporterTest {
                 .setHtsFormat(HtsFile.HtsFormat.VCF)
                 .setGenomeAssembly(fakeGenomeAssembly)
                 .build();
-        OntologyClass heterozygous = ontologyClass( "GENO:0000135", "heterozygous");
+        OntologyClass heterozygous = ontologyClass("GENO:0000135", "heterozygous");
         Variant var = Variant.newBuilder().setVcfAllele(allele).setZygosity(heterozygous).build();
-        Disease kabuki2 = Disease.newBuilder().setTerm(ontologyClass("OMIM:300867","KABUKI SYNDROME 2")).build();
+        Disease kabuki2 = Disease.newBuilder().setTerm(ontologyClass("OMIM:300867", "KABUKI SYNDROME 2")).build();
 
         Phenopacket tmppacket = Phenopacket.newBuilder().
                 setSubject(subject).
@@ -107,82 +99,54 @@ public class PhenopacketImporterTest {
                 build();
 
         // arrange
-        Path output = Files.createFile(tempDir.resolve("temp_output.txt"));
-        phenopacketAbsolutePathOfTempFile = output.toAbsolutePath().toString();
-        try (BufferedWriter br = Files.newBufferedWriter(output)) {
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             String jsonString = JsonFormat.printer().includingDefaultValueFields().print(tmppacket);
-            br.write(jsonString);
-        }
-
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(phenopacketAbsolutePathOfTempFile))) {
-            Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
-            JsonFormat.parser().merge(reader, phenoPacketBuilder);
-            ppacket = phenoPacketBuilder.build();
+            os.write(jsonString.getBytes(StandardCharsets.UTF_8));
+            DATA = os.toByteArray();
         }
     }
 
-    @Test
-    public void testTempFileWritten( ) {
-        File f = new File(phenopacketAbsolutePathOfTempFile);
-        Assertions.assertTrue(f.exists());
-    }
-
-    @Test
-    public void testInputOfTempPhenopacket() {
-        Assertions.assertNotNull(ppacket);
-    }
-
-    @Test
-    public void testNumberOfHpoTermsImported() {
-        int expected =5;  // we have 4 non-negated (observed) HPO terms and one negated term
-        Assertions.assertEquals(expected,ppacket.getPhenotypicFeaturesCount());
+    @BeforeEach
+    public void setUp() throws Exception {
+        PhenopacketV1Importer instance = PhenopacketV1Importer.instance();
+        data = instance.read(new ByteArrayInputStream(DATA));
     }
 
     @Test
     public void testNumberOfObservedTerms() {
-        PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
-        int expected=4;
-        Assertions.assertEquals(expected,importer.getHpoTerms().toList().size());
+        Assertions.assertEquals(4, data.getHpoTerms().count());
     }
 
     @Test
     public void testNumberOfNegatedTerms() {
-        PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
-        int expected=1;
-        Assertions.assertEquals(expected,importer.getNegatedHpoTerms().toList().size());
+        Assertions.assertEquals(1, data.getNegatedHpoTerms().count());
     }
 
     @Test
     public void testIdentifyOfNegatedTerm() {
         TermId tid = TermId.of("HP:0031508");
-        PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
-        Assertions.assertTrue(importer.getNegatedHpoTerms().toList().contains(tid));
+        Assertions.assertTrue(data.getNegatedHpoTerms().anyMatch(t -> t.equals(tid)));
     }
 
     @Test
     public void testIdentifyObservedTerm() {
         TermId tid = TermId.of("HP:0031508");
-        PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
-        assertFalse(importer.getHpoTerms().toList().contains(tid)); // should not include negated term
+        assertFalse(data.getHpoTerms().toList().contains(tid)); // should not include negated term
         TermId tid2 = TermId.of("HP:0001510"); // this os one of the observed terms
-        Assertions.assertTrue(importer.getHpoTerms().toList().contains(tid2));
+        Assertions.assertTrue(data.getHpoTerms().toList().contains(tid2));
     }
 
     @Test
     public void testGetVcfFile() {
-        PhenopacketImporter importer = PhenopacketImporter.of(ppacket);
-        Assertions.assertTrue(importer.hasVcf());
+        Assertions.assertTrue(data.getVcfPath().isPresent());
 
-        Optional<Path> vcfPath = importer.getVcfPath();
+        Optional<Path> vcfPath = data.getVcfPath();
         assertThat(vcfPath.isPresent(), equalTo(true));
         Assertions.assertEquals(Path.of("/home/user/example.vcf"), vcfPath.get());
 
-        Optional<String> assembly = importer.getGenomeAssembly();
+        Optional<String> assembly = data.getGenomeAssembly();
         assertThat(assembly.isPresent(), equalTo(true));
         Assertions.assertEquals(fakeGenomeAssembly, assembly.get());
     }
-
-
-
 
 }

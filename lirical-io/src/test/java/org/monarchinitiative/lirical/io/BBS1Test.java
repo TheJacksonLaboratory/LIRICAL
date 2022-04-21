@@ -1,16 +1,11 @@
 package org.monarchinitiative.lirical.io;
 
-import com.google.protobuf.util.JsonFormat;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.lirical.io.analysis.PhenopacketImporter;
-import org.monarchinitiative.lirical.io.analysis.YamlConfig;
-import org.monarchinitiative.lirical.io.analysis.YamlParser;
+import org.monarchinitiative.lirical.io.analysis.*;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.phenopackets.schema.v1.Phenopacket;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -27,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class BBS1Test {
     private static YamlConfig yamlConfig;
-    private static PhenopacketImporter phenopacketimporter;
+    private static PhenopacketData DATA;
 
     private static final Path TEST_PHENOPACKET_DIR = TestResources.LIRICAL_TEST_BASE.resolve("phenopacket");
     private static final Path TEST_YAML_DIR = TestResources.LIRICAL_TEST_BASE.resolve("yaml");
@@ -38,19 +33,17 @@ public class BBS1Test {
 
 
     @BeforeAll
-    public static void init() throws IOException {
+    public static void init() throws Exception {
         yamlConfig = YamlParser.parse(TEST_YAML_DIR.resolve("BBS1.yml"));
 
-        try (BufferedReader reader = Files.newBufferedReader(TEST_PHENOPACKET_DIR.resolve("BBS1.json"))) {
-            Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
-            JsonFormat.parser().merge(reader, phenoPacketBuilder);
-            phenopacketimporter = PhenopacketImporter.of(phenoPacketBuilder.build());
+        try (InputStream is = Files.newInputStream(TEST_PHENOPACKET_DIR.resolve("BBS1.json"))) {
+            DATA = PhenopacketImporters.v1().read(is);
         }
     }
 
     @Test
     public void getIdPhenopacket() {
-        assertEquals(expectedId,phenopacketimporter.getSampleId());
+        assertEquals(expectedId,DATA.getSampleId());
     }
 
     @Test
@@ -60,7 +53,7 @@ public class BBS1Test {
 
     @Test
     public void getGenomeAssemblyPhenopacket() {
-        Optional<String> assemblyOptional = phenopacketimporter.getGenomeAssembly();
+        Optional<String> assemblyOptional = DATA.getGenomeAssembly();
         assertThat(assemblyOptional.isPresent(), equalTo(true));
         String expectedGenomeAssembly = "GRCh37";
         assertEquals(expectedGenomeAssembly, assemblyOptional.get());
@@ -68,7 +61,7 @@ public class BBS1Test {
 
     @Test
     public void testGetVcfPhenopacket() {
-        Optional<Path> vcfPath = phenopacketimporter.getVcfPath();
+        Optional<Path> vcfPath = DATA.getVcfPath();
         assertThat(vcfPath.isPresent(), equalTo(true));
         assertThat(vcfPath.get(), equalTo(expectedVcf));
     }
@@ -93,7 +86,7 @@ public class BBS1Test {
 
     @Test
     public void testGetHpoIdsPhenopacket() {
-        List<TermId> terms = phenopacketimporter.getHpoTerms().toList();
+        List<TermId> terms = DATA.getHpoTerms().toList();
         TermId expected1 = TermId.of("HP:0007843");
         TermId expected2 = TermId.of("HP:0001513");
         TermId expected3 = TermId.of("HP:0000608");
@@ -115,7 +108,7 @@ public class BBS1Test {
     @Test
     public void testGetExcludedTermsPhenopacket() {
         TermId expected = TermId.of("HP:0001328"); // only one excluded term
-        List<TermId> excluded = phenopacketimporter.getNegatedHpoTerms().toList();
+        List<TermId> excluded = DATA.getNegatedHpoTerms().toList();
         assertEquals(1,excluded.size());
         assertEquals(expected,excluded.get(0));
     }

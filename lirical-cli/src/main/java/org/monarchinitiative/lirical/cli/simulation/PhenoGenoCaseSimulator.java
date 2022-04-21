@@ -7,7 +7,6 @@ import org.monarchinitiative.lirical.core.output.LrThreshold;
 import org.monarchinitiative.lirical.core.output.MinDiagnosisCount;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.HpoCase;
-import org.monarchinitiative.lirical.io.analysis.PhenopacketImporter;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -26,7 +25,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoSubOntologyRootTermIds.PHENOTYPIC_ABNORMALITY;
 import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
 
 public class PhenoGenoCaseSimulator {
@@ -36,27 +34,27 @@ public class PhenoGenoCaseSimulator {
 
     private final LiricalFactory factory;
 
-    private final Disease simulatedDiagnosis;
+//    private final Disease simulatedDiagnosis;
 
-    private final TermId simulatedDiseaseId;
+//    private final TermId simulatedDiseaseId;
 
     private TermId simulatedDiseaseGene;
 
 //    private final Map<TermId, Gene2Genotype> genotypemap;
 
-    private final Ontology ontology;
-
-    private final Map<TermId, HpoDisease> diseaseMap;
-
-    private final Map<TermId, Collection<GeneIdentifier>> disease2geneMultimap;
-
-    private final  Map<TermId,Collection<TermId>> gene2diseaseMultimap;
-
-    private final  List<TermId> hpoIdList;
+//    private final Ontology ontology;
+//
+//    private final Map<TermId, HpoDisease> diseaseMap;
+//
+//    private final Map<TermId, Collection<GeneIdentifier>> disease2geneMultimap;
+//
+//    private final  Map<TermId,Collection<TermId>> gene2diseaseMultimap;
+//
+//    private final  List<TermId> hpoIdList;
     // List of excluded HPO terms in the subject.
-    private final List<TermId> negatedHpoIdList;
+//    private final List<TermId> negatedHpoIdList;
     /** Various metadata that will be used for the HTML org.monarchinitiative.lirical.output. */
-    private final Map<String,String> metadata;
+//    private final Map<String,String> metadata;
 
 
     private HpoCase hpocase=null;
@@ -67,7 +65,7 @@ public class PhenoGenoCaseSimulator {
     /** The posttest probability of the simulated disease. */
     private double posttest_probability;
     /** A list of all HPO term ids in the Phenotypic abnormality subontology. */
-    private final ImmutableList<TermId> phenotypeterms;
+//    private final ImmutableList<TermId> phenotypeterms;
 
 
     /**
@@ -83,73 +81,73 @@ public class PhenoGenoCaseSimulator {
         this.factory = factory;
         GenomeAssembly genomeAssembly = factory.getAssembly();
 
-        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
-        String sampleName = importer.getSampleId();
-        Optional<Disease> diseaseDiagnosis = importer.getDiagnosis();
-        if (diseaseDiagnosis.isEmpty())
-            throw new LiricalRuntimeException("Disease diagnosis should not be empty here"); // TODO(pnr) is this true?
-        simulatedDiagnosis = diseaseDiagnosis.get();
-        String disId = simulatedDiagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
-        this.simulatedDiseaseId = TermId.of(disId);
+//        PhenopacketV1Importer importer = PhenopacketV1Importer.fromJson(phenopacketPath);
+//        String sampleName = importer.getSampleId();
+//        Optional<Disease> diseaseDiagnosis = importer.getDiagnosis();
+//        if (diseaseDiagnosis.isEmpty())
+//            throw new LiricalRuntimeException("Disease diagnosis should not be empty here"); // TODO(pnr) is this true?
+//        simulatedDiagnosis = diseaseDiagnosis.get();
+//        String disId = simulatedDiagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
+//        this.simulatedDiseaseId = TermId.of(disId);
+//
+//        // TODO - sanitize with HpoTermSanitizer
+//        List<TermId> hpoTerms = importer.getHpoTerms().toList();
+//        if (rand) {
+//            Set<TermId> descendents=getDescendents(factory.hpoOntology(), PHENOTYPIC_ABNORMALITY);
+//            ImmutableList.Builder<TermId> termbuilder = new ImmutableList.Builder<>();
+//            for (TermId t: descendents) {
+//                termbuilder.add(t);
+//            }
+//            this.phenotypeterms=termbuilder.build();
+//            ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
+//
+//            for (int i = 0; i< hpoTerms.size(); i++) {
+//                builder.add(getRandomPhenotypeTerm());
+//            }
+//            this.hpoIdList = builder.build();
+//            builder = new ImmutableList.Builder<>();
+//            for (int i=0;i<importer.getNegatedHpoTerms().toList().size();i++) {
+//                builder.add(getRandomPhenotypeTerm());
+//            }
+//            negatedHpoIdList = builder.build();
+//        } else {
+//            this.phenotypeterms = ImmutableList.of(); // not needed
+//            hpoIdList = hpoTerms;
+//            negatedHpoIdList = importer.getNegatedHpoTerms().toList();
+//        }
 
-        // TODO - sanitize with HpoTermSanitizer
-        List<TermId> hpoTerms = importer.getHpoTerms().toList();
-        if (rand) {
-            Set<TermId> descendents=getDescendents(factory.hpoOntology(), PHENOTYPIC_ABNORMALITY);
-            ImmutableList.Builder<TermId> termbuilder = new ImmutableList.Builder<>();
-            for (TermId t: descendents) {
-                termbuilder.add(t);
-            }
-            this.phenotypeterms=termbuilder.build();
-            ImmutableList.Builder<TermId> builder = new ImmutableList.Builder<>();
-
-            for (int i = 0; i< hpoTerms.size(); i++) {
-                builder.add(getRandomPhenotypeTerm());
-            }
-            this.hpoIdList = builder.build();
-            builder = new ImmutableList.Builder<>();
-            for (int i=0;i<importer.getNegatedHpoTerms().toList().size();i++) {
-                builder.add(getRandomPhenotypeTerm());
-            }
-            negatedHpoIdList = builder.build();
-        } else {
-            this.phenotypeterms = ImmutableList.of(); // not needed
-            hpoIdList = hpoTerms;
-            negatedHpoIdList = importer.getNegatedHpoTerms().toList();
-        }
-
-        VcfSimulator vcfSimulator = new VcfSimulator(Paths.get(vcfpath));
-        HtsFile simulatedVcf;
-        try {
-            simulatedVcf = vcfSimulator.simulateVcf(importer.getSampleId(), importer.getVariantList(), genomeAssembly.toString());
-            //pp = pp.toBuilder().clearHtsFiles().addHtsFiles(htsFile).build();
-        } catch (IOException e) {
-            throw new LiricalRuntimeException("Could not simulate VCF for phenopacket");
-        }
-        Path vcfPath = Path.of(simulatedVcf.getUri());
-        this.metadata = new HashMap<>();
-        this.metadata.put("vcf_file", vcfPath.toAbsolutePath().toString());
-//        this.genotypemap = factory.getGene2GenotypeMap(vcfPath);
-        this.ontology = factory.hpoOntology();
-        this.diseaseMap = factory.diseaseMap(ontology);
-        this.disease2geneMultimap = factory.disease2geneMultimap();
-        this.gene2diseaseMultimap = factory.gene2diseaseMultimap();
-
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        Date date = new Date();
-        this.metadata.put("analysis_date", dateFormat.format(date));
-        this.metadata.put("phenopacket_file", phenopacketPath.toAbsolutePath().toString());
-        metadata.put("sample_name", sampleName);
-        if (!qcPhenopacket(importer.phenopacket())){
-            System.err.println("[ERROR] Could not simulate VCF for "+ phenopacketPath.toFile().getName());
-            return;
-        }
-        this.simulatedDiseaseGene = TermId.of(importer.getGene());
-        logger.trace("Running simulation from phenopacket {} with template VCF {}", phenopacketPath.toAbsolutePath(), vcfPath);
-
-
-       this.metadata.put("phenopacket.diagnosisId", simulatedDiseaseId.getValue());
-       this.metadata.put("phenopacket.diagnosisLabel", simulatedDiagnosis.getTerm().getLabel());
+//        VcfSimulator vcfSimulator = new VcfSimulator(Paths.get(vcfpath));
+//        HtsFile simulatedVcf;
+//        try {
+//            simulatedVcf = vcfSimulator.simulateVcf(importer.getSampleId(), importer.getVariantList(), genomeAssembly.toString());
+//            //pp = pp.toBuilder().clearHtsFiles().addHtsFiles(htsFile).build();
+//        } catch (IOException e) {
+//            throw new LiricalRuntimeException("Could not simulate VCF for phenopacket");
+//        }
+//        Path vcfPath = Path.of(simulatedVcf.getUri());
+//        this.metadata = new HashMap<>();
+//        this.metadata.put("vcf_file", vcfPath.toAbsolutePath().toString());
+////        this.genotypemap = factory.getGene2GenotypeMap(vcfPath);
+//        this.ontology = factory.hpoOntology();
+//        this.diseaseMap = factory.diseaseMap(ontology);
+//        this.disease2geneMultimap = factory.disease2geneMultimap();
+//        this.gene2diseaseMultimap = factory.gene2diseaseMultimap();
+//
+//        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+//        Date date = new Date();
+//        this.metadata.put("analysis_date", dateFormat.format(date));
+//        this.metadata.put("phenopacket_file", phenopacketPath.toAbsolutePath().toString());
+//        metadata.put("sample_name", sampleName);
+//        if (!qcPhenopacket(importer.phenopacket())){
+//            System.err.println("[ERROR] Could not simulate VCF for "+ phenopacketPath.toFile().getName());
+//            return;
+//        }
+//        this.simulatedDiseaseGene = TermId.of(importer.getGene());
+//        logger.trace("Running simulation from phenopacket {} with template VCF {}", phenopacketPath.toAbsolutePath(), vcfPath);
+//
+//
+//       this.metadata.put("phenopacket.diagnosisId", simulatedDiseaseId.getValue());
+//       this.metadata.put("phenopacket.diagnosisLabel", simulatedDiagnosis.getTerm().getLabel());
     }
 
     /**
@@ -159,9 +157,10 @@ public class PhenoGenoCaseSimulator {
      * @return a random term from the phenotype subontology.
      */
     private TermId getRandomPhenotypeTerm() {
-        int n=phenotypeterms.size();
-        int r = (int)Math.floor(n*Math.random());
-        return phenotypeterms.get(r);
+//        int n=phenotypeterms.size();
+//        int r = (int)Math.floor(n*Math.random());
+//        return phenotypeterms.get(r);
+        return null;
     }
 
     private static boolean qcPhenopacket(Phenopacket phenopacket) {
@@ -206,7 +205,7 @@ public class PhenoGenoCaseSimulator {
 //        Optional<Integer> optRank = this.hpocase.getRank(simulatedDiseaseId);
 //        this.rank_of_disease = optRank.orElseGet(() -> this.hpocase.getRankOfUnrankedDisease());
         this.rank_of_gene = this.rank_of_disease;
-        this.posttest_probability = this.hpocase.calculatePosttestProbability(simulatedDiseaseId);
+//        this.posttest_probability = this.hpocase.calculatePosttestProbability(simulatedDiseaseId);
 //        for (TermId diseaseId : this.gene2diseaseMultimap.get(this.simulatedDiseaseGene)) {
 //            optRank = this.hpocase.getRank(diseaseId);
 //            int r = optRank.orElseGet(() -> this.hpocase.getRankOfUnrankedDisease());
@@ -215,13 +214,13 @@ public class PhenoGenoCaseSimulator {
 //            }
 //        }
 //        this.metadata.put("genesWithVar", String.valueOf(genotypemap.size()));
-        this.metadata.put("exomiserPath", factory.getExomiserPath().map(Path::toAbsolutePath).map(Path::toString).orElse(""));
-        this.metadata.put("hpoVersion", factory.getHpoVersion());
-        if (factory.global()) {
-            this.metadata.put("global_mode", "true");
-        } else {
-            this.metadata.put("global_mode", "false");
-        }
+//        this.metadata.put("exomiserPath", factory.getExomiserPath().map(Path::toAbsolutePath).map(Path::toString).orElse(""));
+//        this.metadata.put("hpoVersion", factory.getHpoVersion());
+//        if (factory.global()) {
+//            this.metadata.put("global_mode", "true");
+//        } else {
+//            this.metadata.put("global_mode", "false");
+//        }
     }
 
 
@@ -260,9 +259,9 @@ public class PhenoGenoCaseSimulator {
     }
 
 
-    public String getDiagnosisLabel() {
-        return this.simulatedDiagnosis.getTerm().getLabel();
-    }
+//    public String getDiagnosisLabel() {
+//        return this.simulatedDiagnosis.getTerm().getLabel();
+//    }
 
     public int getRank_of_disease() {
         return rank_of_disease;
@@ -287,13 +286,14 @@ public class PhenoGenoCaseSimulator {
             simulatedGene = "n/a";
         else
             simulatedGene = simulatedDiseaseGene.getValue();
-        return String.format("%s\t%s\t%s\t%s\t%d\t%d\t%f", phenopacketPath.toFile().getName(),
-                simulatedDiagnosis.getTerm().getLabel(),
-                simulatedDiagnosis.getTerm().getId(),
-                simulatedGene,
-                rank_of_disease,
-                rank_of_gene,
-                posttest_probability);
+        return null;
+//        return String.format("%s\t%s\t%s\t%s\t%d\t%d\t%f", phenopacketPath.toFile().getName(),
+//                simulatedDiagnosis.getTerm().getLabel(),
+//                simulatedDiagnosis.getTerm().getId(),
+//                simulatedGene,
+//                rank_of_disease,
+//                rank_of_gene,
+//                posttest_probability);
     }
 
 

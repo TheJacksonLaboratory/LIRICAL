@@ -8,7 +8,7 @@ import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.AnalysisOptions;
 import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
-import org.monarchinitiative.lirical.core.exception.LiricalParseException;
+import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.lirical.io.LiricalDataException;
@@ -36,7 +36,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * This is a common superclass for {@link PrioritizeWithSquirls}.
+ * This is a common superclass for {@link PrioritizeWithSquirlsCommand}.
  * Its purpose is to provide command line parameters and variables that are used
  * in the same way by all the subclasses.
  *

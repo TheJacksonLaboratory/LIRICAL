@@ -2,7 +2,7 @@ package org.monarchinitiative.lirical.io.analysis;
 
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.core.analysis.AnalysisDataParser;
-import org.monarchinitiative.lirical.core.exception.LiricalParseException;
+import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.core.model.Age;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;

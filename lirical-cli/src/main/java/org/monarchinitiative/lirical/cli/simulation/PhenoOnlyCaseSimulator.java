@@ -3,7 +3,6 @@ package org.monarchinitiative.lirical.cli.simulation;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.HpoCase;
-import org.monarchinitiative.lirical.io.analysis.PhenopacketImporter;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -23,17 +22,17 @@ public class PhenoOnlyCaseSimulator {
 
     private final LiricalFactory factory;
 
-    private final Disease simulatedDiagnosis;
-
-    private final TermId simulatedDiseaseId;
+//    private final Disease simulatedDiagnosis;
+//
+//    private final TermId simulatedDiseaseId;
 
     private final Ontology ontology;
 
     private final Map<TermId, HpoDisease> diseaseMap;
 
-    private final List<TermId> hpoIdList;
+//    private final List<TermId> hpoIdList;
     // List of excluded HPO terms in the subject.
-    private final List<TermId> negatedHpoIdList;
+//    private final List<TermId> negatedHpoIdList;
     /** Various metadata that will be used for the HTML org.monarchinitiative.lirical.output. */
     private final Map<String,String> metadata;
 
@@ -48,27 +47,27 @@ public class PhenoOnlyCaseSimulator {
         this.phenopacketPath = phenopacketPath;
         this.metadata = new HashMap<>();
         this.factory = factory;
-        PhenopacketImporter importer = PhenopacketImporter.fromJson(phenopacketPath);
-        String sampleName = importer.getSampleId();
-        Optional<Disease> diseaseDiagnosis = importer.getDiagnosis();
-        if (diseaseDiagnosis.isEmpty())
-            throw new LiricalRuntimeException("Disease diagnosis should not be empty here"); // TODO(pnr) is this true?
-        simulatedDiagnosis = diseaseDiagnosis.get();
-        String disId = simulatedDiagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
-        this.simulatedDiseaseId = TermId.of(disId);
+//        PhenopacketV1Importer importer = PhenopacketV1Importer.fromJson(phenopacketPath);
+//        String sampleName = importer.getSampleId();
+//        Optional<Disease> diseaseDiagnosis = importer.getDiagnosis();
+//        if (diseaseDiagnosis.isEmpty())
+//            throw new LiricalRuntimeException("Disease diagnosis should not be empty here"); // TODO(pnr) is this true?
+//        simulatedDiagnosis = diseaseDiagnosis.get();
+//        String disId = simulatedDiagnosis.getTerm().getId(); // should be an ID such as OMIM:600102
+//        this.simulatedDiseaseId = TermId.of(disId);
         // TODO - sanitize with HpoTermSanitizer
-        hpoIdList = importer.getHpoTerms().toList();
-        negatedHpoIdList = importer.getNegatedHpoTerms().toList();
+//        hpoIdList = importer.getHpoTerms().toList();
+//        negatedHpoIdList = importer.getNegatedHpoTerms().toList();
         this.ontology = factory.hpoOntology();
         this.diseaseMap = factory.diseaseMap(ontology);
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
         this.metadata.put("analysis_date", dateFormat.format(date));
         this.metadata.put("phenopacket_file", phenopacketPath.toAbsolutePath().toString());
-        metadata.put("sample_name", sampleName);
+//        metadata.put("sample_name", sampleName);
         logger.trace("Running phenotype-only simulation from phenopacket {} ", phenopacketPath.toAbsolutePath());
-        this.metadata.put("phenopacket.diagnosisId", simulatedDiseaseId.getValue());
-        this.metadata.put("phenopacket.diagnosisLabel", simulatedDiagnosis.getTerm().getLabel());
+//        this.metadata.put("phenopacket.diagnosisId", simulatedDiseaseId.getValue());
+//        this.metadata.put("phenopacket.diagnosisLabel", simulatedDiagnosis.getTerm().getLabel());
     }
 
 
@@ -119,7 +118,8 @@ public class PhenoOnlyCaseSimulator {
 
 
     public String getDiagnosisLabel() {
-        return this.simulatedDiagnosis.getTerm().getLabel();
+//        return this.simulatedDiagnosis.getTerm().getLabel();
+        return null;
     }
 
     public int getRank_of_disease() {
@@ -134,10 +134,11 @@ public class PhenoOnlyCaseSimulator {
     }
 
     public String getDetails() {
-        return String.format("%s\t%s\t%s\t%d", phenopacketPath.toFile().getName(),
-                simulatedDiagnosis.getTerm().getLabel(),
-                simulatedDiagnosis.getTerm().getId(),
-                rank_of_disease);
+        return null;
+//        return String.format("%s\t%s\t%s\t%d", phenopacketPath.toFile().getName(),
+//                simulatedDiagnosis.getTerm().getLabel(),
+//                simulatedDiagnosis.getTerm().getId(),
+//                rank_of_disease);
     }
 
 }

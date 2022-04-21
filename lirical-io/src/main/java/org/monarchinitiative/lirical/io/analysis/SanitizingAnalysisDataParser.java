@@ -27,12 +27,15 @@ abstract class SanitizingAnalysisDataParser extends BaseAnalysisDataParser {
 
     protected Optional<TermId> toTermId(String payload) {
         try {
-            TermId termId = TermId.of(payload);
-            return sanitizer.replaceIfObsolete(termId);
+            return sanitize(TermId.of(payload));
         } catch (PhenolRuntimeException e) {
             LOGGER.warn("Skipping non-parsable term {}", payload);
             return Optional.empty();
         }
+    }
+
+    protected Optional<TermId> sanitize(TermId termId) {
+        return sanitizer.replaceIfObsolete(termId);
     }
 
     protected static Optional<URI> toUri(String uri) {

@@ -2,7 +2,7 @@ package org.monarchinitiative.lirical.cli.cmd;
 
 import org.monarchinitiative.lirical.configuration.Lirical;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
-import org.monarchinitiative.lirical.core.exception.LiricalParseException;
+import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
 import org.monarchinitiative.lirical.io.analysis.AnalysisDataParserFactory;
 

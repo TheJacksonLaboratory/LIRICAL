@@ -1,4 +1,6 @@
-package org.monarchinitiative.lirical.core.exception;
+package org.monarchinitiative.lirical.core.analysis;
+
+import org.monarchinitiative.lirical.core.exception.LiricalException;
 
 /**
  * An exception thrown when user-provided input is invalid.
