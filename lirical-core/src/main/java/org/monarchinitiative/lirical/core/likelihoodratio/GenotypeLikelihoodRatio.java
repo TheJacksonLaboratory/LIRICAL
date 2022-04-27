@@ -7,6 +7,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,6 +25,7 @@ public class GenotypeLikelihoodRatio {
     /** A heuristic to downweight an  disease by a factor of 1/10 if the number of predicted pathogenic alleles in
      * the VCF file is above lambda_d. */
     final double HEURISTIC_PATH_ALLELE_COUNT_ABOVE_LAMBDA_D = 0.10;
+    private static final double DEFAULT_GLR = 0.05;
     /** A small-ish number to avoid dividing by zero. */
     private static final double EPSILON = 1e-5;
 
@@ -74,13 +76,12 @@ public class GenotypeLikelihoodRatio {
      * @param inheritanceModes List of all inheritance modes associated with this disease (usually a single one)
      * @return genotype likelihood ratio for situation where no variant at all was found in a gene
      */
-    private static GenotypeLrWithExplanation getLRifNoVariantAtAllWasIdentified(List<TermId> inheritanceModes, Gene2Genotype g2g) {
-        double ESTIMATED_PROB = 0.05d;
+    private static GenotypeLrWithExplanation getLRifNoVariantAtAllWasIdentified(Collection<TermId> inheritanceModes, Gene2Genotype g2g) {
         if (inheritanceModes.stream().anyMatch(tid -> tid.equals(AUTOSOMAL_RECESSIVE)))
             // compatible with autosomal recessive inheritance
-            return GenotypeLrWithExplanation.noVariantsDetectedAutosomalRecessive(g2g.geneId(), ESTIMATED_PROB * ESTIMATED_PROB);
+            return GenotypeLrWithExplanation.noVariantsDetectedAutosomalRecessive(g2g.geneId(), DEFAULT_GLR * DEFAULT_GLR);
         else
-            return GenotypeLrWithExplanation.noVariantsDetectedAutosomalDominant(g2g.geneId(), ESTIMATED_PROB);
+            return GenotypeLrWithExplanation.noVariantsDetectedAutosomalDominant(g2g.geneId(), DEFAULT_GLR);
     }
 
     /**
@@ -165,12 +166,13 @@ public class GenotypeLikelihoodRatio {
         double B = 1.0; // background
         double D = 1.0; // disease
         for (TermId inheritanceId : inheritancemodes) {
-            double lambda_disease = 1.0;
+            double lambda_disease;
             PoissonDistribution pdDisease;
             if (inheritanceId.equals(AUTOSOMAL_RECESSIVE) || inheritanceId.equals(X_LINKED_RECESSIVE)) {
                 lambda_disease = 2.0;
                 pdDisease = recessivePoissonDistribution;
             } else {
+                lambda_disease = 1.0;
                 pdDisease = dominantPoissonDistribution;
             }
             // Heuristic for the case where we have more called pathogenic variants than we should have
@@ -205,8 +207,7 @@ public class GenotypeLikelihoodRatio {
         // We should always have some value for max once we get here but
         // there is a default value of 0.05 to avoid null errors so that
         // we do not crash if something unexpected occurs. (Should actually never be used)
-        double DEFAULTVAL = 0.05;
-        double returnvalue = max == null ? DEFAULTVAL : max;
+        double returnvalue = max == null ? DEFAULT_GLR : max;
         if (heuristicPathCountAboveLambda) {
             return GenotypeLrWithExplanation.explainPathCountAboveLambdaB(g2g.geneId(), returnvalue, maxInheritanceMode, lambda_background, observedWeightedPathogenicVariantCount);
         } else {
