@@ -44,26 +44,25 @@ public interface Gene2Genotype extends Identified {
 
     default int pathogenicClinVarCount(String sampleId) {
         return variants().filter(lv -> lv.clinvarClnSig().isPathogenicOrLikelyPathogenic())
-                .map(var -> var.pathogenicClinVarAlleleCount(sampleId))
-                .reduce(0, Integer::sum);
+                .mapToInt(var -> var.pathogenicClinVarAlleleCount(sampleId))
+                .sum();
     }
 
     default int pathogenicAlleleCount(String sampleId, float pathogenicityThreshold) {
-        return variants().filter(var -> var.pathogenicity() >= pathogenicityThreshold)
+        return variants().filter(var -> var.pathogenicityScore().orElse(0f) >= pathogenicityThreshold)
                 .map(var -> var.alleleCount(sampleId))
                 .flatMap(Optional::stream)
-                .map(AlleleCount::alt)
-                .map(c -> ((int) c))
-                .reduce(0, Integer::sum);
+                .mapToInt(AlleleCount::alt)
+                .sum();
     }
 
     default double getSumOfPathBinScores(String sampleId, float pathogenicityThreshold) {
-        return variants().filter(variant -> variant.pathogenicity() >= pathogenicityThreshold)
+        return variants().filter(variant -> variant.pathogenicityScore().orElse(0f) >= pathogenicityThreshold)
                 .mapToDouble(variant -> {
                     int altAlleleCount = variant.alleleCount(sampleId).map(AlleleCount::alt).orElse((byte) 0);
                     return altAlleleCount * variant.pathogenicity();
                 })
-                .reduce(0, Double::sum);
+                .sum();
     }
 
 }

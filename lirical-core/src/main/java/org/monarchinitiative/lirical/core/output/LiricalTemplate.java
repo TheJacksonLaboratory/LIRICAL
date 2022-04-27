@@ -124,7 +124,7 @@ public abstract class LiricalTemplate {
     }
 
     private boolean isInPathogenicBin(LiricalVariant lv) {
-        return lv.pathogenicity() >= pathogenicityThreshold;
+        return lv.pathogenicityScore().orElse(0f) >= pathogenicityThreshold;
     }
 
 }
