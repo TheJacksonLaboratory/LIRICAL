@@ -166,12 +166,13 @@ public class GenotypeLikelihoodRatio {
         double B = 1.0; // background
         double D = 1.0; // disease
         for (TermId inheritanceId : inheritancemodes) {
-            double lambda_disease = 1.0;
+            double lambda_disease;
             PoissonDistribution pdDisease;
             if (inheritanceId.equals(AUTOSOMAL_RECESSIVE) || inheritanceId.equals(X_LINKED_RECESSIVE)) {
                 lambda_disease = 2.0;
                 pdDisease = recessivePoissonDistribution;
             } else {
+                lambda_disease = 1.0;
                 pdDisease = dominantPoissonDistribution;
             }
             // Heuristic for the case where we have more called pathogenic variants than we should have
