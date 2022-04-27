@@ -29,6 +29,30 @@ public abstract class BaseSquirlsAwareCommand extends AbstractPrioritizeCommand 
     // ---------------------------------------------- RESOURCES --------------------------------------------------------
     @CommandLine.ArgGroup(validate = false, heading = "Resource paths:%n")
     public PrioritizeWithSquirlsCommand.DataSection dataSection = new PrioritizeWithSquirlsCommand.DataSection();
+    public static class DataSection {
+        @CommandLine.Option(names = {"-d", "--data"},
+                required = true,
+                description = "Path to Lirical data directory.")
+        public Path liricalDataDirectory;
+
+        @CommandLine.Option(names = {"-e", "--exomiser"},
+                required = true,
+                description = "Path to Exomiser data directory.")
+        public Path exomiserDataDirectory = null;
+
+        @CommandLine.Option(names = {"--squirls"},
+                required = true,
+                description = "Path to Squirls data directory.")
+        public Path squirlsDataDirectory = null;
+
+        @CommandLine.Option(names = {"--cap-squirls-deleterious-variants"},
+                description = "Ensure all splice variants are labeled as deleterious.")
+        public boolean capSquirlsDeleterious = false;
+
+        @CommandLine.Option(names = {"-b", "--background"},
+                description = "Path to non-default background frequency file.")
+        public Path backgroundFrequencyFile = null;
+    }
 
     @Override
     protected Lirical bootstrapLirical(GenomeBuild genomeBuild) throws LiricalDataException {
@@ -46,7 +70,8 @@ public abstract class BaseSquirlsAwareCommand extends AbstractPrioritizeCommand 
         SquirlsAwarePathogenicityService squirlsAwarePathogenicityService = SquirlsAwarePathogenicityService.of(exomiser,
                 dataSection.squirlsDataDirectory,
                 runConfiguration.transcriptDb,
-                runConfiguration.pathogenicityThreshold);
+                runConfiguration.pathogenicityThreshold,
+                dataSection.capSquirlsDeleterious);
 
         return LiricalBuilder.builder(dataSection.liricalDataDirectory)
                 .genomeBuild(genomeBuild)
@@ -85,27 +110,6 @@ public abstract class BaseSquirlsAwareCommand extends AbstractPrioritizeCommand 
             }
         }
         return 0;
-    }
-
-    public static class DataSection {
-        @CommandLine.Option(names = {"-d", "--data"},
-                required = true,
-                description = "Path to Lirical data directory.")
-        public Path liricalDataDirectory;
-
-        @CommandLine.Option(names = {"-e", "--exomiser"},
-                required = true,
-                description = "Path to Exomiser data directory.")
-        public Path exomiserDataDirectory = null;
-
-        @CommandLine.Option(names = {"--squirls"},
-                required = true,
-                description = "Path to Squirls data directory.")
-        public Path squirlsDataDirectory = null;
-
-        @CommandLine.Option(names = {"-b", "--background"},
-                description = "Path to non-default background frequency file.")
-        public Path backgroundFrequencyFile = null;
     }
 
 

@@ -23,25 +23,31 @@ public class SquirlsAwarePathogenicityService implements VariantPathogenicitySer
     private final VariantSplicingEvaluator evaluator;
     private final VariantPathogenicityService variantPathogenicityService;
     private final float pathogenicityThreshold;
-
-    public SquirlsAwarePathogenicityService(Squirls squirls, VariantPathogenicityService variantPathogenicityService, float pathogenicityThreshold) {
-        this.evaluator = squirls.variantSplicingEvaluator();
-        this.variantPathogenicityService = variantPathogenicityService;
-        this.pathogenicityThreshold = pathogenicityThreshold;
-    }
+    private final boolean capDeleterious;
 
     public static SquirlsAwarePathogenicityService of(VariantPathogenicityService variantPathogenicityService,
                                                       Path squirlsDataDirectory,
                                                       TranscriptDatabase transcriptDatabase,
-                                                      float pathogenicityThreshold) throws LiricalDataException {
+                                                      float pathogenicityThreshold,
+                                                      boolean capPathogenic) throws LiricalDataException {
         SimpleSquirlsProperties squirlsProperties = SimpleSquirlsProperties.builder().build();
         SquirlsOptions options = SquirlsOptions.of(mapToFeatureSource(transcriptDatabase));
         try {
             SquirlsConfigurationFactory factory = SquirlsConfigurationFactory.of(squirlsDataDirectory, squirlsProperties, options);
-            return new SquirlsAwarePathogenicityService(factory.getSquirls(), variantPathogenicityService, pathogenicityThreshold);
+            return new SquirlsAwarePathogenicityService(factory.getSquirls(), variantPathogenicityService, pathogenicityThreshold, capPathogenic);
         } catch (SquirlsResourceException e) {
             throw new LiricalDataException(e);
         }
+    }
+
+    public SquirlsAwarePathogenicityService(Squirls squirls,
+                                            VariantPathogenicityService variantPathogenicityService,
+                                            float pathogenicityThreshold,
+                                            boolean capDeleterious) {
+        this.evaluator = squirls.variantSplicingEvaluator();
+        this.variantPathogenicityService = variantPathogenicityService;
+        this.pathogenicityThreshold = pathogenicityThreshold;
+        this.capDeleterious = capDeleterious;
     }
 
     private static FeatureSource mapToFeatureSource(TranscriptDatabase transcriptDatabase) {
@@ -66,10 +72,16 @@ public class SquirlsAwarePathogenicityService implements VariantPathogenicitySer
 
         float pathogenicity;
         ClinvarClnSig clinvarClnSig;
-        float squirlsScore = squirlsResult.isPathogenic()
-                // Squirls is not calibrated, so this is the way to ensure we find the splice variants.
-                ? Math.max((float) squirlsResult.maxPathogenicity(), pathogenicityThreshold)
-                : (float) squirlsResult.maxPathogenicity();
+        float squirlsScore;
+        if (capDeleterious) {
+            // Squirls is not calibrated, so we cap the pathogenicity score to ensure we find the splice variants.
+            squirlsScore = squirlsResult.isPathogenic()
+                    ? Math.max((float) squirlsResult.maxPathogenicity(), pathogenicityThreshold)
+                    : (float) squirlsResult.maxPathogenicity();
+        } else {
+            squirlsScore = (float) squirlsResult.maxPathogenicity();
+        }
+
         if (backgroundPathogenicity.isEmpty()) {
             // We have only Squirls result
             pathogenicity = squirlsScore;
