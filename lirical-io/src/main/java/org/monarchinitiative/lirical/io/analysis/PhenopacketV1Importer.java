@@ -58,6 +58,7 @@ class PhenopacketV1Importer implements PhenopacketImporter {
                 .map(OntologyClass::getId)
                 .map(AnalysisIoUtils::createTermId)
                 .flatMap(Optional::stream)
+                .distinct()
                 .toList();
 
         List<TermId> negatedTerms = phenopacket.getPhenotypicFeaturesList().stream()
@@ -66,6 +67,7 @@ class PhenopacketV1Importer implements PhenopacketImporter {
                 .map(OntologyClass::getId)
                 .map(AnalysisIoUtils::createTermId)
                 .flatMap(Optional::stream)
+                .distinct()
                 .toList();
 
 

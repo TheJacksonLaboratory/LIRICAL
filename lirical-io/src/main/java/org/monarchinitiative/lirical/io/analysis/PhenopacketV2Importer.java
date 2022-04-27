@@ -46,6 +46,7 @@ class PhenopacketV2Importer implements PhenopacketImporter {
                 .map(OntologyClass::getId)
                 .map(AnalysisIoUtils::createTermId)
                 .flatMap(Optional::stream)
+                .distinct()
                 .toList();
 
         List<TermId> negatedHpoTerms = phenopacket.getPhenotypicFeaturesList().stream()
@@ -54,6 +55,7 @@ class PhenopacketV2Importer implements PhenopacketImporter {
                 .map(OntologyClass::getId)
                 .map(AnalysisIoUtils::createTermId)
                 .flatMap(Optional::stream)
+                .distinct()
                 .toList();
 
         // Age

@@ -43,10 +43,12 @@ class YamlAnalysisDataParser extends SanitizingAnalysisDataParser {
         List<TermId> presentTerms = config.getHpoIds().stream()
                 .map(this::toTermId)
                 .flatMap(Optional::stream)
+                .distinct()
                 .toList();
         List<TermId> absentTerms = config.getNegatedHpoIds().stream()
                 .map(this::toTermId)
                 .flatMap(Optional::stream)
+                .distinct()
                 .toList();
 
         GenesAndGenotypes genes = parseGeneToGenotype(sampleId, config.vcfPath().orElse(null));

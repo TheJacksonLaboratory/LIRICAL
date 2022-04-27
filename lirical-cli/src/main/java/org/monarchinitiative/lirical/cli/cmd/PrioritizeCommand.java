@@ -68,6 +68,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
                     .map(TermId::of)
                     .map(sanitizer::replaceIfObsolete)
                     .flatMap(Optional::stream)
+                    .distinct()
                     .toList();
         else
             observedTerms = List.of();
@@ -79,6 +80,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
                     .map(TermId::of)
                     .map(sanitizer::replaceIfObsolete)
                     .flatMap(Optional::stream)
+                    .distinct()
                     .toList();
         else
             negatedTerms = List.of();
