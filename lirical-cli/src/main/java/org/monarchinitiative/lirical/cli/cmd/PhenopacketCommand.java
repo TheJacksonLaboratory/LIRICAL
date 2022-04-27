@@ -1,11 +1,12 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
-import com.google.protobuf.InvalidProtocolBufferException;
+import org.monarchinitiative.lirical.configuration.Lirical;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
-import org.monarchinitiative.lirical.core.analysis.AnalysisDataParser;
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
-import org.monarchinitiative.lirical.io.analysis.AnalysisDataFormat;
-import org.monarchinitiative.lirical.io.analysis.AnalysisDataParserFactory;
+import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
+import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
+import org.monarchinitiative.lirical.io.analysis.*;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Run LIRICAL from a Phenopacket -- with or without accompanying VCF file.
@@ -26,7 +29,7 @@ import java.nio.file.Path;
         sortOptions = false,
         mixinStandardHelpOptions = true,
         description = "Run LIRICAL from a Phenopacket")
-public class PhenopacketCommand extends AnalysisDataParserAwareCommand {
+public class PhenopacketCommand extends AbstractPrioritizeCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PhenopacketCommand.class);
 
@@ -37,8 +40,12 @@ public class PhenopacketCommand extends AnalysisDataParserAwareCommand {
 
     @CommandLine.Option(names = {"-p", "--phenopacket"},
             required = true,
-            description = "path to phenopacket file")
+            description = "Path to phenopacket JSON file.")
     protected Path phenopacketPath;
+
+    @CommandLine.Option(names = {"--vcf"},
+            description = "Path to VCF file. This path has priority over any VCF files described in phenopacket.")
+    protected Path vcfPath;
 
     @Override
     protected String getGenomeBuild() {
@@ -46,35 +53,50 @@ public class PhenopacketCommand extends AnalysisDataParserAwareCommand {
     }
 
     @Override
-    protected AnalysisData prepareAnalysisData(AnalysisDataParserFactory factory) throws LiricalParseException {
-        LOGGER.info("Reading phenopacket from {}", phenopacketPath.toAbsolutePath());
-        AnalysisData data = null;
+    protected AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException {
+        LOGGER.info("Reading phenopacket from {}.", phenopacketPath.toAbsolutePath());
 
-        // Try v2 first
-        LOGGER.debug("Trying to decode using Phenopacket v2 format");
+        PhenopacketData data = null;
         try (InputStream is = Files.newInputStream(phenopacketPath)) {
-            AnalysisDataParser parser = factory.forFormat(AnalysisDataFormat.PHENOPACKET_v2);
-            data = parser.parse(is);
-            LOGGER.debug("Success!");
+            PhenopacketImporter v2 = PhenopacketImporters.v2();
+            data = v2.read(is);
+            LOGGER.info("Success!");
         } catch (IOException e) {
-            if (!(e instanceof InvalidProtocolBufferException))
-                throw new LiricalParseException(e);
+            LOGGER.info("Unable to parse as v2 phenopacket, trying v1.");
         }
 
-        // Try v1 if v2 failed
         if (data == null) {
-            LOGGER.debug("That did not work. Trying to decode using Phenopacket v1 format");
             try (InputStream is = Files.newInputStream(phenopacketPath)) {
-                AnalysisDataParser parser = factory.forFormat(AnalysisDataFormat.PHENOPACKET_v1);
-                data = parser.parse(is);
-                LOGGER.debug("Success!");
+                PhenopacketImporter v1 = PhenopacketImporters.v1();
+                data = v1.read(is);
             } catch (IOException e) {
-                LOGGER.debug("That failed too");
-                throw new LiricalParseException(e);
+                LOGGER.info("Unable to parser as v1 phenopacket.");
+                throw new LiricalParseException("Unable to parse phenopacket from " + phenopacketPath.toAbsolutePath());
             }
         }
 
-        return data;
+        HpoTermSanitizer sanitizer = new HpoTermSanitizer(lirical.phenotypeService().hpo());
+        List<TermId> presentTerms = data.getHpoTerms().map(sanitizer::replaceIfObsolete).flatMap(Optional::stream).toList();
+        List<TermId> excludedTerms = data.getNegatedHpoTerms().map(sanitizer::replaceIfObsolete).flatMap(Optional::stream).toList();
+
+        // Read VCF file.
+        GenesAndGenotypes genes;
+        // Path to VCF set via CLI has priority.
+        Path vcfPath = this.vcfPath != null
+                ? this.vcfPath
+                : data.getVcfPath().orElse(null);
+        String sampleId = data.getSampleId();
+        if (vcfPath == null || lirical.variantParserFactory().isEmpty()) {
+            genes = GenesAndGenotypes.empty();
+        } else {
+            genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.variantParserFactory().get(), lirical.phenotypeService().associationData());
+        }
+        return AnalysisData.of(sampleId,
+                data.getAge().orElse(null),
+                data.getSex().orElse(null),
+                presentTerms,
+                excludedTerms,
+                genes);
     }
 
 }
