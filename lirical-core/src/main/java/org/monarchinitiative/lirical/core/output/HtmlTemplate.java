@@ -106,10 +106,10 @@ public class HtmlTemplate extends LiricalTemplate {
 
                         String genotypeExplanation = createGenotypeExplanation(genotypeLrOpt.orElse(null), variants.isEmpty());
                         HpoDisease disease = diseaseById.get(result.diseaseId());
-                        Lr2Svg lr2svg = new Lr2Svg(result, current, disease.id(), disease.getDiseaseName(), hpo, symbol);
+                        Lr2Svg lr2svg = new Lr2Svg(result, current, disease.id(), disease.diseaseName(), hpo, symbol);
                         DifferentialDiagnosis ddx = new DifferentialDiagnosis(analysisData.sampleId(),
                                 disease.id(),
-                                disease.getDiseaseName(),
+                                disease.diseaseName(),
                                 result,
                                 current,
                                 variants,
@@ -128,7 +128,7 @@ public class HtmlTemplate extends LiricalTemplate {
                             if (geneById.containsKey(geneId.id())) {
                                 int c = this.geneById.get(geneId.id()).variantCount();
                                 HpoDisease disease = diseaseById.get(result.diseaseId());
-                                String name = shortName(disease.getDiseaseName());
+                                String name = shortName(disease.diseaseName());
                                 String id = result.diseaseId().getId();// This is intended to work with OMIM
                                 if (name == null) {
                                     logger.error("Got null string for disease name from result={}", result);

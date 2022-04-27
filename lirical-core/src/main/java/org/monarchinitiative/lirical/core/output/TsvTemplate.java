@@ -54,7 +54,7 @@ public class TsvTemplate extends LiricalTemplate {
                             .map(toVisualizableVariant())
                             .toList();
                     HpoDisease disease = diseaseById.get(result.diseaseId());
-                    TsvDifferential tsvdiff = new TsvDifferential(analysisData.sampleId(), disease.id(), disease.getDiseaseName(), result, current, variants);
+                    TsvDifferential tsvdiff = new TsvDifferential(analysisData.sampleId(), disease.id(), disease.diseaseName(), result, current, variants);
                     diff.add(tsvdiff);
                 });
         this.templateData.put("diff", diff);

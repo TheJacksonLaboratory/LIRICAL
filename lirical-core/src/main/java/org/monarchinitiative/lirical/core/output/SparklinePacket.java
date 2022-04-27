@@ -65,7 +65,7 @@ public class SparklinePacket {
                     double compositeLR = result.getCompositeLR();
 
                     HpoDisease disease = diseaseById.get(result.diseaseId());
-                    String diseaseName = prettifyDiseaseName(disease.getDiseaseName());
+                    String diseaseName = prettifyDiseaseName(disease.diseaseName());
                     TermId diseaseId = result.diseaseId();
                     String diseaseAnchor = getDiseaseAnchor(diseaseId);
                     String geneSparkSvg = genotypeLr.isPresent() ? sparkline2Svg.getGeneSparklineSvg(results, diseaseId, geneSymbol) : EMPTY_STRING;

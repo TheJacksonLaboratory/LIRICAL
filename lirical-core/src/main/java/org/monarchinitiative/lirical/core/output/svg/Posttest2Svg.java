@@ -204,7 +204,7 @@ public class Posttest2Svg extends Lirical2Svg {
                         // now write label of disease and HTML anchor
                         int current = rank.incrementAndGet();
                         HpoDisease disease = diseaseById.get(result.diseaseId());
-                        String label = String.format("%d. %s", (current), prettifyDiseaseName(disease.getDiseaseName()));
+                        String label = String.format("%d. %s", (current), prettifyDiseaseName(disease.diseaseName()));
                         String anchor = String.format("<a class=\"svg\" href=\"#diagnosis%d\">\n", current);
                         writer.write(anchor);
                         writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n",

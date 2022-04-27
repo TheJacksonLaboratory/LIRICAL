@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Objects;
 
-import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInheritanceTermIds.*;
+import static org.monarchinitiative.phenol.constants.hpo.HpoModeOfInheritanceTermIds.*;
 
 
 /**
