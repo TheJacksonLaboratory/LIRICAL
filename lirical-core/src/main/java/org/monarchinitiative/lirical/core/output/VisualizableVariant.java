@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.core.output;
 
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
+import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
 
 import java.util.List;
 

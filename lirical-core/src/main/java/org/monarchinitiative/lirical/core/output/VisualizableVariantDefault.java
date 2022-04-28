@@ -1,10 +1,6 @@
 package org.monarchinitiative.lirical.core.output;
 
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.lirical.core.model.AlleleCount;
-import org.monarchinitiative.lirical.core.model.ClinvarClnSig;
-import org.monarchinitiative.lirical.core.model.GenomeBuild;
-import org.monarchinitiative.lirical.core.model.LiricalVariant;
+import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;

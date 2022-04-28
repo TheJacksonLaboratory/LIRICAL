@@ -9,7 +9,7 @@ import org.monarchinitiative.exomiser.core.model.RegulatoryFeature;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
-import org.monarchinitiative.lirical.core.likelihoodratio.backgroundfrequency.GenicIntoleranceCalculator;
+import org.monarchinitiative.lirical.io.backgroundfrequency.GenicIntoleranceCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;

@@ -1,0 +1,27 @@
+package org.monarchinitiative.lirical.core.model;
+
+import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
+
+/**
+ * The interface represents variant functional annotation data required by LIRICAL.
+ */
+public interface TranscriptAnnotation {
+
+    // Note: the interface data is used in HTML template, hence the get prefixes must be present in the method names.
+
+    /** @return gene identifier of the transcript. */
+    GeneIdentifier getGeneId();
+
+    /** @return transcript accession (e.g. <code>NM_000130.4</code>) */
+    String getAccession();
+
+    /** @return variant effect (e.g. <code>MISSENSE_VARIANT</code>) */
+    String getVariantEffect();
+
+    /** @return effect of the variant on the cDNA sequence in HGVS format (e.g. <code>c.578G>T</code>) */
+    String getHgvsCdna();
+
+    /** @return effect of the variant on the protein sequence in HGVS format (e.g. <code>p.(Cys193Phe)</code>) */
+    String getHgvsProtein();
+
+}

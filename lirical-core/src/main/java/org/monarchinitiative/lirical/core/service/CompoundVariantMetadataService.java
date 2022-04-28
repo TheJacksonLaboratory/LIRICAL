@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.core.service;
 
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.core.model.ClinvarClnSig;
+import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.core.model.VariantMetadata;
 import org.monarchinitiative.svart.GenomicVariant;
 

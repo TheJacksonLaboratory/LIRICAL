@@ -79,7 +79,7 @@ public class PhenopacketCommand extends BaseSquirlsAwareCommand {
         if (vcfPath == null || lirical.variantParserFactory().isEmpty()) {
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.variantParserFactory().get(), lirical.phenotypeService().associationData());
+            genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.variantParserFactory().get());
         }
         return AnalysisData.of(sampleId,
                 data.getAge().orElse(null),

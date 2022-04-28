@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.core.output;
 
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.core.analysis.TestResult;
+import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;

@@ -5,7 +5,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.Objects;
 
-import static org.monarchinitiative.phenol.annotations.formats.hpo.HpoModeOfInheritanceTermIds.*;
+import static org.monarchinitiative.phenol.constants.hpo.HpoModeOfInheritanceTermIds.*;
 
 
 public class GenotypeLrWithExplanation  {

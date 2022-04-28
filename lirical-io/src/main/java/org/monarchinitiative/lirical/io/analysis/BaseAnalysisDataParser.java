@@ -1,12 +1,8 @@
 package org.monarchinitiative.lirical.io.analysis;
 
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.core.analysis.AnalysisDataParser;
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
-import org.monarchinitiative.lirical.core.model.Age;
-import org.monarchinitiative.lirical.core.model.Gene2Genotype;
-import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
-import org.monarchinitiative.lirical.core.model.LiricalVariant;
+import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.lirical.io.VariantParser;
 import org.monarchinitiative.lirical.io.VariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
@@ -65,18 +61,9 @@ abstract class BaseAnalysisDataParser implements AnalysisDataParser {
                     Map<GeneIdentifier, List<LiricalVariant>> gene2Genotype = new HashMap<>();
                     for (LiricalVariant variant : variants) {
                         variant.annotations().stream()
-                                .map(TranscriptAnnotation::getGeneSymbol)
+                                .map(TranscriptAnnotation::getGeneId)
                                 .distinct()
-                                .forEach(geneSymbol -> {
-                                    List<GeneIdentifier> identifiers = symbolToGeneId.getOrDefault(geneSymbol, List.of());
-                                    if (identifiers.isEmpty()) {
-                                        LOGGER.warn("Skipping unknown gene {}", geneSymbol);
-                                        return;
-                                    }
-                                    for (GeneIdentifier identifier : identifiers) {
-                                        gene2Genotype.computeIfAbsent(identifier, e -> new LinkedList<>()).add(variant);
-                                    }
-                                });
+                                .forEach(geneId -> gene2Genotype.computeIfAbsent(geneId, e -> new LinkedList<>()).add(variant));
                     }
 
                     // Collect the variants into Gene2Genotype container

@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.core.likelihoodratio.backgroundfrequency;
+package org.monarchinitiative.lirical.io.backgroundfrequency;
 
 /**
  * This class represents the collection of pathogenicity values that are observed for a specific gene. The pathogenicity

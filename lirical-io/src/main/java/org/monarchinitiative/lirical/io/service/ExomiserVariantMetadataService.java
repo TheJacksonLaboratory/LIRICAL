@@ -17,6 +17,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.core.service.*;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.core.model.ClinvarClnSig;
@@ -29,10 +30,13 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Implementation of {@link VariantMetadataService} that is backed by Exomiser resources and uses {@link MVMap}.
+ * @deprecated we should implement metadata service ourselves.
  */
+@Deprecated
 public class ExomiserVariantMetadataService implements VariantMetadataService, FunctionalVariantAnnotator, VariantFrequencyService, VariantPathogenicityService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExomiserVariantMetadataService.class);
@@ -121,7 +125,16 @@ public class ExomiserVariantMetadataService implements VariantMetadataService, F
             clinvarClnSig = processClinicalSignificance(pathogenicityData);
         }
 
-        return VariantMetadata.of(frequency, pathogenicity, clinvarClnSig, annotation.getTranscriptAnnotations());
+        List<org.monarchinitiative.exomiser.core.model.TranscriptAnnotation> txAnnotations = annotation.getTranscriptAnnotations();
+        List<TranscriptAnnotation> la = txAnnotations.stream()
+                .map(toLiricalTxAnnotation())
+                .flatMap(Optional::stream).toList();
+        return VariantMetadata.of(frequency, pathogenicity, clinvarClnSig, la);
+    }
+
+    private Function<org.monarchinitiative.exomiser.core.model.TranscriptAnnotation, Optional<TranscriptAnnotation>> toLiricalTxAnnotation() {
+         // TODO - implement
+        return txa -> Optional.empty();
     }
 
     private VariantAnnotation calculateVariantAnnotation(GenomicVariant variant) {
@@ -136,7 +149,10 @@ public class ExomiserVariantMetadataService implements VariantMetadataService, F
 
     @Override
     public List<TranscriptAnnotation> annotate(GenomicVariant variant) {
-        return calculateVariantAnnotation(variant).getTranscriptAnnotations();
+        return calculateVariantAnnotation(variant).getTranscriptAnnotations().stream()
+                .map(toLiricalTxAnnotation())
+                .flatMap(Optional::stream)
+                .toList();
     }
 
     @Override

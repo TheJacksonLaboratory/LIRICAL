@@ -1,6 +1,5 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.configuration.Lirical;
 import org.monarchinitiative.lirical.configuration.LiricalConfiguration;
 import org.monarchinitiative.lirical.configuration.LiricalProperties;
@@ -17,7 +16,6 @@ import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.VariantParser;
 import org.monarchinitiative.lirical.io.VariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +34,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * This is a common superclass for {@link YamlCommand} and {@link PhenopacketCommand}.
@@ -266,12 +263,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
 
     protected static GenesAndGenotypes readVariantsFromVcfFile(String sampleId,
                                                                Path vcfPath,
-                                                               VariantParserFactory parserFactory,
-                                                               HpoAssociationData associationData) throws LiricalParseException {
-        // TODO - RNR1 is an example of a gene with 2 NCBIGene IDs.
-        Map<String, List<GeneIdentifier>> symbolToGeneId = associationData.geneIdentifiers().stream()
-                .collect(Collectors.groupingBy(GeneIdentifier::symbol));
-
+                                                               VariantParserFactory parserFactory) throws LiricalParseException {
         try (VariantParser variantParser = parserFactory.forPath(vcfPath)) {
             // Ensure the VCF file contains the sample
             if (!variantParser.sampleNames().contains(sampleId))
@@ -291,18 +283,9 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
             Map<GeneIdentifier, List<LiricalVariant>> gene2Genotype = new HashMap<>();
             for (LiricalVariant variant : variants) {
                 variant.annotations().stream()
-                        .map(TranscriptAnnotation::getGeneSymbol)
+                        .map(TranscriptAnnotation::getGeneId)
                         .distinct()
-                        .forEach(geneSymbol -> {
-                            List<GeneIdentifier> identifiers = symbolToGeneId.getOrDefault(geneSymbol, List.of());
-                            if (identifiers.isEmpty()) {
-                                LOGGER.warn("Skipping unknown gene {}", geneSymbol);
-                                return;
-                            }
-                            for (GeneIdentifier identifier : identifiers) {
-                                gene2Genotype.computeIfAbsent(identifier, e -> new LinkedList<>()).add(variant);
-                            }
-                        });
+                        .forEach(geneId -> gene2Genotype.computeIfAbsent(geneId, e -> new LinkedList<>()).add(variant));
             }
 
             // Collect the variants into Gene2Genotype container

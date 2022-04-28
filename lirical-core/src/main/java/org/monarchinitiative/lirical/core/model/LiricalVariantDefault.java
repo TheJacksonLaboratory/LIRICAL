@@ -1,6 +1,5 @@
 package org.monarchinitiative.lirical.core.model;
 
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.svart.GenomicVariant;
 
 import java.util.*;

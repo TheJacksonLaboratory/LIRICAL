@@ -1,7 +1,6 @@
-package org.monarchinitiative.lirical.core.likelihoodratio.backgroundfrequency;
+package org.monarchinitiative.lirical.io.backgroundfrequency;
 
 
-import com.google.common.collect.Sets;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
@@ -44,11 +43,11 @@ public class GenicIntoleranceCalculator {
     private final float DEFAULT_PERCENTAGE = 100 * DEFAULT_FREQUENCY;
     /** A set of interpretation classes from ClinVar that we will regard as pathogenic. */
     private static final Set<ClinVarData.ClinSig> PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS =
-            Sets.immutableEnumSet(ClinVarData.ClinSig.PATHOGENIC,
+            EnumSet.of(ClinVarData.ClinSig.PATHOGENIC,
                     ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC,
                     ClinVarData.ClinSig.LIKELY_PATHOGENIC);
     private static final Set<ClinVarData.ClinSig> BENIGN_CLINVAR_PRIMARY_INTERPRETATIONS =
-            Sets.immutableEnumSet(ClinVarData.ClinSig.BENIGN,
+            EnumSet.of(ClinVarData.ClinSig.BENIGN,
                     ClinVarData.ClinSig.LIKELY_BENIGN,
                     ClinVarData.ClinSig.BENIGN_OR_LIKELY_BENIGN);
     /** Ordered list of the populations included in the calculations. */

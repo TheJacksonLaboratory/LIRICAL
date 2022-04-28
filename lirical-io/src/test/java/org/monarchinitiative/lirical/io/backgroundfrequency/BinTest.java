@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.core.likelihoodratio.backgroundfrequency;
+package org.monarchinitiative.lirical.io.backgroundfrequency;
 
 
 import org.junit.jupiter.api.Test;
