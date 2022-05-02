@@ -30,7 +30,7 @@ public class DifferentialDiagnosisTest {
         Contig contig = Contig.of(1, "ctg1", SequenceRole.ASSEMBLED_MOLECULE, "ctg1", AssignedMoleculeType.CHROMOSOME, 1000, "", "", "");
         GenomicVariant gv = GenomicVariant.of(contig, "id", Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 1, 1), "C", "G");
         GenotypedVariant gtv = GenotypedVariant.of(GenomeBuild.HG38, gv, Map.of(), true);
-        LiricalVariant variant = LiricalVariant.of(gtv, VariantMetadata.empty());
+        LiricalVariant variant = LiricalVariant.of(gtv, List.of(), VariantMetadata.empty());
     }
 
     /** Test that the private function prettifyDiseaseName (which is called from the constructor)

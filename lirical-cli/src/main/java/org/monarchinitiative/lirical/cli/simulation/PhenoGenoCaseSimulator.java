@@ -1,31 +1,17 @@
 package org.monarchinitiative.lirical.cli.simulation;
 
-import com.google.common.collect.ImmutableList;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.core.output.LrThreshold;
 import org.monarchinitiative.lirical.core.output.MinDiagnosisCount;
-import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.HpoCase;
-import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.Phenopacket;
-import org.phenopackets.schema.v1.core.Disease;
-import org.phenopackets.schema.v1.core.HtsFile;
 import org.phenopackets.schema.v1.core.PhenotypicFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm.getDescendents;
 
 public class PhenoGenoCaseSimulator {
     private static final Logger logger = LoggerFactory.getLogger(PhenoGenoCaseSimulator.class);
@@ -79,7 +65,7 @@ public class PhenoGenoCaseSimulator {
         this.phenopacketPath = phenopacketPath;
 
         this.factory = factory;
-        GenomeAssembly genomeAssembly = factory.getAssembly();
+//        GenomeAssembly genomeAssembly = factory.getAssembly();
 
 //        PhenopacketV1Importer importer = PhenopacketV1Importer.fromJson(phenopacketPath);
 //        String sampleName = importer.getSampleId();

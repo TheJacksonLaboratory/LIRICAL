@@ -4,9 +4,6 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
 import org.h2.mvstore.MVStore;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.genome.jannovar.InvalidFileFormatException;
-import org.monarchinitiative.exomiser.core.genome.jannovar.JannovarDataProtoSerialiser;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLikelihoodRatio;
@@ -35,7 +32,7 @@ import java.util.*;
  * classes that we need as singletons with the various commands.
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
- * @deprecated use {@link LiricalConfiguration}
+ * @deprecated use {@link LiricalBuilder}
  */
 @Deprecated
 public class LiricalFactory {
@@ -90,7 +87,7 @@ public class LiricalFactory {
 //     */
 //    private MinDiagnosisCount minDifferentials;
 
-    private final GenomeAssembly assembly;
+//    private final GenomeAssembly assembly;
 
     private final Ontology ontology;
 
@@ -175,11 +172,11 @@ public class LiricalFactory {
                 throw new LiricalRuntimeException("[FATAL] Could not find Jannovar transcript file at " + fullpath);
             }
             JannovarData jd = null;
-            try {
-                jd = JannovarDataProtoSerialiser.load(f.toPath());
-            } catch (InvalidFileFormatException e) {
-                logger.warn("Could not deserialize Jannovar file with Protobuf deserializer, trying legacy deserializer...");
-            }
+//            try {
+//                jd = JannovarDataProtoSerialiser.load(f.toPath());
+//            } catch (InvalidFileFormatException e) {
+//                logger.warn("Could not deserialize Jannovar file with Protobuf deserializer, trying legacy deserializer...");
+//            }
             if (jd == null) {
                 try {
                     jd = new JannovarDataSerializer(fullpath).load();
@@ -191,25 +188,25 @@ public class LiricalFactory {
             }
             jannovarData = jd;
         }
-        this.assembly = builder.getAssembly();
-        if (assembly.equals(GenomeAssembly.HG19) || assembly.equals(GenomeAssembly.HG38)) {
-            // This will set up UCSCS output URLs for variants
-//            SimpleVariant.setGenomeBuildForUrl(assembly);
-        }
-        Path backgroundFrequencyPath;
+//        this.assembly = builder.getAssembly();
+//        if (assembly.equals(GenomeAssembly.HG19) || assembly.equals(GenomeAssembly.HG38)) {
+//            // This will set up UCSCS output URLs for variants
+////            SimpleVariant.setGenomeBuildForUrl(assembly);
+//        }
+        Path backgroundFrequencyPath = null;
         if (builder.backgroundFrequencyPath != null) {
             backgroundFrequencyPath = builder.backgroundFrequencyPath;
         } else {
             // Note-- background files for hg19 and hg38 are stored in src/main/resources/background
             // and are included in the resources by the maven resource plugin
-            if (assembly.equals(GenomeAssembly.HG19)) {
-                backgroundFrequencyPath = Path.of("background/background-hg19.tsv");
-            } else if (assembly.equals(GenomeAssembly.HG38)) {
-                backgroundFrequencyPath = Path.of("background/background-hg38.tsv");
-            } else {
-                logger.error("Did not recognize genome assembly: {}", assembly);
-                throw new LiricalRuntimeException("Did not recognize genome assembly: " + assembly);
-            }
+//            if (assembly.equals(GenomeAssembly.HG19)) {
+//                backgroundFrequencyPath = Path.of("background/background-hg19.tsv");
+//            } else if (assembly.equals(GenomeAssembly.HG38)) {
+//                backgroundFrequencyPath = Path.of("background/background-hg38.tsv");
+//            } else {
+//                logger.error("Did not recognize genome assembly: {}", assembly);
+//                throw new LiricalRuntimeException("Did not recognize genome assembly: " + assembly);
+//            }
         }
         try (BufferedReader reader = Files.newBufferedReader(backgroundFrequencyPath)) {
             this.gene2backgroundFrequency = GenotypeDataIngestor.parse(reader);
@@ -297,9 +294,9 @@ public class LiricalFactory {
     /**
      * @return the genome assembly corresponding to the VCF file. Can be null.
      */
-    public GenomeAssembly getAssembly() {
-        return assembly;
-    }
+//    public GenomeAssembly getAssembly() {
+//        return assembly;
+//    }
 
     /**
      * @return HpoOntology object.
@@ -510,17 +507,17 @@ public class LiricalFactory {
      */
     public void qcGenomeBuild() {
         String pathString = exomiserPath.toAbsolutePath().toString();
-        if (this.assembly.equals(GenomeAssembly.HG19)) {
-            if (!pathString.contains("hg19")) {
-                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg19. Consider adding the option -g/--genome <...>.", this.exomiserPath));
-            }
-        } else if (this.assembly.equals(GenomeAssembly.HG38)) {
-            if (!pathString.contains("hg38")) {
-                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg38. Consider adding the option -g/--genome <...>.", this.exomiserPath));
-            }
-        } else {
-            logger.trace("Genome assembly: {}", this.assembly);
-        }
+//        if (this.assembly.equals(GenomeAssembly.HG19)) {
+//            if (!pathString.contains("hg19")) {
+//                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg19. Consider adding the option -g/--genome <...>.", this.exomiserPath));
+//            }
+//        } else if (this.assembly.equals(GenomeAssembly.HG38)) {
+//            if (!pathString.contains("hg38")) {
+//                throw new LiricalRuntimeException(String.format("Use of non-matching Exomiser database (%s) for genome assembly hg38. Consider adding the option -g/--genome <...>.", this.exomiserPath));
+//            }
+//        } else {
+//            logger.trace("Genome assembly: {}", this.assembly);
+//        }
     }
 
     public void qcVcfFile() {
@@ -549,7 +546,7 @@ public class LiricalFactory {
 
         private Path backgroundFrequencyPath = null;
         private Path vcfPath = null;
-        private GenomeAssembly genomeAssembly = null;
+//        private GenomeAssembly genomeAssembly = null;
         private boolean global = false;
         // TODO - fix
         private boolean useOrphanet = false;
@@ -641,12 +638,12 @@ public class LiricalFactory {
 //            return this;
 //        }
 
-        private GenomeAssembly parseAssembly(String genomeAssembly) {
-            return switch (genomeAssembly.toLowerCase()) {
-                case "grch37", "hg19" -> GenomeAssembly.HG19;
-                default -> GenomeAssembly.HG38;
-            };
-        }
+//        private GenomeAssembly parseAssembly(String genomeAssembly) {
+//            return switch (genomeAssembly.toLowerCase()) {
+//                case "grch37", "hg19" -> GenomeAssembly.HG19;
+//                default -> GenomeAssembly.HG38;
+//            };
+//        }
 
         @Deprecated(forRemoval = true)
         public Builder orphanet(boolean b) {
@@ -660,10 +657,10 @@ public class LiricalFactory {
         }
 
 
-        public Builder genomeAssembly(String genomeAssembly) {
-            this.genomeAssembly = parseAssembly(genomeAssembly);
-            return this;
-        }
+//        public Builder genomeAssembly(String genomeAssembly) {
+//            this.genomeAssembly = parseAssembly(genomeAssembly);
+//            return this;
+//        }
 
         public Builder transcriptdatabase(TranscriptDatabase transcriptdatabase) {
             this.transcriptdatabase = transcriptdatabase;
@@ -671,12 +668,12 @@ public class LiricalFactory {
         }
 
 
-        /**
-         * @return an {@link org.monarchinitiative.exomiser.core.genome.GenomeAssembly} object representing the genome build.
-         */
-        GenomeAssembly getAssembly() {
-            return genomeAssembly;
-        }
+//        /**
+//         * @return an {@link org.monarchinitiative.exomiser.core.genome.GenomeAssembly} object representing the genome build.
+//         */
+//        GenomeAssembly getAssembly() {
+//            return genomeAssembly;
+//        }
 
 
         public Builder backgroundFrequency(Path bf) {

@@ -129,7 +129,7 @@ public class SimulatePhenopacketWithVcfCommand extends PhenopacketCommand {
         this.factory = LiricalFactory.builder()
 //                .datadir(this.datadir) // TODO - fix
 //                .genomeAssembly(runConfiguration.genomeAssembly)
-                .exomiser(this.dataSection.exomiserDataDirectory)
+                .exomiser(this.dataSection.exomiserDatabase)
                 .transcriptdatabase(runConfiguration.transcriptDb)
                 .backgroundFrequency(this.dataSection.backgroundFrequencyFile)
                 .global(runConfiguration.globalAnalysisMode)

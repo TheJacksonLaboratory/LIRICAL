@@ -17,5 +17,10 @@
             <artifactId>lirical-io</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.monarchinitiative.lirical</groupId>
+            <artifactId>lirical-exomiser-db-adapter</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
 </project>

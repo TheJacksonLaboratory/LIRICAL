@@ -1,7 +1,10 @@
 package org.monarchinitiative.lirical.core.service;
 
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.lirical.core.model.VariantMetadata;
 import org.monarchinitiative.svart.GenomicVariant;
+
+import java.util.List;
 
 public interface VariantMetadataService {
 
@@ -14,7 +17,7 @@ public interface VariantMetadataService {
         return new Options(DEFAULT_FREQUENCY);
     }
 
-    VariantMetadata metadata(GenomicVariant variant);
+    VariantMetadata metadata(GenomicVariant variant, List<VariantEffect> effects);
 
 
     record Options(float defaultFrequency) {

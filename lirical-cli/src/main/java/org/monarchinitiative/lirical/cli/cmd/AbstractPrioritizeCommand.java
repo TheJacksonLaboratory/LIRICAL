@@ -1,8 +1,6 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
-import org.monarchinitiative.lirical.configuration.Lirical;
-import org.monarchinitiative.lirical.configuration.LiricalConfiguration;
-import org.monarchinitiative.lirical.configuration.LiricalProperties;
+import org.monarchinitiative.lirical.configuration.*;
 import org.monarchinitiative.lirical.core.output.*;
 import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
@@ -60,8 +58,8 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         protected Path liricalDataDirectory;
 
         @CommandLine.Option(names = {"-e", "--exomiser"},
-                description = "Path to the Exomiser data directory.")
-        protected Path exomiserDataDirectory = null;
+                description = "Path to the Exomiser variant database.")
+        protected Path exomiserDatabase = null;
 
         @CommandLine.Option(names = {"-b", "--background"},
                 description = "Path to non-default background frequency file.")
@@ -157,20 +155,18 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         if (genomeBuildOptional.isEmpty())
             throw new LiricalDataException("Unknown genome build: '" + getGenomeBuild() + "'");
 
-        LiricalProperties liricalProperties = LiricalProperties.builder(dataSection.liricalDataDirectory)
-                .exomiserDataDirectory(dataSection.exomiserDataDirectory)
-                .genomeAssembly(genomeBuildOptional.get())
-                .backgroundFrequencyFile(dataSection.backgroundFrequencyFile)
-                // CONFIGURATION
-                .diseaseDatabases(runConfiguration.useOrphanet
+        GenotypeLrProperties genotypeLrProperties = new GenotypeLrProperties(runConfiguration.pathogenicityThreshold, runConfiguration.defaultVariantBackgroundFrequency, runConfiguration.strict);
+        Lirical lirical = LiricalBuilder.builder(dataSection.liricalDataDirectory)
+                .exomiserVariantDatabase(dataSection.exomiserDatabase)
+                .genomeBuild(genomeBuildOptional.get())
+                .backgroundVariantFrequency(dataSection.backgroundFrequencyFile)
+                .setDiseaseDatabases(runConfiguration.useOrphanet
                         ? DiseaseDatabase.allKnownDiseaseDatabases()
                         : Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER))
-                .genotypeLrProperties(runConfiguration.strict, runConfiguration.defaultVariantBackgroundFrequency, runConfiguration.pathogenicityThreshold)
+                .genotypeLrProperties(genotypeLrProperties)
                 .transcriptDatabase(runConfiguration.transcriptDb)
-                .defaultVariantFrequency(runConfiguration.defaultAlleleFrequency)
+                .defaultVariantAlleleFrequency(runConfiguration.defaultAlleleFrequency)
                 .build();
-        LiricalConfiguration factory = LiricalConfiguration.of(liricalProperties);
-        Lirical lirical = factory.getLirical();
 
         // 2 - prepare inputs
         LOGGER.info("Preparing the analysis data");
@@ -194,7 +190,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
                 .setHpoVersion(lirical.phenotypeService().hpo().getMetaInfo().getOrDefault("release", "UNKNOWN RELEASE"))
                 .setTranscriptDatabase(runConfiguration.transcriptDb.toString())
                 .setLiricalPath(dataSection.liricalDataDirectory.toAbsolutePath().toString())
-                .setExomiserPath(dataSection.exomiserDataDirectory == null ? "" : dataSection.exomiserDataDirectory.toAbsolutePath().toString())
+                .setExomiserPath(dataSection.exomiserDatabase == null ? "" : dataSection.exomiserDatabase.toAbsolutePath().toString())
                 .setAnalysisDate(getTodaysDate())
                 .setSampleName(analysisData.sampleId())
                 .setnGoodQualityVariants(filteringStats.nGoodQualityVariants())
@@ -278,8 +274,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
                     .toList();
             LOGGER.info("Read {} variants", NF.format(variants.size()));
 
-            // Group variants by gene symbol. It would be better to group the variants by e.g. Entrez ID,
-            // but the ID is not available from TranscriptAnnotation
+            // Group variants by Entrez ID.
             Map<GeneIdentifier, List<LiricalVariant>> gene2Genotype = new HashMap<>();
             for (LiricalVariant variant : variants) {
                 variant.annotations().stream()

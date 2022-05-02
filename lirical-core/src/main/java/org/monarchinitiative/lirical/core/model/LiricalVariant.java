@@ -1,9 +1,11 @@
 package org.monarchinitiative.lirical.core.model;
 
-public interface LiricalVariant extends GenotypedVariant, VariantMetadata {
+import java.util.List;
 
-    static LiricalVariant of(GenotypedVariant variant, VariantMetadata metadata) {
-        return new LiricalVariantDefault(variant, metadata);
+public interface LiricalVariant extends GenotypedVariant, VariantMetadata, FunctionalAnnotationAware {
+
+    static LiricalVariant of(GenotypedVariant variant, List<TranscriptAnnotation> annotations, VariantMetadata metadata) {
+        return new LiricalVariantDefault(variant, annotations, metadata);
     }
 
     /**

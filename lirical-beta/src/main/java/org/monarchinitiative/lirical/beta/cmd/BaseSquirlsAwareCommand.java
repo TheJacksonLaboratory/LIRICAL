@@ -1,14 +1,12 @@
 package org.monarchinitiative.lirical.beta.cmd;
 
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lirical.configuration.Lirical;
 import org.monarchinitiative.lirical.configuration.LiricalBuilder;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.output.AnalysisResultsMetadata;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
-import org.monarchinitiative.lirical.io.ExomiserDataResolver;
+import org.monarchinitiative.lirical.exomiser_db_adapter.ExomiserMvStoreMetadataService;
 import org.monarchinitiative.lirical.io.LiricalDataException;
-import org.monarchinitiative.lirical.io.service.ExomiserVariantMetadataService;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +35,8 @@ public abstract class BaseSquirlsAwareCommand extends AbstractPrioritizeCommand 
 
         @CommandLine.Option(names = {"-e", "--exomiser"},
                 required = true,
-                description = "Path to Exomiser data directory.")
-        public Path exomiserDataDirectory = null;
+                description = "Path to Exomiser variant database.")
+        public Path exomiserVariantDatabase = null;
 
         @CommandLine.Option(names = {"--squirls"},
                 required = true,
@@ -60,14 +58,10 @@ public abstract class BaseSquirlsAwareCommand extends AbstractPrioritizeCommand 
                 ? DiseaseDatabase.allKnownDiseaseDatabases()
                 : Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER);
 
-        GenomeAssembly assembly = getGenomeAssembly(genomeBuild);
-        ExomiserDataResolver exomiserDataResolver = ExomiserDataResolver.of(dataSection.exomiserDataDirectory);
-        ExomiserVariantMetadataService exomiser = ExomiserVariantMetadataService.of(exomiserDataResolver.mvStorePath(),
-                exomiserDataResolver.transcriptCacheForTranscript(runConfiguration.transcriptDb),
-                assembly,
-                VariantMetadataService.defaultOptions());
+        VariantMetadataService exomiserMetadataService = ExomiserMvStoreMetadataService.of(dataSection.exomiserVariantDatabase,
+                new VariantMetadataService.Options(runConfiguration.defaultVariantAlleleFrequency));
 
-        SquirlsAwarePathogenicityService squirlsAwarePathogenicityService = SquirlsAwarePathogenicityService.of(exomiser,
+        SquirlsAwareVariantMetadataService squirlsAwareVariantMetadataService = SquirlsAwareVariantMetadataService.of(exomiserMetadataService,
                 dataSection.squirlsDataDirectory,
                 runConfiguration.transcriptDb,
                 runConfiguration.pathogenicityThreshold,
@@ -76,12 +70,9 @@ public abstract class BaseSquirlsAwareCommand extends AbstractPrioritizeCommand 
         return LiricalBuilder.builder(dataSection.liricalDataDirectory)
                 .genomeBuild(genomeBuild)
                 .backgroundVariantFrequency(dataSection.backgroundFrequencyFile)
-                .clearDiseaseDatabases().useDiseaseDatabases(diseaseDatabases)
+                .setDiseaseDatabases(diseaseDatabases)
                 .transcriptDatabase(runConfiguration.transcriptDb)
-                .defaultVariantAlleleFrequency(runConfiguration.defaultVariantAlleleFrequency)
-                .functionalVariantAnnotator(exomiser)
-                .variantFrequencyService(exomiser)
-                .variantPathogenicityService(squirlsAwarePathogenicityService)
+                .variantMetadataService(squirlsAwareVariantMetadataService)
                 .build();
     }
 
@@ -112,16 +103,8 @@ public abstract class BaseSquirlsAwareCommand extends AbstractPrioritizeCommand 
         return 0;
     }
 
-
-    private static GenomeAssembly getGenomeAssembly(GenomeBuild genomeBuild) {
-        return switch (genomeBuild) {
-            case HG19 -> GenomeAssembly.HG19;
-            case HG38 -> GenomeAssembly.HG38;
-        };
-    }
-
     protected AnalysisResultsMetadata.Builder fillDataSection(AnalysisResultsMetadata.Builder builder) {
         return builder.setLiricalPath(dataSection.liricalDataDirectory.toAbsolutePath().toString())
-                .setExomiserPath(dataSection.exomiserDataDirectory == null ? "" : dataSection.exomiserDataDirectory.toAbsolutePath().toString());
+                .setExomiserPath(dataSection.exomiserVariantDatabase == null ? "" : dataSection.exomiserVariantDatabase.toAbsolutePath().toString());
     }
 }

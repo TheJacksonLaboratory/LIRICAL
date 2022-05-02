@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.beta.cmd;
 
 import org.monarchinitiative.lirical.configuration.Lirical;
+import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.monarchinitiative.lirical.core.output.*;
 import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
@@ -227,8 +228,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
                     .toList();
             LOGGER.info("Read {} variants", NF.format(variants.size()));
 
-            // Group variants by gene symbol. It would be better to group the variants by e.g. Entrez ID,
-            // but the ID is not available from TranscriptAnnotation
+            // Group variants by Entrez ID.
             Map<GeneIdentifier, List<LiricalVariant>> gene2Genotype = new HashMap<>();
             for (LiricalVariant variant : variants) {
                 variant.annotations().stream()

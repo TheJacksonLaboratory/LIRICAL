@@ -1,6 +1,5 @@
 package org.monarchinitiative.lirical.configuration;
 
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.phenol.annotations.assoc.HpoAssociationLoader;
@@ -71,7 +70,7 @@ class LoadUtils {
             case HG19 -> "/background/background-hg19.tsv";
             case HG38 -> "/background/background-hg38.tsv";
         };
-        InputStream is = LiricalConfiguration.class.getResourceAsStream(name);
+        InputStream is = LiricalBuilder.class.getResourceAsStream(name);
         if (is == null)
             throw new LiricalDataException("Background file for " + genomeBuild + " is not present at '" + name + '\'');
         LOGGER.debug("Loading bundled background variant frequencies from {}", name);
@@ -86,19 +85,6 @@ class LoadUtils {
                 LOGGER.warn("Unknown genome assembly {}. Falling back to GRCh38", genomeAssembly);
             case HG38:
                 return GenomicAssemblies.GRCh38p13();
-        }
-    }
-
-    static GenomeAssembly parseExomiserAssembly(GenomeBuild build) {
-        switch (build) {
-            case HG19:
-                LOGGER.debug("Using GRCh37 assembly");
-                return GenomeAssembly.HG19;
-            default:
-                LOGGER.warn("Unknown assembly {}, falling back to GRCh38", build);
-            case HG38:
-                LOGGER.debug("Using GRCh38 assembly");
-                return GenomeAssembly.HG38;
         }
     }
 }

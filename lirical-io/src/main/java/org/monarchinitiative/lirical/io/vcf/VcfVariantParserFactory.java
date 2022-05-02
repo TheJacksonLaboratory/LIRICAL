@@ -1,5 +1,6 @@
 package org.monarchinitiative.lirical.io.vcf;
 
+import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
 import org.monarchinitiative.lirical.io.VariantParser;
 import org.monarchinitiative.lirical.io.VariantParserFactory;
@@ -11,16 +12,20 @@ import java.util.Objects;
 public class VcfVariantParserFactory implements VariantParserFactory {
 
     private final GenomicAssembly genomicAssembly;
+    private final FunctionalVariantAnnotator variantAnnotator;
     private final VariantMetadataService metadataService;
 
     public static VcfVariantParserFactory of(GenomicAssembly genomicAssembly,
-                                      VariantMetadataService metadataService) {
-        return new VcfVariantParserFactory(genomicAssembly, metadataService);
+                                             FunctionalVariantAnnotator variantAnnotator,
+                                             VariantMetadataService metadataService) {
+        return new VcfVariantParserFactory(genomicAssembly, variantAnnotator, metadataService);
     }
 
-    public VcfVariantParserFactory(GenomicAssembly genomicAssembly,
+    private VcfVariantParserFactory(GenomicAssembly genomicAssembly,
+                                   FunctionalVariantAnnotator variantAnnotator,
                                    VariantMetadataService metadataService) {
         this.genomicAssembly = Objects.requireNonNull(genomicAssembly);
+        this.variantAnnotator = Objects.requireNonNull(variantAnnotator, "Variant annotator must not be null!");
         this.metadataService = Objects.requireNonNull(metadataService);
     }
 
@@ -31,6 +36,6 @@ public class VcfVariantParserFactory implements VariantParserFactory {
 
     @Override
     public VariantParser forPath(Path path) {
-        return new VcfVariantParser(path, genomicAssembly, genomeBuild(), metadataService);
+        return new VcfVariantParser(path, genomicAssembly, genomeBuild(), variantAnnotator, metadataService);
     }
 }

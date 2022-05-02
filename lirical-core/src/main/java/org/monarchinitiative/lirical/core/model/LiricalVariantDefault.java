@@ -7,10 +7,14 @@ import java.util.*;
 class LiricalVariantDefault implements LiricalVariant {
 
     private final GenotypedVariant genotypedVariant;
+    private final List<TranscriptAnnotation> annotations;
     private final VariantMetadata variantMetadata;
 
-    LiricalVariantDefault(GenotypedVariant genotypedVariant, VariantMetadata variantMetadata) {
+    LiricalVariantDefault(GenotypedVariant genotypedVariant,
+                          List<TranscriptAnnotation> annotations,
+                          VariantMetadata variantMetadata) {
         this.genotypedVariant = Objects.requireNonNull(genotypedVariant);
+        this.annotations = Objects.requireNonNull(annotations);
         this.variantMetadata = Objects.requireNonNull(variantMetadata);
     }
 
@@ -56,7 +60,7 @@ class LiricalVariantDefault implements LiricalVariant {
 
     @Override
     public List<TranscriptAnnotation> annotations() {
-        return variantMetadata.annotations();
+        return annotations;
     }
 
     @Override
@@ -64,18 +68,19 @@ class LiricalVariantDefault implements LiricalVariant {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         LiricalVariantDefault that = (LiricalVariantDefault) o;
-        return Objects.equals(genotypedVariant, that.genotypedVariant) && Objects.equals(variantMetadata, that.variantMetadata);
+        return Objects.equals(genotypedVariant, that.genotypedVariant) && Objects.equals(annotations, that.annotations) && Objects.equals(variantMetadata, that.variantMetadata);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(genotypedVariant, variantMetadata);
+        return Objects.hash(genotypedVariant, annotations, variantMetadata);
     }
 
     @Override
     public String toString() {
         return "LiricalVariantDefault{" +
                 "genotypedVariant=" + genotypedVariant +
+                ", annotations=" + annotations +
                 ", variantMetadata=" + variantMetadata +
                 '}';
     }

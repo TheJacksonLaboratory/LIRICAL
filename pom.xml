@@ -10,8 +10,10 @@
     <modules>
         <module>lirical-core</module>
         <module>lirical-io</module>
+        <module>lirical-exomiser-db-adapter</module>
         <module>lirical-configuration</module>
         <module>lirical-cli</module>
+        <module>lirical-background</module>
         <module>lirical-beta</module>
     </modules>
 
@@ -26,7 +28,11 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <phenol.version>2.0.0-RC2</phenol.version>
         <svart.version>2.0.0-RC1</svart.version>
+        <jannovar.version>0.35</jannovar.version>
         <exomiser.version>12.1.0</exomiser.version>
+<!--        <h2.version>1.4.197</h2.version> &lt;!&ndash; This is what Exomiser uses currently &ndash;&gt;-->
+        <h2.version>1.4.200</h2.version>
+        <htsjdk.version>2.24.1</htsjdk.version>
         <phenopacket.version>2.0.0</phenopacket.version>
         <protobuf.version>3.19.4</protobuf.version>
 
@@ -71,7 +77,11 @@
                 <artifactId>phenol-io</artifactId>
                 <version>${phenol.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>de.charite.compbio</groupId>
+                <artifactId>jannovar-core</artifactId>
+                <version>${jannovar.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.phenopackets</groupId>
                 <artifactId>phenopacket-schema</artifactId>
@@ -94,6 +104,17 @@
                 <version>${protobuf.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.github.samtools</groupId>
+                <artifactId>htsjdk</artifactId>
+                <version>${htsjdk.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2-mvstore</artifactId>
+                <version>${h2.version}</version>
+            </dependency>
             <dependency>
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>

@@ -163,11 +163,10 @@ public class TestResult implements Comparable<TestResult> {
         return Double.compare(posttestProbability, other.posttestProbability);
     }
 
-
     @Override
     public String toString() {
         String resultlist = observedResults.stream().map(String::valueOf).collect(Collectors.joining(";"));
-        String genoResult = hasGenotypeLR() ? String.format("genotype LR: %.4f", genotypeLr.lr()) : "no genotype LR";
+        String genoResult = genotypeLr == null ? "no genotype LR" : String.format("genotype LR: %.4f", genotypeLr.lr());
         return String.format("%s: %.2f [%s] %s", diseaseId, getCompositeLR(), resultlist, genoResult);
     }
 
@@ -204,10 +203,6 @@ public class TestResult implements Comparable<TestResult> {
 
     public Optional<GenotypeLrWithExplanation> genotypeLr() {
         return Optional.ofNullable(genotypeLr);
-    }
-
-    public Optional<String> getGenotypeExplanation() {
-        return genotypeLr().map(GenotypeLrWithExplanation::explanation);
     }
 
     @Deprecated(forRemoval = true) // get explanations from results

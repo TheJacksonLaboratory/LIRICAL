@@ -1,22 +1,28 @@
 package org.monarchinitiative.lirical.io.vcf;
 
 
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.lirical.core.model.GenotypedVariant;
 import org.monarchinitiative.lirical.core.model.LiricalVariant;
+import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.core.model.VariantMetadata;
+import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
 
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
 
 class LiricalVariantIterator implements Iterator<LiricalVariant> {
 
     private final Iterator<GenotypedVariant> iterator;
+    private final FunctionalVariantAnnotator variantAnnotator;
     private final VariantMetadataService metadataService;
 
-    LiricalVariantIterator(Iterator<GenotypedVariant> iterator, VariantMetadataService metadataService) {
-        this.iterator = Objects.requireNonNull(iterator, "Iterator must not be null");
-        this.metadataService = Objects.requireNonNull(metadataService, "Metadata service must not be null");
+    LiricalVariantIterator(Iterator<GenotypedVariant> iterator,
+                           FunctionalVariantAnnotator variantAnnotator,
+                           VariantMetadataService metadataService) {
+        this.iterator = Objects.requireNonNull(iterator, "Iterator must not be null!");
+        this.variantAnnotator = Objects.requireNonNull(variantAnnotator, "Variant annotator must not be null!");
+        this.metadataService = Objects.requireNonNull(metadataService, "Metadata service must not be null!");
     }
 
     @Override
@@ -26,8 +32,16 @@ class LiricalVariantIterator implements Iterator<LiricalVariant> {
 
     @Override
     public LiricalVariant next() {
-        GenotypedVariant next = iterator.next();
-        VariantMetadata metadata = metadataService.metadata(next.variant());
-        return LiricalVariant.of(next, metadata);
+        GenotypedVariant gv = iterator.next();
+        List<TranscriptAnnotation> annotations = variantAnnotator.annotate(gv.variant());
+
+        List<VariantEffect> effects = annotations.stream()
+                .map(TranscriptAnnotation::getVariantEffects)
+                .flatMap(Collection::stream)
+                .distinct()
+                .toList();
+
+        VariantMetadata metadata = metadataService.metadata(gv.variant(), effects);
+        return LiricalVariant.of(gv, annotations, metadata);
     }
 }

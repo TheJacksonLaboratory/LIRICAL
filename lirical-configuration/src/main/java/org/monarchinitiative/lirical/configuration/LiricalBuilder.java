@@ -1,6 +1,8 @@
 package org.monarchinitiative.lirical.configuration;
 
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import de.charite.compbio.jannovar.data.JannovarData;
+import de.charite.compbio.jannovar.data.JannovarDataSerializer;
+import de.charite.compbio.jannovar.data.SerializationException;
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunnerImpl;
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbabilities;
@@ -10,8 +12,12 @@ import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRat
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.output.AnalysisResultWriterFactory;
 import org.monarchinitiative.lirical.core.service.*;
-import org.monarchinitiative.lirical.io.*;
-import org.monarchinitiative.lirical.io.service.ExomiserVariantMetadataService;
+import org.monarchinitiative.lirical.exomiser_db_adapter.ExomiserMvStoreMetadataService;
+import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
+import org.monarchinitiative.lirical.io.LiricalDataException;
+import org.monarchinitiative.lirical.io.LiricalDataResolver;
+import org.monarchinitiative.lirical.io.VariantParserFactory;
+import org.monarchinitiative.lirical.io.service.JannovarFunctionalVariantAnnotator;
 import org.monarchinitiative.lirical.io.vcf.VcfVariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
@@ -34,37 +40,33 @@ public class LiricalBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(LiricalBuilder.class);
 
     private final Path dataDirectory;
+    private final LiricalDataResolver liricalDataResolver;
+    private final Set<DiseaseDatabase> diseaseDatabases = new HashSet<>(Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER));
     private GenomeBuild genomeBuild = GenomeBuild.HG38;
-    private Path exomiserDataDirectory = null;
+    private Path exomiserVariantDatabase = null;
     private Path backgroundVariantFrequency = null;
-
     private TranscriptDatabase transcriptDatabase = TranscriptDatabase.REFSEQ;
     private float defaultVariantAlleleFrequency = VariantMetadataService.DEFAULT_FREQUENCY;
-
-    private PhenotypeLikelihoodRatio phenotypeLikelihoodRatio = null;
     private GenotypeLrProperties genotypeLrProperties = new GenotypeLrProperties(.8f, .1, false);
+    private PhenotypeLikelihoodRatio phenotypeLikelihoodRatio = null;
     private GenotypeLikelihoodRatio genotypeLikelihoodRatio = null;
-
     private PretestDiseaseProbability pretestDiseaseProbability = null;
-
-    private final Set<DiseaseDatabase> diseaseDatabases = new HashSet<>(Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER));
     private PhenotypeService phenotypeService = null;
 
     private VariantMetadataService variantMetadataService = null;
     private FunctionalVariantAnnotator functionalVariantAnnotator = null;
-    private VariantFrequencyService variantFrequencyService = null;
-    private VariantPathogenicityService variantPathogenicityService = null;
 
-    public static LiricalBuilder builder(Path liricalDataDirectory) {
+    public static LiricalBuilder builder(Path liricalDataDirectory) throws LiricalDataException {
         return new LiricalBuilder(liricalDataDirectory);
     }
 
-    private LiricalBuilder(Path dataDirectory) {
+    private LiricalBuilder(Path dataDirectory) throws LiricalDataException {
         this.dataDirectory = Objects.requireNonNull(dataDirectory);
+        this.liricalDataResolver = LiricalDataResolver.of(dataDirectory);
     }
 
-    public LiricalBuilder exomiserDataDirectory(Path exomiserDataDirectory) {
-        this.exomiserDataDirectory = exomiserDataDirectory;
+    public LiricalBuilder exomiserVariantDatabase(Path exomiserVariantDatabase) {
+        this.exomiserVariantDatabase = exomiserVariantDatabase;
         return this;
     }
 
@@ -91,8 +93,22 @@ public class LiricalBuilder {
         return this;
     }
 
+    /**
+     * @param defaultVariantAlleleFrequency default variant allele frequency to set.
+     *                                      The frequency is only used if
+     *                                      {@link #variantMetadataService(VariantMetadataService)} is unset.
+     */
     public LiricalBuilder defaultVariantAlleleFrequency(float defaultVariantAlleleFrequency) {
         this.defaultVariantAlleleFrequency = defaultVariantAlleleFrequency;
+        return this;
+    }
+
+    public LiricalBuilder genotypeLrProperties(GenotypeLrProperties genotypeLrProperties) {
+        if (genotypeLrProperties == null) {
+            LOGGER.warn("Cannot set genotype likelihood ratio properties to null");
+            return this;
+        }
+        this.genotypeLrProperties = genotypeLrProperties;
         return this;
     }
 
@@ -106,11 +122,25 @@ public class LiricalBuilder {
         return this;
     }
 
-    public LiricalBuilder useDiseaseDatabases(DiseaseDatabase... diseaseDatabases) {
-        return useDiseaseDatabases(Arrays.asList(diseaseDatabases));
+    public LiricalBuilder addDiseaseDatabases(DiseaseDatabase... diseaseDatabases) {
+        return addDiseaseDatabases(Arrays.asList(diseaseDatabases));
     }
 
-    public LiricalBuilder useDiseaseDatabases(Collection<DiseaseDatabase> diseaseDatabases) {
+    public LiricalBuilder addDiseaseDatabases(Collection<DiseaseDatabase> diseaseDatabases) {
+        if (diseaseDatabases == null) {
+            LOGGER.warn("Disease databases should not be null!");
+            return this;
+        }
+        this.diseaseDatabases.addAll(diseaseDatabases);
+        return this;
+    }
+
+    public LiricalBuilder setDiseaseDatabases(Collection<DiseaseDatabase> diseaseDatabases) {
+        if (diseaseDatabases == null) {
+            LOGGER.warn("Disease databases should not be null!");
+            return this;
+        }
+        this.diseaseDatabases.clear();
         this.diseaseDatabases.addAll(diseaseDatabases);
         return this;
     }
@@ -140,16 +170,6 @@ public class LiricalBuilder {
         return this;
     }
 
-    public LiricalBuilder variantFrequencyService(VariantFrequencyService variantFrequencyService) {
-        this.variantFrequencyService = variantFrequencyService;
-        return this;
-    }
-
-    public LiricalBuilder variantPathogenicityService(VariantPathogenicityService variantPathogenicityService) {
-        this.variantPathogenicityService = variantPathogenicityService;
-        return this;
-    }
-
     public Lirical build() throws LiricalDataException {
         // First, services
         if (phenotypeService == null) {
@@ -157,19 +177,25 @@ public class LiricalBuilder {
             phenotypeService = configurePhenotypeService(dataDirectory, diseaseLoaderOptions);
         }
 
+        if (functionalVariantAnnotator == null) {
+            LOGGER.debug("Functional variant annotator is unset. Loading Jannovar transcript database for {} transcripts.", transcriptDatabase);
+            JannovarData jannovarData = loadJannovarData(liricalDataResolver, genomeBuild, transcriptDatabase);
+            functionalVariantAnnotator = JannovarFunctionalVariantAnnotator.of(jannovarData, phenotypeService.associationData().geneIdentifiers());
+        }
+
         if (variantMetadataService == null) {
-            LOGGER.debug("Variant metadata service is unset. Trying to create the service from variant annotator, frequency service, and pathogenicity service.");
-            variantMetadataService = configureVariantMetadataService();
+            LOGGER.debug("Variant metadata service is unset. Trying to create the service from frequency service and pathogenicity service.");
+            variantMetadataService = ExomiserMvStoreMetadataService.of(exomiserVariantDatabase, new VariantMetadataService.Options(defaultVariantAlleleFrequency));
         }
 
         // Variant parser factory
         GenomicAssembly genomicAssembly = LoadUtils.parseSvartGenomicAssembly(genomeBuild);
-        VariantParserFactory variantParserFactory = VcfVariantParserFactory.of(genomicAssembly, variantMetadataService);
+        VariantParserFactory variantParserFactory = VcfVariantParserFactory.of(genomicAssembly, functionalVariantAnnotator, variantMetadataService);
 
 
         // Lirical analysis runner
         if (pretestDiseaseProbability == null) {
-            LOGGER.debug("Using uniform pretest disease probabilities");
+            LOGGER.debug("Using uniform pretest disease probabilities.");
             pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(phenotypeService.diseases());
         }
 
@@ -188,56 +214,6 @@ public class LiricalBuilder {
         return Lirical.of(variantParserFactory, phenotypeService, analyzer, analysisResultWriterFactory);
     }
 
-    private VariantMetadataService configureVariantMetadataService() throws LiricalDataException {
-        ExomiserVariantMetadataService exomiserVariantMetadataService = null;
-        if (functionalVariantAnnotator == null) {
-            if (exomiserDataDirectory != null) {
-                exomiserVariantMetadataService = loadExomiserVariantMetadataService(exomiserDataDirectory);
-                functionalVariantAnnotator = exomiserVariantMetadataService;
-            } else {
-                // Right now we cannot do anything else but fail
-                throw new LiricalDataException("Functional variant annotator must not be null");
-            }
-        } else {
-            LOGGER.debug("Found variant functional annotator.");
-        }
-        if (variantFrequencyService == null) {
-            if (exomiserDataDirectory != null) {
-                if (exomiserVariantMetadataService == null)
-                    exomiserVariantMetadataService = loadExomiserVariantMetadataService(exomiserDataDirectory);
-                variantFrequencyService = exomiserVariantMetadataService;
-            } else {
-                // Right now we cannot do anything else but fail
-                throw new LiricalDataException("Variant frequency service must not be null");
-            }
-        } else {
-            LOGGER.debug("Found variant frequency service.");
-        }
-
-        if (variantPathogenicityService == null) {
-            if (exomiserDataDirectory != null) {
-                if (exomiserVariantMetadataService == null)
-                    exomiserVariantMetadataService = loadExomiserVariantMetadataService(exomiserDataDirectory);
-                variantPathogenicityService = exomiserVariantMetadataService;
-            } else {
-                // Right now we cannot do anything else but fail
-                throw new LiricalDataException("Variant pathogenicity service must not be null");
-            }
-        } else {
-            LOGGER.debug("Found variant pathogenicity service.");
-        }
-
-        return CompoundVariantMetadataService.of(functionalVariantAnnotator, variantFrequencyService, variantPathogenicityService);
-    }
-
-    private ExomiserVariantMetadataService loadExomiserVariantMetadataService(Path exomiserDataDirectory) throws LiricalDataException {
-        ExomiserDataResolver resolver = ExomiserDataResolver.of(exomiserDataDirectory);
-        Path transcriptCache = resolver.transcriptCacheForTranscript(transcriptDatabase);
-        GenomeAssembly genomeAssembly = LoadUtils.parseExomiserAssembly(genomeBuild);
-        VariantMetadataService.Options options = new VariantMetadataService.Options(defaultVariantAlleleFrequency);
-        return ExomiserVariantMetadataService.of(resolver.mvStorePath(), transcriptCache, genomeAssembly, options);
-    }
-
     private static PhenotypeService configurePhenotypeService(Path dataDirectory, HpoDiseaseLoaderOptions options) throws LiricalDataException {
         LiricalDataResolver liricalDataResolver = LiricalDataResolver.of(dataDirectory);
         Ontology hpo = LoadUtils.loadOntology(liricalDataResolver.hpoJson());
@@ -246,6 +222,17 @@ public class LiricalBuilder {
         return PhenotypeService.of(hpo, diseases, associationData);
     }
 
+    private static JannovarData loadJannovarData(LiricalDataResolver liricalDataResolver,
+                                                 GenomeBuild genomeBuild,
+                                                 TranscriptDatabase transcriptDatabase) throws LiricalDataException {
+        Path txDatabasePath = liricalDataResolver.transcriptCacheFor(genomeBuild, transcriptDatabase);
+        LOGGER.info("Loading transcript database from {}", txDatabasePath.toAbsolutePath());
+        try {
+            return new JannovarDataSerializer(txDatabasePath.toAbsolutePath().toString()).load();
+        } catch (SerializationException e) {
+            throw new LiricalDataException(e);
+        }
+    }
 
     private static GenotypeLikelihoodRatio configureGenotypeLikelihoodRatio(Path backgroundVariantFrequency, GenomeBuild genomeBuild, GenotypeLrProperties genotypeLrProperties) throws LiricalDataException {
         BackgroundVariantFrequencyService backgroundVariantFrequencyService;

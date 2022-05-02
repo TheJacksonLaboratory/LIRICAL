@@ -1,6 +1,5 @@
 package org.monarchinitiative.lirical.core.model;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface VariantMetadata {
@@ -11,12 +10,10 @@ public interface VariantMetadata {
 
     static VariantMetadata of(float frequency,
                               float pathogenicity,
-                              ClinvarClnSig clinvarClnSig,
-                              List<TranscriptAnnotation> annotations) {
+                              ClinvarClnSig clinvarClnSig) {
         return new VariantMetadataDefault(frequency,
                 pathogenicity,
-                clinvarClnSig,
-                annotations);
+                clinvarClnSig);
     }
 
     Optional<Float> frequency();
@@ -32,11 +29,6 @@ public interface VariantMetadata {
     }
 
     ClinvarClnSig clinvarClnSig();
-
-    /**
-     * @return list of functional variant annotations.
-     */
-    List<TranscriptAnnotation> annotations();
 
     /**
      * This is the frequency factor used for the Exomiser like pathogenicity score. It penalizes variants that have a higher

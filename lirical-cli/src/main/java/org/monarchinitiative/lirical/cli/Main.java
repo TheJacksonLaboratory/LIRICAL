@@ -30,7 +30,6 @@ public class Main implements Callable<Integer> {
         CommandLine cline = new CommandLine(new Main())
                 .addSubcommand("download", new DownloadCommand())
 
-                .addSubcommand("background", new BackgroundFrequencyCommand())
                 .addSubcommand("grid", new GridSearchCommand())
                 .addSubcommand("simulate", new SimulatePhenotypeOnlyCommand())
                 .addSubcommand("simulate-vcf", new SimulatePhenopacketWithVcfCommand())

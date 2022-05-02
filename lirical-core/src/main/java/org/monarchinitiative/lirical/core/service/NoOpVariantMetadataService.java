@@ -1,7 +1,10 @@
 package org.monarchinitiative.lirical.core.service;
 
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.lirical.core.model.VariantMetadata;
 import org.monarchinitiative.svart.GenomicVariant;
+
+import java.util.List;
 
 /**
  * A {@link VariantMetadataService} implementation used when the variant data is not available.
@@ -18,7 +21,7 @@ public class NoOpVariantMetadataService implements VariantMetadataService {
     }
 
     @Override
-    public VariantMetadata metadata(GenomicVariant variant) {
+    public VariantMetadata metadata(GenomicVariant variant, List<VariantEffect> effects) {
         return VariantMetadata.empty();
     }
 
