@@ -27,7 +27,7 @@ import java.util.*;
  * <p>
  * Note that the frequency data are expressed as percentages.
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen
  */
 public class FrequencyData {
 

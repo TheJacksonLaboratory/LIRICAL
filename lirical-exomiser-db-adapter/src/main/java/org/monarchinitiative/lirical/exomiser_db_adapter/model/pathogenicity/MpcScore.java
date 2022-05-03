@@ -30,7 +30,7 @@ package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
  * See: http://dx.doi.org/10.1101/148353
  *
  * @since 12.0.0
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Jules Jacobsen
  */
 public class MpcScore extends ScaledPathogenicityScore {
 

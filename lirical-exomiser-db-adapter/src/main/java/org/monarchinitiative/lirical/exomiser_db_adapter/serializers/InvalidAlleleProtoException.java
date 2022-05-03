@@ -22,7 +22,7 @@ package org.monarchinitiative.lirical.exomiser_db_adapter.serializers;
 import org.monarchinitiative.lirical.exomiser_db_adapter.ExomiserResourceRuntimeException;
 
 /**
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Jules Jacobsen
  */
 public class InvalidAlleleProtoException extends ExomiserResourceRuntimeException {
 

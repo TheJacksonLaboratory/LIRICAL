@@ -22,11 +22,9 @@ package org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency;
 import java.util.Objects;
 
 /**
- * Immutable value Class representing an NCBI dbSNP reference SNP rsID.
- * <p>
- * {@link http://www.ncbi.nlm.nih.gov/projects/SNP/index.html}
+ * Immutable value Class representing an NCBI dbSNP reference SNP <a href="http://www.ncbi.nlm.nih.gov/projects/SNP/index.html">rsID</a>.
  *
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Jules Jacobsen
  */
 public class RsId {
 

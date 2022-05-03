@@ -24,7 +24,7 @@ import java.util.*;
 /**
  * Container for Pathogenicity data about a variant.
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen
  * @since 3.0.0
  */
 public class PathogenicityData {

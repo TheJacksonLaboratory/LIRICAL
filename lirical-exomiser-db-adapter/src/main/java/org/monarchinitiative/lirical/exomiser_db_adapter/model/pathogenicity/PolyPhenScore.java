@@ -21,11 +21,11 @@ package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
 
 /**
  * PolyPhen (polymorphism phenotyping) score.
+ *
+ * <a href="http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2855889/?report=classic">Manuscript</a>,
+ * <a href="http://genetics.bwh.harvard.edu/pph2/">resource</a>.
  * 
- * @link http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2855889/?report=classic
- * @link http://genetics.bwh.harvard.edu/pph2/
- * 
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen
  */
 public class PolyPhenScore extends BasePathogenicityScore {
     

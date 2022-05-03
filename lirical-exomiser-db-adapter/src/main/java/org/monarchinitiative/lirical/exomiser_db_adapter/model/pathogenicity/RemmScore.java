@@ -20,9 +20,9 @@
 package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
 
 /**
- * REMM info - see {@link ...}
+ * REMM info.
  * 
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen
  */
 public class RemmScore extends BasePathogenicityScore {
 

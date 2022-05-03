@@ -38,7 +38,7 @@ import static org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenic
 
 
 /**
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Jules Jacobsen
  * @since 10.1.0
  */
 public class AlleleProtoAdaptor {

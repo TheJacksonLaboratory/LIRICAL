@@ -25,8 +25,8 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 /**
  * Set of constants for use as default pathogenicity scores for a given {@link VariantEffect}.
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
- * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
+ * @author Jules Jacobsen
+ * @author Manuel Holtgrewe
  */
 public final class VariantEffectPathogenicityScore {
 

@@ -32,12 +32,12 @@ package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
  * substitution affects protein function so that users can prioritize
  * substitutions for further study. It has been shown that SIFT can distinguish
  * between functionally neutral and deleterious amino acid changes in
- * mutagenesis studies and on human polymorphisms. SIFT is available at
- * {@link http://blocks.fhcrc.org/sift/SIFT.html}
+ * mutagenesis studies and on human polymorphisms. SIFT is available <a href="http://blocks.fhcrc.org/sift/SIFT.html">here</a>.
  *
- * {@link http://www.ncbi.nlm.nih.gov/pmc/articles/PMC168916/}
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * <a href="http://www.ncbi.nlm.nih.gov/pmc/articles/PMC168916/">Publication</a>.
+ *
+ * @author Jules Jacobsen
  */
 public class SiftScore extends ScaledPathogenicityScore {
 

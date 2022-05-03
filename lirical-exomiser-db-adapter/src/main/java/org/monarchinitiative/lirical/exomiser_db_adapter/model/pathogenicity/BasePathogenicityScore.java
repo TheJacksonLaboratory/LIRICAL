@@ -23,7 +23,7 @@ import java.util.Objects;
 
 /**
  * @since 7.0.0
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen
  */
 class BasePathogenicityScore implements PathogenicityScore {
 

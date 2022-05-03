@@ -20,9 +20,9 @@
 package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
 
 /**
- * CADD info - see {@link http://cadd.gs.washington.edu/info}
+ * CADD info - see <a href="http://cadd.gs.washington.edu/info">here</a>.
  * 
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen
  */
 public class CaddScore extends ScaledPathogenicityScore {
 

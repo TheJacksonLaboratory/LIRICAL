@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class PhenopacketV1ImporterTest {
     private static byte[] DATA;
-    private static final String fakeGenomeAssembly = "GRCH_37";
+    private static final String fakeGenomeAssembly = "GRCh37";
 
     private static OntologyClass ontologyClass(String id, String label) {
         return OntologyClass.newBuilder().

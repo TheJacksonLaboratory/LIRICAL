@@ -21,7 +21,7 @@ package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
 
 /**
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen
  */
 public class MutationTasterScore extends BasePathogenicityScore {
     

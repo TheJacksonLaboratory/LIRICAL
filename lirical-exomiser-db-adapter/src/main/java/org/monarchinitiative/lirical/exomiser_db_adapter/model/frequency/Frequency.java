@@ -23,7 +23,7 @@ import java.util.Objects;
 
 /**
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen
  */
 public class Frequency {
 

@@ -28,7 +28,7 @@ package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
  * using REVEL either in isolation of with other pathogenicity predictors as the REVEL scores tend to be overwhelmed by
  * the other scores. USE AT YOUR OWN RISK!!!
  *
- * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Jules Jacobsen
  */
 public enum PathogenicitySource {
     // variant type is from Jannovar

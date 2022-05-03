@@ -26,7 +26,7 @@ import java.util.Objects;
  * pathogenic and 1 to be highly pathogenic. Examples of this are CADD, SIFT and MPC.
  *
  * @since 12.0.0
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Jules Jacobsen
  */
 class ScaledPathogenicityScore extends BasePathogenicityScore {
 

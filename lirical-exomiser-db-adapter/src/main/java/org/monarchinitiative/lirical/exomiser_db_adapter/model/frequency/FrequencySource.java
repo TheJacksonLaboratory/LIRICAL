@@ -25,8 +25,8 @@ import java.util.Set;
 /**
  * Enum describing where the frequency data has originated.
  *
- * @author Damian Smedley <damian.smedley@sanger.ac.uk>
- * @author Jules  Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Damian Smedley
+ * @author Jules  Jacobsen
  */
 public enum FrequencySource {
 

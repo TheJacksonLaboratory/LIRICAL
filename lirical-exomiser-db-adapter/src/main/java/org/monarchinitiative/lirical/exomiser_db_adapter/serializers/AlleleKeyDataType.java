@@ -32,7 +32,7 @@ import java.nio.ByteBuffer;
  * Specialised {@link DataType} for (de)serialising {@link AlleleKey} objects into and out of
  * the {@link org.h2.mvstore.MVStore}.
  *
- * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
+ * @author Jules Jacobsen
  */
 public class AlleleKeyDataType implements DataType {
 
