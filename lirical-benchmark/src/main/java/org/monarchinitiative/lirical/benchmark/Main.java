@@ -1,5 +1,9 @@
 package org.monarchinitiative.lirical.benchmark;
 
+import org.monarchinitiative.lirical.benchmark.cmd.BenchmarkCommand;
+import org.monarchinitiative.lirical.benchmark.cmd.GridSearchCommand;
+import org.monarchinitiative.lirical.benchmark.cmd.SimulatePhenopacketWithVcfCommand;
+import org.monarchinitiative.lirical.benchmark.cmd.SimulatePhenotypeOnlyCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -26,8 +30,11 @@ public class Main implements Callable<Integer> {
             args = new String[]{"-h"};
         }
 
-        CommandLine cline = new CommandLine(new Main());
-
+        CommandLine cline = new CommandLine(new Main())
+                .addSubcommand("benchmark", new BenchmarkCommand())
+                .addSubcommand("grid", new GridSearchCommand())
+                .addSubcommand("simulate", new SimulatePhenotypeOnlyCommand())
+                .addSubcommand("simulate-vcf", new SimulatePhenopacketWithVcfCommand());
 
         cline.setToggleBooleanFlags(false);
         int exitCode = cline.execute(args);

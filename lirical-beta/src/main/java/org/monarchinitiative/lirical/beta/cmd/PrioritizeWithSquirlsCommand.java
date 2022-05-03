@@ -78,10 +78,10 @@ public class PrioritizeWithSquirlsCommand extends BaseSquirlsAwareCommand {
             negatedTerms = List.of();
 
         GenesAndGenotypes genes;
-        if (vcfPath == null || lirical.variantParserFactory().isEmpty()) {
+        if (vcfPath == null) {
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.variantParserFactory().get());
+            genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.variantParserFactory());
         }
 
         return AnalysisData.of(sampleId, parseAge(age), sex, observedTerms, negatedTerms, genes);

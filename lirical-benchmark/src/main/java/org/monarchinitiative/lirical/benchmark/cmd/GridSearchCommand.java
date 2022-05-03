@@ -1,8 +1,8 @@
-package org.monarchinitiative.lirical.cli.cmd;
+package org.monarchinitiative.lirical.benchmark.cmd;
 
 
+import org.monarchinitiative.lirical.benchmark.simulation.GridSearch;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
-import org.monarchinitiative.lirical.cli.simulation.GridSearch;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -21,8 +21,7 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name = "grid",
         aliases = {"G"},
         mixinStandardHelpOptions = true,
-        description = "Grid search for simulation of phenotype-only cases",
-        hidden = true)
+        description = "Grid search for simulation of phenotype-only cases")
 public class GridSearchCommand implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(GridSearchCommand.class);
     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */
@@ -40,15 +39,16 @@ public class GridSearchCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws LiricalException {
-        LiricalFactory factory = LiricalFactory.builder()
+        throw new LiricalException("Sorry, not yet re-implemented");
+//        LiricalFactory factory = LiricalFactory.builder()
 //                .datadir(this.datadir) // TODO - fix
-                .build();
+//                .build();
 //        factory.qcHumanPhenotypeOntologyFiles();
-        logger.trace("Grid search: Simulating {} cases. imprecision={}",
-                n_cases_to_simulate,imprecise_phenotype?"yes":"no");
-        Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(factory.hpoOntology());
-        GridSearch gridSearch = new GridSearch(factory.hpoOntology(),diseaseMap, n_cases_to_simulate, imprecise_phenotype);
-        gridSearch.gridsearch();
-        return 0;
+//        logger.trace("Grid search: Simulating {} cases. imprecision={}",
+//                n_cases_to_simulate,imprecise_phenotype?"yes":"no");
+//        Map<TermId, HpoDisease> diseaseMap = factory.diseaseMap(factory.hpoOntology());
+//        GridSearch gridSearch = new GridSearch(factory.hpoOntology(),diseaseMap, n_cases_to_simulate, imprecise_phenotype);
+//        gridSearch.gridsearch();
+//        return 0;
     }
 }

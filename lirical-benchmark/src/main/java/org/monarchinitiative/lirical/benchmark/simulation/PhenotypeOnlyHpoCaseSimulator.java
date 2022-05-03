@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.cli.simulation;
+package org.monarchinitiative.lirical.benchmark.simulation;
 
 
 import com.google.common.collect.ImmutableList;

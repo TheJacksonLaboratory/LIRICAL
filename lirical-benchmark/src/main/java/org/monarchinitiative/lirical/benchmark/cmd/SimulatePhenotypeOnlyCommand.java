@@ -1,8 +1,8 @@
-package org.monarchinitiative.lirical.cli.cmd;
+package org.monarchinitiative.lirical.benchmark.cmd;
 
 
+import org.monarchinitiative.lirical.benchmark.simulation.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
-import org.monarchinitiative.lirical.cli.simulation.PhenotypeOnlyHpoCaseSimulator;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
 /**
  * This class coordinates simulation of cases with only phenotype. It draws HPOs at random and then
  * performs analysis and records the rank.
- * This differs from {@link org.monarchinitiative.lirical.cli.simulation.GridSearch} because GridSearch essentially
+ * This differs from {@link org.monarchinitiative.lirical.benchmark.simulation.GridSearch} because GridSearch essentially
  * runs this analysis for different numbers of HPO observed/noise terms.
  * @author <a href="mailto:peter.robinson@jax.org">Peter N Robinson</a>
  */
@@ -25,8 +25,7 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name = "simulate",
         aliases = {"SP"},
         mixinStandardHelpOptions = true,
-        description = "Simulate phenotype-only cases",
-        hidden = true)
+        description = "Simulate phenotype-only cases")
 public class SimulatePhenotypeOnlyCommand implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(SimulatePhenotypeOnlyCommand.class);
     /** Directory that contains {@code hp.obo} and {@code phenotype.hpoa} files. */

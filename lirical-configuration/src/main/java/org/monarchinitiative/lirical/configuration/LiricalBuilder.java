@@ -211,7 +211,12 @@ public class LiricalBuilder {
         // Analysis result writer factory
         AnalysisResultWriterFactory analysisResultWriterFactory = new AnalysisResultWriterFactory(phenotypeService.hpo(), phenotypeService.diseases());
 
-        return Lirical.of(variantParserFactory, phenotypeService, analyzer, analysisResultWriterFactory);
+        return Lirical.of(variantParserFactory,
+                phenotypeService,
+                functionalVariantAnnotator,
+                variantMetadataService,
+                analyzer,
+                analysisResultWriterFactory);
     }
 
     private static PhenotypeService configurePhenotypeService(Path dataDirectory, HpoDiseaseLoaderOptions options) throws LiricalDataException {

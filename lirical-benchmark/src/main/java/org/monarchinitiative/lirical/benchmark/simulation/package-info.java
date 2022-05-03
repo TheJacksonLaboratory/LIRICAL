@@ -3,4 +3,4 @@
  * run LIRICAL on data.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-package org.monarchinitiative.lirical.cli.simulation;
+package org.monarchinitiative.lirical.benchmark.simulation;

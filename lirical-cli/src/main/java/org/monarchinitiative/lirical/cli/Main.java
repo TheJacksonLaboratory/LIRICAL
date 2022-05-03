@@ -29,11 +29,6 @@ public class Main implements Callable<Integer> {
 
         CommandLine cline = new CommandLine(new Main())
                 .addSubcommand("download", new DownloadCommand())
-
-                .addSubcommand("grid", new GridSearchCommand())
-                .addSubcommand("simulate", new SimulatePhenotypeOnlyCommand())
-                .addSubcommand("simulate-vcf", new SimulatePhenopacketWithVcfCommand())
-
                 .addSubcommand("prioritize", new PrioritizeCommand())
                 .addSubcommand("phenopacket", new PhenopacketCommand())
                 .addSubcommand("yaml", new YamlCommand());

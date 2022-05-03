@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.cli.simulation;
+package org.monarchinitiative.lirical.benchmark.simulation;
 
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.core.output.LrThreshold;

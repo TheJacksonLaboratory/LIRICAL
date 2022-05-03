@@ -2,9 +2,12 @@ package org.monarchinitiative.lirical.io.analysis;
 
 import com.google.protobuf.util.JsonFormat;
 import org.monarchinitiative.lirical.core.model.Age;
+import org.monarchinitiative.lirical.core.model.GenotypedVariant;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v2.Phenopacket;
 import org.phenopackets.schema.v2.core.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,11 +15,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.time.Period;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 class PhenopacketV2Importer implements PhenopacketImporter {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PhenopacketV2Importer.class);
     private static final JsonFormat.Parser PARSER = JsonFormat.parser();
     private static final PhenopacketV2Importer INSTANCE = new PhenopacketV2Importer();
 
@@ -67,6 +72,25 @@ class PhenopacketV2Importer implements PhenopacketImporter {
         // Sex
         org.monarchinitiative.lirical.core.model.Sex sex = toSex(subject.getSex());
 
+        // Disease IDs
+        List<TermId> diseaseIds = phenopacket.getDiseasesList().stream()
+                .map(Disease::getTerm)
+                .map(OntologyClass::getId)
+                .map(AnalysisIoUtils::createTermId)
+                .flatMap(Optional::stream)
+                .distinct()
+                .toList();
+
+        // Variants
+        List<GenotypedVariant> variants = List.of(); // TODO - implement real variant parsing.
+        long genomicInterpretationCount = phenopacket.getInterpretationsList().stream()
+                .map(Interpretation::getDiagnosis)
+                .map(Diagnosis::getGenomicInterpretationsList)
+                .mapToLong(Collection::size)
+                .sum();
+        if (genomicInterpretationCount > 0)
+            LOGGER.warn("There are {} genomic interpretations in the phenopacket, but the variant parsing is currently not implemented.", genomicInterpretationCount);
+
         // VCF path and genome assembly
         Optional<File> firstVcf = phenopacket.getFilesList().stream()
                 .filter(file -> "vcf".equalsIgnoreCase(file.getFileAttributesOrDefault("fileFormat", "")))
@@ -83,6 +107,8 @@ class PhenopacketV2Importer implements PhenopacketImporter {
                 negatedHpoTerms,
                 age,
                 sex,
+                diseaseIds,
+                variants,
                 firstVcfPath);
     }
 

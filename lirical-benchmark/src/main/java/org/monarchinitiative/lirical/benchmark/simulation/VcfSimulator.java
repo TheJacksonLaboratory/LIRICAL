@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.cli.simulation;
+package org.monarchinitiative.lirical.benchmark.simulation;
 
 import htsjdk.variant.variantcontext.*;
 import htsjdk.variant.variantcontext.writer.Options;
