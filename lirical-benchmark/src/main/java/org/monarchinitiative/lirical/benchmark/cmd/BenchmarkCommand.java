@@ -1,6 +1,8 @@
 package org.monarchinitiative.lirical.benchmark.cmd;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.monarchinitiative.lirical.configuration.GenotypeLrProperties;
 import org.monarchinitiative.lirical.configuration.Lirical;
 import org.monarchinitiative.lirical.configuration.LiricalBuilder;
@@ -22,16 +24,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPOutputStream;
 
 @CommandLine.Command(name = "benchmark",
         mixinStandardHelpOptions = true,
@@ -58,6 +62,11 @@ public class BenchmarkCommand extends AbstractBenchmarkCommand {
     @CommandLine.Option(names = {"--phenotype-only"},
             description = "run simulations with phenotypes only?")
     protected boolean phenotypeOnly = false;
+
+    @CommandLine.Option(names = {"-o", "--output"},
+            required = true,
+            description = "Where to write the benchmark results CSV file. The CSV is compressed if the path has the '.gz' suffix")
+    protected Path outputPath;
 
     @Override
     public Integer call() throws Exception {
@@ -96,20 +105,9 @@ public class BenchmarkCommand extends AbstractBenchmarkCommand {
         LOGGER.info("Done!");
 
         // 4 - summarize the results.
-        // TODO - write out results
-        AtomicBoolean notFound = new AtomicBoolean(true);
-        AtomicInteger rank = new AtomicInteger();
-        results.resultsWithDescendingPostTestProbability()
-                .forEachOrdered(result -> {
-                    if (notFound.get())
-                        rank.incrementAndGet();
-
-                    if (result.diseaseId().equals(benchmarkData.diseaseId()))
-                        notFound.set(false);
-                });
-
-        LOGGER.info("Found disease {} on rank {}", benchmarkData.diseaseId(), rank);
-
+        LOGGER.info("Writing results to {}", outputPath.toAbsolutePath());
+        String backgroundVcf = vcfPath == null ? "" : vcfPath.toFile().getName();
+        writeResults(outputPath, benchmarkData, results, backgroundVcf);
         return 0;
     }
 
@@ -193,8 +191,8 @@ public class BenchmarkCommand extends AbstractBenchmarkCommand {
     }
 
     private static GenesAndGenotypes readVariantsFromVcfFile(Path vcfPath,
-                                                               List<LiricalVariant> causal,
-                                                               VariantParserFactory parserFactory) throws LiricalParseException {
+                                                             List<LiricalVariant> causal,
+                                                             VariantParserFactory parserFactory) throws LiricalParseException {
 
         try (VariantParser variantParser = parserFactory.forPath(vcfPath)) {
             // Read variants
@@ -228,16 +226,49 @@ public class BenchmarkCommand extends AbstractBenchmarkCommand {
         }
     }
 
-    protected AnalysisOptions prepareAnalysisOptions() {
-        return new AnalysisOptions(runConfiguration.globalAnalysisMode);
-    }
-
     private static Consumer<LiricalVariant> logProgress(AtomicInteger counter) {
         return v -> {
             int current = counter.incrementAndGet();
             if (current % 5000 == 0)
                 LOGGER.info("Read {} variants", NF.format(current));
         };
+    }
+
+    protected AnalysisOptions prepareAnalysisOptions() {
+        return new AnalysisOptions(runConfiguration.globalAnalysisMode);
+    }
+
+
+    private void writeResults(Path outputPath,
+                              BenchmarkData benchmarkData,
+                              AnalysisResults results,
+                              String backgroundVcf) throws IOException {
+        try (BufferedWriter writer = openWriter(outputPath);
+             CSVPrinter printer = CSVFormat.DEFAULT.print(writer)) {
+            printer.printRecord("sample_id", "background_vcf", "rank", "is_causal", "disease_id", "post_test_proba");
+            AtomicInteger rankCounter = new AtomicInteger();
+            results.resultsWithDescendingPostTestProbability()
+                    .forEachOrdered(result -> {
+                        int rank = rankCounter.incrementAndGet();
+                        try {
+                            printer.print(benchmarkData.analysisData().sampleId());
+                            printer.print(backgroundVcf);
+                            printer.print(rank);
+                            printer.print(result.diseaseId().equals(benchmarkData.diseaseId()));
+                            printer.print(result.diseaseId());
+                            printer.print(result.posttestProbability());
+                            printer.println();
+                        } catch (IOException e) {
+                            LOGGER.error("Error writing results for {}: {}", result.diseaseId(), e.getMessage(), e);
+                        }
+                    });
+        }
+    }
+
+    private static BufferedWriter openWriter(Path outputPath) throws IOException {
+        return outputPath.toFile().getName().endsWith(".gz")
+                ? new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(Files.newOutputStream(outputPath))))
+                : Files.newBufferedWriter(outputPath);
     }
 
 }
