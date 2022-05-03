@@ -1,0 +1,36 @@
+package org.monarchinitiative.lirical.benchmark;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
+
+import java.util.concurrent.Callable;
+
+@CommandLine.Command(name = "java -jar lirical-benchmark.jar",
+        mixinStandardHelpOptions = true,
+        version = "2.0.0",
+        description = "LIRICAL benchmark")
+public class Main implements Callable<Integer> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+
+    @Override
+    public Integer call() throws Exception {
+        // The work is done in subcommands.
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        if (args.length == 0) {
+            // if the user doesn't pass any command or option, add -h to show help
+            args = new String[]{"-h"};
+        }
+
+        CommandLine cline = new CommandLine(new Main());
+
+
+        cline.setToggleBooleanFlags(false);
+        int exitCode = cline.execute(args);
+        System.exit(exitCode);
+    }
+}
