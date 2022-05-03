@@ -106,8 +106,9 @@ public class BenchmarkCommand extends AbstractBenchmarkCommand {
 
         // 4 - summarize the results.
         LOGGER.info("Writing results to {}", outputPath.toAbsolutePath());
+        String phenopacketName = phenopacketPath.toFile().getName();
         String backgroundVcf = vcfPath == null ? "" : vcfPath.toFile().getName();
-        writeResults(outputPath, benchmarkData, results, backgroundVcf);
+        writeResults(outputPath, benchmarkData, results, phenopacketName, backgroundVcf);
         return 0;
     }
 
@@ -239,20 +240,22 @@ public class BenchmarkCommand extends AbstractBenchmarkCommand {
     }
 
 
-    private void writeResults(Path outputPath,
+    private static void writeResults(Path outputPath,
                               BenchmarkData benchmarkData,
                               AnalysisResults results,
-                              String backgroundVcf) throws IOException {
+                              String phenopacketName,
+                              String backgroundVcfName) throws IOException {
         try (BufferedWriter writer = openWriter(outputPath);
              CSVPrinter printer = CSVFormat.DEFAULT.print(writer)) {
-            printer.printRecord("sample_id", "background_vcf", "rank", "is_causal", "disease_id", "post_test_proba");
+            printer.printRecord("phenopacket", "background_vcf", "sample_id", "rank", "is_causal", "disease_id", "post_test_proba");
             AtomicInteger rankCounter = new AtomicInteger();
             results.resultsWithDescendingPostTestProbability()
                     .forEachOrdered(result -> {
                         int rank = rankCounter.incrementAndGet();
                         try {
+                            printer.print(phenopacketName);
+                            printer.print(backgroundVcfName);
                             printer.print(benchmarkData.analysisData().sampleId());
-                            printer.print(backgroundVcf);
                             printer.print(rank);
                             printer.print(result.diseaseId().equals(benchmarkData.diseaseId()));
                             printer.print(result.diseaseId());
