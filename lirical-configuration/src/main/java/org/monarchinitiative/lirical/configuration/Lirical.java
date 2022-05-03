@@ -15,20 +15,20 @@ public class Lirical {
     private final PhenotypeService phenotypeService;
     private final FunctionalVariantAnnotator functionalVariantAnnotator;
     private final VariantMetadataService variantMetadataService;
-    private final LiricalAnalysisRunner analyzer;
+    private final LiricalAnalysisRunner analysisRunner;
     private final AnalysisResultWriterFactory analysisResultWriterFactory;
 
     public static Lirical of(VariantParserFactory variantParserFactory,
                              PhenotypeService phenotypeService,
                              FunctionalVariantAnnotator functionalVariantAnnotator,
                              VariantMetadataService variantMetadataService,
-                             LiricalAnalysisRunner analyzer,
+                             LiricalAnalysisRunner analysisRunner,
                              AnalysisResultWriterFactory analysisResultWriterFactory) {
         return new Lirical(variantParserFactory,
                 phenotypeService,
                 functionalVariantAnnotator,
                 variantMetadataService,
-                analyzer,
+                analysisRunner,
                 analysisResultWriterFactory);
     }
 
@@ -36,13 +36,13 @@ public class Lirical {
                     PhenotypeService phenotypeService,
                     FunctionalVariantAnnotator functionalVariantAnnotator,
                     VariantMetadataService variantMetadataService,
-                    LiricalAnalysisRunner analyzer,
+                    LiricalAnalysisRunner analysisRunner,
                     AnalysisResultWriterFactory analysisResultWriterFactory) {
         this.variantParserFactory = Objects.requireNonNull(variantParserFactory);
         this.phenotypeService = Objects.requireNonNull(phenotypeService);
         this.functionalVariantAnnotator = Objects.requireNonNull(functionalVariantAnnotator);
         this.variantMetadataService = Objects.requireNonNull(variantMetadataService);
-        this.analyzer = Objects.requireNonNull(analyzer);
+        this.analysisRunner = Objects.requireNonNull(analysisRunner);
         this.analysisResultWriterFactory = Objects.requireNonNull(analysisResultWriterFactory);
     }
 
@@ -62,8 +62,8 @@ public class Lirical {
         return variantMetadataService;
     }
 
-    public LiricalAnalysisRunner analyzer() {
-        return analyzer;
+    public LiricalAnalysisRunner analysisRunner() {
+        return analysisRunner;
     }
 
     public AnalysisResultWriterFactory analysisResultsWriterFactory() {

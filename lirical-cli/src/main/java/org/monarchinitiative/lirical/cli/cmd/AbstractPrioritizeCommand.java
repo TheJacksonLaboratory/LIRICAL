@@ -179,8 +179,8 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         // 3 - run the analysis
         AnalysisOptions analysisOptions = prepareAnalysisOptions();
         LOGGER.info("Starting the analysis");
-        LiricalAnalysisRunner analyzer = lirical.analyzer();
-        AnalysisResults results = analyzer.run(analysisData, analysisOptions);
+        LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
+        AnalysisResults results = analysisRunner.run(analysisData, analysisOptions);
 
         // 4 - write out the results
         LOGGER.info("Writing out the results");

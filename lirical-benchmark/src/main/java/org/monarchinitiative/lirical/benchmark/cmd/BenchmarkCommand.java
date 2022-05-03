@@ -100,8 +100,8 @@ public class BenchmarkCommand extends AbstractBenchmarkCommand {
 
         // 3 - run the analysis.
         LOGGER.info("Starting the analysis: {}", analysisOptions);
-        LiricalAnalysisRunner analyzer = lirical.analyzer();
-        AnalysisResults results = analyzer.run(benchmarkData.analysisData(), analysisOptions);
+        LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
+        AnalysisResults results = analysisRunner.run(benchmarkData.analysisData(), analysisOptions);
         LOGGER.info("Done!");
 
         // 4 - summarize the results.
