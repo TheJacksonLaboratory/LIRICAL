@@ -13,6 +13,7 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name = "java -jar lirical-benchmark.jar",
         mixinStandardHelpOptions = true,
         version = "2.0.0",
+        sortOptions = false,
         description = "LIRICAL benchmark")
 public class Main implements Callable<Integer> {
 
