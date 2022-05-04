@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
 import org.monarchinitiative.lirical.configuration.*;
+import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.output.*;
 import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
@@ -11,8 +12,8 @@ import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.lirical.io.LiricalDataException;
-import org.monarchinitiative.lirical.io.VariantParser;
-import org.monarchinitiative.lirical.io.VariantParserFactory;
+import org.monarchinitiative.lirical.core.io.VariantParser;
+import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.slf4j.Logger;

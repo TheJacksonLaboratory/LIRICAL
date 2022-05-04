@@ -3,7 +3,7 @@ package org.monarchinitiative.lirical.io.vcf;
 import htsjdk.variant.vcf.VCFFileReader;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.model.GenotypedVariant;
-import org.monarchinitiative.lirical.io.GenotypedVariantParser;
+import org.monarchinitiative.lirical.core.io.GenotypedVariantParser;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 import java.util.Iterator;

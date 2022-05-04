@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.io.analysis;
 
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
-import org.monarchinitiative.lirical.io.VariantParserFactory;
+import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.ontology.data.TermId;

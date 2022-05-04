@@ -6,7 +6,7 @@ import org.monarchinitiative.lirical.core.model.Age;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.model.Sex;
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
-import org.monarchinitiative.lirical.io.VariantParserFactory;
+import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;

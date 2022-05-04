@@ -2,8 +2,8 @@ package org.monarchinitiative.lirical.io.vcf;
 
 import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
-import org.monarchinitiative.lirical.io.VariantParser;
-import org.monarchinitiative.lirical.io.VariantParserFactory;
+import org.monarchinitiative.lirical.core.io.VariantParser;
+import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 import java.nio.file.Path;

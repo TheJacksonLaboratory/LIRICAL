@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.configuration;
 import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
+import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunnerImpl;
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbabilities;
@@ -16,7 +17,7 @@ import org.monarchinitiative.lirical.exomiser_db_adapter.ExomiserMvStoreMetadata
 import org.monarchinitiative.lirical.io.GenotypeDataIngestor;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.LiricalDataResolver;
-import org.monarchinitiative.lirical.io.VariantParserFactory;
+import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.lirical.io.service.JannovarFunctionalVariantAnnotator;
 import org.monarchinitiative.lirical.io.vcf.VcfVariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;

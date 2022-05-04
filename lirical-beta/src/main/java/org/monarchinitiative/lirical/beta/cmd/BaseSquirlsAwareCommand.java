@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.beta.cmd;
 
-import org.monarchinitiative.lirical.configuration.Lirical;
+import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.configuration.LiricalBuilder;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.output.AnalysisResultsMetadata;

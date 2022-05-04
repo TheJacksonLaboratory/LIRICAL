@@ -5,8 +5,8 @@ import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.model.LiricalVariant;
 import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
-import org.monarchinitiative.lirical.io.GenotypedVariantParser;
-import org.monarchinitiative.lirical.io.VariantParser;
+import org.monarchinitiative.lirical.core.io.GenotypedVariantParser;
+import org.monarchinitiative.lirical.core.io.VariantParser;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
 
 import java.nio.file.Path;

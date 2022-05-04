@@ -1,11 +1,11 @@
-package org.monarchinitiative.lirical.configuration;
+package org.monarchinitiative.lirical.core;
 
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
+import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.lirical.core.output.AnalysisResultWriterFactory;
 import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
 import org.monarchinitiative.lirical.core.service.PhenotypeService;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
-import org.monarchinitiative.lirical.io.VariantParserFactory;
 
 import java.util.Objects;
 

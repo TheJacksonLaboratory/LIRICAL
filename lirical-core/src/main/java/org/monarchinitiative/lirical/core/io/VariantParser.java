@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.io;
+package org.monarchinitiative.lirical.core.io;
 
 
 import org.monarchinitiative.lirical.core.model.LiricalVariant;

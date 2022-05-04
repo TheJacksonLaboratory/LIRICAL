@@ -3,7 +3,7 @@ package org.monarchinitiative.lirical.benchmark.cmd;
 
 import org.monarchinitiative.lirical.benchmark.simulation.PhenoGenoCaseSimulator;
 import org.monarchinitiative.lirical.benchmark.simulation.PhenoOnlyCaseSimulator;
-import org.monarchinitiative.lirical.configuration.Lirical;
+import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.benchmark.LiricalRanking;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;

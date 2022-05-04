@@ -4,7 +4,7 @@ import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
-import org.monarchinitiative.lirical.io.VariantParserFactory;
+import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 
 import java.io.InputStream;

@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.benchmark.simulation;
 
-import org.monarchinitiative.lirical.configuration.Lirical;
+import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.configuration.LiricalFactory;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.AnalysisOptions;
@@ -15,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class PhenoOnlyCaseSimulator {
