@@ -73,7 +73,7 @@ public class LiricalBuilder {
 
     public LiricalBuilder genomeBuild(GenomeBuild genomeBuild) {
         if (genomeBuild == null) {
-            LOGGER.warn("Cannot set genome build to null");
+            LOGGER.warn("Cannot set genome build to null. Retaining {}", this.genomeBuild);
             return this;
         }
         this.genomeBuild = genomeBuild;
@@ -156,6 +156,11 @@ public class LiricalBuilder {
         return this;
     }
 
+    /**
+     * @deprecated pretest probability does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
+     * @return the builder
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-SNAPSHOT")
     public LiricalBuilder pretestDiseaseProbability(PretestDiseaseProbability pretestDiseaseProbability) {
         this.pretestDiseaseProbability = pretestDiseaseProbability;
         return this;
@@ -196,6 +201,7 @@ public class LiricalBuilder {
 
         // Lirical analysis runner
         if (pretestDiseaseProbability == null) {
+            // TODO - remove
             LOGGER.debug("Using uniform pretest disease probabilities.");
             pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(phenotypeService.diseases());
         }
