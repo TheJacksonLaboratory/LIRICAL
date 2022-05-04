@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.core.model;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -21,6 +22,13 @@ public interface TranscriptAnnotation {
 
     /** @return list of variant effects (e.g. <code>MISSENSE_VARIANT</code>). */
     List<VariantEffect> getVariantEffects();
+
+    /** @return the most pathogenic variant effect. */
+    default VariantEffect getMostPathogenicVariantEffect() {
+        return getVariantEffects().stream()
+                .min(Comparator.comparingInt(VariantEffect::ordinal))
+                .orElse(VariantEffect.SEQUENCE_VARIANT);
+    }
 
     /** @return string of variant effects joined by <code>+</code> character. */
     String getVariantEffect();

@@ -5,25 +5,32 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 
-import org.monarchinitiative.exomiser.core.genome.VariantAnnotator;
-import org.monarchinitiative.exomiser.core.genome.dao.serialisers.MvStoreUtil;
-import org.monarchinitiative.exomiser.core.model.*;
-import org.monarchinitiative.exomiser.core.model.frequency.Frequency;
-import org.monarchinitiative.exomiser.core.model.frequency.FrequencyData;
-import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.VariantEffectPathogenicityScore;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
+import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
+import org.monarchinitiative.lirical.exomiser_db_adapter.MvStoreUtil;
+import org.monarchinitiative.lirical.exomiser_db_adapter.model.AlleleProtoAdaptor;
+import org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency.Frequency;
+import org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency.FrequencyData;
+import org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency.FrequencySource;
+import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.PathogenicityData;
+import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.VariantEffectPathogenicityScore;
+import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
+import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.svart.*;
+import org.monarchinitiative.svart.assembly.GenomicAssembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
-import static org.monarchinitiative.exomiser.core.model.frequency.FrequencySource.*;
+import static org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency.FrequencySource.*;
 
 /**
  * This class calculates the relative proportions of variants assessed as having a certain degree of pathogenicity
@@ -54,26 +61,27 @@ public class GenicIntoleranceCalculator {
     private final FrequencySource[] orderedSources = {GNOMAD_E_AFR, GNOMAD_E_AMR, GNOMAD_E_ASJ, GNOMAD_E_EAS, GNOMAD_E_FIN, GNOMAD_E_NFE, GNOMAD_E_SAS};
     /** The header of the org.monarchinitiative.lirical.output file that shows the populations included in the calculation. */
     private final String[] headerFields = {"AFR","AMR","ASJ","EAS","FIN","NFE","SAS"};
-    /** File name for the file that will contain the frequencies of predicted pathogenic variants in the
-     * population background, i.e., from gnomAD  from the Exomiser database.*/
-    private final String outputFileName;
+    private final GenomicAssembly assembly;
     /** An Exomiser class that annotates an arbitrary variant with frequency and pathogenicity information. */
-    private final VariantAnnotator variantAnnotator;
+    private final FunctionalVariantAnnotator variantAnnotator;
     /** Exomiser data store. */
     private final MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap;
     /** If true, calculate the distribution of ClinVar pathogenicity scores. */
     private final boolean doClinvar;
 
     /**
+     * @param assembly
      * @param variantAnnotator Object to annotate an arbitrary variant
      * @param alleleStore Exomiser data resource
-     * @param fname name of org.monarchinitiative.lirical.output file (background-hg38.txt or background-hg19.tsv).
      * @param doClinvar flag that if true will cause the analysis to calculate the distribution of Clinvar pathogenicity scores
      */
-    public GenicIntoleranceCalculator(VariantAnnotator variantAnnotator, MVStore alleleStore, String fname, boolean doClinvar) {
-        this.variantAnnotator = variantAnnotator;
+    public GenicIntoleranceCalculator(GenomicAssembly assembly,
+                                      FunctionalVariantAnnotator variantAnnotator,
+                                      MVStore alleleStore,
+                                      boolean doClinvar) {
+        this.assembly = Objects.requireNonNull(assembly);
+        this.variantAnnotator = Objects.requireNonNull(variantAnnotator);
         this.alleleMap = MvStoreUtil.openAlleleMVMap(alleleStore);
-        this.outputFileName=fname;
         this.doClinvar=doClinvar;
     }
     /** Key: a {@link FrequencySource}, representing a population; value: corresponding {@link Background} with background frequency for genes. */
@@ -90,14 +98,14 @@ public class GenicIntoleranceCalculator {
      * This function inputs the data from the MV store, bins each variant into one of four categories,
      * normalizes the frequencies, and writes the results to a file that can be used elsewhere.
      */
-    public void run() {
+    public void run(Path outputFileName) {
         logger.info("Running...");
         if (doClinvar) {
             getClinvarPathScores();
         } else  { // do everything in GNOMAD
             initBins();
             binPathogenicityData();
-            outputBinData();
+            outputBinData(outputFileName);
         }
     }
 
@@ -156,8 +164,15 @@ public class GenicIntoleranceCalculator {
             for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : alleleMap.entrySet()) {
                 AlleleProto.AlleleKey alleleKey = entry.getKey();
                 AlleleProto.AlleleProperties alleleProperties = entry.getValue();
-                VariantAnnotation variantAnnotation = variantAnnotator.annotate(String.valueOf(alleleKey.getChr()), alleleKey.getPosition(), alleleKey.getRef(), alleleKey.getAlt());
-                VariantEffect variantEffect = variantAnnotation.getVariantEffect();
+
+                Optional<GenomicVariant> gv = prepareGenomicVariant(alleleKey);
+                if (gv.isEmpty())
+                    continue;
+
+                VariantEffect variantEffect = variantAnnotator.annotate(gv.get()).stream()
+                        .map(TranscriptAnnotation::getMostPathogenicVariantEffect)
+                        .min(VariantEffect::compareTo)
+                        .orElse(VariantEffect.SEQUENCE_VARIANT);
                 if (!variantEffect.isOffExome()) {
                     PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProperties);
                     if (pathogenicityData.isEmpty()) {
@@ -201,8 +216,16 @@ public class GenicIntoleranceCalculator {
         for (Map.Entry<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> entry : alleleMap.entrySet()) {
             AlleleProto.AlleleKey alleleKey = entry.getKey();
             AlleleProto.AlleleProperties alleleProperties = entry.getValue();
-            VariantAnnotation variantAnnotation = variantAnnotator.annotate(String.valueOf(alleleKey.getChr()), alleleKey.getPosition(), alleleKey.getRef(), alleleKey.getAlt());
-            VariantEffect variantEffect = variantAnnotation.getVariantEffect();
+            Optional<GenomicVariant> gv = prepareGenomicVariant(alleleKey);
+            if (gv.isEmpty())
+                continue;
+
+            List<TranscriptAnnotation> annotations = variantAnnotator.annotate(gv.get());
+            VariantEffect variantEffect = annotations.stream()
+                    .map(TranscriptAnnotation::getMostPathogenicVariantEffect)
+                    .min(VariantEffect::compareTo)
+                    .orElse(VariantEffect.SEQUENCE_VARIANT);
+
             if (!variantEffect.isOffExome()) {
                 // Note that frequency data are expressed as percentages
                 FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProperties);
@@ -217,8 +240,15 @@ public class GenicIntoleranceCalculator {
                     continue; // skip unknown frequency variants
 
                 float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
-                String genesymbol = variantAnnotation.getGeneSymbol();
-                String id = variantAnnotation.getGeneId();
+                Optional<GeneIdentifier> geneId = annotations.stream()
+                        .map(TranscriptAnnotation::getGeneId)
+                        .findFirst();
+
+                String genesymbol = geneId.map(GeneIdentifier::symbol)
+                        .orElse("UNKNOWN");
+                String id = geneId.map(GeneIdentifier::id)
+                        .map(TermId::getValue)
+                        .orElse("UNKNOWN");
 
                 Frequency afr = frequencyData.getFrequencyForSource(GNOMAD_E_AFR);
                 if (afr==null) {
@@ -283,6 +313,16 @@ public class GenicIntoleranceCalculator {
         }
     }
 
+    private Optional<GenomicVariant> prepareGenomicVariant(AlleleProto.AlleleKey alleleKey) {
+        Contig contig = assembly.contigById(alleleKey.getChr());
+        if (contig.isUnknown()) {
+            logger.warn("Unknown contig ID {}", alleleKey.getChr());
+            return Optional.empty();
+        }
+
+        return Optional.of(GenomicVariant.of(contig, "", Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), alleleKey.getPosition(), alleleKey.getPosition()), alleleKey.getRef(), alleleKey.getAlt()));
+    }
+
     /**
      * Calculate a pathogenicity score for the current variant in the same way that the Exomiser does.
      * @param variantEffect class of variant such as Missense, Nonsense, Synonymous, etc.
@@ -338,16 +378,18 @@ public class GenicIntoleranceCalculator {
 
 
     /**
-     * Write the results of our calculations to file
+     * Write the results of our calculations to file.
+     * @param outputFileName file name for the file that will contain the frequencies of predicted pathogenic variants
+     *                       in the population background, i.e., from gnomAD  from the Exomiser database.
      */
-    private void outputBinData() {
+    private void outputBinData(Path outputFileName) {
         // First arrange all gene symbols in order
         List<String> symbolList = new ArrayList<>(geneSymbolSet);
         Collections.sort(symbolList);
         String header = String.join("\t",headerFields);
         header = String.format("Gene\tEntrezId\t%s\tMean\n",header );
-        logger.trace("Outputting background freqeuncy file to " + this.outputFileName);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(this.outputFileName))) {
+        logger.trace("Outputting background freqeuncy file to " + outputFileName);
+        try (BufferedWriter writer = Files.newBufferedWriter(outputFileName)) {
             writer.write(header);
             for (String gsymbol : symbolList) {
                 outputLine(writer,gsymbol);

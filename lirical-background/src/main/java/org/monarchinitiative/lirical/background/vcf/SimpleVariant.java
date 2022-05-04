@@ -1,15 +1,14 @@
 package org.monarchinitiative.lirical.background.vcf;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.lirical.core.model.GenomeBuild;
+import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
+import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.ClinVarData;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData.ClinSig.NOT_PROVIDED;
+import static org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.ClinVarData.ClinSig.NOT_PROVIDED;
 
 /**
  * This class encapsulates data about a variant and its classification as ClinVar pathogenic or likely
@@ -20,7 +19,7 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarDat
 public class SimpleVariant implements Comparable<SimpleVariant> {
     /** A set of interpretation classes from ClinVar that we will regard as pathogenic. */
     private static final Set<ClinVarData.ClinSig> PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS =
-            Sets.immutableEnumSet(ClinVarData.ClinSig.PATHOGENIC,
+            EnumSet.of(ClinVarData.ClinSig.PATHOGENIC,
                     ClinVarData.ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC,
                     ClinVarData.ClinSig.LIKELY_PATHOGENIC);
     /** The threshold predicted pathogenicity score for being in the pathogenic bin. */
@@ -51,7 +50,7 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
         this.position=pos;
         this.ref=ref;
         this.alt=alt;
-        this.annotationList=ImmutableList.copyOf(annotlist);
+        this.annotationList=List.copyOf(annotlist);
 
         this.frequency=freq;
         // heuristic -- count ClinVar pathogenic or likjely pathogenic as 1.0 (maximum pathogenicity score)
@@ -90,10 +89,10 @@ public class SimpleVariant implements Comparable<SimpleVariant> {
     }
 
     /** This can be set so that we will correctly build the URL to view the location of mutation in UCSC. */
-    public static void setGenomeBuildForUrl(GenomeAssembly assembly) {
-        if (assembly.equals(GenomeAssembly.HG19)) {
+    public static void setGenomeBuildForUrl(GenomeBuild assembly) {
+        if (assembly.equals(GenomeBuild.HG19)) {
             genomeBuild="hg19";
-        } else if (assembly.equals(GenomeAssembly.HG38)) {
+        } else if (assembly.equals(GenomeBuild.HG38)) {
             genomeBuild="hg38";
         }
     }

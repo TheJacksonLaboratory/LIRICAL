@@ -30,6 +30,11 @@ class JannovarTranscriptAnnotation implements TranscriptAnnotation {
     }
 
     @Override
+    public VariantEffect getMostPathogenicVariantEffect() {
+        return annotation.getMostPathogenicVarType();
+    }
+
+    @Override
     public List<VariantEffect> getVariantEffects() {
         return List.copyOf(annotation.getEffects());
     }

@@ -30,7 +30,6 @@
         <phenol.version>2.0.0-RC2</phenol.version>
         <svart.version>2.0.0-RC1</svart.version>
         <jannovar.version>0.35</jannovar.version>
-        <exomiser.version>12.1.0</exomiser.version>
 <!--        <h2.version>1.4.197</h2.version> &lt;!&ndash; This is what Exomiser uses currently &ndash;&gt;-->
         <h2.version>1.4.200</h2.version>
         <htsjdk.version>2.24.1</htsjdk.version>
@@ -47,21 +46,6 @@
                 <groupId>org.monarchinitiative.svart</groupId>
                 <artifactId>svart</artifactId>
                 <version>${svart.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.monarchinitiative.exomiser</groupId>
-                <artifactId>exomiser-core</artifactId>
-                <version>${exomiser.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.google.protobuf</groupId>
-                        <artifactId>protobuf-java</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.protobuf</groupId>
-                        <artifactId>protobuf-java-util</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.monarchinitiative.phenol</groupId>

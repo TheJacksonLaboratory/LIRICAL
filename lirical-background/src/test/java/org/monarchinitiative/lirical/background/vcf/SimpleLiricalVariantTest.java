@@ -1,12 +1,11 @@
 package org.monarchinitiative.lirical.background.vcf;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
-import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
+import org.monarchinitiative.lirical.core.model.GenomeBuild;
+import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
+import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.ClinVarData;
 
 
 import java.util.List;
@@ -34,7 +33,7 @@ public class SimpleLiricalVariantTest {
         when(annot.getHgvsCdna()).thenReturn("c.518A>C");
         when(annot.getHgvsProtein()).thenReturn("p.(E173A)");
         when(annot.toString()).thenReturn("uc001lfg.4: c.518A>C p.(E173A) MISSENSE_VARIANT");
-        List<TranscriptAnnotation> annotlist = ImmutableList.of(annot);// not needed
+        List<TranscriptAnnotation> annotlist = List.of(annot);// not needed
         String genotypeString="0/1";
         svHet = new SimpleVariant(2, 23333, "A", "T", annotlist, 0.9f, 0.01f, genotypeString);
         genotypeString="1/1";
@@ -49,7 +48,7 @@ public class SimpleLiricalVariantTest {
 
     @Test
     public void testHetVariantUnphased() {
-        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        List<TranscriptAnnotation> emptylist = List.of();// not needed
         String genotypeString="0/1";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
         assertEquals(SimpleGenotype.HETEROZYGOUS, sv.getGtype());
@@ -58,7 +57,7 @@ public class SimpleLiricalVariantTest {
 
     @Test
     public void testHetVariantPhased() {
-        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        List<TranscriptAnnotation> emptylist = List.of();// not needed
         String genotypeString="0|1";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
         assertEquals(SimpleGenotype.HETEROZYGOUS, sv.getGtype());
@@ -66,7 +65,7 @@ public class SimpleLiricalVariantTest {
 
     @Test
     public void testHomVariantUnphased() {
-        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        List<TranscriptAnnotation> emptylist = List.of();// not needed
         String genotypeString="1/1";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
         assertEquals(SimpleGenotype.HOMOZYGOUS_ALT, sv.getGtype());
@@ -74,7 +73,7 @@ public class SimpleLiricalVariantTest {
 
     @Test
     public void testHomVariantPhased() {
-        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        List<TranscriptAnnotation> emptylist = List.of();// not needed
         String genotypeString="1|1";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
         assertEquals(SimpleGenotype.HOMOZYGOUS_ALT, sv.getGtype());
@@ -82,7 +81,7 @@ public class SimpleLiricalVariantTest {
 
     @Test
     public void testHomRefVariant() {
-        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        List<TranscriptAnnotation> emptylist = List.of();// not needed
         String genotypeString="0/0";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
         assertEquals(SimpleGenotype.HOMOZYGOUS_REF, sv.getGtype());
@@ -93,7 +92,7 @@ public class SimpleLiricalVariantTest {
 
     @Test
     public void testNotObservedVariant() {
-        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        List<TranscriptAnnotation> emptylist = List.of();// not needed
         String genotypeString="./.";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
         assertEquals(SimpleGenotype.NOT_OBSERVED, sv.getGtype());
@@ -105,10 +104,10 @@ public class SimpleLiricalVariantTest {
         assertEquals(SimpleGenotype.HOMOZYGOUS_ALT, svHom.getGtype());
     }
 
-    /** Test {@link org.monarchinitiative.lirical.cli.vcf.SimpleVariant#isClinVarPathogenic()}  for pathogenic variants. */
+    /** Test {@link org.monarchinitiative.lirical.background.vcf.SimpleVariant#isClinVarPathogenic()}  for pathogenic variants. */
     @Test
     public void tesClinVarPath() {
-        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        List<TranscriptAnnotation> emptylist = List.of();// not needed
         String genotypeString="1/1";
         ClinVarData.ClinSig clinvarsig = ClinVarData.ClinSig.PATHOGENIC;
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString,clinvarsig);
@@ -121,10 +120,10 @@ public class SimpleLiricalVariantTest {
         assertTrue(sv.isClinVarPathogenic());
     }
 
-    /** Test {@link org.monarchinitiative.lirical.cli.vcf.SimpleVariant#isClinVarPathogenic()}  for benign variants. */
+    /** Test {@link org.monarchinitiative.lirical.background.vcf.SimpleVariant#isClinVarPathogenic()}  for benign variants. */
     @Test
     public void tesClinVarBenign() {
-        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        List<TranscriptAnnotation> emptylist = List.of();// not needed
         String genotypeString="1/1";
         ClinVarData.ClinSig clinvarsig = ClinVarData.ClinSig.BENIGN;
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString,clinvarsig);
@@ -139,7 +138,7 @@ public class SimpleLiricalVariantTest {
 
     @Test
     public void testXYMchroms() {
-        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        List<TranscriptAnnotation> emptylist = List.of();// not needed
         String genotypeString="1/1";
         ClinVarData.ClinSig clinvarsig = ClinVarData.ClinSig.BENIGN;
         SimpleVariant sv = new SimpleVariant(23, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString,clinvarsig);
@@ -208,7 +207,7 @@ public class SimpleLiricalVariantTest {
 
     @Test
     public void testCountTwoPathAllelesWithHomozygousVariant() {
-        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        List<TranscriptAnnotation> emptylist = List.of();// not needed
         String genotypeString="1/1";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
         assertEquals(SimpleGenotype.HOMOZYGOUS_ALT, sv.getGtype());
@@ -217,7 +216,7 @@ public class SimpleLiricalVariantTest {
 
     @Test
     public void testCountOnePathAllelesWithHeterozygousVariant() {
-        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        List<TranscriptAnnotation> emptylist = List.of();// not needed
         String genotypeString="0/1";
         SimpleVariant sv = new SimpleVariant(2, 23333, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
         assertEquals(SimpleGenotype.HETEROZYGOUS, sv.getGtype());
@@ -228,14 +227,14 @@ public class SimpleLiricalVariantTest {
     public void testGetUscsLink() {
         // this function is only active after the genomebuild has been set
         String genotypeString="0/1";
-        List<TranscriptAnnotation> emptylist = ImmutableList.of();// not needed
+        List<TranscriptAnnotation> emptylist = List.of();// not needed
         SimpleVariant sv = new SimpleVariant(2, 23456, "A", "T", emptylist, 0.9f, 0.01f, genotypeString);
         String display= String.format("%s:%d%s&gt;%s","chr2",23456,"A","T");
         assertEquals(display, sv.getUcsc());
-        SimpleVariant.setGenomeBuildForUrl(GenomeAssembly.HG19);
+        SimpleVariant.setGenomeBuildForUrl(GenomeBuild.HG19);
         String ucscURL = String.format("<a href=\"http://genome.ucsc.edu/cgi-bin/hgTracks?db=%s&position=%s:%d-%d\" target=\"__blank\">%s</a>", "hg19","chr2",23446,23467,display );
         assertEquals(ucscURL, sv.getUcsc());
-        SimpleVariant.setGenomeBuildForUrl(GenomeAssembly.HG38);
+        SimpleVariant.setGenomeBuildForUrl(GenomeBuild.HG38);
         ucscURL = String.format("<a href=\"http://genome.ucsc.edu/cgi-bin/hgTracks?db=%s&position=%s:%d-%d\" target=\"__blank\">%s</a>", "hg38","chr2",23446,23467,display );
         assertEquals(ucscURL, sv.getUcsc());
     }

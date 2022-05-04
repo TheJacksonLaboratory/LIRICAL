@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.background.backgroundfrequency;
 
-import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
+import org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency.FrequencySource;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -14,12 +14,8 @@
     <dependencies>
         <dependency>
             <groupId>org.monarchinitiative.lirical</groupId>
-            <artifactId>lirical-io</artifactId>
+            <artifactId>lirical-configuration</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.monarchinitiative.exomiser</groupId>
-            <artifactId>exomiser-core</artifactId>
         </dependency>
         <dependency>
             <groupId>info.picocli</groupId>

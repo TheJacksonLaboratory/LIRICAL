@@ -54,28 +54,8 @@ public class ExomiserMvStoreMetadataService implements VariantMetadataService {
     }
 
     private ExomiserMvStoreMetadataService(MVStore mvStore, Options options) {
-        this.alleleMap = openAlleleMVMap(mvStore);
+        this.alleleMap = MvStoreUtil.openAlleleMVMap(mvStore);
         this.options = options;
-    }
-
-    private static MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> openAlleleMVMap(MVStore mvStore) {
-        Objects.requireNonNull(mvStore);
-        if (!mvStore.hasMap("alleles")) {
-            LOGGER.warn("MVStore does not contain map '{}' - creating new map instance.", "alleles");
-        }
-
-        MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> map = mvStore.openMap("alleles", alleleMapBuilder());
-        if (!map.isEmpty()) {
-            LOGGER.debug("MVMap '{}' opened with {} entries", "alleles", map.size());
-        }
-
-        return map;
-    }
-
-    private static MVMap.Builder<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMapBuilder() {
-        return new MVMap.Builder<AlleleProto.AlleleKey, AlleleProto.AlleleProperties>()
-                .keyType(AlleleKeyDataType.INSTANCE)
-                .valueType(AllelePropertiesDataType.INSTANCE);
     }
 
     @Override
