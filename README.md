@@ -1,7 +1,9 @@
-[![Documentation Status](https://readthedocs.org/projects/lirical/badge/?version=latest)](https://lirical.readthedocs.io/en/latest/?badge=latest)
-
-
 # LIRICAL
+
+[![Documentation Status](https://readthedocs.org/projects/lirical/badge/?version=master)](https://lirical.readthedocs.io/en/latest/?badge=master)
+[![GitHub release](https://img.shields.io/github/release/TheJacksonLaboratory/LIRICAL.svg)](https://github.com/TheJacksonLaboratory/LIRICAL/releases)
+[![Java CI with Maven](https://github.com/TheJacksonLaboratory/LIRICAL/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/TheJacksonLaboratory/LIRICAL/actions/workflows/maven.yml)
+
 
 ## LIkelihood Ratio Interpretation of Clinical AbnormaLities
 
