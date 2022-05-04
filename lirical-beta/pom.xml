@@ -24,7 +24,6 @@
         <dependency>
             <groupId>org.monarchinitiative.squirls</groupId>
             <artifactId>squirls-bootstrap</artifactId>
-            <version>${squirls.version}</version>
         </dependency>
         <dependency>
             <groupId>info.picocli</groupId>

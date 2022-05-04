@@ -14,8 +14,8 @@
         <module>lirical-configuration</module>
         <module>lirical-cli</module>
         <module>lirical-benchmark</module>
-        <module>lirical-beta</module>
         <module>lirical-background</module>
+        <module>lirical-beta</module>
     </modules>
 
     <name>LIRICAL</name>
@@ -66,6 +66,11 @@
                 <groupId>de.charite.compbio</groupId>
                 <artifactId>jannovar-core</artifactId>
                 <version>${jannovar.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.monarchinitiative.squirls</groupId>
+                <artifactId>squirls-bootstrap</artifactId>
+                <version>${squirls.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.phenopackets</groupId>
