@@ -141,6 +141,10 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         @CommandLine.Option(names = {"-x", "--prefix"},
                 description = "Prefix of outfile (default: ${DEFAULT-VALUE}).")
         protected String outfilePrefix = "lirical";
+
+        @CommandLine.Option(names = {"--frequency-threshold"},
+                description = "The population frequency threshold value for displaying results in the output. [0, 1]")
+        protected Double frequencyThreshold = 1.0d;
     }
 
     @Override
@@ -241,7 +245,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         LrThreshold lrThreshold = runConfiguration.lrThreshold == null ? LrThreshold.notInitialized() : LrThreshold.setToUserDefinedThreshold(runConfiguration.lrThreshold);
         MinDiagnosisCount minDiagnosisCount = runConfiguration.minDifferentialsToShow == null ? MinDiagnosisCount.notInitialized() : MinDiagnosisCount.setToUserDefinedMinCount(runConfiguration.minDifferentialsToShow);
         List<OutputFormat> outputFormats = parseOutputFormats(output.outputFormats);
-        return new OutputOptions(lrThreshold, minDiagnosisCount, runConfiguration.pathogenicityThreshold, output.outdir, output.outfilePrefix, outputFormats);
+        return new OutputOptions(lrThreshold, minDiagnosisCount, runConfiguration.pathogenicityThreshold, output.frequencyThreshold, output.outdir, output.outfilePrefix, outputFormats);
     }
 
     protected static Age parseAge(String age) {

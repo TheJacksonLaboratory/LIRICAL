@@ -30,5 +30,7 @@ public interface VisualizableVariant {
 
     String getClinvar();
 
+    boolean isPassingFrequency();
+
     List<TranscriptAnnotation> getAnnotationList();
 }

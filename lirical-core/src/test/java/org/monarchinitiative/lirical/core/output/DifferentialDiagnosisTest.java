@@ -47,7 +47,7 @@ public class DifferentialDiagnosisTest {
         when(result.getCompositeLR()).thenReturn(0.3);
         when(result.genotypeLr()).thenReturn(Optional.empty());
         String expectedShortName="PFEIFFER SYNDROME";
-        DifferentialDiagnosis dd = new DifferentialDiagnosis("SampleId", TermId.of("OMIM:101600"), originalName, result, 1, List.of(), "", "");
+        DifferentialDiagnosis dd = new DifferentialDiagnosis("SampleId", TermId.of("OMIM:101600"), originalName, result, 1, List.of(), "", "", 0);
         assertEquals(expectedShortName,dd.getDiseaseName());
     }
 
@@ -62,7 +62,7 @@ public class DifferentialDiagnosisTest {
         when(result.posttestProbability()).thenReturn(0.1);
         when(result.getCompositeLR()).thenReturn(0.3);
         when(result.genotypeLr()).thenReturn(Optional.empty());
-        return new DifferentialDiagnosis("SampleId", TermId.of("OMIM:101600"), originalName, result, 1, List.of(), "", "");
+        return new DifferentialDiagnosis("SampleId", TermId.of("OMIM:101600"), originalName, result, 1, List.of(), "", "", 0);
     }
 
 

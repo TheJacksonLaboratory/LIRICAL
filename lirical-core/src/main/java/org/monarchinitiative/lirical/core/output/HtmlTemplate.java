@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -103,7 +104,7 @@ public class HtmlTemplate extends LiricalTemplate {
                                 .orElse(Stream.empty())
                                 .map(toVisualizableVariant())
                                 .toList();
-
+                        int notPassing = (int) variants.stream().filter(Predicate.not(VisualizableVariant::isPassingFrequency)).count();
                         String genotypeExplanation = createGenotypeExplanation(genotypeLrOpt.orElse(null), variants.isEmpty());
                         HpoDisease disease = diseaseById.get(result.diseaseId());
                         Lr2Svg lr2svg = new Lr2Svg(result, current, disease.id(), disease.diseaseName(), hpo, symbol);
@@ -114,7 +115,7 @@ public class HtmlTemplate extends LiricalTemplate {
                                 current,
                                 variants,
                                 genotypeExplanation,
-                                lr2svg.getSvgString());
+                                lr2svg.getSvgString(), notPassing);
 
                         String counterString = String.format("diagnosis%d", current);
                         this.topDiagnosisAnchors.add(counterString);

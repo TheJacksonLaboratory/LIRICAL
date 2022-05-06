@@ -16,13 +16,15 @@ class VisualizableVariantDefault implements VisualizableVariant {
     private final String sampleId;
     private final LiricalVariant variant;
     private final boolean isInPathogenicBin;
+    private final boolean isPassingFrequency;
 
     VisualizableVariantDefault(String sampleId,
                                LiricalVariant variant,
-                               boolean isInPathogenicBin) {
+                               boolean isInPathogenicBin, boolean isPassingFrequency) {
         this.sampleId = Objects.requireNonNull(sampleId);
         this.variant = Objects.requireNonNull(variant);
         this.isInPathogenicBin = isInPathogenicBin;
+        this.isPassingFrequency = isPassingFrequency;
     }
 
     @Override
@@ -118,6 +120,11 @@ class VisualizableVariantDefault implements VisualizableVariant {
         return (clnsig.equals(ClinvarClnSig.NOT_PROVIDED))
                 ? "n/a"
                 : clnsig.toString();
+    }
+
+    @Override
+    public boolean isPassingFrequency() {
+        return isPassingFrequency;
     }
 
     @Override
