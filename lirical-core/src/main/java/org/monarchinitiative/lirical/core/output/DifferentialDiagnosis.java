@@ -38,6 +38,7 @@ public class DifferentialDiagnosis extends BaseDifferential {
         this.genotypeExplanation = genotypeExplanation; // nullable
         this.svg = Objects.requireNonNull(svg);
         this.notPassingFrequencyThresholdCount = notPassingFrequencyThresholdCount;
+
     }
 
     @Override

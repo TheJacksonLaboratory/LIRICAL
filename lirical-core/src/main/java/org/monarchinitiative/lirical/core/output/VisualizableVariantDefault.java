@@ -15,15 +15,15 @@ class VisualizableVariantDefault implements VisualizableVariant {
 
     private final String sampleId;
     private final LiricalVariant variant;
-    private final boolean isInPathogenicBin;
+    private final boolean isPassingPathogenicThreshold;
     private final boolean isPassingFrequency;
 
     VisualizableVariantDefault(String sampleId,
                                LiricalVariant variant,
-                               boolean isInPathogenicBin, boolean isPassingFrequency) {
+                               boolean isPassingPathogenicThreshold, boolean isPassingFrequency) {
         this.sampleId = Objects.requireNonNull(sampleId);
         this.variant = Objects.requireNonNull(variant);
-        this.isInPathogenicBin = isInPathogenicBin;
+        this.isPassingPathogenicThreshold = isPassingPathogenicThreshold;
         this.isPassingFrequency = isPassingFrequency;
     }
 
@@ -72,7 +72,7 @@ class VisualizableVariantDefault implements VisualizableVariant {
 
     @Override
     public boolean isPassingPathogenicThreshold() {
-        return isInPathogenicBin;
+        return isPassingPathogenicThreshold;
     }
 
     @Override

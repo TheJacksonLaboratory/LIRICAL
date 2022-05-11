@@ -70,14 +70,14 @@ public abstract class LiricalTemplate {
         List<String> observedHPOs = new ArrayList<>();
         for (TermId id:analysisData.presentPhenotypeTerms()) {
             Term term = ontology.getTermMap().get(id);
-            String tstr = String.format("%s (<a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>)",term.getName(),id.getValue(),id.getValue());
+            String tstr = String.format("%s <a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>",term.getName(),id.getValue(),id.getValue());
             observedHPOs.add(tstr);
         }
         this.templateData.put("observedHPOs",observedHPOs);
         List<String> excludedHpos = new ArrayList<>();
         for (TermId id:analysisData.negatedPhenotypeTerms()) {
             Term term = ontology.getTermMap().get(id);
-            String tstr = String.format("%s (<a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>)",term.getName(),id.getValue(),id.getValue());
+            String tstr = String.format("%s <a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>",term.getName(),id.getValue(),id.getValue());
             excludedHpos.add(tstr);
         }
         this.templateData.put("excludedHPOs",excludedHpos);

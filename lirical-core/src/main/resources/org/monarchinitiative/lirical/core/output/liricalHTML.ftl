@@ -436,6 +436,12 @@
         .hgvs-symbol {
             font-style: italic;
         }
+
+        .dd-seperator {
+            width: 75%;
+            border-color: gray;
+            border-width: 0.25px;
+        }
     </style>
 </head>
 
@@ -629,7 +635,7 @@
                     <br>
                     <#if dd.hasVariants()>
                         <div class="genotype-body">
-                            <#if dd.getNotPassingFrequencyThresholdCount() gt 0>
+                            <#if dd.getNotPassingFrequencyThresholdCount() gt 0 && !dd.allVariantsPathogenic()>
                                 <span class="frequency-threshold-text">${dd.getNotPassingFrequencyThresholdCount()} variants hidden based on frequency threshold
                         ${frequencyThreshold}.
                         <a class="toggle-threshold-btn"
@@ -649,7 +655,7 @@
                                 </tr>
                                 </thead>
                                 <#list  dd.visualizableVariants as svar>
-                                    <tr <#if svar.isPassingFrequency()>class="dd-variant-row-passing"<#else>
+                                    <tr <#if svar.isPassingFrequency() || svar.isPassingPathogenicThreshold()>class="dd-variant-row-passing"<#else>
                                         class="dd-variant-row-failing"
                                             </#if>>
                                         <td>${svar.ucsc}</td>
@@ -680,6 +686,7 @@
                     </#if>
                 </div>
             </article>
+            <hr class="dd-seperator">
         </#list>
     </section>
     <section class="elevate-container">
