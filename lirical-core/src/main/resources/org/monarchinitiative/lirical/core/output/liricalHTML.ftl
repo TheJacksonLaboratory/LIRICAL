@@ -83,6 +83,14 @@
             text-align: center;
         }
 
+        .navi .report-id {
+            color: white;
+            display: inline-flex;
+            padding: 1rem;
+            margin: 0;
+            font-weight: 400;
+        }
+
         /* Your really should address semantic issues with your markup that make selectors like this necessary */
 
         main > section > a[name="othergenes"] > h3,
@@ -120,6 +128,18 @@
             color: white;
         }
 
+        .banner .banner-highlight {
+            color: #FFDA1A;
+        }
+
+        .banner .tagline {
+            font-size: 1.4rem;
+        }
+
+        .banner .tagline .banner-highlight {
+            font-size: 1.6rem
+        }
+
         nav {
             background-color: #05396b;
             margin-top: 1px;
@@ -147,13 +167,13 @@
             background-color: #04c3ff;
         }
 
-        #navi ul {
+        .navi ul {
             display: table;
             float: right;
             margin: 0;
         }
 
-        #navi li {
+        .navi li {
             display: block;
             float: left;
         }
@@ -314,6 +334,28 @@
             outline: dotted 1px blue;
         }
 
+        .diff-dg {
+            text-transform: uppercase;
+        }
+
+        .diff-dg  .dg-header .dg-title .dg-id  {
+            font-size:1.4rem;
+            color:darkgray;
+        }
+
+        .diff-dg .dg-header .dg-rank {
+            color:darkgray;
+        }
+
+        .hgvs-symbol .entrez-id {
+            font-size:1rem;
+            color:darkgray;
+        }
+
+        .diff-dg .dg-id a, .hgvs-symbol .entrez-id a {
+            text-decoration: none;
+        }
+
         .features-title {
             background-color: #05396b;
             color: white;
@@ -391,6 +433,9 @@
             font-style: italic;
         }
 
+        .hgvs-symbol {
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -400,16 +445,22 @@
     your browser</a> to improve your experience and security.</p>
 <![endif]-->
 <header class="banner">
-    <h1><span style="color: #FFDA1A; ">LIRICAL</span>: <font color="#FFDA1A">LI</font>kelihood <span
-                style="color: #FFDA1A; ">R</span>atio
-        <span style="color: #FFDA1A; ">I</span>nterpretation of <font color="#FFDA1A">C</font>linical
-        <span style="color: #FFDA1A; ">A</span>bnorma<font color="#FFDA1A">L</font>ities</h1>
+    <h1>
+            <span class="banner-highlight">LIRICAL</span>&nbsp;
+            <span class="tagline">
+                <span class="banner-highlight">LI</span>kelihood&nbsp;
+                <span class="banner-highlight">R</span>atio
+                <span class="banner-highlight">I</span>nterpretation of <span class="banner-highlight">C</span>linical
+                <span class="banner-highlight">A</span>bnorma<span class="banner-highlight">L</span>ities
+            </span>
+    </h1>
 </header>
-
+<!-- -->
 <nav>
-    <div id="navi">
+    <div class="navi">
+        <h3 class="report-id">${resultsMeta.sampleName!"n/a"} - ${resultsMeta.analysisDate}</h3>
         <ul>
-            <li><a href="#sample">Sample</a></li>
+            <li><a href="#phenotypes">Phenotypes</a></li>
             <li><a href="#diff">Differential diagnosis</a></li>
             <li><a href="#othergenes">Remaining genes</a></li>
             <li><a href="#explain">Definitions</a></li>
@@ -419,8 +470,8 @@
 </nav>
 <main>
     <section class="sample-summary elevate-container">
-        <a id="sample"></a>
-        <h1 class="center">Sample name: ${resultsMeta.sampleName!"n/a"}</h1>
+        <a id="Phenotypes"></a>
+        <h1 class="center">${resultsMeta.sampleName!"n/a"} Phenotypes</h1>
         <article>
             <div class="row">
                 <div class="column features-title center">
@@ -472,7 +523,6 @@
             <#if yaml?has_content>
                 <p>YAML configuration file: ${yaml}</p>
             </#if>
-            <p>LIRICAL analysis performed on ${resultsMeta.analysisDate}.</p>
         </article>
     </section>
 
@@ -480,7 +530,7 @@
         <article>
             <a id="diff"></a>
             <div class="center">
-                <h1>Top differential diagnoses</h1>
+                <h1>Top Differential Diagnoses</h1>
                 <p>${topdifferentialcount}</p>
             </div>
             <div style="text-align:center;">
@@ -534,8 +584,13 @@
         <#list differentialDiagnoses as dd>
             <article class="diff-dg">
                 <a id="${dd.anchor}"></a>
-                <header class="center">
-                    <h2>(${dd.rank}) ${dd.diseaseName} [<a href="${dd.url}" target="_blank">${dd.diseaseCurie}</a>]</h2>
+                <header class="dg-header center">
+                    <h2 class="dg-rank">Rank #${dd.rank}</h2>
+                    <h2 class="dg-title">${dd.diseaseName}
+                        <span class="dg-id">
+                            <a href="${dd.url}" target="_blank">${dd.diseaseCurie}</a>
+                        </span>
+                    </h2>
                 </header>
 
                 <table class="redTable">
@@ -554,9 +609,16 @@
                 <br/>
                 <div class="genotype">
                     <div class="genotype-head">
-                        <h3><i><span class="hgvs-symbol">${dd.geneSymbol}</span></i> [<a href="${dd.geneUrl}"
-                                                                                         target="_blank"><span
-                                        class="entrez-id">${dd.entrezGeneId}</span></a>]</h3>
+                        <h3>
+                            <span class="hgvs-symbol">
+                                ${dd.geneSymbol}
+                                <span class="entrez-id">
+                                    <a href="${dd.geneUrl}" target="_blank">
+                                        ${dd.entrezGeneId}
+                                    </a>
+                                </span>
+                            </span>
+                        </h3>
                         <#if dd.hasGenotypeExplanation()>
                             <p class="genotype-explanation">${dd.genotypeExplanation}</p>
                         </#if>
@@ -622,8 +684,8 @@
     </section>
     <section class="elevate-container">
         <a id="othergenes"></a>
-        <article>
-            <h2>Genes/Diseases with low posttest probability:</h2>
+        <article class="othergenes-table">
+            <h2>Low Post-Test Probability Results</h2>
             <p>Variants were identified in the following genes. The posttest probability of diseases
                 associated with these genes was below ${postprobthreshold}. The table shows the total count of
                 variants found in the genes.</p>
@@ -752,7 +814,7 @@
     <span id="tooltip" style="position: absolute; display: none;"></span>
 </main>
 <footer>
-    <p>LIRICAL ${resultsMeta.liricalVersion!""} &copy; 2019</p>
+    <p>LIRICAL ${resultsMeta.liricalVersion!""} &copy; 2022</p>
 </footer>
 
 <script>

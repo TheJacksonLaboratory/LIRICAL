@@ -144,7 +144,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
 
         @CommandLine.Option(names = {"--frequency-threshold"},
                 description = "The population frequency threshold value for displaying results in the output. [0, 1]")
-        protected Double frequencyThreshold = 1.0d;
+        protected float frequencyThreshold = 0.1f;
     }
 
     @Override

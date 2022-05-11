@@ -55,7 +55,7 @@ public abstract class LiricalTemplate {
         this.geneById = analysisData.genes().genes().collect(Collectors.toMap(g -> g.geneId().id(), Function.identity()));
         this.outputPath = createOutputFile(outputOptions.outputDirectory(), outputOptions.prefix(), outputFormatString());
         this.pathogenicityThreshold = outputOptions.pathogenicityThreshold();
-        this.frequencyThreshold = outputOptions.frequencyThreshold() * 100;
+        this.frequencyThreshold = outputOptions.frequencyThreshold();
         initTemplateData(analysisData, hpo, resultsMetadata);
     }
 

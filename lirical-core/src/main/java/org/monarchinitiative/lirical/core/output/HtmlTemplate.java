@@ -152,7 +152,7 @@ public class HtmlTemplate extends LiricalTemplate {
         if (genotypeLr != null) {
             if (noVariantsInGene) {
                 GeneIdentifier geneId = genotypeLr.geneId();
-                return "No variants found in %s [%s]".formatted(geneId.symbol(), geneId.id().getValue());
+                return "No variants found in %s".formatted(geneId.symbol());
             } else {
                 return genotypeLr.explanation();
             }
