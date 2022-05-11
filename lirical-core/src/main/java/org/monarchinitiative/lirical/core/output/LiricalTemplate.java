@@ -37,7 +37,7 @@ public abstract class LiricalTemplate {
 
     protected Path outputPath;
     private final float pathogenicityThreshold;
-    private final double frequencyThreshold;
+    private final float frequencyThreshold;
     /** This map contains the names of the top differential diagnoses that we will show as a list at the
      * top of the page together with anchors to navigate to the detailed analysis.*/
     protected Map<String,String> topDiagnosisMap;
@@ -55,7 +55,7 @@ public abstract class LiricalTemplate {
         this.geneById = analysisData.genes().genes().collect(Collectors.toMap(g -> g.geneId().id(), Function.identity()));
         this.outputPath = createOutputFile(outputOptions.outputDirectory(), outputOptions.prefix(), outputFormatString());
         this.pathogenicityThreshold = outputOptions.pathogenicityThreshold();
-        this.frequencyThreshold = outputOptions.frequencyThreshold() * 100.0;
+        this.frequencyThreshold = outputOptions.frequencyThreshold() * 100;
         initTemplateData(analysisData, hpo, resultsMetadata);
     }
 
@@ -124,15 +124,15 @@ public abstract class LiricalTemplate {
     }
 
     protected Function<LiricalVariant, VisualizableVariant> toVisualizableVariant() {
-        return lv -> new VisualizableVariantDefault(analysisData.sampleId(), lv, isInPathogenicBin(lv), isPassingFrequencyThreshold(lv));
+        return lv -> new VisualizableVariantDefault(analysisData.sampleId(), lv, isPassingPathogenicThreshold(lv), isPassingFrequencyThreshold(lv));
     }
 
-    private boolean isInPathogenicBin(LiricalVariant lv) {
+    private boolean isPassingPathogenicThreshold(LiricalVariant lv) {
         return lv.pathogenicityScore().orElse(0f) >= pathogenicityThreshold;
     }
 
     private boolean isPassingFrequencyThreshold(LiricalVariant lv){
-        return (double) lv.frequency().orElse(1.0F) <= this.frequencyThreshold;
+        return lv.frequency().orElse(1.0F) <= frequencyThreshold;
     }
 
 }

@@ -71,7 +71,7 @@ class VisualizableVariantDefault implements VisualizableVariant {
     }
 
     @Override
-    public boolean isInPathogenicBin() {
+    public boolean isPassingPathogenicThreshold() {
         return isInPathogenicBin;
     }
 

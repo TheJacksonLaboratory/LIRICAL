@@ -5,7 +5,7 @@ import java.nio.file.Path;
 public record OutputOptions(LrThreshold lrThreshold,
                             MinDiagnosisCount minDiagnosisCount,
                             float pathogenicityThreshold,
-                            Double frequencyThreshold,
+                            float frequencyThreshold,
                             Path outputDirectory,
                             String prefix,
                             Iterable<OutputFormat> outputFormats) {

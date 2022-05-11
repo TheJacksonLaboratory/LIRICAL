@@ -97,12 +97,15 @@ public class HtmlTemplate extends LiricalTemplate {
                                 .orElse(EMPTY_STRING);
 
                         // Remap `LiricalVariant`s to `VisualizableVariant`s
+                        // We can hard filter here on pathogenicity or well before when we create these
+                        // Lirical Variants
                         List<VisualizableVariant> variants = genotypeLrOpt.map(GenotypeLrWithExplanation::geneId)
                                 .map(GeneIdentifier::id)
                                 .map(geneById::get)
                                 .map(Gene2Genotype::variants)
                                 .orElse(Stream.empty())
                                 .map(toVisualizableVariant())
+                                .filter(VisualizableVariant::isPassingPathogenicThreshold)
                                 .toList();
                         int notPassing = (int) variants.stream().filter(Predicate.not(VisualizableVariant::isPassingFrequency)).count();
                         String genotypeExplanation = createGenotypeExplanation(genotypeLrOpt.orElse(null), variants.isEmpty());

@@ -20,7 +20,7 @@ public interface VisualizableVariant {
 
     String getUcsc();
 
-    boolean isInPathogenicBin();
+    boolean isPassingPathogenicThreshold();
 
     float getPathogenicityScore();
 
