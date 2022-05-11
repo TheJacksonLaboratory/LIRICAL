@@ -334,7 +334,7 @@
             outline: dotted 1px blue;
         }
 
-        .diff-dg {
+        .diff-dg .dg-header {
             text-transform: uppercase;
         }
 
@@ -350,6 +350,7 @@
         .hgvs-symbol .entrez-id {
             font-size:1rem;
             color:darkgray;
+            text-transform: unset;
         }
 
         .diff-dg .dg-id a, .hgvs-symbol .entrez-id a {
@@ -398,14 +399,6 @@
         .toggle-threshold-btn, .extra-annotations-toggle {
             color: blue;
             cursor: pointer;
-        }
-
-        .toggle-threshold-btn:hover {
-            opacity: .8;
-        }
-
-        .frequency-threshold-text {
-            font-size: 12px;
         }
 
         #hide-other-genes-table, #other-genes-table {
@@ -466,7 +459,7 @@
     <div class="navi">
         <h3 class="report-id">${resultsMeta.sampleName!"n/a"} - ${resultsMeta.analysisDate}</h3>
         <ul>
-            <li><a href="#phenotypes">Phenotypes</a></li>
+            <li><a href="#phenotypes">Sample</a></li>
             <li><a href="#diff">Differential diagnosis</a></li>
             <li><a href="#othergenes">Remaining genes</a></li>
             <li><a href="#explain">Definitions</a></li>
@@ -477,7 +470,7 @@
 <main>
     <section class="sample-summary elevate-container">
         <a id="Phenotypes"></a>
-        <h1 class="center">${resultsMeta.sampleName!"n/a"} Phenotypes</h1>
+        <h1 class="center">${resultsMeta.sampleName!"n/a"} Phenotypic Features</h1>
         <article>
             <div class="row">
                 <div class="column features-title center">
@@ -586,8 +579,9 @@
             </div>
         </article>
     </section>
-    <section class="elevate-container">
-        <#list differentialDiagnoses as dd>
+
+    <#list differentialDiagnoses as dd>
+        <section class="elevate-container">
             <article class="diff-dg">
                 <a id="${dd.anchor}"></a>
                 <header class="dg-header center">
@@ -635,14 +629,6 @@
                     <br>
                     <#if dd.hasVariants()>
                         <div class="genotype-body">
-                            <#if dd.getNotPassingFrequencyThresholdCount() gt 0 && !dd.allVariantsPathogenic()>
-                                <span class="frequency-threshold-text">${dd.getNotPassingFrequencyThresholdCount()} variants hidden based on frequency threshold
-                        ${frequencyThreshold}.
-                        <a class="toggle-threshold-btn"
-                           id="toggle-threshold-btn-${dd.geneSymbol}-${dd.diseaseCurie?replace(':','-')}"
-                           onclick="toggleAllVariants('${dd.geneSymbol}-${dd.diseaseCurie?replace(':','-')}')">Show All</a>
-                        </span>
-                            </#if>
                             <table class="minimalistBlack table-${dd.geneSymbol}-${dd.diseaseCurie?replace(':','-')}">
                                 <thead>
                                 <tr>
@@ -654,10 +640,8 @@
                                     <th>Annotation</th>
                                 </tr>
                                 </thead>
-                                <#list  dd.visualizableVariants as svar>
-                                    <tr <#if svar.isPassingFrequency() || svar.isPassingPathogenicThreshold()>class="dd-variant-row-passing"<#else>
-                                        class="dd-variant-row-failing"
-                                            </#if>>
+                                <#list dd.visualizableVariants as svar>
+                                    <tr>
                                         <td>${svar.ucsc}</td>
                                         <td>${svar.pathogenicityScore!"n/a"}</td>
                                         <td>${svar.frequency}%</td>
@@ -686,9 +670,9 @@
                     </#if>
                 </div>
             </article>
-            <hr class="dd-seperator">
-        </#list>
-    </section>
+        </section>
+    </#list>
+
     <section class="elevate-container">
         <a id="othergenes"></a>
         <article class="othergenes-table">
@@ -876,27 +860,6 @@
 
         var hidetablebtn = document.getElementById("hide-symbol-table");
         hidetablebtn.style.display = "none";
-    }
-
-    function toggleAllVariants(uniqueId) {
-        const targetClass = '.table-' + uniqueId + ' .dd-variant-row-failing'
-        const elements = document.querySelectorAll(targetClass);
-        let showing = false;
-        for (var i = 0; i < elements.length; ++i) {
-            var row = elements[i];
-            if (row.style.display === 'none' || row.style.display === '') {
-                showing = true;
-                row.style.display = 'table-row';
-            } else {
-                row.style.display = 'none';
-            }
-        }
-        const btn = document.getElementById('toggle-threshold-btn-' + uniqueId);
-        if (showing) {
-            btn.innerText = 'Hide All';
-        } else {
-            btn.innerText = 'Show All';
-        }
     }
 
     function toggleExtraAnnotations(uniqueId) {

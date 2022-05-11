@@ -107,7 +107,6 @@ public class HtmlTemplate extends LiricalTemplate {
                                 .map(toVisualizableVariant())
                                 .filter(VisualizableVariant::isPassingPathogenicThreshold)
                                 .toList();
-                        int notPassing = (int) variants.stream().filter(Predicate.not(VisualizableVariant::isPassingFrequency)).count();
                         String genotypeExplanation = createGenotypeExplanation(genotypeLrOpt.orElse(null), variants.isEmpty());
                         HpoDisease disease = diseaseById.get(result.diseaseId());
                         Lr2Svg lr2svg = new Lr2Svg(result, current, disease.id(), disease.diseaseName(), hpo, symbol);
@@ -118,7 +117,7 @@ public class HtmlTemplate extends LiricalTemplate {
                                 current,
                                 variants,
                                 genotypeExplanation,
-                                lr2svg.getSvgString(), notPassing);
+                                lr2svg.getSvgString());
 
                         String counterString = String.format("diagnosis%d", current);
                         this.topDiagnosisAnchors.add(counterString);

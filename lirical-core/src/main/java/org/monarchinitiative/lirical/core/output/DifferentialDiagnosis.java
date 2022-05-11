@@ -23,8 +23,6 @@ public class DifferentialDiagnosis extends BaseDifferential {
 
     private final String genotypeExplanation;
 
-    private final int notPassingFrequencyThresholdCount;
-
     DifferentialDiagnosis(String sampleId,
                           TermId diseaseId,
                           String diseaseName,
@@ -32,12 +30,11 @@ public class DifferentialDiagnosis extends BaseDifferential {
                           int rank,
                           List<VisualizableVariant> variants,
                           String genotypeExplanation,
-                          String svg, int notPassingFrequencyThresholdCount) {
+                          String svg) {
         super(sampleId, diseaseId, diseaseName, result, rank, variants);
         url=String.format("https://hpo.jax.org/app/browse/disease/%s",result.diseaseId().getValue());
         this.genotypeExplanation = genotypeExplanation; // nullable
         this.svg = Objects.requireNonNull(svg);
-        this.notPassingFrequencyThresholdCount = notPassingFrequencyThresholdCount;
 
     }
 
@@ -63,10 +60,6 @@ public class DifferentialDiagnosis extends BaseDifferential {
         return geneId == null
                 ? ""
                 : String.format("https://hpo.jax.org/app/browse/gene/%s", geneId.id().getId());
-    }
-
-    public int getNotPassingFrequencyThresholdCount() {
-        return notPassingFrequencyThresholdCount;
     }
 
     public List<VisualizableVariant> getVisualizableVariants() {
