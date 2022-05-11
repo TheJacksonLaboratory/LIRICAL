@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -103,8 +104,10 @@ public class HtmlTemplate extends LiricalTemplate {
                                 .map(Gene2Genotype::variants)
                                 .orElse(Stream.empty())
                                 .map(toVisualizableVariant())
-                                .filter(VisualizableVariant::isPassingPathogenicThreshold)
                                 .toList();
+                        if(!outputOptions.displayAllVariants()){
+                            variants = variants.stream().filter(VisualizableVariant::isPassingPathogenicThreshold).collect(Collectors.toList());
+                        }
                         String genotypeExplanation = createGenotypeExplanation(genotypeLrOpt.orElse(null), variants.isEmpty());
                         HpoDisease disease = diseaseById.get(result.diseaseId());
                         Lr2Svg lr2svg = new Lr2Svg(result, current, disease.id(), disease.diseaseName(), hpo, symbol);
