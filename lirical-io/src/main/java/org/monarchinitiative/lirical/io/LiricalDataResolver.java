@@ -21,23 +21,23 @@ public class LiricalDataResolver {
     }
 
     private LiricalDataResolver(Path dataDirectory) throws LiricalDataException {
-        this.dataDirectory = Objects.requireNonNull(dataDirectory, "Data directory must not be null");
-        LOGGER.debug("Using Lirical directory at {}", dataDirectory.toAbsolutePath());
+        this.dataDirectory = Objects.requireNonNull(dataDirectory, "Data directory must not be null!");
+        LOGGER.debug("Using Lirical directory at `{}`.", dataDirectory.toAbsolutePath());
         checkV1Resources();
     }
 
     private void checkV1Resources() throws LiricalDataException {
         boolean error = false;
-        List<Path> requiredFiles = List.of(hpoJson(), homoSapiensGeneInfo(), mim2geneMedgen(), phenotypeAnnotations(),
+        List<Path> requiredFiles = List.of(hpoJson(), hgncCompleteSet(), mim2geneMedgen(), phenotypeAnnotations(),
                 hg19RefseqTxDatabase(), hg19UcscTxDatabase(), hg38RefseqTxDatabase(), hg38UcscTxDatabase());
         for (Path file : requiredFiles) {
             if (!Files.isRegularFile(file)) {
-                LOGGER.error("Missing required file {} in {}", file.toFile().getName(), dataDirectory.toAbsolutePath());
+                LOGGER.error("Missing required file `{}` in `{}`.", file.toFile().getName(), dataDirectory.toAbsolutePath());
                 error = true;
             }
         }
         if (error) {
-            throw new LiricalDataException("Missing one or more resource files in Lirical data directory");
+            throw new LiricalDataException("Missing one or more resource files in Lirical data directory!");
         }
     }
 
@@ -53,8 +53,17 @@ public class LiricalDataResolver {
         return dataDirectory.resolve("hp.json");
     }
 
+    /**
+     *
+     * @deprecated to be removed in v2.0.0, use {@link #hgncCompleteSet()} as a source of gene identifiers.
+     */
+    @Deprecated(forRemoval = true)
     public Path homoSapiensGeneInfo() {
         return dataDirectory.resolve("Homo_sapiens.gene_info.gz");
+    }
+
+    public Path hgncCompleteSet() {
+        return dataDirectory.resolve("hgnc_complete_set.txt");
     }
 
     public Path mim2geneMedgen() {

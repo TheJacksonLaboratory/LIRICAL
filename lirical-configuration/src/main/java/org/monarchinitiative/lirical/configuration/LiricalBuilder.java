@@ -186,7 +186,7 @@ public class LiricalBuilder {
         if (functionalVariantAnnotator == null) {
             LOGGER.debug("Functional variant annotator is unset. Loading Jannovar transcript database for {} transcripts.", transcriptDatabase);
             JannovarData jannovarData = loadJannovarData(liricalDataResolver, genomeBuild, transcriptDatabase);
-            functionalVariantAnnotator = JannovarFunctionalVariantAnnotator.of(jannovarData, phenotypeService.associationData().geneIdentifiers());
+            functionalVariantAnnotator = JannovarFunctionalVariantAnnotator.of(jannovarData, phenotypeService.associationData().getGeneIdentifiers());
         }
 
         if (variantMetadataService == null) {
@@ -230,7 +230,11 @@ public class LiricalBuilder {
         LiricalDataResolver liricalDataResolver = LiricalDataResolver.of(dataDirectory);
         Ontology hpo = LoadUtils.loadOntology(liricalDataResolver.hpoJson());
         HpoDiseases diseases = LoadUtils.loadHpoDiseases(liricalDataResolver.phenotypeAnnotations(), hpo, options);
-        HpoAssociationData associationData = LoadUtils.loadAssociationData(hpo, liricalDataResolver.homoSapiensGeneInfo(), liricalDataResolver.mim2geneMedgen(), diseases);
+        HpoAssociationData associationData = HpoAssociationData.builder(hpo)
+                .hgncCompleteSetArchive(liricalDataResolver.hgncCompleteSet())
+                .mim2GeneMedgen(liricalDataResolver.mim2geneMedgen())
+                .hpoDiseases(diseases)
+                .build();
         return PhenotypeService.of(hpo, diseases, associationData);
     }
 

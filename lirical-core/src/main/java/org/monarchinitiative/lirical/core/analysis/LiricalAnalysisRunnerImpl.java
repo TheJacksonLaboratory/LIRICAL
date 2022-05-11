@@ -53,7 +53,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
     }
 
     private Map<TermId, List<Gene2Genotype>> groupDiseasesByGene(GenesAndGenotypes genes) {
-        Map<TermId, Collection<TermId>> geneToDisease = phenotypeService.associationData().geneToDiseases();
+        Map<TermId, Collection<TermId>> geneToDisease = phenotypeService.associationData().associations().geneIdToDiseaseIds();
         Map<TermId, List<Gene2Genotype>> diseaseToGenotype = new HashMap<>(genes.size());
 
         for (Gene2Genotype gene : genes) {

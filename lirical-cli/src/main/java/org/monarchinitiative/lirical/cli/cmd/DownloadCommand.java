@@ -43,7 +43,7 @@ public class DownloadCommand implements Callable<Integer>{
                     .overwrite(overwrite)
                     .hpoJson()
                     .hpDiseaseAnnotations()
-                    .geneInfoHuman()
+                    .hgnc()
                     .medgene2MIM()
                     // Jannovar v0.35 transcript databases
 //                    .custom("hg19_ensembl.ser", createUrlOrExplode("https://storage.googleapis.com/ielis/jannovar/v0.35/hg19_ensembl.ser"))

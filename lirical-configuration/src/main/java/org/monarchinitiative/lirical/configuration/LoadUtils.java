@@ -50,21 +50,6 @@ class LoadUtils {
         }
     }
 
-    static HpoAssociationData loadAssociationData(Ontology hpo,
-                                                  Path homoSapiensGeneInfo,
-                                                  Path mim2geneMedgen,
-                                                  HpoDiseases diseases) throws LiricalDataException {
-        try {
-            return HpoAssociationLoader.loadHpoAssociationData(hpo,
-                    homoSapiensGeneInfo,
-                    mim2geneMedgen,
-                    null,
-                    diseases);
-        } catch (IOException e) {
-            throw new LiricalDataException(e);
-        }
-    }
-
     static BufferedReader openBundledBackgroundFrequencyFile(GenomeBuild genomeBuild) throws LiricalDataException {
         String name = switch (genomeBuild) {
             case HG19 -> "/background/background-hg19.tsv";
