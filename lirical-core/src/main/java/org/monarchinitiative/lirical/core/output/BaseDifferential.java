@@ -110,10 +110,6 @@ abstract class BaseDifferential {
         return !variants.isEmpty();
     }
 
-    public boolean allVariantsPathogenic(){
-        return variants.stream().filter(VisualizableVariant::isPassingPathogenicThreshold).count() == variants.size();
-    }
-
     public int getRank() {
         return rank;
     }

@@ -35,7 +35,6 @@ public class DifferentialDiagnosis extends BaseDifferential {
         url=String.format("https://hpo.jax.org/app/browse/disease/%s",result.diseaseId().getValue());
         this.genotypeExplanation = genotypeExplanation; // nullable
         this.svg = Objects.requireNonNull(svg);
-
     }
 
     @Override
