@@ -261,6 +261,11 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
     protected static GenesAndGenotypes readVariantsFromVcfFile(String sampleId,
                                                                Path vcfPath,
                                                                VariantParserFactory parserFactory) throws LiricalParseException {
+        if (parserFactory == null) {
+            LOGGER.warn("Cannot process the provided VCF file {}, resources are not set.", vcfPath.toAbsolutePath());
+            return GenesAndGenotypes.empty();
+        }
+
         try (VariantParser variantParser = parserFactory.forPath(vcfPath)) {
             // Ensure the VCF file contains the sample
             if (!variantParser.sampleNames().contains(sampleId))

@@ -89,7 +89,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
         if (vcfPath == null) {
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.variantParserFactory());
+            genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.variantParserFactory().orElse(null));
         }
         return AnalysisData.of(sampleId,
                 data.getAge().orElse(null),
