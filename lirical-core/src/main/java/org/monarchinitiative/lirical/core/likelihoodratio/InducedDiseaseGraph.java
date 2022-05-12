@@ -42,12 +42,11 @@ public class InducedDiseaseGraph {
     private record CandidateMatch(TermId termId, int distance) {
     }
 
-    public static InducedDiseaseGraph create(HpoDisease disease, Ontology ontology, float defaultPhenotypeTermFrequency) {
-        Map<TermId, Double> termFrequencies = new HashMap<>(disease.phenotypicAbnormalitiesCount());
+    public static InducedDiseaseGraph create(HpoDisease disease, Ontology ontology) {
+        Map<TermId, Double> termFrequencies = new HashMap<>(disease.annotationCount());
 
-        for (Iterator<HpoDiseaseAnnotation> iterator = disease.phenotypicAbnormalities(); iterator.hasNext();) {
-            HpoDiseaseAnnotation annotation = iterator.next();
-            double frequency = annotation.frequency().orElse(defaultPhenotypeTermFrequency);
+        for (HpoDiseaseAnnotation annotation : disease.annotations()) {
+            double frequency = annotation.frequency();
             CandidateMatch cmatch = new CandidateMatch(annotation.id(), 0); // distance is zero
             Stack<CandidateMatch> stack = new Stack<>();
             stack.push(cmatch);
@@ -69,7 +68,7 @@ public class InducedDiseaseGraph {
                 }
             }
         }
-        Set<TermId> absentPhenotypeTerms = disease.absentPhenotypicAbnormalitiesStream()
+        Set<TermId> absentPhenotypeTerms = disease.absentAnnotationsStream()
                 .map(HpoDiseaseAnnotation::id)
                 .collect(Collectors.toUnmodifiableSet());
         Set<TermId> negativeInducedGraph = OntologyAlgorithm.getAncestorTerms(ontology, absentPhenotypeTerms, true);

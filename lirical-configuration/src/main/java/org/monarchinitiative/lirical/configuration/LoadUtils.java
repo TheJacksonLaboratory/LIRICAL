@@ -2,11 +2,10 @@ package org.monarchinitiative.lirical.configuration;
 
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.io.LiricalDataException;
-import org.monarchinitiative.phenol.annotations.assoc.HpoAssociationLoader;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoader;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -43,7 +42,7 @@ class LoadUtils {
                                        HpoDiseaseLoaderOptions options) throws LiricalDataException {
         try {
             LOGGER.debug("Loading HPO annotations from {}", annotationPath.toAbsolutePath());
-            HpoDiseaseLoader loader = HpoDiseaseLoader.of(hpo, options);
+            HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpo, options);
             return loader.load(annotationPath);
         } catch (IOException e) {
             throw new LiricalDataException(e);

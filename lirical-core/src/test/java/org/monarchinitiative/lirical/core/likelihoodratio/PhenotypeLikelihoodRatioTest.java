@@ -84,7 +84,7 @@ public class PhenotypeLikelihoodRatioTest {
         HpoDisease disease = diseaseMap.get(diseaseName);
         assertNotNull(disease);
         double expected =1.0;
-        double frq = disease.getAnnotation(tid).flatMap(HpoDiseaseAnnotation::frequency).get();
+        double frq = disease.getAnnotation(tid).map(HpoDiseaseAnnotation::frequency).get();
         assertEquals(expected,  frq,EPSILON);
     }
 

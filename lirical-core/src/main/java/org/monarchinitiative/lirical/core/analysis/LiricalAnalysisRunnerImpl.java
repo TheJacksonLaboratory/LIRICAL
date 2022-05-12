@@ -82,7 +82,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
 
         List<Gene2Genotype> genotypes = diseaseToGenotype.getOrDefault(disease.id(), List.of());
 
-        InducedDiseaseGraph idg = InducedDiseaseGraph.create(disease, phenotypeService.hpo(), PhenotypeLikelihoodRatio.DEFAULT_TERM_FREQUENCY); // TODO - is this the right thing to do?
+        InducedDiseaseGraph idg = InducedDiseaseGraph.create(disease, phenotypeService.hpo());
         List<LrWithExplanation> observed = observedPhenotypesLikelihoodRatios(observedTerms, idg);
         List<LrWithExplanation> excluded = excludedPhenotypesLikelihoodRatios(excludedTerms, idg);
 
