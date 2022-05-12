@@ -103,10 +103,8 @@ public class HtmlTemplate extends LiricalTemplate {
                                 .map(Gene2Genotype::variants)
                                 .orElse(Stream.empty())
                                 .map(toVisualizableVariant())
+                                .filter(vv -> outputOptions.displayAllVariants() || vv.isPassingPathogenicThreshold())
                                 .toList();
-                        if(!outputOptions.displayAllVariants()){
-                            variants = variants.stream().filter(VisualizableVariant::isPassingPathogenicThreshold).collect(Collectors.toList());
-                        }
                         String genotypeExplanation = createGenotypeExplanation(genotypeLrOpt.orElse(null), variants.isEmpty());
                         HpoDisease disease = diseaseById.get(result.diseaseId());
                         Lr2Svg lr2svg = new Lr2Svg(result, current, disease.id(), disease.diseaseName(), hpo, symbol);
