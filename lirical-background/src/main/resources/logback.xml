@@ -2,7 +2,7 @@
 <configuration>
     <!-- We're not interested in seeing all events produced by the following libraries: -->
     <logger name="de.charite.compbio.jannovar" level="WARN" />
-    <logger name="org.monarchinitiative.phenol" level="DEBUG" />
+    <logger name="org.monarchinitiative.phenol" level="INFO"/>
 
     <property name="pattern" value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
 
@@ -21,7 +21,7 @@
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>DEBUG</level>
         </filter>
-        <file>lirical.log</file>
+        <file>lirical-background.log</file>
         <append>false</append>
         <encoder>
             <pattern>${pattern}</pattern>
