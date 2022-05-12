@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <!-- We're not interested in seeing all events produced by the following libraries: -->
+    <logger name="de.charite.compbio.jannovar" level="WARN" />
+    <logger name="org.monarchinitiative.phenol" level="INFO"/>
+
     <property name="pattern" value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- We write INFO and above events to console. -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>INFO</level>
         </filter>
@@ -11,20 +16,20 @@
         </encoder>
     </appender>
 
+    <!-- We write DEBUG and above events into the lirical.log file. -->
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>lirical.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <file>lirical-beta.log</file>
         <append>false</append>
         <encoder>
             <pattern>${pattern}</pattern>
         </encoder>
     </appender>
-    <logger name="org.monarchinitiative.lirical" level="DEBUG">
-        <appender-ref ref="FILE"/>
-    </logger>
-    <logger name="de.charite.compbio.jannovar" level="WARN" />
-    <logger name="org.monarchinitiative.exomiser" level="WARN"/>
-    <logger name="org.monarchinitiative.phenol" level="WARN"/>
-    <root level="INFO">
-        <appender-ref ref="STDOUT" />
+
+    <root>
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
     </root>
 </configuration>
