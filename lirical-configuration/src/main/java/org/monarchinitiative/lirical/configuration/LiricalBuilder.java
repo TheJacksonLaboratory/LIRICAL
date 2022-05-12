@@ -189,22 +189,23 @@ public class LiricalBuilder {
             functionalVariantAnnotator = JannovarFunctionalVariantAnnotator.of(jannovarData, phenotypeService.associationData().getGeneIdentifiers());
         }
 
+        // VariantMetadataService and VariantParserFactory.
+        GenomicAssembly genomicAssembly = LoadUtils.parseSvartGenomicAssembly(genomeBuild);
+        VariantParserFactory variantParserFactory;
         if (variantMetadataService == null) {
             LOGGER.debug("Variant metadata service is unset.");
             if (exomiserVariantDatabase == null) {
                 LOGGER.debug("Path to Exomiser database is unset. Variants will not be annotated.");
-                // TODO - is this what we actually want to do?
                 variantMetadataService = NoOpVariantMetadataService.instance();
+                variantParserFactory = null;
             } else {
                 LOGGER.debug("Using Exomiser variant database at {}", exomiserVariantDatabase.toAbsolutePath());
                 variantMetadataService = ExomiserMvStoreMetadataService.of(exomiserVariantDatabase, new VariantMetadataService.Options(defaultVariantAlleleFrequency));
+                variantParserFactory = VcfVariantParserFactory.of(genomicAssembly, functionalVariantAnnotator, variantMetadataService);
             }
+        } else {
+            variantParserFactory = VcfVariantParserFactory.of(genomicAssembly, functionalVariantAnnotator, variantMetadataService);
         }
-
-        // Variant parser factory
-        GenomicAssembly genomicAssembly = LoadUtils.parseSvartGenomicAssembly(genomeBuild);
-        VariantParserFactory variantParserFactory = VcfVariantParserFactory.of(genomicAssembly, functionalVariantAnnotator, variantMetadataService);
-
 
         // Lirical analysis runner
         if (pretestDiseaseProbability == null) {

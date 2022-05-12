@@ -8,6 +8,7 @@ import org.monarchinitiative.lirical.core.service.PhenotypeService;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class Lirical {
 
@@ -38,7 +39,7 @@ public class Lirical {
                     VariantMetadataService variantMetadataService,
                     LiricalAnalysisRunner analysisRunner,
                     AnalysisResultWriterFactory analysisResultWriterFactory) {
-        this.variantParserFactory = Objects.requireNonNull(variantParserFactory);
+        this.variantParserFactory = variantParserFactory; // nullable
         this.phenotypeService = Objects.requireNonNull(phenotypeService);
         this.functionalVariantAnnotator = Objects.requireNonNull(functionalVariantAnnotator);
         this.variantMetadataService = Objects.requireNonNull(variantMetadataService);
@@ -46,8 +47,11 @@ public class Lirical {
         this.analysisResultWriterFactory = Objects.requireNonNull(analysisResultWriterFactory);
     }
 
-    public VariantParserFactory variantParserFactory() {
-        return variantParserFactory;
+    /**
+     * @return variant parser factory if Exomiser variant database is present. Otherwise, an empty optional is returned.
+     */
+    public Optional<VariantParserFactory> variantParserFactory() {
+        return Optional.ofNullable(variantParserFactory);
     }
 
     public PhenotypeService phenotypeService() {
