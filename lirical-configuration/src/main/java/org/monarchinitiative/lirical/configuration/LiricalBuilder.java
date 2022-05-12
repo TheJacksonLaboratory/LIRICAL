@@ -190,8 +190,15 @@ public class LiricalBuilder {
         }
 
         if (variantMetadataService == null) {
-            LOGGER.debug("Variant metadata service is unset. Trying to create the service from frequency service and pathogenicity service.");
-            variantMetadataService = ExomiserMvStoreMetadataService.of(exomiserVariantDatabase, new VariantMetadataService.Options(defaultVariantAlleleFrequency));
+            LOGGER.debug("Variant metadata service is unset.");
+            if (exomiserVariantDatabase == null) {
+                LOGGER.debug("Path to Exomiser database is unset. Variants will not be annotated.");
+                // TODO - is this what we actually want to do?
+                variantMetadataService = NoOpVariantMetadataService.instance();
+            } else {
+                LOGGER.debug("Using Exomiser variant database at {}", exomiserVariantDatabase.toAbsolutePath());
+                variantMetadataService = ExomiserMvStoreMetadataService.of(exomiserVariantDatabase, new VariantMetadataService.Options(defaultVariantAlleleFrequency));
+            }
         }
 
         // Variant parser factory
