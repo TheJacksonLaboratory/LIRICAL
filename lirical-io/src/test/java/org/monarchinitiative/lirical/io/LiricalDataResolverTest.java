@@ -15,7 +15,7 @@ public class LiricalDataResolverTest {
         Path dataDirectory = TestResources.TEST_BASE.resolve("lirical_data");
         LiricalDataResolver resolver = LiricalDataResolver.of(dataDirectory);
 
-        assertThat(resolver.homoSapiensGeneInfo(), equalTo(dataDirectory.resolve("Homo_sapiens.gene_info.gz")));
+        assertThat(resolver.hgncCompleteSet(), equalTo(dataDirectory.resolve("hgnc_complete_set.txt")));
         assertThat(resolver.hpoJson(), equalTo(dataDirectory.resolve("hp.json")));
         assertThat(resolver.mim2geneMedgen(), equalTo(dataDirectory.resolve("mim2gene_medgen")));
         assertThat(resolver.phenotypeAnnotations(), equalTo(dataDirectory.resolve("phenotype.hpoa")));

@@ -4,6 +4,7 @@ import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoader;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 
@@ -37,7 +38,7 @@ public class TestResources {
     private static HpoDiseases loadHpoDiseases() {
         try {
             HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(Set.of(DiseaseDatabase.OMIM), true, HpoDiseaseLoaderOptions.DEFAULT_COHORT_SIZE);
-            HpoDiseaseLoader loader = HpoDiseaseLoader.of(hpo(), options);
+            HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpo(), options);
             return loader.load(ANNOTATION_PATH);
         } catch (IOException e) {
             throw new RuntimeException(e);

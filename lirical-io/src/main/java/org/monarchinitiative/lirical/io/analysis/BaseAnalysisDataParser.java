@@ -38,10 +38,6 @@ abstract class BaseAnalysisDataParser implements AnalysisDataParser {
                 LOGGER.warn("Unable to parse VCF at {} since parser or association data is missing", vcfPath.toAbsolutePath());
                 return GenesAndGenotypes.empty();
             } else {
-                // TODO - RNR1 is an example of a gene with 2 NCBIGene IDs.
-                Map<String, List<GeneIdentifier>> symbolToGeneId = associationData.geneIdentifiers().stream()
-                        .collect(Collectors.groupingBy(GeneIdentifier::symbol));
-
                 try (VariantParser variantParser = variantParserFactory.forPath(vcfPath)) {
                     // Ensure the VCF file contains the sample
                     if (!variantParser.sampleNames().contains(sampleId))

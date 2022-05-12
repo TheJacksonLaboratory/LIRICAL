@@ -112,7 +112,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
         int i = r.nextInt(diseaseMap.size());
         TermId tid = termIndices[i];
         HpoDisease disease = diseaseMap.get(tid);
-        while (disease.phenotypicAbnormalitiesCount() < n_terms_per_case) {
+        while (disease.annotationCount() < n_terms_per_case) {
             i = r.nextInt(diseaseMap.size());
             tid = termIndices[i];
             disease = diseaseMap.get(tid);
@@ -141,7 +141,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
             TermId diseaseToSimulate = getNextRandomDisease(r);//termIndices[randomIndices[i]];
             HpoDisease disease = diseaseMap.get(diseaseToSimulate);
             //logger.trace("Simulating disease "+diseasename);
-            if (disease.phenotypicAbnormalitiesCount() < this.n_terms_per_case) {
+            if (disease.annotationCount() < this.n_terms_per_case) {
                 logger.trace("Skipping disease {} [{}] because it has no phenotypic annotations", disease.diseaseName(), disease.id());
                 continue;
             }
@@ -254,7 +254,7 @@ public class PhenotypeOnlyHpoCaseSimulator {
         //We already checked to make sure disease have at least n_terms_per_case, so the following line is unnecessary and confusing to read--Aaron
         logger.trace("Creating simulated case with n_terms="+n_terms_per_case + ", n_random=" + n_noise_terms);
         // the creation of a new ArrayList is needed because disease returns an immutable list.
-        List<HpoDiseaseAnnotation> abnormalities = disease.phenotypicAbnormalitiesStream().collect(Collectors.toList());
+        List<HpoDiseaseAnnotation> abnormalities = disease.annotationStream().collect(Collectors.toList());
         ImmutableList.Builder<TermId> termIdBuilder = new ImmutableList.Builder<>();
         Collections.shuffle(abnormalities); // randomize order of phenotypes
         // take the first n_random terms of the randomized list
