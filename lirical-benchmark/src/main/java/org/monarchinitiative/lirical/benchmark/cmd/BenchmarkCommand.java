@@ -148,7 +148,7 @@ public class BenchmarkCommand extends AbstractBenchmarkCommand {
                 }
 
                 // Read the VCF file.
-                genes = readVariantsFromVcfFile(vcfPath, variants, lirical.variantParserFactory());
+                genes = readVariantsFromVcfFile(vcfPath, variants, lirical.variantParserFactory().orElse(null));
             }
         }
 
@@ -194,7 +194,10 @@ public class BenchmarkCommand extends AbstractBenchmarkCommand {
     private static GenesAndGenotypes readVariantsFromVcfFile(Path vcfPath,
                                                              List<LiricalVariant> causal,
                                                              VariantParserFactory parserFactory) throws LiricalParseException {
-
+        if (parserFactory == null) {
+            LOGGER.warn("Cannot process the provided VCF file {}, resources are not set.", vcfPath.toAbsolutePath());
+            return GenesAndGenotypes.empty();
+        }
         try (VariantParser variantParser = parserFactory.forPath(vcfPath)) {
             // Read variants
             LOGGER.info("Reading variants from {}.", vcfPath.toAbsolutePath());
