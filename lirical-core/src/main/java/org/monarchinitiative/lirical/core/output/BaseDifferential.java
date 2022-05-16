@@ -106,8 +106,8 @@ abstract class BaseDifferential {
      * a table with variants.
      * @return "yes" if this differential diagnosis has variants.
      */
-    public String getHasVariants() {
-        return variants.isEmpty() ? "no" : "yes";
+    public boolean hasVariants() {
+        return !variants.isEmpty();
     }
 
     public int getRank() {

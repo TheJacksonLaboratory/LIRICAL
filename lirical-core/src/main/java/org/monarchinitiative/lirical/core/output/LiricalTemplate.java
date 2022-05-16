@@ -68,14 +68,14 @@ public abstract class LiricalTemplate {
         List<String> observedHPOs = new ArrayList<>();
         for (TermId id:analysisData.presentPhenotypeTerms()) {
             Term term = ontology.getTermMap().get(id);
-            String tstr = String.format("%s (<a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>)",term.getName(),id.getValue(),id.getValue());
+            String tstr = String.format("%s <a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>",term.getName(),id.getValue(),id.getValue());
             observedHPOs.add(tstr);
         }
         this.templateData.put("observedHPOs",observedHPOs);
         List<String> excludedHpos = new ArrayList<>();
         for (TermId id:analysisData.negatedPhenotypeTerms()) {
             Term term = ontology.getTermMap().get(id);
-            String tstr = String.format("%s (<a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>)",term.getName(),id.getValue(),id.getValue());
+            String tstr = String.format("%s <a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>",term.getName(),id.getValue(),id.getValue());
             excludedHpos.add(tstr);
         }
         this.templateData.put("excludedHPOs",excludedHpos);
@@ -120,10 +120,10 @@ public abstract class LiricalTemplate {
     }
 
     protected Function<LiricalVariant, VisualizableVariant> toVisualizableVariant() {
-        return lv -> new VisualizableVariantDefault(analysisData.sampleId(), lv, isInPathogenicBin(lv));
+        return lv -> new VisualizableVariantDefault(analysisData.sampleId(), lv, isPassingPathogenicThreshold(lv));
     }
 
-    private boolean isInPathogenicBin(LiricalVariant lv) {
+    private boolean isPassingPathogenicThreshold(LiricalVariant lv) {
         return lv.pathogenicityScore().orElse(0f) >= pathogenicityThreshold;
     }
 

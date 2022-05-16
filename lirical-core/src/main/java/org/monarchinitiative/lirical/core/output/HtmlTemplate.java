@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -102,8 +103,8 @@ public class HtmlTemplate extends LiricalTemplate {
                                 .map(Gene2Genotype::variants)
                                 .orElse(Stream.empty())
                                 .map(toVisualizableVariant())
+                                .filter(vv -> outputOptions.displayAllVariants() || vv.isPassingPathogenicThreshold())
                                 .toList();
-
                         String genotypeExplanation = createGenotypeExplanation(genotypeLrOpt.orElse(null), variants.isEmpty());
                         HpoDisease disease = diseaseById.get(result.diseaseId());
                         Lr2Svg lr2svg = new Lr2Svg(result, current, disease.id(), disease.diseaseName(), hpo, symbol);
@@ -148,7 +149,7 @@ public class HtmlTemplate extends LiricalTemplate {
         if (genotypeLr != null) {
             if (noVariantsInGene) {
                 GeneIdentifier geneId = genotypeLr.geneId();
-                return "No variants found in %s [%s]".formatted(geneId.symbol(), geneId.id().getValue());
+                return "No variants found in %s".formatted(geneId.symbol());
             } else {
                 return genotypeLr.explanation();
             }

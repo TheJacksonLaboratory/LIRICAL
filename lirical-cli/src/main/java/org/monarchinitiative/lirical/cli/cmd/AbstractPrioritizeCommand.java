@@ -141,6 +141,10 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         @CommandLine.Option(names = {"-x", "--prefix"},
                 description = "Prefix of outfile (default: ${DEFAULT-VALUE}).")
         protected String outfilePrefix = "lirical";
+
+        @CommandLine.Option(names = {"--display-all-variants"},
+                description = "Display all variants in output, not just variants passing pathogenicity threshold (default ${DEFAULT-VALUE})")
+        protected boolean displayAllVariants = false;
     }
 
     @Override
@@ -241,7 +245,8 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         LrThreshold lrThreshold = runConfiguration.lrThreshold == null ? LrThreshold.notInitialized() : LrThreshold.setToUserDefinedThreshold(runConfiguration.lrThreshold);
         MinDiagnosisCount minDiagnosisCount = runConfiguration.minDifferentialsToShow == null ? MinDiagnosisCount.notInitialized() : MinDiagnosisCount.setToUserDefinedMinCount(runConfiguration.minDifferentialsToShow);
         List<OutputFormat> outputFormats = parseOutputFormats(output.outputFormats);
-        return new OutputOptions(lrThreshold, minDiagnosisCount, runConfiguration.pathogenicityThreshold, output.outdir, output.outfilePrefix, outputFormats);
+        return new OutputOptions(lrThreshold, minDiagnosisCount, runConfiguration.pathogenicityThreshold,
+                output.displayAllVariants, output.outdir, output.outfilePrefix, outputFormats);
     }
 
     protected static Age parseAge(String age) {
