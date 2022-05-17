@@ -15,7 +15,6 @@
         <dependency>
             <groupId>org.monarchinitiative.svart</groupId>
             <artifactId>svart</artifactId>
-            <version>${svart.version}</version>
         </dependency>
         <dependency>
             <groupId>org.monarchinitiative.phenol</groupId>
@@ -32,7 +31,6 @@
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
         </dependency>
         <dependency>
             <groupId>org.freemarker</groupId>
