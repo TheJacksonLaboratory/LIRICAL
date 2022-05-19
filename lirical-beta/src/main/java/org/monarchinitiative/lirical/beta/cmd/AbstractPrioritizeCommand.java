@@ -186,6 +186,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
     protected abstract AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException;
 
     private AnalysisOptions prepareAnalysisOptions(Lirical lirical) {
+        LOGGER.debug("Using uniform pretest disease probabilities.");
         PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(lirical.phenotypeService().diseases());
         return AnalysisOptions.of(runConfiguration.globalAnalysisMode, pretestDiseaseProbability);
     }
