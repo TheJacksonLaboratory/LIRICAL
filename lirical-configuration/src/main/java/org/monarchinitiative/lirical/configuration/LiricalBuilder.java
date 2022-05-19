@@ -6,7 +6,6 @@ import de.charite.compbio.jannovar.data.SerializationException;
 import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunnerImpl;
-import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbabilities;
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbability;
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
@@ -51,7 +50,6 @@ public class LiricalBuilder {
     private GenotypeLrProperties genotypeLrProperties = new GenotypeLrProperties(.8f, .1, false);
     private PhenotypeLikelihoodRatio phenotypeLikelihoodRatio = null;
     private GenotypeLikelihoodRatio genotypeLikelihoodRatio = null;
-    private PretestDiseaseProbability pretestDiseaseProbability = null;
     private PhenotypeService phenotypeService = null;
 
     private VariantMetadataService variantMetadataService = null;
@@ -162,7 +160,6 @@ public class LiricalBuilder {
      */
     @Deprecated(forRemoval = true, since = "2.0.0-SNAPSHOT")
     public LiricalBuilder pretestDiseaseProbability(PretestDiseaseProbability pretestDiseaseProbability) {
-        this.pretestDiseaseProbability = pretestDiseaseProbability;
         return this;
     }
 
@@ -208,12 +205,6 @@ public class LiricalBuilder {
         }
 
         // Lirical analysis runner
-        if (pretestDiseaseProbability == null) {
-            // TODO - remove
-            LOGGER.debug("Using uniform pretest disease probabilities.");
-            pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(phenotypeService.diseases());
-        }
-
         if (phenotypeLikelihoodRatio == null) {
             phenotypeLikelihoodRatio = new PhenotypeLikelihoodRatio(phenotypeService.hpo(), phenotypeService.diseases());
         }
@@ -221,7 +212,7 @@ public class LiricalBuilder {
         if (genotypeLikelihoodRatio == null)
             genotypeLikelihoodRatio = configureGenotypeLikelihoodRatio(backgroundVariantFrequency, genomeBuild, genotypeLrProperties);
 
-        LiricalAnalysisRunner analyzer = LiricalAnalysisRunnerImpl.of(phenotypeService, pretestDiseaseProbability, phenotypeLikelihoodRatio, genotypeLikelihoodRatio);
+        LiricalAnalysisRunner analyzer = LiricalAnalysisRunnerImpl.of(phenotypeService, phenotypeLikelihoodRatio, genotypeLikelihoodRatio);
 
         // Analysis result writer factory
         AnalysisResultWriterFactory analysisResultWriterFactory = new AnalysisResultWriterFactory(phenotypeService.hpo(), phenotypeService.diseases());

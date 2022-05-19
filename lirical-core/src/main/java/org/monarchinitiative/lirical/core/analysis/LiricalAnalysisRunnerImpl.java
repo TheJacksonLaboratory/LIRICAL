@@ -1,6 +1,5 @@
 package org.monarchinitiative.lirical.core.analysis;
 
-import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbability;
 import org.monarchinitiative.lirical.core.likelihoodratio.*;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.service.PhenotypeService;
@@ -19,23 +18,19 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(LiricalAnalysisRunnerImpl.class);
 
     private final PhenotypeService phenotypeService;
-    private final PretestDiseaseProbability pretestDiseaseProbability;
     private final PhenotypeLikelihoodRatio phenotypeLrEvaluator;
     private final GenotypeLikelihoodRatio genotypeLikelihoodRatio;
 
     public static LiricalAnalysisRunnerImpl of(PhenotypeService phenotypeService,
-                                               PretestDiseaseProbability pretestDiseaseProbability,
                                                PhenotypeLikelihoodRatio phenotypeLrEvaluator,
                                                GenotypeLikelihoodRatio genotypeLikelihoodRatio) {
-        return new LiricalAnalysisRunnerImpl(phenotypeService, pretestDiseaseProbability, phenotypeLrEvaluator, genotypeLikelihoodRatio);
+        return new LiricalAnalysisRunnerImpl(phenotypeService, phenotypeLrEvaluator, genotypeLikelihoodRatio);
     }
 
     private LiricalAnalysisRunnerImpl(PhenotypeService phenotypeService,
-                                      PretestDiseaseProbability pretestDiseaseProbability,
                                       PhenotypeLikelihoodRatio phenotypeLrEvaluator,
                                       GenotypeLikelihoodRatio genotypeLikelihoodRatio) {
         this.phenotypeService = Objects.requireNonNull(phenotypeService);
-        this.pretestDiseaseProbability = Objects.requireNonNull(pretestDiseaseProbability);
         this.phenotypeLrEvaluator = Objects.requireNonNull(phenotypeLrEvaluator);
         this.genotypeLikelihoodRatio = Objects.requireNonNull(genotypeLikelihoodRatio);
     }
@@ -45,7 +40,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         Map<TermId, List<Gene2Genotype>> diseaseToGenotype = groupDiseasesByGene(data.genes());
 
         List<TestResult> results = phenotypeService.diseases().hpoDiseases().parallel()
-                .map(disease -> analyzeDisease(data.sampleId(), disease, data.presentPhenotypeTerms(), data.negatedPhenotypeTerms(), options, diseaseToGenotype))
+                .map(disease -> analyzeDisease(disease, data, options, diseaseToGenotype))
                 .flatMap(Optional::stream)
                 .toList();
 
@@ -67,13 +62,11 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         return diseaseToGenotype;
     }
 
-    private Optional<TestResult> analyzeDisease(String sampleId,
-                                                HpoDisease disease,
-                                                List<TermId> observedTerms,
-                                                List<TermId> excludedTerms,
+    private Optional<TestResult> analyzeDisease(HpoDisease disease,
+                                                AnalysisData analysisData,
                                                 AnalysisOptions options,
                                                 Map<TermId, List<Gene2Genotype>> diseaseToGenotype) {
-        Optional<Double> pretestOptional = pretestDiseaseProbability.pretestProbability(disease.id());
+        Optional<Double> pretestOptional = options.pretestDiseaseProbability().pretestProbability(disease.id());
         if (pretestOptional.isEmpty()) {
             LOGGER.warn("Missing pretest probability for {} ({})", disease.diseaseName(), disease.id());
             return Optional.empty();
@@ -83,8 +76,8 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         List<Gene2Genotype> genotypes = diseaseToGenotype.getOrDefault(disease.id(), List.of());
 
         InducedDiseaseGraph idg = InducedDiseaseGraph.create(disease, phenotypeService.hpo());
-        List<LrWithExplanation> observed = observedPhenotypesLikelihoodRatios(observedTerms, idg);
-        List<LrWithExplanation> excluded = excludedPhenotypesLikelihoodRatios(excludedTerms, idg);
+        List<LrWithExplanation> observed = observedPhenotypesLikelihoodRatios(analysisData.presentPhenotypeTerms(), idg);
+        List<LrWithExplanation> excluded = excludedPhenotypesLikelihoodRatios(analysisData.negatedPhenotypeTerms(), idg);
 
         GenotypeLrWithExplanation bestGenotypeLr;
         if (diseaseToGenotype.isEmpty()) {
@@ -92,7 +85,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
             bestGenotypeLr = null;
         } else { // We're using the genotype data
             Optional<GenotypeLrWithExplanation> bestGenotype = genotypes.stream()
-                    .map(g2g -> genotypeLikelihoodRatio.evaluateGenotype(sampleId, g2g, disease.modesOfInheritance()))
+                    .map(g2g -> genotypeLikelihoodRatio.evaluateGenotype(analysisData.sampleId(), g2g, disease.modesOfInheritance()))
                     .max(Comparator.comparingDouble(GenotypeLrWithExplanation::lr));
             if (bestGenotype.isEmpty()) {
                 // This is a disease with no known disease gene.
