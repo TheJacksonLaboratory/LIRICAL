@@ -2,13 +2,11 @@ package org.monarchinitiative.lirical.cli.cmd;
 
 import org.monarchinitiative.lirical.configuration.*;
 import org.monarchinitiative.lirical.core.Lirical;
+import org.monarchinitiative.lirical.core.analysis.*;
+import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbabilities;
+import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbability;
 import org.monarchinitiative.lirical.core.output.*;
 import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
-import org.monarchinitiative.lirical.core.analysis.AnalysisData;
-import org.monarchinitiative.lirical.core.analysis.AnalysisOptions;
-import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
-import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
-import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.lirical.io.LiricalDataException;
@@ -182,7 +180,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
         }
 
         // 3 - run the analysis
-        AnalysisOptions analysisOptions = prepareAnalysisOptions();
+        AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical);
         LOGGER.info("Starting the analysis");
         LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
         AnalysisResults results = analysisRunner.run(analysisData, analysisOptions);
@@ -237,8 +235,9 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
 
     protected abstract AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException;
 
-    protected AnalysisOptions prepareAnalysisOptions() {
-        return new AnalysisOptions(runConfiguration.globalAnalysisMode);
+    private AnalysisOptions prepareAnalysisOptions(Lirical lirical) {
+        PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(lirical.phenotypeService().diseases());
+        return AnalysisOptions.of(runConfiguration.globalAnalysisMode, pretestDiseaseProbability);
     }
 
     protected OutputOptions createOutputOptions() {

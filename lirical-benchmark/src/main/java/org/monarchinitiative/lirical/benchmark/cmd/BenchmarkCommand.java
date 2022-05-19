@@ -7,6 +7,8 @@ import org.monarchinitiative.lirical.configuration.GenotypeLrProperties;
 import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.configuration.LiricalBuilder;
 import org.monarchinitiative.lirical.core.analysis.*;
+import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbabilities;
+import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbability;
 import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
@@ -96,7 +98,7 @@ public class BenchmarkCommand extends AbstractBenchmarkCommand {
 
         // 2 - prepare the simulation input.
         BenchmarkData benchmarkData = prepareBenchmarkData(lirical);
-        AnalysisOptions analysisOptions = prepareAnalysisOptions();
+        AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical);
 
         // 3 - run the analysis.
         LOGGER.info("Starting the analysis: {}", analysisOptions);
@@ -238,8 +240,9 @@ public class BenchmarkCommand extends AbstractBenchmarkCommand {
         };
     }
 
-    protected AnalysisOptions prepareAnalysisOptions() {
-        return new AnalysisOptions(runConfiguration.globalAnalysisMode);
+    private AnalysisOptions prepareAnalysisOptions(Lirical lirical) {
+        PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(lirical.phenotypeService().diseases());
+        return AnalysisOptions.of(runConfiguration.globalAnalysisMode, pretestDiseaseProbability);
     }
 
 
