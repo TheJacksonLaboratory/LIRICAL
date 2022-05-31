@@ -39,10 +39,13 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
     public AnalysisResults run(AnalysisData data, AnalysisOptions options) {
         Map<TermId, List<Gene2Genotype>> diseaseToGenotype = groupDiseasesByGene(data.genes());
 
-        List<TestResult> results = phenotypeService.diseases().hpoDiseases().parallel()
+        ProgressReporter progressReporter = new ProgressReporter();
+        List<TestResult> results = phenotypeService.diseases().hpoDiseases()
                 .map(disease -> analyzeDisease(disease, data, options, diseaseToGenotype))
                 .flatMap(Optional::stream)
+                .peek(d -> progressReporter.log())
                 .toList();
+        progressReporter.summarize();
 
         return AnalysisResults.of(results);
     }

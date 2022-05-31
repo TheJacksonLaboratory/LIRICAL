@@ -279,11 +279,11 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
 
             // Read variants
             LOGGER.info("Reading variants from {}", vcfPath.toAbsolutePath());
-            AtomicInteger counter = new AtomicInteger();
+            ProgressReporter progressReporter = new ProgressReporter();
             List<LiricalVariant> variants = variantParser.variantStream()
-                    .peek(logProgress(counter))
+                    .peek(v -> progressReporter.log())
                     .toList();
-            LOGGER.info("Read {} variants", NF.format(variants.size()));
+            progressReporter.summarize();
 
             // Group variants by Entrez ID.
             Map<GeneIdentifier, List<LiricalVariant>> gene2Genotype = new HashMap<>();
