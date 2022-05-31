@@ -89,7 +89,7 @@ public class JannovarFunctionalVariantAnnotator implements FunctionalVariantAnno
         return ann -> {
             GeneIdentifier id = symbolToGeneId.get(ann.getGeneSymbol());
             if (id == null) {
-                LOGGER.debug("Unknown gene symbol {}", ann.getGeneSymbol());
+                LOGGER.trace("Unknown gene symbol {}", ann.getGeneSymbol());
                 return Optional.empty();
             }
 
