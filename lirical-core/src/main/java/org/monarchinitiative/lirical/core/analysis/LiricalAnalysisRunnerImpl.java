@@ -1,10 +1,13 @@
 package org.monarchinitiative.lirical.core.analysis;
 
 import org.monarchinitiative.lirical.core.likelihoodratio.*;
+import org.monarchinitiative.lirical.core.model.Age;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.service.PhenotypeService;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
+import org.monarchinitiative.phenol.annotations.base.temporal.TemporalInterval;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,9 +108,39 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
             }
         }
 
+        double onsetProbability = 1.;
+
         return Optional.of(TestResult.of(disease.id(), pretestProbability, observed, excluded, bestGenotypeLr));
     }
 
+    /**
+     * p(observed-age-of-investigation given disease)
+     * @param disease The candidate disease diagnosis
+     * @param age
+     * @return
+     */
+    double onsetProb(HpoDisease disease, Age age) {
+        double EPSILON = 1e-8;
+        Optional<TemporalInterval> opt = disease.diseaseOnset();
+        if (opt.isEmpty()) {
+            return 1 - EPSILON;
+        }
+        TemporalInterval interval = opt.get();
+        if (interval.overlapsWith(age)) {
+            return 1 - EPSILON;
+        } else {
+            return EPSILON;
+        }
+    }
+
+    double notOnsetProba(HpoDiseases diseases, Age age) {
+        int M = diseases.size();
+        double p = 0d;
+        for (HpoDisease disease : diseases) {
+            p += onsetProb(disease, age);
+        }
+        return p / M;
+    }
 
     private List<LrWithExplanation> observedPhenotypesLikelihoodRatios(List<TermId> phenotypes, InducedDiseaseGraph idg) {
         return phenotypes.stream()
