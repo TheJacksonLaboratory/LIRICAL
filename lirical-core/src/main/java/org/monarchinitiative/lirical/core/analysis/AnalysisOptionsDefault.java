@@ -4,7 +4,8 @@ import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseasePro
 
 record AnalysisOptionsDefault(
         boolean useGlobal,
-        PretestDiseaseProbability pretestDiseaseProbability
+        PretestDiseaseProbability pretestDiseaseProbability,
+        boolean disregardDiseaseWithNoDeleteriousVariants
 ) implements AnalysisOptions {
 
 }

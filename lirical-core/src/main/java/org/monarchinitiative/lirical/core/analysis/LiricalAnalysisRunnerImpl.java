@@ -1,9 +1,9 @@
 package org.monarchinitiative.lirical.core.analysis;
 
 import org.monarchinitiative.lirical.core.likelihoodratio.*;
+import org.monarchinitiative.lirical.core.model.Gene2Genotype;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.service.PhenotypeService;
-import org.monarchinitiative.lirical.core.model.Gene2Genotype;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -82,27 +82,37 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         List<LrWithExplanation> observed = observedPhenotypesLikelihoodRatios(analysisData.presentPhenotypeTerms(), idg);
         List<LrWithExplanation> excluded = excludedPhenotypesLikelihoodRatios(analysisData.negatedPhenotypeTerms(), idg);
 
-        GenotypeLrWithExplanation bestGenotypeLr;
-        if (diseaseToGenotype.isEmpty()) {
-            // phenotype only
-            bestGenotypeLr = null;
-        } else { // We're using the genotype data
-            Optional<GenotypeLrWithExplanation> bestGenotype = genotypes.stream()
-                    .map(g2g -> genotypeLikelihoodRatio.evaluateGenotype(analysisData.sampleId(), g2g, disease.modesOfInheritance()))
-                    .max(Comparator.comparingDouble(GenotypeLrWithExplanation::lr));
-            if (bestGenotype.isEmpty()) {
-                // This is a disease with no known disease gene.
-                if (options.useGlobal()) {
-                    // If useGlobal is true then the user wants to keep differentials with no associated gene.
-                    // We create the TestResult based solely on the Phenotype data below.
-                    bestGenotypeLr = null;
-                } else {
-                    // If useGlobal is false, we skip this differential because there is no associated gene
-                    return Optional.empty();
+        // The GT LR stays `null` if no genotype data is available.
+        GenotypeLrWithExplanation bestGenotypeLr = null;
+        if (!diseaseToGenotype.isEmpty()) {
+            // The variant/genotype data is available for the individual
+            boolean noPredictedDeleteriousVariantsWereFound = true;
+            for (Gene2Genotype g2g : genotypes) { // Find the gene with the best LR match
+                GenotypeLrWithExplanation candidate = genotypeLikelihoodRatio.evaluateGenotype(analysisData.sampleId(), g2g, disease.modesOfInheritance());
+                bestGenotypeLr = takeNonNullOrGreaterLr(bestGenotypeLr, candidate);
+
+                if (options.disregardDiseaseWithNoDeleteriousVariants()) {
+                    // has at least one pathogenic clinvar variant or predicted pathogenic variant?
+                    if (g2g.pathogenicClinVarCount(analysisData.sampleId()) > 0
+                            || g2g.pathogenicAlleleCount(analysisData.sampleId(), .8f) > 0) {
+                        noPredictedDeleteriousVariantsWereFound = false;
+                    }
                 }
-            } else {
-                bestGenotypeLr = bestGenotype.get();
             }
+
+            if (options.disregardDiseaseWithNoDeleteriousVariants() && noPredictedDeleteriousVariantsWereFound)
+                return Optional.empty();
+
+            /*
+             At this point, the `bestGenotypeLr` is null iff no gene is associated with a disease.
+             If the global mode is on, we keep the differentials with no associated gene. In this case,
+             `bestGenotypeLr` stays null, and it's used downstream.
+
+             However, if the global mode is off, we skip the differential diagnosis as there is no known gene associated
+             with the disease, and we return an empty optional.
+            */
+            if (bestGenotypeLr == null && !options.useGlobal())
+                return Optional.empty();
         }
 
         return Optional.of(TestResult.of(disease.id(), pretestProbability, observed, excluded, bestGenotypeLr));
@@ -119,5 +129,18 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         return phenotypes.stream()
                 .map(phenotype -> phenotypeLrEvaluator.lrForExcludedTerm(phenotype, idg))
                 .toList();
+    }
+
+    /**
+     * Use <code>candidate</code> if <code>base==null</code> or choose the {@link GenotypeLrWithExplanation}
+     * with greater {@link GenotypeLrWithExplanation#lr()} value.
+     */
+    private static GenotypeLrWithExplanation takeNonNullOrGreaterLr(GenotypeLrWithExplanation base,
+                                                                    GenotypeLrWithExplanation candidate) {
+        return base == null
+                ? candidate
+                : base.lr() > candidate.lr()
+                ? base
+                : candidate;
     }
 }
