@@ -47,6 +47,11 @@ public abstract class AbstractBenchmarkCommand implements Callable<Integer> {
                 description = "Global analysis (default: ${DEFAULT-VALUE}).")
         protected boolean globalAnalysisMode = false;
 
+        @CommandLine.Option(names = {"--ddndv"},
+                description = "Disregard a disease if no deleterious variants are found in the gene associated with the disease. "
+                        + "Used only if running with a VCF file. (default: ${DEFAULT-VALUE})")
+        protected boolean disregardDiseaseWithNoDeleteriousVariants = true;
+
         @CommandLine.Option(names = {"-t", "--threshold"},
                 description = "Minimum post-test probability to show diagnosis in HTML output. The value should range between [0,1].")
         protected Double lrThreshold = null;

@@ -58,6 +58,11 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
                 description = "Global analysis (default: ${DEFAULT-VALUE}).")
         public boolean globalAnalysisMode = false;
 
+        @CommandLine.Option(names = {"--ddndv"},
+                description = "Disregard a disease if no deleterious variants are found in the gene associated with the disease. "
+                        + "Used only if running with a VCF file. (default: ${DEFAULT-VALUE})")
+        protected boolean disregardDiseaseWithNoDeleteriousVariants = true;
+
         @CommandLine.Option(names = {"-t", "--threshold"},
                 description = "Minimum post-test probability to show diagnosis in HTML output. The value should range between [0,1].")
         public Double lrThreshold = null;
@@ -188,7 +193,7 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
     private AnalysisOptions prepareAnalysisOptions(Lirical lirical) {
         LOGGER.debug("Using uniform pretest disease probabilities.");
         PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(lirical.phenotypeService().diseases());
-        return AnalysisOptions.of(runConfiguration.globalAnalysisMode, pretestDiseaseProbability);
+        return AnalysisOptions.of(runConfiguration.globalAnalysisMode, pretestDiseaseProbability, runConfiguration.disregardDiseaseWithNoDeleteriousVariants);
     }
 
     protected abstract AnalysisResultsMetadata.Builder fillDataSection(AnalysisResultsMetadata.Builder builder);
