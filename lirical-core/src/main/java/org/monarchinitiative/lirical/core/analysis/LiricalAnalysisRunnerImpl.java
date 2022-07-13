@@ -94,7 +94,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
                 if (options.disregardDiseaseWithNoDeleteriousVariants()) {
                     // has at least one pathogenic clinvar variant or predicted pathogenic variant?
                     if (g2g.pathogenicClinVarCount(analysisData.sampleId()) > 0
-                            || g2g.pathogenicAlleleCount(analysisData.sampleId(), .8f) > 0) {
+                            || g2g.pathogenicAlleleCount(analysisData.sampleId(), options.pathogenicityThreshold()) > 0) {
                         noPredictedDeleteriousVariantsWereFound = false;
                     }
                 }

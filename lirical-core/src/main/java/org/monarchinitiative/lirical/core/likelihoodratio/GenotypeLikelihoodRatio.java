@@ -19,7 +19,6 @@ import static org.monarchinitiative.phenol.constants.hpo.HpoModeOfInheritanceTer
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-// TODO - needs to become an interface
 public class GenotypeLikelihoodRatio {
     private static final Logger logger = LoggerFactory.getLogger(GenotypeLikelihoodRatio.class);
     /** A heuristic to downweight an  disease by a factor of 1/10 if the number of predicted pathogenic alleles in
@@ -59,11 +58,10 @@ public class GenotypeLikelihoodRatio {
      * @param options genotype LR options
      */
     public GenotypeLikelihoodRatio(BackgroundVariantFrequencyService backgroundVariantFrequencyService, Options options) {
-        this.backgroundVariantFrequencyService = backgroundVariantFrequencyService;
-        Objects.requireNonNull(options);
+        this.backgroundVariantFrequencyService = Objects.requireNonNull(backgroundVariantFrequencyService);
         this.recessivePoissonDistribution = new PoissonDistribution(2.0);
         this.dominantPoissonDistribution = new PoissonDistribution(1.0);
-        this.strict = options.strict;
+        this.strict = Objects.requireNonNull(options).strict;
         this.pathogenicityThreshold = options.pathogenicityThreshold;
     }
 

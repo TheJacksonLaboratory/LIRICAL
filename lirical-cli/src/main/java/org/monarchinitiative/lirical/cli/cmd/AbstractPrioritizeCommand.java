@@ -243,7 +243,10 @@ abstract class AbstractPrioritizeCommand implements Callable<Integer> {
     private AnalysisOptions prepareAnalysisOptions(Lirical lirical) {
         LOGGER.debug("Using uniform pretest disease probabilities.");
         PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(lirical.phenotypeService().diseases());
-        return AnalysisOptions.of(runConfiguration.globalAnalysisMode, pretestDiseaseProbability, runConfiguration.disregardDiseaseWithNoDeleteriousVariants);
+        return AnalysisOptions.of(runConfiguration.globalAnalysisMode,
+                pretestDiseaseProbability,
+                runConfiguration.disregardDiseaseWithNoDeleteriousVariants,
+                runConfiguration.pathogenicityThreshold);
     }
 
     protected OutputOptions createOutputOptions() {
