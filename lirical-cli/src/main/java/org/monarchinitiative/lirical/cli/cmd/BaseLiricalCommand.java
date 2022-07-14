@@ -144,7 +144,7 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
     }
 
     /**
-     * Build {@link Lirical} based on {@link #dataSection} and {@link #runConfiguration} sections.
+     * Build {@link Lirical} based on {@link DataSection} and {@link RunConfiguration} sections.
      */
     protected Lirical bootstrapLirical() throws LiricalDataException {
         LOGGER.info("Spooling up Lirical v{}", LIRICAL_VERSION);

@@ -1,6 +1,16 @@
 =========
 Changelog
 =========
+
+-------------------
+v2.0.0 (TBD)
+-------------------
+- Require Java 17
+- Prune and split codebase into several Maven modules
+- Enhance HTML report
+- Add ``prioritize`` command for running LIRICAL entirely from CLI
+- Add support for phenopacket schema ``v2``
+
 -------------------
 v1.3.3 (2021-05-14)
 -------------------
