@@ -20,7 +20,9 @@ import java.util.concurrent.Callable;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 
-@CommandLine.Command(name = "download", aliases = {"D"},
+@CommandLine.Command(name = "download",
+        aliases = {"D"},
+        sortOptions = false,
         mixinStandardHelpOptions = true,
         description = "Download files for LIRICAL")
 public class DownloadCommand implements Callable<Integer>{

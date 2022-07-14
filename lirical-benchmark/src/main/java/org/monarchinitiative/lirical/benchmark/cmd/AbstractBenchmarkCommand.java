@@ -113,6 +113,4 @@ public abstract class AbstractBenchmarkCommand implements Callable<Integer> {
         return 0;
     }
 
-    protected record BenchmarkData(TermId diseaseId, AnalysisData analysisData) {
-    }
 }

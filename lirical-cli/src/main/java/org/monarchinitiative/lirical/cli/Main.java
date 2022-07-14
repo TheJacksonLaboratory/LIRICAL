@@ -31,7 +31,8 @@ public class Main implements Callable<Integer> {
                 .addSubcommand("download", new DownloadCommand())
                 .addSubcommand("prioritize", new PrioritizeCommand())
                 .addSubcommand("phenopacket", new PhenopacketCommand())
-                .addSubcommand("yaml", new YamlCommand());
+                .addSubcommand("yaml", new YamlCommand())
+                .addSubcommand("benchmark", new BenchmarkCommand());
         cline.setToggleBooleanFlags(false);
         long startTime = System.currentTimeMillis();
         int exitCode = cline.execute(args);
