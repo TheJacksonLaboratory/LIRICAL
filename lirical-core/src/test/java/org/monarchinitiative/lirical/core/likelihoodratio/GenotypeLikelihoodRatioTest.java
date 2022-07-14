@@ -13,8 +13,8 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
-import static org.monarchinitiative.phenol.constants.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_DOMINANT;
-import static org.monarchinitiative.phenol.constants.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE;
+import static org.monarchinitiative.phenol.annotations.constants.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_DOMINANT;
+import static org.monarchinitiative.phenol.annotations.constants.hpo.HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE;
 
 public class GenotypeLikelihoodRatioTest {
 

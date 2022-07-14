@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.core.likelihoodratio;
 
-import org.monarchinitiative.phenol.constants.hpo.HpoSubOntologyRootTermIds;
+import org.monarchinitiative.phenol.annotations.constants.hpo.HpoSubOntologyRootTermIds;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 /**
