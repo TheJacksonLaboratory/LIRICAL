@@ -10,16 +10,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Stream;
 
 public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
-
-    // An equivalent of CaseEvaluator
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiricalAnalysisRunnerImpl.class);
 
     private final PhenotypeService phenotypeService;
     private final PhenotypeLikelihoodRatio phenotypeLrEvaluator;
     private final GenotypeLikelihoodRatio genotypeLikelihoodRatio;
+    private final ForkJoinPool pool;
 
     public static LiricalAnalysisRunnerImpl of(PhenotypeService phenotypeService,
                                                PhenotypeLikelihoodRatio phenotypeLrEvaluator,
@@ -33,6 +35,9 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         this.phenotypeService = Objects.requireNonNull(phenotypeService);
         this.phenotypeLrEvaluator = Objects.requireNonNull(phenotypeLrEvaluator);
         this.genotypeLikelihoodRatio = Objects.requireNonNull(genotypeLikelihoodRatio);
+        int parallelism = Runtime.getRuntime().availableProcessors();
+        LOGGER.debug("Creating LIRICAL pool with {} workers.", parallelism);
+        this.pool = new ForkJoinPool(parallelism, LiricalWorkerThread::new, null, false);
     }
 
     @Override
@@ -40,14 +45,20 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         Map<TermId, List<Gene2Genotype>> diseaseToGenotype = groupDiseasesByGene(data.genes());
 
         ProgressReporter progressReporter = new ProgressReporter(1_000, "diseases");
-        List<TestResult> results = phenotypeService.diseases().hpoDiseases()
+        Stream<TestResult> testResultStream = phenotypeService.diseases().hpoDiseases()
+                .parallel() // why not?
                 .peek(d -> progressReporter.log())
                 .map(disease -> analyzeDisease(disease, data, options, diseaseToGenotype))
-                .flatMap(Optional::stream)
-                .toList();
-        progressReporter.summarize();
+                .flatMap(Optional::stream);
 
-        return AnalysisResults.of(results);
+        try {
+            List<TestResult> results = pool.submit(testResultStream::toList).get();
+            progressReporter.summarize();
+            return AnalysisResults.of(results);
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.error(e.getMessage(), e);
+            return AnalysisResults.empty();
+        }
     }
 
     private Map<TermId, List<Gene2Genotype>> groupDiseasesByGene(GenesAndGenotypes genes) {
