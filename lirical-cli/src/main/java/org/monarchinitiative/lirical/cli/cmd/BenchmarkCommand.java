@@ -141,7 +141,7 @@ public class BenchmarkCommand extends BaseLiricalCommand {
         try (VariantParser variantParser = lirical.variantParserFactory().get().forPath(vcfPath)) {
             // Read variants
             LOGGER.info("Reading background variants from {}.", vcfPath.toAbsolutePath());
-            ProgressReporter progressReporter = new ProgressReporter();
+            ProgressReporter progressReporter = new ProgressReporter(10_000, "variants");
             List<LiricalVariant> variants = variantParser.variantStream()
                     .peek(v -> progressReporter.log())
                     .toList();
