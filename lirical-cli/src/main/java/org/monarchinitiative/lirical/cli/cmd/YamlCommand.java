@@ -23,19 +23,19 @@ import java.nio.file.Path;
         aliases = {"Y"},
         sortOptions = false,
         mixinStandardHelpOptions = true,
-        description = "Run LIRICAL from YAML file")
+        description = "Run LIRICAL from a YAML file.")
 public class YamlCommand extends AnalysisDataParserAwareCommand {
     private static final Logger LOGGER = LoggerFactory.getLogger(YamlCommand.class);
 
     @CommandLine.Option(names = {"-y","--yaml"},
             required = true,
             description = "Path to YAML configuration file.")
-    private Path yamlPath;
+    public Path yamlPath;
 
     @CommandLine.Option(names = {"--assembly"},
             paramLabel = "{hg19,hg38}",
             description = "Genome build (default: ${DEFAULT-VALUE}).")
-    private String genomeBuild = "hg38";
+    public String genomeBuild = "hg38";
 
     @Override
     protected String getGenomeBuild() {

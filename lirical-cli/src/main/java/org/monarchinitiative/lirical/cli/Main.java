@@ -1,25 +1,30 @@
 package org.monarchinitiative.lirical.cli;
 
-
-
 import org.monarchinitiative.lirical.cli.cmd.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
 
+import static picocli.CommandLine.Help.Ansi.Style.*;
 
-/**
- * The CLI driver class.
- * @author Peter Robinson
- * @version 1.3.1 (2020-08-13)
- */
-
-@CommandLine.Command(name = "java -jar lirical-cli.jar", mixinStandardHelpOptions = true,
-        version = "1.3.4",
-        description = "LIkelihood Ratio Interpretation of Clinical AbnormaLities")
+@CommandLine.Command(name = "java -jar lirical-cli.jar",
+        header = "LIkelihood Ratio Interpretation of Clinical AbnormaLities\n",
+        mixinStandardHelpOptions = true,
+        usageHelpWidth = Main.WIDTH,
+        version = Main.VERSION,
+        footer = Main.FOOTER)
 public class Main implements Callable<Integer> {
+
+    public static final String VERSION = "lirical-cli v2.0.0-SNAPSHOT";
+    public static final int WIDTH = 120;
+    public static final String FOOTER = "\nSee the full documentation at https://lirical.readthedocs.io/en/master";
+
+    private static final CommandLine.Help.ColorScheme COLOR_SCHEME = new CommandLine.Help.ColorScheme.Builder()
+            .commands(bold, fg_blue, underline)
+            .options(fg_yellow)
+            .parameters(fg_yellow)
+            .optionParams(italic)
+            .build();
 
     public static void main(String[] args) {
         if (args.length == 0) {
@@ -28,6 +33,7 @@ public class Main implements Callable<Integer> {
         }
 
         CommandLine cline = new CommandLine(new Main())
+                .setColorScheme(COLOR_SCHEME)
                 .addSubcommand("download", new DownloadCommand())
                 .addSubcommand("prioritize", new PrioritizeCommand())
                 .addSubcommand("phenopacket", new PhenopacketCommand())

@@ -24,7 +24,7 @@ import java.util.concurrent.Callable;
         aliases = {"D"},
         sortOptions = false,
         mixinStandardHelpOptions = true,
-        description = "Download files for LIRICAL")
+        description = "Download files for LIRICAL.")
 public class DownloadCommand implements Callable<Integer>{
     private static final Logger logger = LoggerFactory.getLogger(DownloadCommand.class);
 
