@@ -13,7 +13,6 @@
         <module>lirical-exomiser-db-adapter</module>
         <module>lirical-configuration</module>
         <module>lirical-cli</module>
-        <module>lirical-benchmark</module>
         <module>lirical-background</module>
         <module>lirical-beta</module>
     </modules>
