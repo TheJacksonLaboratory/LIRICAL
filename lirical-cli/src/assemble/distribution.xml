@@ -1,0 +1,29 @@
+<assembly xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+    <id>distribution</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <fileSets>
+        <fileSet>
+            <directory>${project.parent.basedir}</directory>
+            <outputDirectory>./</outputDirectory>
+            <filtered>true</filtered>
+            <includes>
+                <include>README.md</include>
+                <include>LICENSE</include>
+                <include>CHANGELOG.rst</include>
+                <include>legal/**</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}</directory>
+            <outputDirectory>./</outputDirectory>
+            <includes>
+                <include>lirical-cli-${version}.jar</include>
+                <include>lib/</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>
