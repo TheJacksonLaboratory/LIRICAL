@@ -3,10 +3,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.monarchinitiative</groupId>
+    <groupId>org.monarchinitiative.lirical</groupId>
     <artifactId>LIRICAL</artifactId>
-    <version>1.3.4</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
+    <version>2.0.0-RC1</version>
+    <modules>
+        <module>lirical-core</module>
+        <module>lirical-io</module>
+        <module>lirical-exomiser-db-adapter</module>
+        <module>lirical-configuration</module>
+        <module>lirical-cli</module>
+        <module>lirical-background</module>
+    </modules>
 
     <name>LIRICAL</name>
     <url>https://github.com/TheJacksonLaboratory/LIRICAL/</url>
@@ -14,694 +22,296 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>8</java.version>
+        <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <junit.version>5.8.1</junit.version>
-        <phenol.version>1.6.3</phenol.version>
-        <exomiser.version>12.1.0</exomiser.version>
-        <phenopacket.version>1.0.0</phenopacket.version>
-        <slf4j.version>1.7.30</slf4j.version>
+        <phenol.version>2.0.0-RC4</phenol.version>
+        <svart.version>2.0.0-RC1</svart.version>
+        <jannovar.version>0.35</jannovar.version>
+<!--        <h2.version>1.4.197</h2.version> &lt;!&ndash; This is what Exomiser uses currently &ndash;&gt;-->
+        <h2.version>1.4.200</h2.version>
+        <htsjdk.version>2.24.1</htsjdk.version>
+        <jackson.version>2.13.3</jackson.version>
+        <phenopacket.version>2.0.0</phenopacket.version>
+        <protobuf.version>3.19.4</protobuf.version>
+
+        <junit-jupiter.version>5.8.2</junit-jupiter.version>
+        <slf4j.version>1.7.32</slf4j.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.monarchinitiative.svart</groupId>
+                <artifactId>svart</artifactId>
+                <version>${svart.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.monarchinitiative.phenol</groupId>
+                <artifactId>phenol-core</artifactId>
+                <version>${phenol.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.monarchinitiative.phenol</groupId>
+                <artifactId>phenol-annotations</artifactId>
+                <version>${phenol.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.monarchinitiative.phenol</groupId>
+                <artifactId>phenol-io</artifactId>
+                <version>${phenol.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.charite.compbio</groupId>
+                <artifactId>jannovar-core</artifactId>
+                <version>${jannovar.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.phenopackets</groupId>
+                <artifactId>phenopacket-schema</artifactId>
+                <version>${phenopacket.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.samtools</groupId>
+                <artifactId>htsjdk</artifactId>
+                <version>${htsjdk.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2-mvstore</artifactId>
+                <version>${h2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>info.picocli</groupId>
+                <artifactId>picocli</artifactId>
+                <version>4.6.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.freemarker</groupId>
+                <artifactId>freemarker</artifactId>
+                <version>2.3.31</version>
+            </dependency>
+            <dependency>
+                <groupId>org.monarchinitiative.biodownload</groupId>
+                <artifactId>biodownload</artifactId>
+                <version>1.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.11.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>1.21</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-csv</artifactId>
+                <version>1.9.0</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>2.6</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-guava</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jsonSchema</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>30.1-jre</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apiguardian</groupId>
+                <artifactId>apiguardian-api</artifactId>
+                <version>1.1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.2.11</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit-jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>4.4.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-core</artifactId>
+                <version>2.2</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.freemarker</groupId>
-            <artifactId>freemarker</artifactId>
-            <version>2.3.31</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.monarchinitiative.exomiser</groupId>
-            <artifactId>exomiser-core</artifactId>
-            <version>${exomiser.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>ontologizer</groupId>
-                    <artifactId>ontologizer</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>de.sonumina</groupId>
-                    <artifactId>javautil</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.protobuf</groupId>
-                    <artifactId>protobuf-java</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.protobuf</groupId>
-                    <artifactId>protobuf-java-util</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.dataformat</groupId>
-                    <artifactId>jackson-dataformat-protobuf</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.dataformat</groupId>
-                    <artifactId>jackson-dataformat-yaml</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-net</groupId>
-                    <artifactId>commons-net</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.errorprone</groupId>
-                    <artifactId>error_prone_annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.samtools</groupId>
-                    <artifactId>htsjdk</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>jcl-over-slf4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-slf4j18-impl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-compress</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.github.samtools/htsjdk -->
-        <dependency>
-            <groupId>com.github.samtools</groupId>
-            <artifactId>htsjdk</artifactId>
-            <version>2.24.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.tukaani</groupId>
-                    <artifactId>xz</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-compress</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl-->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.14.1</version>
-        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
-      </dependency>
-
-
-       <dependency>
-           <groupId>org.monarchinitiative.phenol</groupId>
-           <artifactId>phenol-io</artifactId>
-           <version>${phenol.version}</version>
-           <exclusions>
-               <exclusion>
-                   <groupId>org.slf4j</groupId>
-                   <artifactId>slf4j-api</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>com.fasterxml.jackson.core</groupId>
-                   <artifactId>jackson-core</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>com.fasterxml.jackson.core</groupId>
-                   <artifactId>jackson-databind</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>org.yaml</groupId>
-                   <artifactId>snakeyaml</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>org.tukaani</groupId>
-                   <artifactId>xz</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>com.google.errorprone</groupId>
-                   <artifactId>error_prone_annotations</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>org.apache.logging.log4j</groupId>
-                   <artifactId>log4j-slf4j18-impl</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>org.slf4j</groupId>
-                   <artifactId>slf4j-api</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>org.slf4j</groupId>
-                   <artifactId>jcl-over-slf4j</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>com.google.guava</groupId>
-                   <artifactId>guava</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>com.h2database</groupId>
-                   <artifactId>h2</artifactId>
-               </exclusion>
-           </exclusions>
-       </dependency>
-
-        <dependency>
-            <groupId>org.monarchinitiative.phenol</groupId>
-            <artifactId>phenol-annotations</artifactId>
-            <version>${phenol.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/de.charite.compbio/Jannovar -->
-        <dependency>
-            <groupId>de.charite.compbio</groupId>
-            <artifactId>Jannovar</artifactId>
-            <version>0.36</version>
-            <type>pom</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-           <groupId>org.monarchinitiative.phenol</groupId>
-           <artifactId>phenol-core</artifactId>
-           <version>${phenol.version}</version>
-           <exclusions>
-               <exclusion>
-                   <groupId>org.slf4j</groupId>
-                   <artifactId>slf4j-api</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>org.apache.logging.log4j</groupId>
-                   <artifactId>log4j-slf4j18-impl</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>org.slf4j</groupId>
-                   <artifactId>slf4j-api</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>org.slf4j</groupId>
-                   <artifactId>jcl-over-slf4j</artifactId>
-               </exclusion>
-               <exclusion>
-                   <groupId>com.google.guava</groupId>
-                   <artifactId>guava</artifactId>
-               </exclusion>
-           </exclusions>
-       </dependency>
-
-       <!--    note that the Jannovar dependency does not need to be explicitly entered here, we are getting it
-       from the Exomiser dependency. -->
-
-        <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>3.18.0</version>
         </dependency>
         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java-util</artifactId>
-            <version>3.18.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.apiguardian</groupId>
+            <artifactId>apiguardian-api</artifactId>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.tukaani/xz
-          XZ data compression in pure Java. We just use this (indirectly) in some test cases.
-         -->
-        <dependency>
-            <groupId>org.tukaani</groupId>
-            <artifactId>xz</artifactId>
-            <version>1.9</version>
-        </dependency>
-
-
-        <!-- https://mvnrepository.com/artifact/org.phenopackets/phenopacket-schema -->
-        <dependency>
-            <groupId>org.phenopackets</groupId>
-            <artifactId>phenopacket-schema</artifactId>
-            <version>${phenopacket.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.protobuf</groupId>
-                    <artifactId>protobuf-java</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.dataformat</groupId>
-                    <artifactId>jackson-dataformat-protobuf</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.dataformat</groupId>
-                    <artifactId>jackson-dataformat-yaml</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.yaml</groupId>
-                    <artifactId>snakeyaml</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.errorprone</groupId>
-                    <artifactId>error_prone_annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-slf4j18-impl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-collections</groupId>
-                    <artifactId>commons-collections</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>-com.google.protobuf</groupId>
-                    <artifactId>protobuf-java-util</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-
-        <!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
-        <dependency>
-            <groupId>commons-net</groupId>
-            <artifactId>commons-net</artifactId>
-            <version>3.8.0</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.h2database/h2-mvstore -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2-mvstore</artifactId>
-            <version>1.4.200</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/info.picocli/picocli -->
-        <dependency>
-            <groupId>info.picocli</groupId>
-            <artifactId>picocli</artifactId>
-            <version>4.6.1</version>
-        </dependency>
-
-
-        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter-api</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-
-
-
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>3.8.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter-api</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple -->
         <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.12.1</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>30.1.1-jre</version>
-        </dependency>
-
-
-        <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/versions-maven-plugin
-        -
-        mvn versions:display-dependency-updates-->
-        <dependency>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>versions-maven-plugin</artifactId>
-            <version>2.8.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.maven.doxia</groupId>
-                    <artifactId>doxia-site-renderer</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.maven.doxia</groupId>
-                    <artifactId>doxia-sink-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.maven</groupId>
-                    <artifactId>maven-plugin-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.maven</groupId>
-                    <artifactId>maven-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.maven.wagon</groupId>
-                    <artifactId>wagon-provider-api</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>release</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <build>
-        <finalName>LIRICAL</finalName>
-        <sourceDirectory>src/main/java</sourceDirectory>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/resources/template</directory>
-            </resource>
-            <resource>
-                <directory>src/test/resources/yaml</directory>
-            </resource>
-            <resource>
-                <directory>src/test/resources/phenopacket</directory>
-            </resource>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.yml</include>
-                    <include>**/*.ftl</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.xml</include>
-                    <include>**/*.properties</include>
-                </includes>
-            </resource>
-        </resources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.1</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.0.0-M5</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <configuration>
+                        <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+                        <doclint>none</doclint>
+                        <quiet>true</quiet>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- mvn versions:display-plugin-updates -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>2.8.1</version>
+                    <configuration>
+                        <generateBackupPoms>false</generateBackupPoms>
+                    </configuration>
+                </plugin>
 
+            </plugins>
+        </pluginManagement>
         <plugins>
-            <!-- mvn versions:display-plugin-updates -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.8.1</version>
-                <configuration>
-                    <generateBackupPoms>false</generateBackupPoms>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                     <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <!--  <release>1.8</release> -->
-                 </configuration>
-             </plugin>
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-jar-plugin</artifactId>
-                 <version>3.2.0</version>
-                 <configuration>
-                     <archive>
-                         <index>true</index>
-                         <manifest>
-                             <addClasspath>true</addClasspath>
-                             <useUniqueVersions>false</useUniqueVersions>
-                             <mainClass>org.monarchinitiative.lirical.Lirical</mainClass>
-                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                         </manifest>
-                     </archive>
-                 </configuration>
-             </plugin>
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-dependency-plugin</artifactId>
-                 <version>3.1.2</version>
-                 <executions>
-                     <execution>
-                         <id>copy-dependencies</id>
-                         <phase>package</phase>
-                         <goals>
-                             <goal>copy-dependencies</goal>
-                         </goals>
-                         <configuration>
-                             <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                             <overWriteReleases>false</overWriteReleases>
-                             <overWriteSnapshots>false</overWriteSnapshots>
-                             <overWriteIfNewer>true</overWriteIfNewer>
-                         </configuration>
-                     </execution>
-                 </executions>
-             </plugin>
-             <plugin>
-                 <artifactId>maven-resources-plugin</artifactId>
-                 <version>3.2.0</version>
-                 <executions>
-                     <execution>
-                         <id>copy-resources</id>
-                         <phase>validate</phase>
-                         <goals>
-                             <goal>copy-resources</goal>
-                         </goals>
-                         <configuration>
-                             <outputDirectory>${project.build.directory}/distribution-resources</outputDirectory>
-                             <resources>
-                                 <resource>
-                                     <directory>src/main/resources</directory>
-                                     <filtering>true</filtering>
-                                     <includes>
-                                         <include>log4j2.xml</include>
-                                         <include>*.ftl</include>
-                                         <include>*</include>
-                                     </includes>
-                                 </resource>
-                                 <resource>
-                                     <directory>src/main/resources/background</directory>
-                                     <filtering>true</filtering>
-                                     <includes>
-                                         <include>*.tsv</include>
-                                     </includes>
-                                 </resource>
-                             </resources>
-                         </configuration>
-                     </execution>
-                 </executions>
-             </plugin>
-
-            <plugin>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0-M3</version>
-                <executions>
-                    <execution>
-                        <id>default-cli</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <banDuplicateClasses/>
-                            </rules>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>enforce-maven</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireMavenVersion>
-                                    <version>3.4</version>
-                                </requireMavenVersion>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-shade-plugin</artifactId>
-                 <version>3.2.4</version>
-                 <configuration>
-                     <createDependencyReducedPom>false</createDependencyReducedPom>
-                     <filters>
-                         <filter>
-                             <artifact>*:*</artifact>
-                             <excludes>
-                                 <exclude>**/Log4j2Plugins.dat</exclude>
-                             </excludes>
-                         </filter>
-                     </filters>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <phase>package</phase>
-                         <goals>
-                             <goal>shade</goal>
-                         </goals>
-                         <configuration>
-                             <transformers>
-                                 <transformer
-                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                     <mainClass>org.monarchinitiative.lirical.Lirical</mainClass>
-                                 </transformer>
-                             </transformers>
-                         </configuration>
-                     </execution>
-                 </executions>
-             </plugin>
-
-
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-javadoc-plugin</artifactId>
-                 <version>3.2.0</version>
-                 <configuration>
-                     <show>private</show>
-                     <nohelp>false</nohelp>
-                 </configuration>
-             </plugin>
-
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M5</version>
-            </plugin>
-
-             <plugin>
-                 <groupId>org.jacoco</groupId>
-                 <artifactId>jacoco-maven-plugin</artifactId>
-                 <version>0.8.6</version>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>prepare-agent</goal>
-                         </goals>
-                     </execution>
-                     <!-- attached to Maven test phase -->
-                    <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

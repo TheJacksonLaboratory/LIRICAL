@@ -74,8 +74,7 @@ that of the Exomiser YAML format, but some fields, such as negated HPO terms, as
 .. toctree::
     :maxdepth: 1
 
-    Running LIRICAL with a YAML file (only HPO data) <yaml-hpo>
-    Running LIRICAL with a YAML file (VCF and HPO data) <yaml-vcf>
+    Running LIRICAL with a YAML file <yaml>
 
 
 Choosing between YAML and Phenopacket input formats

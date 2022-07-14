@@ -18,3 +18,5 @@ dependency-reduced-pom.xml
 .settings
 .project
 .classpath
+
+docs/_build/

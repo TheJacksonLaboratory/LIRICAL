@@ -1,20 +1,22 @@
 .. _rstphenopackethpo:
 
+=======================================
 Running LIRICAL with a Phenopacket file
 =======================================
+
 LIRICAL can be run with clinical data (HPO terms) only or with clinical data and a VCF file representing the
 results of gene panel, exome, or genome sequencing. The prefered input format is
-`Phenopackets <https://github.com/phenopackets>`_, an open standard for sharing disease and phenotype information.
+`Phenopackets`_, an open standard for sharing disease and phenotype information.
 This is a new standard of the `Global Alliance for Genomics and Health <https://www.ga4gh.org/>`_ that
 links detailed phenotype descriptions with disease, patient, and genetic information (The
-other allowed input format is YAML. See :ref:`rstyaml-vcf`).
+other allowed input format is YAML. See :ref:`rstyaml`).
 
 
 Preparing Phenopacket-formatted data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-See the `Phenopackets <https://phenopackets-schema.readthedocs.io/en/latest/>`_ website for details on the format. LIRICAL expects
+See the `phenopackets`_ website for details on the format. LIRICAL expects
 the Phenopacket to be in JSON format. The following example shows a phenopacket
 representing an individual with `Pfeiffer syndrome <https://omim.org/entry/101600>`_. ::
 
@@ -142,6 +144,7 @@ Directory into which to write output file(s).
 ::
 
      --tsv
+
 Use TSV instead of HTML output (Default: false).
 
 
@@ -156,3 +159,5 @@ Output
 
 
 See :ref:`rstoutput` for details on the HTML and TSV output files.
+
+.. _phenopackets: https://phenopackets-schema.readthedocs.io/en/latest

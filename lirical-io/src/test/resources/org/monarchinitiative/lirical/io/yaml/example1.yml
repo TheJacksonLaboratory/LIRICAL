@@ -1,0 +1,5 @@
+## LIRICAL Analysis Template.
+# These are all the possible options for running LIRICAL. Use this as a template for
+# your own set-up.
+---
+hpoIds: ['HP:0001156', 'HP:0001363', 'HP:0011304', 'HP:0010055']

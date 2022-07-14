@@ -1,0 +1,10 @@
+
+  _     ___ ____  ___ ____    _    _
+ | |   |_ _|  _ \|_ _/ ___|  / \  | |
+ | |    | || |_) || | |     / _ \ | |
+ | |___ | ||  _ < | | |___ / ___ \| |___
+ |_____|___|_| \_\___\____/_/   \_\_____|
+
+LIkelihood Ratio Interpretation of Clinical AbnormaLities
+                                    :: v@project.version@ ::
+
