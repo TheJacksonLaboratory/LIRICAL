@@ -23,7 +23,6 @@ import java.util.*;
  * database and calculates the likelihood ratio for each HPO term in the query for each of the diseases.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-// TODO - should be an interface
 public class PhenotypeLikelihoodRatio {
     private static final Logger logger = LoggerFactory.getLogger(PhenotypeLikelihoodRatio.class);
     // TODO - the constants below should be parameters?

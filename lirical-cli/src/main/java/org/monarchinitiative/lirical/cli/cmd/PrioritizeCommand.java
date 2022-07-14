@@ -18,7 +18,7 @@ import java.util.Optional;
         aliases = {"R"},
         sortOptions = false,
         mixinStandardHelpOptions = true,
-        description = "Prioritize diseases based on observed/negated phenotype terms and a VCF file.")
+        description = "Run LIRICAL from CLI arguments.")
 public class PrioritizeCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"-p", "--observed-phenotypes"},
@@ -32,7 +32,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
     @CommandLine.Option(names = {"--assembly"},
             paramLabel = "{hg19,hg38}",
             description = "Genome build (default: ${DEFAULT-VALUE}).")
-    protected String genomeBuild = "hg38";
+    public String genomeBuild = "hg38";
 
     @CommandLine.Option(names = {"--vcf"},
             description = "Path to VCF file (optional).")

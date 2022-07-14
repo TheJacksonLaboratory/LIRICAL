@@ -1,11 +1,10 @@
 package org.monarchinitiative.lirical.core.likelihoodratio;
 
+import org.monarchinitiative.phenol.annotations.constants.hpo.HpoModeOfInheritanceTermIds;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.Objects;
-
-import static org.monarchinitiative.phenol.constants.hpo.HpoModeOfInheritanceTermIds.*;
 
 
 public class GenotypeLrWithExplanation  {
@@ -45,7 +44,7 @@ public class GenotypeLrWithExplanation  {
 
     static GenotypeLrWithExplanation explainPathCountAboveLambdaB(GeneIdentifier geneId, double ratio, TermId MoI, double lambda_background, double observedWeightedPathogenicVariantCount) {
         int lambda_disease = 1;
-        if (MoI.equals(AUTOSOMAL_RECESSIVE) || MoI.equals(X_LINKED_RECESSIVE)) {
+        if (MoI.equals(HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE) || MoI.equals(HpoModeOfInheritanceTermIds.X_LINKED_RECESSIVE)) {
             lambda_disease = 2;
         }
         String expl = String.format("log<sub>10</sub>(LR)=%.3f. %s. Heuristic for high number of observed predicted pathogenic variants. "
@@ -56,7 +55,7 @@ public class GenotypeLrWithExplanation  {
 
     static GenotypeLrWithExplanation explanation(GeneIdentifier geneId, double ratio, TermId modeOfInh, double lambda_b, double D, double B, double observedWeightedPathogenicVariantCount) {
         int lambda_disease = 1;
-        if (modeOfInh.equals(AUTOSOMAL_RECESSIVE) || modeOfInh.equals(X_LINKED_RECESSIVE)) {
+        if (modeOfInh.equals(HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE) || modeOfInh.equals(HpoModeOfInheritanceTermIds.X_LINKED_RECESSIVE)) {
             lambda_disease = 2;
         }
         String msg = String.format("P(G|D)=%.4f. P(G|&#172;D)=%.4f", D, B);
@@ -66,13 +65,13 @@ public class GenotypeLrWithExplanation  {
     }
 
     private static String getMoIString(TermId MoI) {
-        if (MoI.equals(AUTOSOMAL_DOMINANT)) {
+        if (MoI.equals(HpoModeOfInheritanceTermIds.AUTOSOMAL_DOMINANT)) {
             return " Mode of inheritance: autosomal dominant";
-        } else if (MoI.equals(AUTOSOMAL_RECESSIVE)) {
+        } else if (MoI.equals(HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE)) {
             return " Mode of inheritance: autosomal recessive";
-        } else if (MoI.equals(X_LINKED_RECESSIVE)) {
+        } else if (MoI.equals(HpoModeOfInheritanceTermIds.X_LINKED_RECESSIVE)) {
             return " Mode of inheritance: X-chromosomal recessive";
-        } else if (MoI.equals(X_LINKED_DOMINANT)) {
+        } else if (MoI.equals(HpoModeOfInheritanceTermIds.X_LINKED_DOMINANT)) {
             return " Mode of inheritance: X-chromosomal recessive";
         }
         return " Mode of inheritance: not available"; // should never happen

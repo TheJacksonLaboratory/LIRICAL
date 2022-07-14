@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import static org.monarchinitiative.phenol.constants.hpo.HpoModeOfInheritanceTermIds.*;
+import org.monarchinitiative.phenol.annotations.constants.hpo.HpoModeOfInheritanceTermIds;
 
 
 /**
@@ -19,7 +19,6 @@ import static org.monarchinitiative.phenol.constants.hpo.HpoModeOfInheritanceTer
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-// TODO - needs to become an interface
 public class GenotypeLikelihoodRatio {
     private static final Logger logger = LoggerFactory.getLogger(GenotypeLikelihoodRatio.class);
     /** A heuristic to downweight an  disease by a factor of 1/10 if the number of predicted pathogenic alleles in
@@ -59,11 +58,10 @@ public class GenotypeLikelihoodRatio {
      * @param options genotype LR options
      */
     public GenotypeLikelihoodRatio(BackgroundVariantFrequencyService backgroundVariantFrequencyService, Options options) {
-        this.backgroundVariantFrequencyService = backgroundVariantFrequencyService;
-        Objects.requireNonNull(options);
+        this.backgroundVariantFrequencyService = Objects.requireNonNull(backgroundVariantFrequencyService);
         this.recessivePoissonDistribution = new PoissonDistribution(2.0);
         this.dominantPoissonDistribution = new PoissonDistribution(1.0);
-        this.strict = options.strict;
+        this.strict = Objects.requireNonNull(options).strict;
         this.pathogenicityThreshold = options.pathogenicityThreshold;
     }
 
@@ -77,7 +75,7 @@ public class GenotypeLikelihoodRatio {
      * @return genotype likelihood ratio for situation where no variant at all was found in a gene
      */
     private static GenotypeLrWithExplanation getLRifNoVariantAtAllWasIdentified(Collection<TermId> inheritanceModes, Gene2Genotype g2g) {
-        if (inheritanceModes.stream().anyMatch(tid -> tid.equals(AUTOSOMAL_RECESSIVE)))
+        if (inheritanceModes.stream().anyMatch(tid -> tid.equals(HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE)))
             // compatible with autosomal recessive inheritance
             return GenotypeLrWithExplanation.noVariantsDetectedAutosomalRecessive(g2g.geneId(), DEFAULT_GLR * DEFAULT_GLR);
         else
@@ -119,7 +117,7 @@ public class GenotypeLikelihoodRatio {
 
         int pathogenicClinVarAlleleCount = g2g.pathogenicClinVarCount(sampleId);
         if (pathogenicClinVarAlleleCount > 0) {
-            if (inheritancemodes.contains(AUTOSOMAL_RECESSIVE)) {
+            if (inheritancemodes.contains(HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE)) {
                 if (pathogenicClinVarAlleleCount == 2) {
                     return GenotypeLrWithExplanation.twoPathClinVarAllelesRecessive(g2g.geneId(),Math.pow(1000d, 2));
                 }
@@ -147,7 +145,7 @@ public class GenotypeLikelihoodRatio {
             // This is probably because the HPO annotation file is incomplete
             logger.warn("No inheritance mode annotation found for geneId {}, reverting to default", g2g.geneId().id().getValue());
             // Add a default dominant mode to avoid not ranking this gene at all
-            inheritancemodes = List.of(AUTOSOMAL_DOMINANT);
+            inheritancemodes = List.of(HpoModeOfInheritanceTermIds.AUTOSOMAL_DOMINANT);
         }
         // The following is a heuristic to avoid giving genes with a high background count
         // a better score for pathogenic than background -- the best explanation for
@@ -157,7 +155,7 @@ public class GenotypeLikelihoodRatio {
         }
         // Use the following four vars to keep track of which option was the max.
         Double max = null;
-        TermId maxInheritanceMode = INHERITANCE_ROOT; // MoI associated with the maximum pathogenicity
+        TermId maxInheritanceMode = HpoModeOfInheritanceTermIds.INHERITANCE_ROOT; // MoI associated with the maximum pathogenicity
         boolean heuristicPathCountAboveLambda = false;
         // If these variables are used, they will be specifically initialized.
         // we start them off at 1.0/1.0, which would lead to a zero-effect likelihood ratio of 1
@@ -168,7 +166,7 @@ public class GenotypeLikelihoodRatio {
         for (TermId inheritanceId : inheritancemodes) {
             double lambda_disease;
             PoissonDistribution pdDisease;
-            if (inheritanceId.equals(AUTOSOMAL_RECESSIVE) || inheritanceId.equals(X_LINKED_RECESSIVE)) {
+            if (inheritanceId.equals(HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE) || inheritanceId.equals(HpoModeOfInheritanceTermIds.X_LINKED_RECESSIVE)) {
                 lambda_disease = 2.0;
                 pdDisease = recessivePoissonDistribution;
             } else {

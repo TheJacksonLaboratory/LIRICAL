@@ -9,9 +9,31 @@ import java.util.Objects;
  */
 public interface AnalysisOptions {
 
+    /**
+     * @deprecated to be removed in <code>2.0.0</code>, use {@link #of(boolean, PretestDiseaseProbability, boolean, float)} instead.
+     */
+    @Deprecated(forRemoval = true)
     static AnalysisOptions of(boolean useGlobal, PretestDiseaseProbability pretestDiseaseProbability) {
+        return of(useGlobal, pretestDiseaseProbability, false);
+    }
+
+    /**
+     * @deprecated to be removed in <code>2.0.0</code>, use {@link #of(boolean, PretestDiseaseProbability, boolean, float)} instead.
+     */
+    @Deprecated(forRemoval = true)
+    static AnalysisOptions of(boolean useGlobal,
+                              PretestDiseaseProbability pretestDiseaseProbability,
+                              boolean disregardDiseaseWithNoDeleteriousVariants) {
         Objects.requireNonNull(pretestDiseaseProbability);
-        return new AnalysisOptionsDefault(useGlobal, pretestDiseaseProbability);
+        return new AnalysisOptionsDefault(useGlobal, pretestDiseaseProbability, disregardDiseaseWithNoDeleteriousVariants, .8f);
+    }
+
+    static AnalysisOptions of(boolean useGlobal,
+                              PretestDiseaseProbability pretestDiseaseProbability,
+                              boolean disregardDiseaseWithNoDeleteriousVariants,
+                              float pathogenicityThreshold) {
+        Objects.requireNonNull(pretestDiseaseProbability);
+        return new AnalysisOptionsDefault(useGlobal, pretestDiseaseProbability, disregardDiseaseWithNoDeleteriousVariants, pathogenicityThreshold);
     }
 
     /**
@@ -23,5 +45,20 @@ public interface AnalysisOptions {
      * @return pretest disease probability container.
      */
     PretestDiseaseProbability pretestDiseaseProbability();
+
+    /**
+     * Disregard a disease if no known or predicted deleterious variants are found in the gene associated
+     * with the disease. The option is used only if the variants are available for the investigated individual.
+     *
+     * @return <code>true</code> if the candidate disease should be disregarded.
+     */
+    boolean disregardDiseaseWithNoDeleteriousVariants();
+
+    /**
+     * Variant with pathogenicity value greater or equal to this threshold is considered deleterious.
+     *
+     * @return variant pathogenicity threshold value.
+     */
+    float pathogenicityThreshold();
 
 }

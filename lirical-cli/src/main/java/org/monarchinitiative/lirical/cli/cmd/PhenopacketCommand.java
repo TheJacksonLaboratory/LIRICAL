@@ -28,7 +28,7 @@ import java.util.Optional;
         aliases = {"P"},
         sortOptions = false,
         mixinStandardHelpOptions = true,
-        description = "Run LIRICAL from a Phenopacket")
+        description = "Run LIRICAL from a Phenopacket.")
 public class PhenopacketCommand extends AbstractPrioritizeCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PhenopacketCommand.class);
@@ -36,16 +36,16 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
     @CommandLine.Option(names = {"--assembly"},
             paramLabel = "{hg19,hg38}",
             description = "Genome build (default: ${DEFAULT-VALUE}).")
-    protected String genomeBuild = "hg38";
+    public String genomeBuild = "hg38";
 
     @CommandLine.Option(names = {"-p", "--phenopacket"},
             required = true,
             description = "Path to phenopacket JSON file.")
-    protected Path phenopacketPath;
+    public Path phenopacketPath;
 
     @CommandLine.Option(names = {"--vcf"},
             description = "Path to VCF file. This path has priority over any VCF files described in phenopacket.")
-    protected Path vcfPath;
+    public Path vcfPath;
 
     @Override
     protected String getGenomeBuild() {
@@ -61,7 +61,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
             PhenopacketImporter v2 = PhenopacketImporters.v2();
             data = v2.read(is);
             LOGGER.info("Success!");
-        } catch (IOException e) {
+        } catch (PhenopacketImportException | IOException e) {
             LOGGER.info("Unable to parse as v2 phenopacket, trying v1.");
         }
 
@@ -69,7 +69,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
             try (InputStream is = Files.newInputStream(phenopacketPath)) {
                 PhenopacketImporter v1 = PhenopacketImporters.v1();
                 data = v1.read(is);
-            } catch (IOException e) {
+            } catch (PhenopacketImportException | IOException e) {
                 LOGGER.info("Unable to parser as v1 phenopacket.");
                 throw new LiricalParseException("Unable to parse phenopacket from " + phenopacketPath.toAbsolutePath());
             }
