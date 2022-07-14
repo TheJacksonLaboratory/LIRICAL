@@ -1,0 +1,7 @@
+## LIRICAL Analysis Template.
+# This example should be compared with the BBS1.json example (in JSON phenopacket format)
+---
+sampleId: IV-5/family A
+hpoIds: ['HP:0007843','HP:0001513','HP:0000608','HP:0000486']
+negatedHpoIds: ['HP:0001328']
+vcf: /path/to/examples/BBS1.vcf

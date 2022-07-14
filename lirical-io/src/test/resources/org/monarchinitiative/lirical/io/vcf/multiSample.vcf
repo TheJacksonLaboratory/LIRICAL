@@ -1,0 +1,7 @@
+##fileformat=VCFv4.2
+##description=This file contains four variants for testing the parse of genotypes in multisample files.
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	Holly	Walt	Skyler
+9	133357000	a	G	T,GA	100.15	PASS	.	GT:DP	1/2:33	0/1:33	2/2:33
+9	133357010	b	T	TT	230.15	PASS	.	GT:DP	1/1:21	0/1:33	0/1:33
+9	133357020	c	T	C	123.15	PASS	.	GT:DP	0/1:21	./.	0/0:33
+9	133357030	d	T	C	10.1	FAIL	.	GT:DP	1/1:2	0/1:2	0/1:1

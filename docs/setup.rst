@@ -1,5 +1,6 @@
 .. _rstsetup:
 
+==================
 Setting up LIRICAL
 ==================
 
@@ -13,7 +14,7 @@ Prerequisites
 
 LIRICAL was written with Java version 8 but will compile under Java 11. If you want to
 build LIRICAL from source, then the build process described below requires
-`Git <https://git-scm.com/book/en/v2>`_ and `maven <https://maven.apache.org/install.html>`_.
+`Git <https://git-scm.com/book/en/v2>`_ and `maven`_.
 
 
 Installation of Exomiser as a Java library
@@ -69,7 +70,7 @@ Build the executable from source with maven, and then test the build. ::
 
 
 
-LIRICAL requires `maven <https://maven.apache.org/>`_ version 3.5.3.
+LIRICAL requires `maven`_ version 3.5.3.
 
 
 Prebuilt LIRICAL executable
@@ -145,3 +146,4 @@ overwrite any previously downloaded files. ::
 If desired, you can download these files on your own but you need to place them all in the
 same directory to run LIRICAL.
 
+.. _maven: https://maven.apache.org
