@@ -66,6 +66,8 @@ abstract class AbstractPrioritizeCommand extends BaseLiricalCommand {
 
     @Override
     public Integer call() throws Exception {
+        printBanner();
+        long start = System.currentTimeMillis();
         // 0 - check input
         List<String> errors = checkInput();
         if (!errors.isEmpty())
@@ -110,6 +112,7 @@ abstract class AbstractPrioritizeCommand extends BaseLiricalCommand {
                 .getWriter(analysisData, results, metadata)
                 .process(outputOptions);
 
+        reportElapsedTime(start, System.currentTimeMillis());
         return 0;
     }
 

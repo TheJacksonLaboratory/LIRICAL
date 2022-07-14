@@ -69,6 +69,8 @@ public class BenchmarkCommand extends BaseLiricalCommand {
 
     @Override
     public Integer call() throws Exception {
+        printBanner();
+        long start = System.currentTimeMillis();
         // The benchmark has a logic of its own, hence the `call()` method is overridden.
         // 0 - check input
         List<String> errors = checkInput();
@@ -104,6 +106,7 @@ public class BenchmarkCommand extends BaseLiricalCommand {
         }
         LOGGER.info("Benchmark results were stored to {}", outputPath.toAbsolutePath());
 
+        reportElapsedTime(start, System.currentTimeMillis());
         return 0;
     }
 

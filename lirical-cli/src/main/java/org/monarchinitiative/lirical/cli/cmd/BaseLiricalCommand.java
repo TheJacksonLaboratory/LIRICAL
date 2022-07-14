@@ -19,11 +19,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 /**
  * Base class that describes data and configuration sections of the CLI, and contains common functionalities.
@@ -33,6 +34,18 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseLiricalCommand.class);
     private static final Properties PROPERTIES = readProperties();
     protected static final String LIRICAL_VERSION = PROPERTIES.getProperty("lirical.version", "unknown version");
+
+    private static final String LIRICAL_BANNER = readBanner();
+
+    private static String readBanner() {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(BaseLiricalCommand.class.getResourceAsStream("/banner.txt"), StandardCharsets.UTF_8))) {
+            return reader.lines()
+                    .collect(Collectors.joining(System.lineSeparator()));
+        } catch (IOException e) {
+            // swallow
+            return "";
+        }
+    }
 
     // ---------------------------------------------- RESOURCES --------------------------------------------------------
     @CommandLine.ArgGroup(validate = false, heading = "Resource paths:%n")
@@ -113,6 +126,10 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
             LOGGER.warn("Error loading properties: {}", e.getMessage());
         }
         return properties;
+    }
+
+    protected static void printBanner() {
+        System.out.println(LIRICAL_BANNER);
     }
 
     protected List<String> checkInput() {
@@ -210,6 +227,23 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
                 .toList();
 
         return GenesAndGenotypes.of(g2g);
+    }
+
+    protected static void reportElapsedTime(long startTime, long stopTime) {
+        int elapsedTime = (int)((stopTime - startTime)*(1.0)/1000);
+        if (elapsedTime > 3599) {
+            int elapsedSeconds = elapsedTime % 60;
+            int elapsedMinutes = (elapsedTime/60) % 60;
+            int elapsedHours = elapsedTime/3600;
+            LOGGER.info(String.format("Elapsed time %d:%2d%2d",elapsedHours,elapsedMinutes,elapsedSeconds));
+        }
+        else if (elapsedTime>59) {
+            int elapsedSeconds = elapsedTime % 60;
+            int elapsedMinutes = (elapsedTime/60) % 60;
+            LOGGER.info(String.format("Elapsed time %d min, %d sec",elapsedMinutes,elapsedSeconds));
+        } else {
+            LOGGER.info("Elapsed time " + (stopTime - startTime) * (1.0) / 1000 + " seconds.");
+        }
     }
 
 }
