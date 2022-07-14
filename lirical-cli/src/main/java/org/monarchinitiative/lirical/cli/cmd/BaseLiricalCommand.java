@@ -38,7 +38,7 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
     private static final String LIRICAL_BANNER = readBanner();
 
     private static String readBanner() {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(BaseLiricalCommand.class.getResourceAsStream("/banner.txt"), StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(BaseLiricalCommand.class.getResourceAsStream("/banner.txt")), StandardCharsets.UTF_8))) {
             return reader.lines()
                     .collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException e) {
@@ -95,8 +95,8 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
         public boolean useOrphanet = false;
 
         @CommandLine.Option(names = {"--strict"},
-                // TODO - add better description
-                description = "Strict mode (default: ${DEFAULT-VALUE}).")
+                description = "Use strict penalties if the genotype does not match the disease model in terms " +
+                        "of number of called pathogenic alleles. (default: ${DEFAULT-VALUE}).")
         public boolean strict = false;
 
         /* Default frequency of called-pathogenic variants in the general population (gnomAD). In the vast majority of
