@@ -21,6 +21,7 @@ import java.nio.file.Path;
  */
 @CommandLine.Command(name = "yaml",
         aliases = {"Y"},
+        sortOptions = false,
         mixinStandardHelpOptions = true,
         description = "Run LIRICAL from YAML file")
 public class YamlCommand extends AnalysisDataParserAwareCommand {

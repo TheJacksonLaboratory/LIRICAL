@@ -31,5 +31,5 @@ jobs:
           distribution: 'adopt'
 
       - name: Build with Maven
-        run: ./mvnw --projects lirical-cli,lirical-benchmark --also-make --batch-mode verify
+        run: ./mvnw --batch-mode verify
 

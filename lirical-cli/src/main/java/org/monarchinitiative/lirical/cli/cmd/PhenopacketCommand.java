@@ -61,7 +61,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
             PhenopacketImporter v2 = PhenopacketImporters.v2();
             data = v2.read(is);
             LOGGER.info("Success!");
-        } catch (IOException e) {
+        } catch (PhenopacketImportException | IOException e) {
             LOGGER.info("Unable to parse as v2 phenopacket, trying v1.");
         }
 
@@ -69,7 +69,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
             try (InputStream is = Files.newInputStream(phenopacketPath)) {
                 PhenopacketImporter v1 = PhenopacketImporters.v1();
                 data = v1.read(is);
-            } catch (IOException e) {
+            } catch (PhenopacketImportException | IOException e) {
                 LOGGER.info("Unable to parser as v1 phenopacket.");
                 throw new LiricalParseException("Unable to parse phenopacket from " + phenopacketPath.toAbsolutePath());
             }

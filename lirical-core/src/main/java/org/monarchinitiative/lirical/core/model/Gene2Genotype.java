@@ -49,7 +49,7 @@ public interface Gene2Genotype extends Identified {
     }
 
     default int pathogenicAlleleCount(String sampleId, float pathogenicityThreshold) {
-        return variants().filter(var -> var.pathogenicityScore().orElse(0f) >= pathogenicityThreshold)
+        return variants().filter(var -> var.pathogenicityScore().map(f -> f >= pathogenicityThreshold).orElse(false))
                 .map(var -> var.alleleCount(sampleId))
                 .flatMap(Optional::stream)
                 .mapToInt(AlleleCount::alt)
