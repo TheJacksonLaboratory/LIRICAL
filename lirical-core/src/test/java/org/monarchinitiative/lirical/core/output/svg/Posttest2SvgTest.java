@@ -39,13 +39,13 @@ public class Posttest2SvgTest {
         List<HpoDiseaseAnnotation> annotations = List.of();
         List<TermId> modesOfInheritance = List.of();
         HpoDisease d1 = HpoDisease.of(TermId.of("MONDO:1"), "DISEASE 1",null, annotations, modesOfInheritance);
-        TestResult result1 = TestResult.of(d1.id(), PRETEST_PROB, reslist,excluded, null);
+        TestResult result1 = TestResult.of(d1.id(), PRETEST_PROB, reslist, excluded, null);
         List<LrWithExplanation> reslist2 = createTestList(some, 10d,100d,1000d);
-        HpoDisease d2 = HpoDisease.of(TermId.of("MONDO:2"), "DISEASE 2", null, annotations,modesOfInheritance);
-        TestResult result2 = TestResult.of(d2.id(), PRETEST_PROB, reslist2,excluded, null);
+        HpoDisease d2 = HpoDisease.of(TermId.of("MONDO:2"), "DISEASE 2", null, annotations, modesOfInheritance);
+        TestResult result2 = TestResult.of(d2.id(), PRETEST_PROB, reslist2, excluded, null);
         List<LrWithExplanation> reslist3 = createTestList(some, 1d,0.1d,0.01d);
-        HpoDisease d3 = HpoDisease.of(TermId.of("MONDO:3"), "DISEASE3", null, annotations,modesOfInheritance);
-        TestResult result3 = TestResult.of(d3.id(), PRETEST_PROB, reslist3,excluded, null);
+        HpoDisease d3 = HpoDisease.of(TermId.of("MONDO:3"), "DISEASE3", null, annotations, modesOfInheritance);
+        TestResult result3 = TestResult.of(d3.id(), PRETEST_PROB, reslist3, excluded, null);
         results.add(result1);
         results.add(result2);
         results.add(result3);

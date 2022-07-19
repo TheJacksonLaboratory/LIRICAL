@@ -1,10 +1,14 @@
-package org.monarchinitiative.lirical.core.likelihoodratio;
+package org.monarchinitiative.lirical.core.analysis.runner;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.core.TestResources;
 import org.monarchinitiative.lirical.core.analysis.TestResult;
+import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLrWithExplanation;
+import org.monarchinitiative.lirical.core.likelihoodratio.LrMatchType;
+import org.monarchinitiative.lirical.core.likelihoodratio.LrWithExplanation;
+import org.monarchinitiative.lirical.core.likelihoodratio.LrWithExplanationFactory;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
@@ -22,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Some of this test class is based on the data and cases presented in
- * https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2683447/ (Likelihood ratio calculations)
+ * <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2683447/">(Likelihood ratio calculations)</a>
  * Note -- the authors of that paper rounded results and this class does not!
  */
 public class TestResultTest {
