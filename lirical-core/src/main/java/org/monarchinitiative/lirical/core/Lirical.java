@@ -1,6 +1,8 @@
 package org.monarchinitiative.lirical.core;
 
+import org.monarchinitiative.lirical.core.analysis.AnalysisRunnerOptions;
 import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
+import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunnerFactory;
 import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.lirical.core.output.AnalysisResultWriterFactory;
 import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
@@ -16,20 +18,20 @@ public class Lirical {
     private final PhenotypeService phenotypeService;
     private final FunctionalVariantAnnotator functionalVariantAnnotator;
     private final VariantMetadataService variantMetadataService;
-    private final LiricalAnalysisRunner analysisRunner;
+    private final LiricalAnalysisRunnerFactory analysisRunnerFactory;
     private final AnalysisResultWriterFactory analysisResultWriterFactory;
 
     public static Lirical of(VariantParserFactory variantParserFactory,
                              PhenotypeService phenotypeService,
                              FunctionalVariantAnnotator functionalVariantAnnotator,
                              VariantMetadataService variantMetadataService,
-                             LiricalAnalysisRunner analysisRunner,
+                             LiricalAnalysisRunnerFactory analysisRunnerFactory,
                              AnalysisResultWriterFactory analysisResultWriterFactory) {
         return new Lirical(variantParserFactory,
                 phenotypeService,
                 functionalVariantAnnotator,
                 variantMetadataService,
-                analysisRunner,
+                analysisRunnerFactory,
                 analysisResultWriterFactory);
     }
 
@@ -37,13 +39,13 @@ public class Lirical {
                     PhenotypeService phenotypeService,
                     FunctionalVariantAnnotator functionalVariantAnnotator,
                     VariantMetadataService variantMetadataService,
-                    LiricalAnalysisRunner analysisRunner,
+                    LiricalAnalysisRunnerFactory analysisRunnerFactory,
                     AnalysisResultWriterFactory analysisResultWriterFactory) {
         this.variantParserFactory = variantParserFactory; // nullable
         this.phenotypeService = Objects.requireNonNull(phenotypeService);
         this.functionalVariantAnnotator = Objects.requireNonNull(functionalVariantAnnotator);
         this.variantMetadataService = Objects.requireNonNull(variantMetadataService);
-        this.analysisRunner = Objects.requireNonNull(analysisRunner);
+        this.analysisRunnerFactory = Objects.requireNonNull(analysisRunnerFactory);
         this.analysisResultWriterFactory = Objects.requireNonNull(analysisResultWriterFactory);
     }
 
@@ -66,8 +68,16 @@ public class Lirical {
         return variantMetadataService;
     }
 
+    public LiricalAnalysisRunnerFactory analysisRunnerFactory() {
+        return analysisRunnerFactory;
+    }
+
+    /**
+     * @deprecated use {@link #analysisRunnerFactory()} to get an {@link LiricalAnalysisRunner} instead.
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC1")
     public LiricalAnalysisRunner analysisRunner() {
-        return analysisRunner;
+        return analysisRunnerFactory.getRunner(AnalysisRunnerOptions.DEFAULT);
     }
 
     public AnalysisResultWriterFactory analysisResultsWriterFactory() {

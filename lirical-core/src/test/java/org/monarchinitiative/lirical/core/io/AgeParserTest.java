@@ -80,11 +80,20 @@ public class AgeParserTest {
 
     @ParameterizedTest
     @CsvSource({
+            "P1W1M",
+    })
+    public void invalidTimeElementsThrowAnException_gestational(String payload) {
+        AgeParseException e = assertThrows(AgeParseException.class, () -> AgeParser.parse(payload));
+        assertThat(e.getMessage(), containsString("Duration %s contains time elements that are not allowed for gestational age".formatted(payload)));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
             "P1Y1W",
             "P1M1W",
     })
-    public void invalidTemporalFieldsThrowAnException(String payload) {
+    public void invalidTemporalFieldsThrowAnException_postnatal(String payload) {
         AgeParseException e = assertThrows(AgeParseException.class, () -> AgeParser.parse(payload));
-        assertThat(e.getMessage(), containsString("Invalid age format %s".formatted(payload)));
+        assertThat(e.getMessage(), containsString("Duration %s contains time elements that are not allowed for postnatal age".formatted(payload)));
     }
 }

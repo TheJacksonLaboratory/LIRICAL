@@ -4,8 +4,7 @@ import de.charite.compbio.jannovar.data.JannovarData;
 import de.charite.compbio.jannovar.data.JannovarDataSerializer;
 import de.charite.compbio.jannovar.data.SerializationException;
 import org.monarchinitiative.lirical.core.Lirical;
-import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
-import org.monarchinitiative.lirical.core.analysis.runner.DefaultLiricalAnalysisRunner;
+import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunnerFactory;
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbability;
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
@@ -212,8 +211,7 @@ public class LiricalBuilder {
         if (genotypeLikelihoodRatio == null)
             genotypeLikelihoodRatio = configureGenotypeLikelihoodRatio(backgroundVariantFrequency, genomeBuild, genotypeLrProperties);
 
-        // TODO - decide between onset-aware and onset-less analysis runner.
-        LiricalAnalysisRunner analyzer = DefaultLiricalAnalysisRunner.of(phenotypeService, phenotypeLikelihoodRatio, genotypeLikelihoodRatio);
+        LiricalAnalysisRunnerFactory analysisRunnerFactory = new LiricalAnalysisRunnerFactory(phenotypeService, phenotypeLikelihoodRatio, genotypeLikelihoodRatio);
 
         // Analysis result writer factory
         AnalysisResultWriterFactory analysisResultWriterFactory = new AnalysisResultWriterFactory(phenotypeService.hpo(), phenotypeService.diseases());
@@ -222,7 +220,7 @@ public class LiricalBuilder {
                 phenotypeService,
                 functionalVariantAnnotator,
                 variantMetadataService,
-                analyzer,
+                analysisRunnerFactory,
                 analysisResultWriterFactory);
     }
 

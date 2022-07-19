@@ -14,7 +14,10 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * An implementation of {@link org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner} that integrates
@@ -27,10 +30,10 @@ public class OnsetAwareLiricalAnalysisRunner extends BaseLiricalAnalysisRunner {
 
     private final DiseaseOnsetProbability onsetProbability;
 
-    protected OnsetAwareLiricalAnalysisRunner(PhenotypeService phenotypeService,
-                                              PhenotypeLikelihoodRatio phenotypeLrEvaluator,
-                                              GenotypeLikelihoodRatio genotypeLikelihoodRatio,
-                                              DiseaseOnsetProbability onsetProbability) {
+    public OnsetAwareLiricalAnalysisRunner(PhenotypeService phenotypeService,
+                                           PhenotypeLikelihoodRatio phenotypeLrEvaluator,
+                                           GenotypeLikelihoodRatio genotypeLikelihoodRatio,
+                                           DiseaseOnsetProbability onsetProbability) {
         super(phenotypeService, phenotypeLrEvaluator, genotypeLikelihoodRatio);
         this.onsetProbability = Objects.requireNonNull(onsetProbability);
     }

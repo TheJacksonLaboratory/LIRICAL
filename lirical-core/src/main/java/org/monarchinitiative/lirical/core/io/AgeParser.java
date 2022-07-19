@@ -106,10 +106,10 @@ public class AgeParser {
         }
         if (isGestational) {
             if (tokens.keySet().stream().anyMatch(token -> !TemporalToken.GESTATIONAL.contains(token)))
-                throw new AgeParseException("Duration %s contains temporal fields that are not allowed for gestational age!".formatted(duration));
+                throw new AgeParseException("Duration %s contains time elements that are not allowed for gestational age!".formatted(duration));
         } else {
             if (tokens.keySet().stream().anyMatch(token -> !TemporalToken.POSTNATAL.contains(token)))
-                throw new AgeParseException("Duration %s contains temporal fields that are not allowed for postnatal age!".formatted(duration));
+                throw new AgeParseException("Duration %s contains time elements that are not allowed for postnatal age!".formatted(duration));
         }
 
         return tokens;
