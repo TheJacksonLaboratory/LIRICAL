@@ -212,6 +212,7 @@ public class LiricalBuilder {
         if (genotypeLikelihoodRatio == null)
             genotypeLikelihoodRatio = configureGenotypeLikelihoodRatio(backgroundVariantFrequency, genomeBuild, genotypeLrProperties);
 
+        // TODO - decide between onset-aware and onset-less analysis runner.
         LiricalAnalysisRunner analyzer = DefaultLiricalAnalysisRunner.of(phenotypeService, phenotypeLikelihoodRatio, genotypeLikelihoodRatio);
 
         // Analysis result writer factory

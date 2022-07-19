@@ -1,14 +1,14 @@
 package org.monarchinitiative.lirical.core.analysis.onset.proba;
 
 import org.monarchinitiative.lirical.core.analysis.onset.DiseaseOnsetProbability;
-import org.monarchinitiative.phenol.annotations.base.temporal.Age;
+import org.monarchinitiative.phenol.annotations.base.temporal.TemporalInterval;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.Objects;
 
 /**
- * Base {@link DiseaseOnsetProbability} that provides implementation of {@link #diseaseNotObservableGivenAge(TermId, Age)}.
+ * Base {@link DiseaseOnsetProbability} that provides implementation of {@link #diseaseNotObservableGivenAge(TermId, TemporalInterval)}.
  */
 abstract class BaseDiseaseOnsetProbability implements DiseaseOnsetProbability {
 
@@ -21,7 +21,7 @@ abstract class BaseDiseaseOnsetProbability implements DiseaseOnsetProbability {
     }
 
     @Override
-    public double diseaseNotObservableGivenAge(TermId diseaseId, Age age) {
+    public double diseaseNotObservableGivenAge(TermId diseaseId, TemporalInterval age) {
         double sum = diseases.hpoDiseases()
                 .mapToDouble(d -> diseaseObservableGivenAge(d.id(), age))
                 .sum();

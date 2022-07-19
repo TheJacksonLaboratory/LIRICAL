@@ -14,10 +14,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * An implementation of {@link org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner} that integrates
@@ -39,13 +36,27 @@ public class OnsetAwareLiricalAnalysisRunner extends BaseLiricalAnalysisRunner {
     }
 
     @Override
+    protected List<String> validateAnalysisParameters(AnalysisData data, AnalysisOptions options, List<String> errors) {
+        errors = super.validateAnalysisParameters(data, options, errors);
+
+        if (data.age().isEmpty())
+            errors.add("Age not provided");
+
+        return errors;
+    }
+
+    @Override
     protected Optional<OnsetAwareTestResult> calculateTestResult(HpoDisease disease,
-                                                       AnalysisData analysisData,
-                                                       AnalysisOptions options,
-                                                       Map<TermId, List<Gene2Genotype>> diseaseToGenotype) {
+                                                                 AnalysisData analysisData,
+                                                                 AnalysisOptions options,
+                                                                 Map<TermId, List<Gene2Genotype>> diseaseToGenotype) {
         GenotypeLikelihoodRatioResult genotypeLikelihoodRatioResult = calculateGenotypeLikelihoodRatio(disease, analysisData, options, diseaseToGenotype);
         if (genotypeLikelihoodRatioResult.discardDiffDg())
             return Optional.empty();
+
+        if (analysisData.age().isEmpty())
+            // Presence of age should have been checked in `validateAnalysisParameters` method.
+            throw new IllegalArgumentException("Age should have been set!");
 
         Optional<Double> pretestOptional = options.pretestDiseaseProbability().pretestProbability(disease.id());
         if (pretestOptional.isEmpty()) {
@@ -57,7 +68,7 @@ public class OnsetAwareLiricalAnalysisRunner extends BaseLiricalAnalysisRunner {
 
         PhenotypeLikelihoodRatios phenotypeRatios = calculatePhenotypeLikelihoodRatios(disease, analysisData.presentPhenotypeTerms(), analysisData.negatedPhenotypeTerms());
 
-        double onsetLr = calculateOnsetLR(disease.id(), analysisData.age());
+        double onsetLr = calculateOnsetLR(disease.id(), analysisData.age().get());
 
         return Optional.of(
                 new OnsetAwareTestResult(
@@ -70,10 +81,9 @@ public class OnsetAwareLiricalAnalysisRunner extends BaseLiricalAnalysisRunner {
         );
     }
 
-    private double calculateOnsetLR(TermId diseaseId, org.monarchinitiative.lirical.core.model.Age age) {
-        Age phenolAge = Age.postnatal(age.getYears(), age.getMonths(), age.getDays());
-        double presentProba = onsetProbability.diseaseObservableGivenAge(diseaseId, phenolAge);
-        double notPresentProba = onsetProbability.diseaseNotObservableGivenAge(diseaseId, phenolAge);
-        return presentProba / notPresentProba;
+    private double calculateOnsetLR(TermId diseaseId, Age age) {
+        double observableGivenAge = onsetProbability.diseaseObservableGivenAge(diseaseId, age);
+        double notObservableGivenAge = onsetProbability.diseaseNotObservableGivenAge(diseaseId, age);
+        return observableGivenAge / notObservableGivenAge;
     }
 }

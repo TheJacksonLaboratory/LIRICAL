@@ -10,20 +10,20 @@ import org.monarchinitiative.lirical.core.analysis.AnalysisOptions;
 import org.monarchinitiative.lirical.core.analysis.onset.DiseaseOnsetProbability;
 import org.monarchinitiative.lirical.core.analysis.onset.proba.SimpleDiseaseOnsetProbability;
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbabilities;
+import org.monarchinitiative.lirical.core.io.AgeParser;
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
-import org.monarchinitiative.lirical.core.model.Age;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.model.Sex;
 import org.monarchinitiative.lirical.core.service.PhenotypeService;
+import org.monarchinitiative.phenol.annotations.base.temporal.Age;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.time.Period;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,11 +58,11 @@ public class OnsetAwareLiricalAnalysisRunnerTest {
             "P10D,    1.25E-8,  6.00961557E-9",
             "P1Y,     1.0,      0.32467533",
     })
-    public void calculateTestResult_bobophobiaA(Period age, double onsetLr, double posttestProbability) {
+    public void calculateTestResult_bobophobiaA(String age, double onsetLr, double expected) throws Exception {
         HpoDisease disease = DISEASES.diseaseById(BOBOPHOBIA_A).orElseThrow();
         List<TermId> presentPhenotypeTerms = prepareTermIds("HP:0000510", "HP:0000486");
         List<TermId> negatedPhenotypeTerms = List.of();
-        AnalysisData analysisData = prepareAnalysisData(Age.parse(age), presentPhenotypeTerms, negatedPhenotypeTerms);
+        AnalysisData analysisData = prepareAnalysisData(AgeParser.parse(age), presentPhenotypeTerms, negatedPhenotypeTerms);
         AnalysisOptions analysisOptions = prepareAnalysisOptions();
         Map<TermId, List<Gene2Genotype>> gtMap = Map.of();
 
@@ -72,7 +72,7 @@ public class OnsetAwareLiricalAnalysisRunnerTest {
         OnsetAwareTestResult result = ro.get();
 
         assertThat(result.onsetLr(), closeTo(onsetLr, ERROR));
-        assertThat(result.posttestProbability(), closeTo(posttestProbability, ERROR));
+        assertThat(result.posttestProbability(), closeTo(expected, ERROR));
     }
 
     @ParameterizedTest
@@ -80,11 +80,11 @@ public class OnsetAwareLiricalAnalysisRunnerTest {
             "P28D,    1.25,   0.80025608",
             "P29D,    1.00,   0.76219512",
     })
-    public void calculateTestResult_bobophobiaB(Period age, double onsetLr, double posttestProbability) {
+    public void calculateTestResult_bobophobiaB(String age, double onsetLr, double expected) throws Exception {
         HpoDisease disease = DISEASES.diseaseById(BOBOPHOBIA_B).orElseThrow();
         List<TermId> presentPhenotypeTerms = prepareTermIds("HP:0000510", "HP:0000486");
         List<TermId> negatedPhenotypeTerms = List.of();
-        AnalysisData analysisData = prepareAnalysisData(Age.parse(age), presentPhenotypeTerms, negatedPhenotypeTerms);
+        AnalysisData analysisData = prepareAnalysisData(AgeParser.parse(age), presentPhenotypeTerms, negatedPhenotypeTerms);
         AnalysisOptions analysisOptions = prepareAnalysisOptions();
         Map<TermId, List<Gene2Genotype>> gtMap = Map.of();
 
@@ -94,7 +94,7 @@ public class OnsetAwareLiricalAnalysisRunnerTest {
         OnsetAwareTestResult result = ro.get();
 
         assertThat(result.onsetLr(), closeTo(onsetLr, ERROR));
-        assertThat(result.posttestProbability(), closeTo(posttestProbability, ERROR));
+        assertThat(result.posttestProbability(), closeTo(expected, ERROR));
     }
 
     private static List<TermId> prepareTermIds(String... termIds) {
@@ -112,4 +112,5 @@ public class OnsetAwareLiricalAnalysisRunnerTest {
         float pathogenicityThreshold = .8f;
         return AnalysisOptions.of(true, PretestDiseaseProbabilities.uniform(DISEASES), true, pathogenicityThreshold);
     }
+
 }

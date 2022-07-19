@@ -45,6 +45,13 @@ abstract class BaseLiricalAnalysisRunner implements LiricalAnalysisRunner {
 
     @Override
     public AnalysisResults run(AnalysisData data, AnalysisOptions options) {
+        List<String> errors = validateAnalysisParameters(data, options, new LinkedList<>());
+        if (!errors.isEmpty()) {
+            // TODO - throw an exception instead?
+            LOGGER.warn("Unable to run analysis due to {} error(s): '{}'", errors.size(), String.join(", ", errors));
+            return AnalysisResults.empty();
+        }
+
         Map<TermId, List<Gene2Genotype>> diseaseToGenotype = groupGenesByDisease(data.genes());
 
         ProgressReporter progressReporter = new ProgressReporter(1_000, "diseases");
@@ -77,6 +84,17 @@ abstract class BaseLiricalAnalysisRunner implements LiricalAnalysisRunner {
         }
 
         return diseaseToGenotype;
+    }
+
+    /**
+     * Validate if it makes sense to run the analysis with the provided {@link AnalysisData} and {@link AnalysisOptions}.
+     *
+     * @return a list of errors or an empty list if the analysis can be run.
+     */
+    protected List<String> validateAnalysisParameters(AnalysisData data, AnalysisOptions options, List<String> errors) {
+        if (data.presentPhenotypeTerms().isEmpty() && data.negatedPhenotypeTerms().isEmpty())
+            errors.add("No phenotype terms were provided");
+        return errors;
     }
 
     protected abstract Optional<? extends TestResult> calculateTestResult(HpoDisease disease,

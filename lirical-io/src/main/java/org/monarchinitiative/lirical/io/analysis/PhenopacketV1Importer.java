@@ -2,7 +2,8 @@ package org.monarchinitiative.lirical.io.analysis;
 
 import com.google.protobuf.util.JsonFormat;
 
-import org.monarchinitiative.lirical.core.model.Age;
+import org.monarchinitiative.lirical.core.io.AgeParseException;
+import org.monarchinitiative.lirical.core.io.AgeParser;
 import org.monarchinitiative.lirical.core.model.AlleleCount;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.model.GenotypedVariant;
@@ -24,8 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.time.Period;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +87,7 @@ class PhenopacketV1Importer implements PhenopacketImporter {
                 .toList();
 
 
-        org.monarchinitiative.lirical.core.model.Age age = subject.getAgeCase().equals(Individual.AgeCase.AGE_AT_COLLECTION)
+        org.monarchinitiative.phenol.annotations.base.temporal.Age age = subject.getAgeCase().equals(Individual.AgeCase.AGE_AT_COLLECTION)
                 ? mapToAge(subject.getAgeAtCollection())
                 : null;
 
@@ -203,12 +202,11 @@ class PhenopacketV1Importer implements PhenopacketImporter {
         }
     }
 
-    private static Age mapToAge(org.phenopackets.schema.v1.core.Age age) {
+    private static org.monarchinitiative.phenol.annotations.base.temporal.Age mapToAge(org.phenopackets.schema.v1.core.Age age) {
         try {
-            Period iso8601 = Period.parse(age.getAge());
-            return Age.of(iso8601.getYears(), iso8601.getMonths(), iso8601.getDays());
-        } catch (DateTimeParseException e) {
-            LOGGER.warn("Ignoring unparasble age {}", age.getAge());
+            return AgeParser.parse(age.getAge());
+        } catch (AgeParseException e) {
+            LOGGER.warn("Unable to parse age: {}", e.getMessage(), e);
             return null;
         }
     }

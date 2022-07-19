@@ -1,6 +1,5 @@
 package org.monarchinitiative.lirical.core.analysis.onset.proba;
 
-import org.monarchinitiative.phenol.annotations.base.temporal.Age;
 import org.monarchinitiative.phenol.annotations.base.temporal.TemporalInterval;
 import org.monarchinitiative.phenol.annotations.base.temporal.TemporalOverlapType;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
@@ -19,7 +18,7 @@ public class SimpleDiseaseOnsetProbability extends BaseDiseaseOnsetProbability {
     }
 
     @Override
-    public double diseaseObservableGivenAge(TermId diseaseId, Age age) {
+    public double diseaseObservableGivenAge(TermId diseaseId, TemporalInterval age) {
         Optional<TemporalInterval> onsetOptional = diseases.diseaseById(diseaseId)
                 .flatMap(HpoDisease::diseaseOnset);
 

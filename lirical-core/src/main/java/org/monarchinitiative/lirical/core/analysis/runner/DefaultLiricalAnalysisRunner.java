@@ -34,6 +34,11 @@ public class DefaultLiricalAnalysisRunner extends BaseLiricalAnalysisRunner {
     }
 
     @Override
+    protected List<String> validateAnalysisParameters(AnalysisData data, AnalysisOptions options, List<String> errors) {
+        return errors;
+    }
+
+    @Override
     protected Optional<TestResult> calculateTestResult(HpoDisease disease,
                                                        AnalysisData analysisData,
                                                        AnalysisOptions options,

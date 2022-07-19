@@ -1,8 +1,10 @@
 package org.monarchinitiative.lirical.io.analysis;
 
 import com.google.protobuf.util.JsonFormat;
-import org.monarchinitiative.lirical.core.model.Age;
+import org.monarchinitiative.lirical.core.io.AgeParseException;
+import org.monarchinitiative.lirical.core.io.AgeParser;
 import org.monarchinitiative.lirical.core.model.GenotypedVariant;
+import org.monarchinitiative.phenol.annotations.base.temporal.Age;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v2.Phenopacket;
 import org.phenopackets.schema.v2.core.*;
@@ -14,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.time.Period;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -113,8 +114,12 @@ class PhenopacketV2Importer implements PhenopacketImporter {
     }
 
     private static Age mapToAge(org.phenopackets.schema.v2.core.Age age) {
-        Period iso8601 = Period.parse(age.getIso8601Duration());
-        return Age.of(iso8601.getYears(), iso8601.getMonths(), iso8601.getDays());
+        try {
+            return AgeParser.parse(age.getIso8601Duration());
+        } catch (AgeParseException e) {
+            LOGGER.warn("Unable to parse age: {}", e.getMessage(), e);
+            return null;
+        }
     }
 
     private static org.monarchinitiative.lirical.core.model.Sex toSex(Sex sex) {

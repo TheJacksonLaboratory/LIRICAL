@@ -4,6 +4,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.lirical.core.TestResources;
 import org.monarchinitiative.phenol.annotations.base.temporal.Age;
+import org.monarchinitiative.phenol.annotations.base.temporal.ConfidenceRange;
+import org.monarchinitiative.phenol.annotations.base.temporal.TemporalInterval;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -29,7 +31,7 @@ public class SimpleDiseaseOnsetProbabilityTest {
     public void onsetProbability_subtypeA(int years, int months, int days, double expected) {
         SimpleDiseaseOnsetProbability dop = new SimpleDiseaseOnsetProbability(DISEASES, STRICT);
 
-        Age age = Age.postnatal(years, months, days);
+        TemporalInterval age = Age.postnatal(years, months, days, ConfidenceRange.of(0, 1));
 
         double actual = dop.diseaseObservableGivenAge(BOBOPHOBIA_A, age);
         assertThat(actual, closeTo(expected, ERROR));
@@ -45,7 +47,7 @@ public class SimpleDiseaseOnsetProbabilityTest {
         HpoDiseases diseases = TestResources.hpoDiseases();
         SimpleDiseaseOnsetProbability dop = new SimpleDiseaseOnsetProbability(diseases, STRICT);
 
-        Age age = Age.postnatal(years, months, days);
+        TemporalInterval age = Age.postnatal(years, months, days, ConfidenceRange.of(0, 1));
 
         double actual = dop.diseaseObservableGivenAge(BOBOPHOBIA_B, age);
         assertThat(actual, closeTo(expected, ERROR));
@@ -63,7 +65,7 @@ public class SimpleDiseaseOnsetProbabilityTest {
         HpoDiseases diseases = TestResources.hpoDiseases();
         SimpleDiseaseOnsetProbability dop = new SimpleDiseaseOnsetProbability(diseases, STRICT);
 
-        Age age = Age.postnatal(years, months, days);
+        TemporalInterval age = Age.postnatal(years, months, days, ConfidenceRange.of(0, 1));
 
         double actual = dop.diseaseNotObservableGivenAge(BOBOPHOBIA_A, age);
         assertThat(actual, closeTo(expected, ERROR));
