@@ -3,9 +3,11 @@ package org.monarchinitiative.lirical.cli.cmd;
 import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.analysis.*;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
+import org.monarchinitiative.lirical.core.io.AgeParseException;
+import org.monarchinitiative.lirical.core.io.AgeParser;
 import org.monarchinitiative.lirical.core.output.*;
-import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.*;
+import org.monarchinitiative.phenol.annotations.base.temporal.Age;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -13,8 +15,6 @@ import picocli.CommandLine;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Period;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Function;
 
@@ -145,17 +145,12 @@ abstract class AbstractPrioritizeCommand extends BaseLiricalCommand {
                 output.displayAllVariants, output.outdir, output.outfilePrefix, outputFormats);
     }
 
-    protected static Age parseAge(String age) {
-        if (age == null) {
-            LOGGER.debug("The age was not provided");
-            return Age.ageNotKnown();
-        }
+    protected static Optional<Age> parseAge(String age) {
         try {
-            Period period = Period.parse(age);
-            LOGGER.info("Using age {}", period);
-            return Age.parse(period);
-        } catch (DateTimeParseException e) {
-            throw new LiricalRuntimeException("Unable to parse age '" + age + "': " + e.getMessage(), e);
+            return Optional.of(AgeParser.parse(age));
+        } catch (AgeParseException e) {
+            LOGGER.warn("Unable to parse age: {}", e.getMessage(), e);
+            return Optional.empty();
         }
     }
 

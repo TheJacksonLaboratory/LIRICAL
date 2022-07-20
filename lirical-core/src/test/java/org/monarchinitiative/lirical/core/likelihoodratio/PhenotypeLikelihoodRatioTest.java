@@ -23,11 +23,11 @@ public class PhenotypeLikelihoodRatioTest {
 
     private static PhenotypeLikelihoodRatio phenotypeLrCalculator =null;
 
-    private static HpoDiseases hpoDiseases = TestResources.hpoDiseases();
-    private static Map<TermId, HpoDisease> diseaseMap = hpoDiseases.diseaseById();
+    private static final HpoDiseases hpoDiseases = TestResources.hpoDiseases();
+    private static final Map<TermId, HpoDisease> diseaseMap = hpoDiseases.diseaseById();
 
 
-    private static final double EPSILON=0.000001;
+    private static final double ERROR = 5E-6;
 
 
     @BeforeAll
@@ -50,15 +50,13 @@ public class PhenotypeLikelihoodRatioTest {
     @Test
     public void testFrequency1() {
         TermId tid = TermId.of("HP:0000028");
-        double expected = (double)1/3;
-        assertEquals(expected, phenotypeLrCalculator.getBackgroundFrequency(tid),EPSILON);
+        assertEquals(.2, phenotypeLrCalculator.getBackgroundFrequency(tid), ERROR);
     }
 
     @Test
     public void testFrequency2() {
         TermId tid = TermId.of("HP:0000047");
-        double expected = (double)1/3;
-        assertEquals(expected, phenotypeLrCalculator.getBackgroundFrequency(tid),EPSILON);
+        assertEquals(.2, phenotypeLrCalculator.getBackgroundFrequency(tid), ERROR);
     }
 
 
@@ -69,8 +67,7 @@ public class PhenotypeLikelihoodRatioTest {
     @Test
     public void testFrequency3() {
         TermId tid = TermId.of("HP:0000035");
-        double expected = (double)1/3;
-        assertEquals(expected, phenotypeLrCalculator.getBackgroundFrequency(tid),EPSILON);
+        assertEquals(.2, phenotypeLrCalculator.getBackgroundFrequency(tid), ERROR);
     }
 
 
@@ -83,9 +80,8 @@ public class PhenotypeLikelihoodRatioTest {
         TermId diseaseName = TermId.of("OMIM:216300");
         HpoDisease disease = diseaseMap.get(diseaseName);
         assertNotNull(disease);
-        double expected =1.0;
         double frq = disease.getAnnotation(tid).map(HpoDiseaseAnnotation::frequency).get();
-        assertEquals(expected,  frq,EPSILON);
+        assertEquals(1.0, frq, ERROR);
     }
 
 

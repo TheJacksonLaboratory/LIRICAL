@@ -1,9 +1,12 @@
-package org.monarchinitiative.lirical.core.analysis;
+package org.monarchinitiative.lirical.core.analysis.runner;
 
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * {@link ForkJoinWorkerThread} with a custom name for pretty logging output.
+ */
 class LiricalWorkerThread extends ForkJoinWorkerThread {
 
     private static final AtomicInteger WORKER_COUNTER = new AtomicInteger();

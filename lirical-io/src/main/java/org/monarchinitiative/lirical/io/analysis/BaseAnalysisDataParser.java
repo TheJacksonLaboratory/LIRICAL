@@ -2,21 +2,24 @@ package org.monarchinitiative.lirical.io.analysis;
 
 import org.monarchinitiative.lirical.core.analysis.AnalysisDataParser;
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
-import org.monarchinitiative.lirical.core.model.*;
+import org.monarchinitiative.lirical.core.io.AgeParseException;
+import org.monarchinitiative.lirical.core.io.AgeParser;
 import org.monarchinitiative.lirical.core.io.VariantParser;
 import org.monarchinitiative.lirical.core.io.VariantParserFactory;
+import org.monarchinitiative.lirical.core.model.Gene2Genotype;
+import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
+import org.monarchinitiative.lirical.core.model.LiricalVariant;
+import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
+import org.monarchinitiative.phenol.annotations.base.temporal.Age;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.time.Period;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 abstract class BaseAnalysisDataParser implements AnalysisDataParser {
 
@@ -83,18 +86,12 @@ abstract class BaseAnalysisDataParser implements AnalysisDataParser {
         };
     }
 
-    protected static Age parseAge(String age) {
-        if (age == null) {
-            LOGGER.debug("The age was not provided");
-            return Age.ageNotKnown();
-        }
+    protected static Optional<Age> parseAge(String age) {
         try {
-            Period period = Period.parse(age);
-            LOGGER.info("Using age {}", period);
-            return Age.parse(period);
-        } catch (DateTimeParseException e) {
-            LOGGER.warn("Unable to parse age '{}': {}", age, e.getMessage());
-            return Age.ageNotKnown();
+            return Optional.of(AgeParser.parse(age));
+        } catch (AgeParseException e) {
+            LOGGER.warn("Unable to parse age: {}", e.getMessage(), e);
+            return Optional.empty();
         }
     }
 }

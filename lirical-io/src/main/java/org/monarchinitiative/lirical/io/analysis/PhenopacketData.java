@@ -1,8 +1,8 @@
 package org.monarchinitiative.lirical.io.analysis;
 
-import org.monarchinitiative.lirical.core.model.Age;
 import org.monarchinitiative.lirical.core.model.GenotypedVariant;
 import org.monarchinitiative.lirical.core.model.Sex;
+import org.monarchinitiative.phenol.annotations.base.temporal.Age;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.nio.file.Path;

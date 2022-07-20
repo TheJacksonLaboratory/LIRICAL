@@ -92,7 +92,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
             genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.variantParserFactory().orElse(null));
         }
 
-        return AnalysisData.of(sampleId, parseAge(age), sex, observedTerms, negatedTerms, genes);
+        return AnalysisData.of(sampleId, parseAge(age).orElse(null), sex, observedTerms, negatedTerms, genes);
     }
 
 }

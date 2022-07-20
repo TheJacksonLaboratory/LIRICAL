@@ -67,6 +67,16 @@ public class BenchmarkCommand extends BaseLiricalCommand {
             description = "Genome build (default: ${DEFAULT-VALUE}).")
     protected String genomeBuild = "hg38";
 
+    @CommandLine.Option(names = {"--use-age"},
+            // TODO - better description
+            description = "Use proband's age to filter out diseases with (default: ${DEFAULT-VALUE})")
+    public boolean useOnset = false;
+
+    @CommandLine.Option(names = {"--age-strict"},
+            // TODO - better description
+            description = "Apply strict age comparison (default: ${DEFAULT-VALUE})")
+    public boolean strictOnset = false;
+
     @Override
     public Integer call() throws Exception {
         printBanner();
@@ -95,7 +105,8 @@ public class BenchmarkCommand extends BaseLiricalCommand {
 
                 // 4 - run the analysis.
                 LOGGER.info("Starting the analysis: {}", analysisOptions);
-                LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
+                AnalysisRunnerOptions runnerOptions = prepareAnalysisRunnerOptions();
+                LiricalAnalysisRunner analysisRunner = lirical.analysisRunnerFactory().getRunner(runnerOptions);
                 AnalysisResults results = analysisRunner.run(benchmarkData.analysisData(), analysisOptions);
 
                 // 5 - summarize the results.
@@ -108,6 +119,12 @@ public class BenchmarkCommand extends BaseLiricalCommand {
 
         reportElapsedTime(start, System.currentTimeMillis());
         return 0;
+    }
+
+    private AnalysisRunnerOptions prepareAnalysisRunnerOptions() {
+        AnalysisRunnerOptions.RunnerType runnerType = useOnset ? AnalysisRunnerOptions.RunnerType.ONSET : AnalysisRunnerOptions.RunnerType.DEFAULT;
+        AnalysisRunnerOptions.OnsetAwareRunnerOptions onsetAwareRunnerOptions = new AnalysisRunnerOptions.OnsetAwareRunnerOptions(strictOnset);
+        return new AnalysisRunnerOptions(runnerType, onsetAwareRunnerOptions);
     }
 
     protected List<String> checkInput() {

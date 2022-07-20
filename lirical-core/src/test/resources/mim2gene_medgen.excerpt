@@ -1,0 +1,50 @@
+#MIM number	GeneID	type	Source	MedGenCUI	Comment
+610911	57514	gene	-	-	-
+100300	57514	phenotype	 GeneMap	CN028867	-
+134797	2200	gene	-	-	-
+102370	2200	phenotype	 GeneMap	C0265287	-
+129600	2200	phenotype	 GeneMap	C1851286	-
+134797	2200	gene	-	-	-
+154700	2200	phenotype	 GeneMap	C0024796	-
+184900	2200	phenotype	 GeneMap	C1861456	-
+604308	2200	phenotype	 GeneMap	C1858556	-
+608328	2200	phenotype	 GeneMap	C1869115	-
+614185	2200	phenotype	 GeneMap	C3280054	-
+616914	2200	phenotype	 GeneMap	C4310796	-
+143890	10842	phenotype	 GeneMap	C0020445	susceptibility
+143890	19	phenotype	 GeneMap	C0020445	susceptibility
+143890	2053	phenotype	 GeneMap	C0020445	susceptibility; modifier
+143890	2690	phenotype	 GeneMap	C0020445	susceptibility; modifier
+143890	336	phenotype	 GeneMap	C0020445	susceptibility; modifier
+143890	3700	phenotype	 GeneMap	C0020445	susceptibility
+143890	3949	phenotype	 GeneMap	C0020445	-
+604088	10842	gene	-	-	-
+600046	19	gene	-	-	-
+132811	2053	gene	-	-	-
+600946	2690	gene	-	-	-
+107670	336	gene	-	-	-
+600564	3700	gene	-	-	-
+606945	3949	gene	-	-	-
+142900	6910	phenotype	 GeneMap	C0265264	-
+601620	6910	gene	-	-	-
+540000	4511	phenotype	 GeneReviews	C0162671	-
+540000	4512	phenotype	 GeneReviews	C0162671	-
+540000	4513	phenotype	 GeneReviews	C0162671	-
+540000	4514	phenotype	 GeneReviews	C0162671	-
+540000	4519	phenotype	 GeneReviews	C0162671	-
+540000	4535	phenotype	 GeneReviews	C0162671	-
+540000	4540	phenotype	 GeneReviews	C0162671	-
+540000	4541	phenotype	 GeneReviews	C0162671	-
+540000	4558	phenotype	 GeneReviews	C0162671	-
+540000	4566	phenotype	 GeneTests	C0162671	-
+540000	4567	phenotype	 GeneReviews	C0162671	-
+540000	4572	phenotype	 GeneTests	C0162671	-
+540000	4574	phenotype	 GeneTests	C0162671	-
+540000	4575	phenotype	 GeneTests	C0162671	-
+540000	4577	phenotype	 GeneReviews	C0162671	-
+540000	4578	phenotype	 GeneReviews	C0162671	-
+611254	374654	gene	-	-	-
+613228	175	gene	-	-	-
+600163	6331	gene	-	-	-
+605206	10021	gene	-	-	-
+160710	4624	gene	-	-	-
