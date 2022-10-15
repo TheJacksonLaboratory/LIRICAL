@@ -7,6 +7,5 @@ public record OutputOptions(LrThreshold lrThreshold,
                             float pathogenicityThreshold,
                             boolean displayAllVariants,
                             Path outputDirectory,
-                            String prefix,
-                            Iterable<OutputFormat> outputFormats) {
+                            String prefix) {
 }

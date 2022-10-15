@@ -5,12 +5,12 @@ import java.util.Objects;
 
 /**
  * Convenience class to represent the age of a proband. Note that if (@link #initialized} is false,
- * then we are representing the fact that we do not know the age and we will disregard the feature
+ * then we are representing the fact that we do not know the age we will disregard the feature
  * in our calculations. We will represent prenatal age as negative values.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class Age {
-    private final boolean initialized;
+    private final boolean isUnknown;
     private final int years;
     private final int months;
     private final int days;
@@ -21,14 +21,14 @@ public class Age {
         this.years=years;
         this.months=months;
         this.days=days;
-        initialized=true;
+        this.isUnknown = false;
     }
 
     private Age() {
         this.years=0;
         this.months=0;
         this.days=0;
-        initialized=false;
+        this.isUnknown = true;
     }
 
     public static Age ageNotKnown() {
@@ -45,6 +45,10 @@ public class Age {
 
     public int getDays() {
         return days;
+    }
+
+    public boolean isUnknown() {
+        return isUnknown;
     }
 
     public static Age ageInYears(int y) {
@@ -73,7 +77,7 @@ public class Age {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Age age = (Age) o;
-        return initialized == age.initialized &&
+        return isUnknown == age.isUnknown &&
                 years == age.years &&
                 months == age.months &&
                 days == age.days;
@@ -81,13 +85,13 @@ public class Age {
 
     @Override
     public int hashCode() {
-        return Objects.hash(initialized, years, months, days);
+        return Objects.hash(isUnknown, years, months, days);
     }
 
     @Override
     public String toString() {
         return "Age{" +
-                "initialized=" + initialized +
+                "isUnknown=" + isUnknown +
                 ", years=" + years +
                 ", months=" + months +
                 ", days=" + days +

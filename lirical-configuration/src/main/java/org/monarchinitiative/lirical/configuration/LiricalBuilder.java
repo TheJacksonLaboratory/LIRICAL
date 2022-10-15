@@ -215,7 +215,7 @@ public class LiricalBuilder {
         LiricalAnalysisRunner analyzer = LiricalAnalysisRunnerImpl.of(phenotypeService, phenotypeLikelihoodRatio, genotypeLikelihoodRatio);
 
         // Analysis result writer factory
-        AnalysisResultWriterFactory analysisResultWriterFactory = new AnalysisResultWriterFactory(phenotypeService.hpo(), phenotypeService.diseases());
+        AnalysisResultWriterFactory analysisResultWriterFactory = new AnalysisResultWriterFactoryImpl(phenotypeService.hpo(), phenotypeService.diseases());
 
         return Lirical.of(variantParserFactory,
                 phenotypeService,

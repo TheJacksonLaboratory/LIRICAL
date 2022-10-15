@@ -1,27 +1,16 @@
 package org.monarchinitiative.lirical.core.output;
 
-import org.monarchinitiative.lirical.core.analysis.AnalysisData;
-import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import java.util.Optional;
 
-import java.util.Objects;
+/**
+ * Factory class for getting {@link AnalysisResultsWriter}s.
+ */
+public interface AnalysisResultWriterFactory {
 
-public class AnalysisResultWriterFactory {
-
-    private final Ontology hpo;
-    private final HpoDiseases diseases;
-
-    public AnalysisResultWriterFactory(Ontology hpo, HpoDiseases diseases) {
-        this.hpo = Objects.requireNonNull(hpo);
-        this.diseases = Objects.requireNonNull(diseases);
-    }
-
-
-    public AnalysisResultsWriter getWriter(AnalysisData analysisData,
-                                           AnalysisResults analysisResults,
-                                           AnalysisResultsMetadata metadata) {
-        return new AnalysisResultsWriter(hpo, diseases, analysisData, analysisResults, metadata);
-    }
+    /**
+     * Get {@link AnalysisResultsWriter} or an empty {@link Optional} if the factory does not know about
+     * an {@link AnalysisResultsWriter} for the given {@link OutputFormat}.
+     */
+    Optional<AnalysisResultsWriter> getWriter(OutputFormat outputFormat);
 
 }
