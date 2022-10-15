@@ -24,9 +24,8 @@ public class JsonAnalysisResultWriter implements AnalysisResultsWriter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonAnalysisResultWriter.class);
 
-    private static final JsonAnalysisResultWriter INSTANCE = new JsonAnalysisResultWriter();
-
     private static final Version VERSION = new Version(0, 1, 0, null, null, null);
+    private static final JsonAnalysisResultWriter INSTANCE = new JsonAnalysisResultWriter();
     private final ObjectMapper objectMapper;
 
     public static JsonAnalysisResultWriter of() {
