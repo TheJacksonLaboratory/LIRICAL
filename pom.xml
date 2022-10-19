@@ -31,7 +31,7 @@
 <!--        <h2.version>1.4.197</h2.version> &lt;!&ndash; This is what Exomiser uses currently &ndash;&gt;-->
         <h2.version>1.4.200</h2.version>
         <htsjdk.version>2.24.1</htsjdk.version>
-        <jackson.version>2.13.3</jackson.version>
+        <jackson.version>2.13.4.1</jackson.version>
         <phenopacket.version>2.0.0</phenopacket.version>
         <protobuf.version>3.19.4</protobuf.version>
 
