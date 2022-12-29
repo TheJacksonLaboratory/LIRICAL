@@ -94,13 +94,12 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
                         "of number of called pathogenic alleles. (default: ${DEFAULT-VALUE}).")
         public boolean strict = false;
 
-        /* Default frequency of called-pathogenic variants in the general population (gnomAD). In the vast majority of
-         * cases, we can derive this information from gnomAD. This constant is used if for whatever reason,
-         * data was not available.
-         */
         @CommandLine.Option(names = {"--variant-background-frequency"},
-                // TODO - add better description
-                description = "Default background frequency of variants in a gene (default: ${DEFAULT-VALUE}).")
+                description = {
+                "Default frequency of called-pathogenic variants in the general population (gnomAD).",
+                        "In the vast majority of cases, we can derive this information from gnomAD.",
+                        "This constant is used if for whatever reason, data was not available.",
+                        "(default: ${DEFAULT-VALUE})."})
         public double defaultVariantBackgroundFrequency = 0.1;
 
         @CommandLine.Option(names = {"--pathogenicity-threshold"},

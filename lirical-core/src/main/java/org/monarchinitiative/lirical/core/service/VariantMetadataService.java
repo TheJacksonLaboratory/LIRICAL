@@ -11,7 +11,7 @@ public interface VariantMetadataService {
     /**
      * We will assume a frequency of 1:100,000 if no frequency data is available.
      */
-    float DEFAULT_FREQUENCY = 0.00001F;
+    float DEFAULT_FREQUENCY = 1e-5f;
     
     static Options defaultOptions() {
         return new Options(DEFAULT_FREQUENCY);

@@ -69,6 +69,11 @@ public class LiricalBuilder {
         return this;
     }
 
+    /**
+     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
+     * @return the builder
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder genomeBuild(GenomeBuild genomeBuild) {
         if (genomeBuild == null) {
             LOGGER.warn("Cannot set genome build to null. Retaining {}", this.genomeBuild);
@@ -78,11 +83,21 @@ public class LiricalBuilder {
         return this;
     }
 
+    /**
+     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
+     * @return the builder
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder backgroundVariantFrequency(Path backgroundVariantFrequency) {
         this.backgroundVariantFrequency = backgroundVariantFrequency;
         return this;
     }
 
+    /**
+     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
+     * @return the builder
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder transcriptDatabase(TranscriptDatabase transcriptDatabase) {
         if (transcriptDatabase == null) {
             LOGGER.warn("Cannot set transcript database to null");
@@ -96,12 +111,20 @@ public class LiricalBuilder {
      * @param defaultVariantAlleleFrequency default variant allele frequency to set.
      *                                      The frequency is only used if
      *                                      {@link #variantMetadataService(VariantMetadataService)} is unset.
+     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
+     * @return the builder
      */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder defaultVariantAlleleFrequency(float defaultVariantAlleleFrequency) {
         this.defaultVariantAlleleFrequency = defaultVariantAlleleFrequency;
         return this;
     }
 
+    /**
+     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
+     * @return the builder
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder genotypeLrProperties(GenotypeLrProperties genotypeLrProperties) {
         if (genotypeLrProperties == null) {
             LOGGER.warn("Cannot set genotype likelihood ratio properties to null");
@@ -116,15 +139,30 @@ public class LiricalBuilder {
         return this;
     }
 
+    /**
+     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
+     * @return the builder
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder clearDiseaseDatabases() {
         this.diseaseDatabases.clear();
         return this;
     }
 
+    /**
+     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
+     * @return the builder
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder addDiseaseDatabases(DiseaseDatabase... diseaseDatabases) {
         return addDiseaseDatabases(Arrays.asList(diseaseDatabases));
     }
 
+    /**
+     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
+     * @return the builder
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder addDiseaseDatabases(Collection<DiseaseDatabase> diseaseDatabases) {
         if (diseaseDatabases == null) {
             LOGGER.warn("Disease databases should not be null!");
@@ -134,6 +172,11 @@ public class LiricalBuilder {
         return this;
     }
 
+    /**
+     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
+     * @return the builder
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder setDiseaseDatabases(Collection<DiseaseDatabase> diseaseDatabases) {
         if (diseaseDatabases == null) {
             LOGGER.warn("Disease databases should not be null!");
@@ -149,6 +192,11 @@ public class LiricalBuilder {
         return this;
     }
 
+    /**
+     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
+     * @return the builder
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder genotypeLikelihoodRatio(GenotypeLikelihoodRatio genotypeLikelihoodRatio) {
         this.genotypeLikelihoodRatio = genotypeLikelihoodRatio;
         return this;
@@ -249,7 +297,9 @@ public class LiricalBuilder {
         }
     }
 
-    private static GenotypeLikelihoodRatio configureGenotypeLikelihoodRatio(Path backgroundVariantFrequency, GenomeBuild genomeBuild, GenotypeLrProperties genotypeLrProperties) throws LiricalDataException {
+    private static GenotypeLikelihoodRatio configureGenotypeLikelihoodRatio(Path backgroundVariantFrequency,
+                                                                            GenomeBuild genomeBuild,
+                                                                            GenotypeLrProperties genotypeLrProperties) throws LiricalDataException {
         BackgroundVariantFrequencyService backgroundVariantFrequencyService;
         try (BufferedReader br = backgroundVariantFrequency == null
                 ? LoadUtils.openBundledBackgroundFrequencyFile(genomeBuild)
