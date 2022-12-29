@@ -5,6 +5,7 @@ import org.monarchinitiative.lirical.core.model.Gene2Genotype;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.service.PhenotypeService;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
@@ -42,11 +44,15 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
 
     @Override
     public AnalysisResults run(AnalysisData data, AnalysisOptions options) {
+        Collection<String> diseaseDatabasePrefixes = options.diseaseDatabases().stream()
+                .map(DiseaseDatabase::prefix)
+                .collect(Collectors.toList());
         Map<TermId, List<Gene2Genotype>> diseaseToGenotype = groupDiseasesByGene(data.genes());
 
         ProgressReporter progressReporter = new ProgressReporter(1_000, "diseases");
         Stream<TestResult> testResultStream = phenotypeService.diseases().hpoDiseases()
                 .parallel() // why not?
+                .filter(d -> diseaseDatabasePrefixes.contains(d.id().getPrefix()))
                 .peek(d -> progressReporter.log())
                 .map(disease -> analyzeDisease(disease, data, options, diseaseToGenotype))
                 .flatMap(Optional::stream);
@@ -105,7 +111,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
                 if (options.disregardDiseaseWithNoDeleteriousVariants()) {
                     // has at least one pathogenic clinvar variant or predicted pathogenic variant?
                     if (g2g.pathogenicClinVarCount(analysisData.sampleId()) > 0
-                            || g2g.pathogenicAlleleCount(analysisData.sampleId(), options.pathogenicityThreshold()) > 0) {
+                            || g2g.pathogenicAlleleCount(analysisData.sampleId(), options.variantDeleteriousnessThreshold()) > 0) {
                         noPredictedDeleteriousVariantsWereFound = false;
                     }
                 }

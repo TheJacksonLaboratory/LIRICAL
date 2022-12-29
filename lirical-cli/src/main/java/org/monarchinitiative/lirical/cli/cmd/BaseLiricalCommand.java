@@ -170,6 +170,14 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
     protected AnalysisOptions prepareAnalysisOptions(Lirical lirical) {
         LOGGER.debug("Using uniform pretest disease probabilities.");
         PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(lirical.phenotypeService().diseases());
+
+        // TODO - return this instance
+        AnalysisOptions.builder()
+                .setDiseaseDatabases(runConfiguration.useOrphanet
+                        ? DiseaseDatabase.allKnownDiseaseDatabases()
+                        : Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER))
+                .build();
+
         return AnalysisOptions.of(runConfiguration.globalAnalysisMode,
                 pretestDiseaseProbability,
                 runConfiguration.disregardDiseaseWithNoDeleteriousVariants,

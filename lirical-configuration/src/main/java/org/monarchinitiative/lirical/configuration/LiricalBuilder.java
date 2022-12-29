@@ -41,7 +41,6 @@ public class LiricalBuilder {
 
     private final Path dataDirectory;
     private final LiricalDataResolver liricalDataResolver;
-    private final Set<DiseaseDatabase> diseaseDatabases = new HashSet<>(Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER));
     private GenomeBuild genomeBuild = GenomeBuild.HG38;
     private Path exomiserVariantDatabase = null;
     private Path backgroundVariantFrequency = null;
@@ -145,7 +144,7 @@ public class LiricalBuilder {
      */
     @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder clearDiseaseDatabases() {
-        this.diseaseDatabases.clear();
+        LOGGER.warn("Setting disease databases has been deprecated. Set the desired disease databases via AnalysisOptions");
         return this;
     }
 
@@ -164,11 +163,7 @@ public class LiricalBuilder {
      */
     @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder addDiseaseDatabases(Collection<DiseaseDatabase> diseaseDatabases) {
-        if (diseaseDatabases == null) {
-            LOGGER.warn("Disease databases should not be null!");
-            return this;
-        }
-        this.diseaseDatabases.addAll(diseaseDatabases);
+        LOGGER.warn("Setting disease databases has been deprecated. Set the desired disease databases via AnalysisOptions");
         return this;
     }
 
@@ -178,12 +173,7 @@ public class LiricalBuilder {
      */
     @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder setDiseaseDatabases(Collection<DiseaseDatabase> diseaseDatabases) {
-        if (diseaseDatabases == null) {
-            LOGGER.warn("Disease databases should not be null!");
-            return this;
-        }
-        this.diseaseDatabases.clear();
-        this.diseaseDatabases.addAll(diseaseDatabases);
+        LOGGER.warn("Setting disease databases has been deprecated. Set the desired disease databases via AnalysisOptions");
         return this;
     }
 
@@ -224,7 +214,7 @@ public class LiricalBuilder {
     public Lirical build() throws LiricalDataException {
         // First, services
         if (phenotypeService == null) {
-            HpoDiseaseLoaderOptions diseaseLoaderOptions = HpoDiseaseLoaderOptions.of(diseaseDatabases, true, HpoDiseaseLoaderOptions.DEFAULT_COHORT_SIZE);
+            HpoDiseaseLoaderOptions diseaseLoaderOptions = HpoDiseaseLoaderOptions.of(DiseaseDatabase.allKnownDiseaseDatabases(), true, HpoDiseaseLoaderOptions.DEFAULT_COHORT_SIZE);
             phenotypeService = configurePhenotypeService(dataDirectory, diseaseLoaderOptions);
         }
 
