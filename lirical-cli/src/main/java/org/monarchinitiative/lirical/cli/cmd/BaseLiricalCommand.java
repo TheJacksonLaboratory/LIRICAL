@@ -20,11 +20,9 @@ import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 /**
  * Base class that describes data and configuration sections of the CLI, and contains common functionalities.
@@ -35,12 +33,9 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
     private static final Properties PROPERTIES = readProperties();
     protected static final String LIRICAL_VERSION = PROPERTIES.getProperty("lirical.version", "unknown version");
 
-    private static final String LIRICAL_BANNER = readBanner();
-
     private static String readBanner() {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(BaseLiricalCommand.class.getResourceAsStream("/banner.txt")), StandardCharsets.UTF_8))) {
-            return reader.lines()
-                    .collect(Collectors.joining(System.lineSeparator()));
+        try (InputStream is = new BufferedInputStream(Objects.requireNonNull(BaseLiricalCommand.class.getResourceAsStream("/banner.txt")))) {
+            return new String(is.readAllBytes());
         } catch (IOException e) {
             // swallow
             return "";
@@ -129,7 +124,7 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
     }
 
     protected static void printBanner() {
-        System.out.println(LIRICAL_BANNER);
+        System.out.println(readBanner());
     }
 
     protected List<String> checkInput() {

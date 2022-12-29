@@ -7,7 +7,7 @@ v2.0.0 (TBD)
 -------------------
 - Require Java 17
 - Prune and split codebase into several Maven modules
-- Enhance HTML report
+- Enhance HTML report, add `JSON` output format
 - Add ``prioritize`` command for running LIRICAL entirely from CLI
 - Add support for phenopacket schema ``v2``
 

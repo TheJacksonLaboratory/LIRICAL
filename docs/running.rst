@@ -8,6 +8,7 @@ LIRICAL is a command-line Java tool that runs with Java version 8 or higher. LIR
 can be run both with and without genomic data in form of a VCF file from genome, exome,
 or NGS gene-panel sequencing.
 
+On typical computers, LIRICAL will run from about 15 to 60 seconds, or longer if a whole-genome file is used as input.
 
 To get help, run LIRICAL with a command or with the option "-h": ::
 

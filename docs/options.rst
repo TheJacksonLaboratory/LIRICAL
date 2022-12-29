@@ -85,10 +85,10 @@ The ``phenopacket`` command runs LIRICAL from a Phenopacket file.
       - ucsc
       - transcript database. Valid options
         are UCSC, Ensembl, and RefSeq
-    * - none
-      - ``--tsv``
-      - false
-      - Use TSV instead of HTML output
+    * - ``-f``
+      - ``--output-format``
+      - html
+      - The data format to use for results, the option can be provided multiple times. Valid options are ``html``, ``tsv``, and ``json``.
 
 
 
