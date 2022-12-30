@@ -51,7 +51,7 @@ public class LiricalBuilder {
     /**
      * @deprecated use {@link #exomiserVariantDbPath(GenomeBuild, Path)} instead.
      */
-    @Deprecated(since = "2.0.0-RC3", forRemoval = true)
+    @Deprecated(since = "2.0.0-RC2", forRemoval = true)
     public LiricalBuilder exomiserVariantDatabase(Path exomiserVariantDatabase) {
         LOGGER.warn("Setting path to Exomiser database has been deprecated. Use `exomiserVariantDbPath(GenomeBuild genomeBuild, Path exomiserVariantDatabase)` to set path to database for a genome build!");
         return this;
@@ -83,7 +83,7 @@ public class LiricalBuilder {
      * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
      * @return the builder
      */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder genomeBuild(GenomeBuild genomeBuild) {
         LOGGER.warn("Setting genome build has been deprecated. Set the desired genome build via AnalysisOptions!");
         return this;
@@ -93,7 +93,7 @@ public class LiricalBuilder {
      * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
      * @return the builder
      */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder backgroundVariantFrequency(Path backgroundVariantFrequency) {
         LOGGER.warn("Setting path to background variant frequency has been deprecated! Set backgroundVariantFrequencyServiceFactory instead!");
         return this;
@@ -108,7 +108,7 @@ public class LiricalBuilder {
      * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
      * @return the builder
      */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder transcriptDatabase(TranscriptDatabase transcriptDatabase) {
         LOGGER.warn("Setting transcript database has been deprecated. Set the desired database build via AnalysisOptions!");
         return this;
@@ -121,7 +121,7 @@ public class LiricalBuilder {
      * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
      * @return the builder
      */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder defaultVariantAlleleFrequency(float defaultVariantAlleleFrequency) {
         LOGGER.warn("Setting default variant allele frequency has been deprecated. Set the desired value via AnalysisOptions!");
         return this;
@@ -131,7 +131,7 @@ public class LiricalBuilder {
      * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
      * @return the builder
      */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder genotypeLrProperties(GenotypeLrProperties genotypeLrProperties) {
         LOGGER.warn("Setting genotype LR properties has been deprecated. Set the desired value via AnalysisOptions!");
         return this;
@@ -146,7 +146,7 @@ public class LiricalBuilder {
      * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
      * @return the builder
      */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder clearDiseaseDatabases() {
         LOGGER.warn("Setting disease databases has been deprecated. Set the desired disease databases via AnalysisOptions");
         return this;
@@ -156,7 +156,7 @@ public class LiricalBuilder {
      * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
      * @return the builder
      */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder addDiseaseDatabases(DiseaseDatabase... diseaseDatabases) {
         return addDiseaseDatabases(Arrays.asList(diseaseDatabases));
     }
@@ -165,7 +165,7 @@ public class LiricalBuilder {
      * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
      * @return the builder
      */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder addDiseaseDatabases(Collection<DiseaseDatabase> diseaseDatabases) {
         LOGGER.warn("Setting disease databases has been deprecated. Set the desired disease databases via AnalysisOptions");
         return this;
@@ -175,13 +175,13 @@ public class LiricalBuilder {
      * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
      * @return the builder
      */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder setDiseaseDatabases(Collection<DiseaseDatabase> diseaseDatabases) {
         LOGGER.warn("Setting disease databases has been deprecated. Set the desired disease databases via AnalysisOptions");
         return this;
     }
 
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder phenotypeLikelihoodRatio(PhenotypeLikelihoodRatio phenotypeLikelihoodRatio) {
         LOGGER.warn("Setting phenotype LR has been deprecated. Set the desired value via AnalysisOptions!");
         return this;
@@ -191,7 +191,7 @@ public class LiricalBuilder {
      * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
      * @return the builder
      */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder genotypeLikelihoodRatio(GenotypeLikelihoodRatio genotypeLikelihoodRatio) {
         LOGGER.warn("Setting genotype LR has been deprecated. Set the desired value via AnalysisOptions!");
         return this;
@@ -211,7 +211,7 @@ public class LiricalBuilder {
      * @deprecated setting variant metadata service has been deprecated.
      * Use {@link #variantMetadataServiceFactory(VariantMetadataServiceFactory)} instead.
      */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public LiricalBuilder variantMetadataService(VariantMetadataService variantMetadataService) {
         LOGGER.warn("Setting variant metadata service has been deprecated.");
         return this;

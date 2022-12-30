@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * @deprecated to be removed in 2.0.0 without replacement as a redundant class.
  */
-@Deprecated(forRemoval = true, since = "2.0.0-RC3")
+@Deprecated(forRemoval = true, since = "2.0.0-RC2")
 public final class GenotypeLrProperties {
     private final float pathogenicityThreshold;
     private final double defaultVariantBackgroundFrequency;
@@ -24,7 +24,7 @@ public final class GenotypeLrProperties {
     /**
      * @deprecated use {@link #defaultVariantBackgroundFrequency()} instead.
      */
-    @Deprecated(since = "2.0.0-RC3", forRemoval = true)
+    @Deprecated(since = "2.0.0-RC2", forRemoval = true)
     public double defaultVariantFrequency() {
         return defaultVariantBackgroundFrequency;
     }

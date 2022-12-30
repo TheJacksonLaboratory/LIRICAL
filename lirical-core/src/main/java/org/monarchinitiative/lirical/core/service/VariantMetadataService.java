@@ -13,14 +13,14 @@ public interface VariantMetadataService {
      */
     float DEFAULT_FREQUENCY = 1e-5f;
 
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     static Options defaultOptions() {
         return new Options(DEFAULT_FREQUENCY);
     }
 
     VariantMetadata metadata(GenomicVariant variant, List<VariantEffect> effects);
 
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     record Options(float defaultFrequency) {
     }
 }

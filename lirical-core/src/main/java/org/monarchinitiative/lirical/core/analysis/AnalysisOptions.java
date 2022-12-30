@@ -78,7 +78,7 @@ public interface AnalysisOptions {
      * @return a variant frequency to assume for the variants with no available frequency data.
      * @deprecated the parameter has been deprecated in favor of a constant in {@link VariantMetadataService#DEFAULT_FREQUENCY}.
      */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     default float defaultVariantAlleleFrequency() {
         return Float.NaN;
     }
@@ -125,7 +125,7 @@ public interface AnalysisOptions {
      * @return variant pathogenicity threshold value.
      * @deprecated use {@link #variantDeleteriousnessThreshold()} instead.
      */
-    @Deprecated(since = "2.0.0-RC3", forRemoval = true)
+    @Deprecated(since = "2.0.0-RC2", forRemoval = true)
     default float pathogenicityThreshold() {
         return variantDeleteriousnessThreshold();
     }
