@@ -47,7 +47,6 @@ public interface AnalysisOptions {
         return new AnalysisOptionsDefault(GenomeBuild.HG38,
                 TranscriptDatabase.REFSEQ,
                 Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER),
-                VariantMetadataService.DEFAULT_FREQUENCY,
                 pathogenicityThreshold,
                 .1,
                 false,
@@ -77,8 +76,12 @@ public interface AnalysisOptions {
 
     /**
      * @return a variant frequency to assume for the variants with no available frequency data.
+     * @deprecated the parameter has been deprecated in favor of a constant in {@link VariantMetadataService#DEFAULT_FREQUENCY}.
      */
-    float defaultVariantAlleleFrequency();
+    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    default float defaultVariantAlleleFrequency() {
+        return Float.NaN;
+    }
 
     /**
      * @return threshold for determining if the variant is deleterious or not.
@@ -137,7 +140,6 @@ public interface AnalysisOptions {
         private GenomeBuild genomeBuild = GenomeBuild.HG38;
         private TranscriptDatabase transcriptDatabase = TranscriptDatabase.REFSEQ;
         private final Set<DiseaseDatabase> diseaseDatabases = new HashSet<>(List.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER));
-        private float defaultVariantAlleleFrequency = VariantMetadataService.DEFAULT_FREQUENCY;
         private float variantDeleteriousnessThreshold = .8f;
         private double defaultVariantBackgroundFrequency = .1;
         private boolean useStrictPenalties = false;
@@ -166,7 +168,6 @@ public interface AnalysisOptions {
             return this;
         }
 
-
         public Builder clearDiseaseDatabases() {
             this.diseaseDatabases.clear();
             return this;
@@ -192,11 +193,6 @@ public interface AnalysisOptions {
             }
             this.diseaseDatabases.clear();
             this.diseaseDatabases.addAll(diseaseDatabases);
-            return this;
-        }
-
-        public Builder defaultVariantAlleleFrequency(float defaultVariantAlleleFrequency) {
-            this.defaultVariantAlleleFrequency = defaultVariantAlleleFrequency;
             return this;
         }
 
@@ -235,7 +231,6 @@ public interface AnalysisOptions {
             return new AnalysisOptionsDefault(genomeBuild,
                     transcriptDatabase,
                     diseaseDatabases,
-                    defaultVariantAlleleFrequency,
                     variantDeleteriousnessThreshold,
                     defaultVariantBackgroundFrequency,
                     useStrictPenalties,

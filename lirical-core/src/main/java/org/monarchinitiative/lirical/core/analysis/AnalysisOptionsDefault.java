@@ -11,7 +11,6 @@ record AnalysisOptionsDefault(
         GenomeBuild genomeBuild,
         TranscriptDatabase transcriptDatabase,
         Set<DiseaseDatabase> diseaseDatabases,
-        float defaultVariantAlleleFrequency,
         float variantDeleteriousnessThreshold,
         double defaultVariantBackgroundFrequency,
         boolean useStrictPenalties,

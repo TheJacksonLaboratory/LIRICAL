@@ -4,6 +4,7 @@ import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.service.BackgroundVariantFrequencyService;
 import org.monarchinitiative.lirical.core.service.BackgroundVariantFrequencyServiceFactory;
+import org.monarchinitiative.lirical.io.background.BackgroundVariantFrequencyParser;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

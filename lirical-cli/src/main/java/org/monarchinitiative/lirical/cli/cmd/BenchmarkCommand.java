@@ -76,13 +76,15 @@ public class BenchmarkCommand extends BaseLiricalCommand {
         List<String> errors = checkInput();
         if (!errors.isEmpty())
             throw new LiricalException(String.format("Errors: %s", String.join(", ", errors)));
+        GenomeBuild genomeBuild = parseGenomeBuild(getGenomeBuild());
+        TranscriptDatabase transcriptDb = runConfiguration.transcriptDb;
 
         // 1 - bootstrap LIRICAL.
-        Lirical lirical = bootstrapLirical();
+        Lirical lirical = bootstrapLirical(genomeBuild);
 
         // 2 - prepare the simulation data shared by all phenopackets.
-        AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical);
-        List<LiricalVariant> backgroundVariants = readBackgroundVariants(lirical);
+        AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, transcriptDb);
+        List<LiricalVariant> backgroundVariants = readBackgroundVariants(lirical, genomeBuild, transcriptDb);
 
         try (BufferedWriter writer = openWriter(outputPath);
              CSVPrinter printer = CSVFormat.DEFAULT.print(writer)) {
@@ -131,7 +133,9 @@ public class BenchmarkCommand extends BaseLiricalCommand {
         return genomeBuild;
     }
 
-    private List<LiricalVariant> readBackgroundVariants(Lirical lirical) throws LiricalParseException {
+    private List<LiricalVariant> readBackgroundVariants(Lirical lirical,
+                                                        GenomeBuild genomeBuild,
+                                                        TranscriptDatabase transcriptDatabase) throws LiricalParseException {
         if (vcfPath == null) {
             LOGGER.info("Path to VCF file was not provided.");
             return List.of();
@@ -141,7 +145,14 @@ public class BenchmarkCommand extends BaseLiricalCommand {
             return List.of();
         }
 
-        try (VariantParser variantParser = lirical.variantParserFactory().get().forPath(vcfPath)) {
+        Optional<VariantParser> parser = lirical.variantParserFactory().get().forPath(vcfPath, genomeBuild, transcriptDatabase);
+        if (parser.isEmpty()) {
+            LOGGER.warn("Cannot obtain parser for processing the VCF file {} with {} {} due to missing resources",
+                    vcfPath.toAbsolutePath(), genomeBuild, transcriptDatabase);
+            return List.of();
+        }
+
+        try (VariantParser variantParser = parser.get()) {
             // Read variants
             LOGGER.info("Reading background variants from {}.", vcfPath.toAbsolutePath());
             ProgressReporter progressReporter = new ProgressReporter(10_000, "variants");

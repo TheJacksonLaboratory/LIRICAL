@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.configuration.impl;
+package org.monarchinitiative.lirical.io.background;
 
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-class BackgroundVariantFrequencyParser {
+public class BackgroundVariantFrequencyParser {
     private static final Logger logger = LoggerFactory.getLogger(BackgroundVariantFrequencyParser.class);
 
     private final static String ENTREZ_GENE_PREFIX="NCBIGene";
@@ -26,7 +26,7 @@ class BackgroundVariantFrequencyParser {
     /**
      * symbol	geneID	freqsum-benign	count-benign	freqsum-path	count-path
      */
-    static Map<TermId, Double> parse(BufferedReader reader)  {
+    public static Map<TermId, Double> parse(BufferedReader reader)  {
         // Key: the TermId of a gene.
         // Value. Its background frequency in the current genome build. This variable is only initialized for runs with a VCF file.
         Map<TermId, Double> geneFrequency = new HashMap<>();
