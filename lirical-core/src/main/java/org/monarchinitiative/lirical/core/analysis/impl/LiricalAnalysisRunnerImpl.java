@@ -1,8 +1,12 @@
-package org.monarchinitiative.lirical.core.analysis;
+package org.monarchinitiative.lirical.core.analysis.impl;
 
+import org.monarchinitiative.lirical.core.analysis.*;
+import org.monarchinitiative.lirical.core.exception.LiricalAnalysisException;
 import org.monarchinitiative.lirical.core.likelihoodratio.*;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
+import org.monarchinitiative.lirical.core.model.GenomeBuild;
+import org.monarchinitiative.lirical.core.service.BackgroundVariantFrequencyServiceFactory;
 import org.monarchinitiative.lirical.core.service.PhenotypeService;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
@@ -13,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
@@ -21,40 +24,46 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(LiricalAnalysisRunnerImpl.class);
 
     private final PhenotypeService phenotypeService;
+    private final BackgroundVariantFrequencyServiceFactory bgFreqFactory;
     private final PhenotypeLikelihoodRatio phenotypeLrEvaluator;
-    private final GenotypeLikelihoodRatio genotypeLikelihoodRatio;
     private final ForkJoinPool pool;
 
     public static LiricalAnalysisRunnerImpl of(PhenotypeService phenotypeService,
-                                               PhenotypeLikelihoodRatio phenotypeLrEvaluator,
-                                               GenotypeLikelihoodRatio genotypeLikelihoodRatio) {
-        return new LiricalAnalysisRunnerImpl(phenotypeService, phenotypeLrEvaluator, genotypeLikelihoodRatio);
+                                        BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory) {
+        return new LiricalAnalysisRunnerImpl(phenotypeService, backgroundVariantFrequencyServiceFactory);
     }
 
     private LiricalAnalysisRunnerImpl(PhenotypeService phenotypeService,
-                                      PhenotypeLikelihoodRatio phenotypeLrEvaluator,
-                                      GenotypeLikelihoodRatio genotypeLikelihoodRatio) {
+                                      BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory) {
         this.phenotypeService = Objects.requireNonNull(phenotypeService);
-        this.phenotypeLrEvaluator = Objects.requireNonNull(phenotypeLrEvaluator);
-        this.genotypeLikelihoodRatio = Objects.requireNonNull(genotypeLikelihoodRatio);
+        this.phenotypeLrEvaluator = new PhenotypeLikelihoodRatio(phenotypeService.hpo(), phenotypeService.diseases());
+        this.bgFreqFactory = backgroundVariantFrequencyServiceFactory;
+        // TODO - set parallelism
         int parallelism = Runtime.getRuntime().availableProcessors();
         LOGGER.debug("Creating LIRICAL pool with {} workers.", parallelism);
         this.pool = new ForkJoinPool(parallelism, LiricalWorkerThread::new, null, false);
     }
 
     @Override
-    public AnalysisResults run(AnalysisData data, AnalysisOptions options) {
+    public AnalysisResults run(AnalysisData data, AnalysisOptions options) throws LiricalAnalysisException {
         Collection<String> diseaseDatabasePrefixes = options.diseaseDatabases().stream()
                 .map(DiseaseDatabase::prefix)
-                .collect(Collectors.toList());
+                .toList();
         Map<TermId, List<Gene2Genotype>> diseaseToGenotype = groupDiseasesByGene(data.genes());
+
+        Optional<GenotypeLikelihoodRatio> genotypeLikelihoodRatio = configureGenotypeLikelihoodRatio(options.genomeBuild(),
+                options.variantDeleteriousnessThreshold(),
+                options.defaultVariantBackgroundFrequency(),
+                options.useStrictPenalties());
+        if (genotypeLikelihoodRatio.isEmpty())
+            throw new LiricalAnalysisException("Cannot configure genotype LR for %s".formatted(options.genomeBuild()));
 
         ProgressReporter progressReporter = new ProgressReporter(1_000, "diseases");
         Stream<TestResult> testResultStream = phenotypeService.diseases().hpoDiseases()
                 .parallel() // why not?
                 .filter(d -> diseaseDatabasePrefixes.contains(d.id().getPrefix()))
                 .peek(d -> progressReporter.log())
-                .map(disease -> analyzeDisease(disease, data, options, diseaseToGenotype))
+                .map(disease -> analyzeDisease(genotypeLikelihoodRatio.get(), disease, data, options, diseaseToGenotype))
                 .flatMap(Optional::stream);
 
         try {
@@ -82,7 +91,8 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         return diseaseToGenotype;
     }
 
-    private Optional<TestResult> analyzeDisease(HpoDisease disease,
+    private Optional<TestResult> analyzeDisease(GenotypeLikelihoodRatio genotypeLikelihoodRatio,
+                                                HpoDisease disease,
                                                 AnalysisData analysisData,
                                                 AnalysisOptions options,
                                                 Map<TermId, List<Gene2Genotype>> diseaseToGenotype) {
@@ -160,4 +170,16 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
                 ? base
                 : candidate;
     }
+
+    private Optional<GenotypeLikelihoodRatio> configureGenotypeLikelihoodRatio(GenomeBuild genomeBuild,
+                                                                     float deleteriousnessThreshold,
+                                                                     double defaultVariantBackgroundFrequency,
+                                                                     boolean strict) {
+        return bgFreqFactory.forGenomeBuild(genomeBuild, defaultVariantBackgroundFrequency)
+                .map(bgFreqService -> {
+                    GenotypeLikelihoodRatio.Options options = new GenotypeLikelihoodRatio.Options(deleteriousnessThreshold, strict);
+                    return new GenotypeLikelihoodRatio(bgFreqService, options);
+                });
+    }
+
 }

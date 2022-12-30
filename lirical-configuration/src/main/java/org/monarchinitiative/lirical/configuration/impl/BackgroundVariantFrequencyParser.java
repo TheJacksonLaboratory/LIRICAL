@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.io;
+package org.monarchinitiative.lirical.configuration.impl;
 
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -11,23 +11,22 @@ import java.util.Map;
 
 /**
  * This class coordinates the input of the background frequency file. Note that this file is added as a resource to the
- * JAR file, i.e., {@code LIRICAL.jar!/background/background-hg19.tsv} (or -hg38.tsv), and so it cannot be opened using
- * a path. The user is allowed to provide their own background file, in which case a path is used. There are two
- * factory methods, one for the path and one for the name of a resource (both are strings).
+ * JAR file, i.e., {@code /background/background-hg19.tsv}.
+ *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class GenotypeDataIngestor {
-    private static final Logger logger = LoggerFactory.getLogger(GenotypeDataIngestor.class);
+class BackgroundVariantFrequencyParser {
+    private static final Logger logger = LoggerFactory.getLogger(BackgroundVariantFrequencyParser.class);
 
     private final static String ENTREZ_GENE_PREFIX="NCBIGene";
 
-    private GenotypeDataIngestor() {
+    private BackgroundVariantFrequencyParser() {
     }
 
     /**
      * symbol	geneID	freqsum-benign	count-benign	freqsum-path	count-path
      */
-    public static Map<TermId, Double> parse(BufferedReader reader)  {
+    static Map<TermId, Double> parse(BufferedReader reader)  {
         // Key: the TermId of a gene.
         // Value. Its background frequency in the current genome build. This variable is only initialized for runs with a VCF file.
         Map<TermId, Double> geneFrequency = new HashMap<>();

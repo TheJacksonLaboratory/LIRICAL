@@ -52,9 +52,18 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
                 description = "Path to Lirical data directory.")
         public Path liricalDataDirectory;
 
+        // TODO - add exomiser path per genome build
         @CommandLine.Option(names = {"-e", "--exomiser"},
                 description = "Path to the Exomiser variant database.")
         public Path exomiserDatabase = null;
+
+        @CommandLine.Option(names = {"-e19", "--exomiser-hg19"},
+                description = "Path to the Exomiser variant database for hg19.")
+        public Path exomiserHg19Database = null;
+
+        @CommandLine.Option(names = {"-e38", "--exomiser-hg38"},
+                description = "Path to the Exomiser variant database for hg38.")
+        public Path exomiserHg38Database = null;
 
         @CommandLine.Option(names = {"-b", "--background"},
                 description = "Path to non-default background frequency file.")
@@ -106,9 +115,13 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
                 description = "Variant with greater pathogenicity score is considered deleterious (default: ${DEFAULT-VALUE}).")
         public float pathogenicityThreshold = .8f;
 
+        @Deprecated(forRemoval = true, since = "2.0.0-RC3")
         @CommandLine.Option(names = {"--default-allele-frequency"},
-                description = "Variant with greater allele frequency in at least one population is considered common (default: ${DEFAULT-VALUE}).")
-        public float defaultAlleleFrequency = 1E-5f;
+                description = {
+                "Variant with greater allele frequency in at least one population is considered common.",
+                        "NOTE: the option has been DEPRECATED"
+        })
+        public float defaultAlleleFrequency = Float.NaN;
     }
 
     private static Properties readProperties() {
@@ -134,6 +147,46 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
             LOGGER.error(msg);
             errors.add(msg);
         }
+
+        // Obsolete options must/should not be used
+        if (dataSection.exomiserDatabase != null) {
+            // Check the obsolete `-e | --exomiser` option is not being used.
+            String msg = "`-e | --exomiser` option has been deprecated. Use `-e19 or -e38` to set paths to Exomiser variant databases for hg19 and hg38, respectively";
+            LOGGER.error(msg);
+            errors.add(msg);
+        }
+
+        if (!Float.isNaN(runConfiguration.defaultAlleleFrequency)) {
+            String msg = "`--default-allele-frequency` option has been deprecated.";
+            LOGGER.error(msg);
+        }
+
+        Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
+        if (genomeBuild.isEmpty()) {
+            // We must have genome build!
+            String msg = "Genome build must be set";
+            LOGGER.error(msg);
+            errors.add(msg);
+        } else {
+            // Check Exomiser db seem to match the genome build.
+            switch (genomeBuild.get()) {
+                case HG19 -> {
+                    if (dataSection.exomiserHg19Database == null && dataSection.exomiserHg38Database != null) {
+                        String msg = "Genome build set to %s but Exomiser variant database is set for %s: %s".formatted(GenomeBuild.HG19, GenomeBuild.HG38, dataSection.exomiserHg38Database.toAbsolutePath());
+                        LOGGER.error(msg);
+                        errors.add(msg);
+                    }
+                }
+                case HG38 -> {
+                    if (dataSection.exomiserHg38Database == null && dataSection.exomiserHg19Database != null) {
+                        String msg = "Genome build set to %s but Exomiser variant database is set for %s: %s".formatted(GenomeBuild.HG38, GenomeBuild.HG19, dataSection.exomiserHg19Database.toAbsolutePath());
+                        LOGGER.error(msg);
+                        errors.add(msg);
+                    }
+                }
+            }
+        }
+
         return errors;
     }
 

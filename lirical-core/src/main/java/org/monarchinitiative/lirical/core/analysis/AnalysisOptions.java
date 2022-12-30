@@ -122,7 +122,7 @@ public interface AnalysisOptions {
      * @return variant pathogenicity threshold value.
      * @deprecated use {@link #variantDeleteriousnessThreshold()} instead.
      */
-    @Deprecated(since = "2.0.0-RC2", forRemoval = true)
+    @Deprecated(since = "2.0.0-RC3", forRemoval = true)
     default float pathogenicityThreshold() {
         return variantDeleteriousnessThreshold();
     }

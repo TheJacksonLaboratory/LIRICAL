@@ -3,7 +3,7 @@ package org.monarchinitiative.lirical.core.model;
 import java.util.Objects;
 import java.util.Optional;
 
-public class VariantMetadataDefault implements VariantMetadata {
+class VariantMetadataDefault implements VariantMetadata {
 
     private static final VariantMetadataDefault EMPTY = new VariantMetadataDefault(Float.NaN, Float.NaN, ClinvarClnSig.NOT_PROVIDED);
 

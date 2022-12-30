@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.core.analysis;
+package org.monarchinitiative.lirical.core.analysis.impl;
 
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;

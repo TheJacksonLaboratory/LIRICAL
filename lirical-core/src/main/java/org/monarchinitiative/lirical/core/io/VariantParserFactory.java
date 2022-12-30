@@ -1,18 +1,18 @@
 package org.monarchinitiative.lirical.core.io;
 
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
-import org.monarchinitiative.svart.assembly.GenomicAssembly;
+import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 public interface VariantParserFactory {
 
-    GenomicAssembly genomicAssembly();
+    Optional<VariantParser> forPath(Path variantResource, GenomeBuild genomeBuild, TranscriptDatabase transcriptDatabase);
 
-    default GenomeBuild genomeBuild() {
-        return GenomeBuild.parse(genomicAssembly().name())
-                .orElseThrow(() -> new IllegalArgumentException("Unknown genomic assembly '" + genomicAssembly().name()+  '\''));
+    @Deprecated(forRemoval = true)
+    default VariantParser forPath(Path variantResource) {
+        return forPath(variantResource, GenomeBuild.HG38, TranscriptDatabase.REFSEQ).orElse(null);
     }
 
-    VariantParser forPath(Path variantResource);
 }
