@@ -11,15 +11,16 @@ public interface VariantMetadataService {
     /**
      * We will assume a frequency of 1:100,000 if no frequency data is available.
      */
-    float DEFAULT_FREQUENCY = 0.00001F;
-    
+    float DEFAULT_FREQUENCY = 1e-5f;
+
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     static Options defaultOptions() {
         return new Options(DEFAULT_FREQUENCY);
     }
 
     VariantMetadata metadata(GenomicVariant variant, List<VariantEffect> effects);
 
-
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     record Options(float defaultFrequency) {
     }
 }

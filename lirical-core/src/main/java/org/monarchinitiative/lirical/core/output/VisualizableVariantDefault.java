@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.core.output;
 
 import org.monarchinitiative.lirical.core.model.*;
+import org.monarchinitiative.lirical.core.service.VariantMetadataService;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;
@@ -80,7 +81,7 @@ class VisualizableVariantDefault implements VisualizableVariant {
 
     @Override
     public float getFrequency() {
-        return variant.frequency().orElse(0f);
+        return variant.frequency().orElse(Float.NaN);
     }
 
     @Override

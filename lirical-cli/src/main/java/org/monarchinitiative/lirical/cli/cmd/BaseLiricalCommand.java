@@ -1,6 +1,5 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
-import org.monarchinitiative.lirical.configuration.GenotypeLrProperties;
 import org.monarchinitiative.lirical.configuration.LiricalBuilder;
 import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.analysis.AnalysisOptions;
@@ -11,8 +10,8 @@ import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseasePro
 import org.monarchinitiative.lirical.core.io.VariantParser;
 import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.lirical.core.model.*;
-import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
 import org.monarchinitiative.lirical.io.LiricalDataException;
+import org.monarchinitiative.lirical.io.background.CustomBackgroundVariantFrequencyServiceFactory;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.slf4j.Logger;
@@ -23,6 +22,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 /**
  * Base class that describes data and configuration sections of the CLI, and contains common functionalities.
@@ -30,8 +30,6 @@ import java.util.concurrent.Callable;
 abstract class BaseLiricalCommand implements Callable<Integer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseLiricalCommand.class);
-    private static final Properties PROPERTIES = readProperties();
-    protected static final String LIRICAL_VERSION = PROPERTIES.getProperty("lirical.version", "unknown version");
 
     private static String readBanner() {
         try (InputStream is = new BufferedInputStream(Objects.requireNonNull(BaseLiricalCommand.class.getResourceAsStream("/banner.txt")))) {
@@ -52,9 +50,17 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
                 description = "Path to Lirical data directory.")
         public Path liricalDataDirectory;
 
-        @CommandLine.Option(names = {"-e", "--exomiser"},
+            @CommandLine.Option(names = {"-e", "--exomiser"},
                 description = "Path to the Exomiser variant database.")
         public Path exomiserDatabase = null;
+
+        @CommandLine.Option(names = {"-e19", "--exomiser-hg19"},
+                description = "Path to the Exomiser variant database for hg19.")
+        public Path exomiserHg19Database = null;
+
+        @CommandLine.Option(names = {"-e38", "--exomiser-hg38"},
+                description = "Path to the Exomiser variant database for hg38.")
+        public Path exomiserHg38Database = null;
 
         @CommandLine.Option(names = {"-b", "--background"},
                 description = "Path to non-default background frequency file.")
@@ -92,35 +98,27 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
         @CommandLine.Option(names = {"--strict"},
                 description = "Use strict penalties if the genotype does not match the disease model in terms " +
                         "of number of called pathogenic alleles. (default: ${DEFAULT-VALUE}).")
-        public boolean strict = false;
+        public boolean useStrictPenalties = false;
 
-        /* Default frequency of called-pathogenic variants in the general population (gnomAD). In the vast majority of
-         * cases, we can derive this information from gnomAD. This constant is used if for whatever reason,
-         * data was not available.
-         */
         @CommandLine.Option(names = {"--variant-background-frequency"},
-                // TODO - add better description
-                description = "Default background frequency of variants in a gene (default: ${DEFAULT-VALUE}).")
+                description = {
+                "Default frequency of called-pathogenic variants in the general population (gnomAD).",
+                        "In the vast majority of cases, we can derive this information from gnomAD.",
+                        "This constant is used if for whatever reason, data was not available.",
+                        "(default: ${DEFAULT-VALUE})."})
         public double defaultVariantBackgroundFrequency = 0.1;
 
         @CommandLine.Option(names = {"--pathogenicity-threshold"},
                 description = "Variant with greater pathogenicity score is considered deleterious (default: ${DEFAULT-VALUE}).")
         public float pathogenicityThreshold = .8f;
 
+        @Deprecated(forRemoval = true, since = "2.0.0-RC2")
         @CommandLine.Option(names = {"--default-allele-frequency"},
-                description = "Variant with greater allele frequency in at least one population is considered common (default: ${DEFAULT-VALUE}).")
-        public float defaultAlleleFrequency = 1E-5f;
-    }
-
-    private static Properties readProperties() {
-        Properties properties = new Properties();
-
-        try (InputStream is = BaseLiricalCommand.class.getResourceAsStream("/lirical.properties")) {
-            properties.load(is);
-        } catch (IOException e) {
-            LOGGER.warn("Error loading properties: {}", e.getMessage());
-        }
-        return properties;
+                description = {
+                "Variant with greater allele frequency in at least one population is considered common.",
+                        "NOTE: the option has been DEPRECATED"
+        })
+        public float defaultAlleleFrequency = Float.NaN;
     }
 
     protected static void printBanner() {
@@ -135,58 +133,146 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
             LOGGER.error(msg);
             errors.add(msg);
         }
+
+        // Obsolete options must/should not be used
+        if (dataSection.exomiserDatabase != null) {
+            // Check the obsolete `-e | --exomiser` option is not being used.
+            String msg = "`-e | --exomiser` option has been deprecated. Use `-e19 or -e38` to set paths to Exomiser variant databases for hg19 and hg38, respectively";
+            LOGGER.error(msg);
+            errors.add(msg);
+        }
+
+        if (!Float.isNaN(runConfiguration.defaultAlleleFrequency)) {
+            String msg = "`--default-allele-frequency` option has been deprecated.";
+            LOGGER.error(msg);
+        }
+
+        Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
+        if (genomeBuild.isEmpty()) {
+            // We must have genome build!
+            String msg = "Genome build must be set";
+            LOGGER.error(msg);
+            errors.add(msg);
+        } else {
+            // Check Exomiser db seem to match the genome build.
+            switch (genomeBuild.get()) {
+                case HG19 -> {
+                    if (dataSection.exomiserHg19Database == null && dataSection.exomiserHg38Database != null) {
+                        String msg = "Genome build set to %s but Exomiser variant database is set for %s: %s".formatted(GenomeBuild.HG19, GenomeBuild.HG38, dataSection.exomiserHg38Database.toAbsolutePath());
+                        LOGGER.error(msg);
+                        errors.add(msg);
+                    }
+                }
+                case HG38 -> {
+                    if (dataSection.exomiserHg38Database == null && dataSection.exomiserHg19Database != null) {
+                        String msg = "Genome build set to %s but Exomiser variant database is set for %s: %s".formatted(GenomeBuild.HG38, GenomeBuild.HG19, dataSection.exomiserHg19Database.toAbsolutePath());
+                        LOGGER.error(msg);
+                        errors.add(msg);
+                    }
+                }
+            }
+        }
+
         return errors;
     }
 
     /**
-     * Build {@link Lirical} based on {@link DataSection} and {@link RunConfiguration} sections.
+     * Build {@link Lirical} for a {@link GenomeBuild} based on {@link DataSection} and {@link RunConfiguration} sections.
      */
-    protected Lirical bootstrapLirical() throws LiricalDataException {
-        LOGGER.info("Spooling up Lirical v{}", LIRICAL_VERSION);
-        GenomeBuild genomeBuild = parseGenomeBuild(getGenomeBuild());
+    protected Lirical bootstrapLirical(GenomeBuild genomeBuild) throws LiricalDataException {
+        LiricalBuilder builder = LiricalBuilder.builder(dataSection.liricalDataDirectory);
 
-        GenotypeLrProperties genotypeLrProperties = new GenotypeLrProperties(runConfiguration.pathogenicityThreshold, runConfiguration.defaultVariantBackgroundFrequency, runConfiguration.strict);
-        return LiricalBuilder.builder(dataSection.liricalDataDirectory)
-                .exomiserVariantDatabase(dataSection.exomiserDatabase)
-                .genomeBuild(genomeBuild)
-                .backgroundVariantFrequency(dataSection.backgroundFrequencyFile)
-                .setDiseaseDatabases(runConfiguration.useOrphanet
-                        ? DiseaseDatabase.allKnownDiseaseDatabases()
-                        : Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER))
-                .genotypeLrProperties(genotypeLrProperties)
-                .transcriptDatabase(runConfiguration.transcriptDb)
-                .defaultVariantAlleleFrequency(runConfiguration.defaultAlleleFrequency)
-                .build();
+        switch (genomeBuild) {
+            case HG19 -> {
+                if (dataSection.exomiserHg19Database != null)
+                    builder.exomiserVariantDbPath(GenomeBuild.HG19, dataSection.exomiserHg19Database);
+            }
+            case HG38 -> {
+                if (dataSection.exomiserHg38Database != null)
+                    builder.exomiserVariantDbPath(GenomeBuild.HG38, dataSection.exomiserHg38Database);
+            }
+        }
+
+        if (dataSection.backgroundFrequencyFile != null) {
+            LOGGER.debug("Using custom deleterious variant background frequency file at {} for {}",
+                    dataSection.backgroundFrequencyFile.toAbsolutePath(),
+                    genomeBuild);
+            Map<GenomeBuild, Path> backgroundFrequencies = Map.of(genomeBuild, dataSection.backgroundFrequencyFile);
+            CustomBackgroundVariantFrequencyServiceFactory backgroundFreqFactory = CustomBackgroundVariantFrequencyServiceFactory.of(backgroundFrequencies);
+            builder.backgroundVariantFrequencyServiceFactory(backgroundFreqFactory);
+        }
+
+        return builder.build();
     }
 
     protected abstract String getGenomeBuild();
 
-    private GenomeBuild parseGenomeBuild(String genomeBuild) throws LiricalDataException {
+    protected GenomeBuild parseGenomeBuild(String genomeBuild) throws LiricalDataException {
         Optional<GenomeBuild> genomeBuildOptional = GenomeBuild.parse(genomeBuild);
         if (genomeBuildOptional.isEmpty())
             throw new LiricalDataException("Unknown genome build: '" + genomeBuild + "'");
         return genomeBuildOptional.get();
     }
 
-    protected AnalysisOptions prepareAnalysisOptions(Lirical lirical) {
+    protected AnalysisOptions prepareAnalysisOptions(Lirical lirical, GenomeBuild genomeBuild, TranscriptDatabase transcriptDb) {
+        AnalysisOptions.Builder builder = AnalysisOptions.builder();
+
+        // Genome build
+        builder.genomeBuild(genomeBuild);
+
+        // Tx databases
+        builder.transcriptDatabase(transcriptDb);
+
+        // Disease databases
+        Set<DiseaseDatabase> diseaseDatabases = runConfiguration.useOrphanet
+                ? DiseaseDatabase.allKnownDiseaseDatabases()
+                : Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER);
+        String usedDatabasesSummary = diseaseDatabases.stream().map(DiseaseDatabase::name).collect(Collectors.joining(", ", "[", "]"));
+        LOGGER.debug("Using disease databases {}", usedDatabasesSummary);
+        builder.setDiseaseDatabases(diseaseDatabases);
+
+        // The rest..
+        LOGGER.debug("Variants with pathogenicity score >{} are considered deleterious", runConfiguration.pathogenicityThreshold);
+        builder.variantDeleteriousnessThreshold(runConfiguration.pathogenicityThreshold);
+
+        LOGGER.debug("Variant background frequency is set to {}", runConfiguration.defaultVariantBackgroundFrequency);
+        builder.defaultVariantBackgroundFrequency(runConfiguration.defaultVariantBackgroundFrequency);
+
+        LOGGER.debug("Using strict penalties if the genotype does not match the disease model " +
+                "in terms of number of called pathogenic alleles? {}", runConfiguration.useStrictPenalties);
+        builder.useStrictPenalties(runConfiguration.useStrictPenalties);
+
+        LOGGER.debug("Running in global mode? {}", runConfiguration.globalAnalysisMode);
+        builder.useGlobal(runConfiguration.globalAnalysisMode);
+
         LOGGER.debug("Using uniform pretest disease probabilities.");
         PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(lirical.phenotypeService().diseases());
-        return AnalysisOptions.of(runConfiguration.globalAnalysisMode,
-                pretestDiseaseProbability,
-                runConfiguration.disregardDiseaseWithNoDeleteriousVariants,
-                runConfiguration.pathogenicityThreshold);
+        builder.pretestProbability(pretestDiseaseProbability);
+
+        LOGGER.debug("Disregarding diseases with no deleterious variants? {}", runConfiguration.disregardDiseaseWithNoDeleteriousVariants);
+        builder.disregardDiseaseWithNoDeleteriousVariants(runConfiguration.disregardDiseaseWithNoDeleteriousVariants);
+
+        return builder.build();
     }
 
     protected static GenesAndGenotypes readVariantsFromVcfFile(String sampleId,
                                                                Path vcfPath,
+                                                               GenomeBuild genomeBuild,
+                                                               TranscriptDatabase transcriptDatabase,
                                                                VariantParserFactory parserFactory) throws LiricalParseException {
         if (parserFactory == null) {
             LOGGER.warn("Cannot process the provided VCF file {}, resources are not set.", vcfPath.toAbsolutePath());
             return GenesAndGenotypes.empty();
         }
 
+        Optional<VariantParser> parser = parserFactory.forPath(vcfPath, genomeBuild, transcriptDatabase);
+        if (parser.isEmpty()) {
+            LOGGER.warn("Cannot obtain parser for processing the VCF file {} with {} {} due to missing resources",
+                    vcfPath.toAbsolutePath(), genomeBuild, transcriptDatabase);
+            return GenesAndGenotypes.empty();
+        }
         List<LiricalVariant> variants;
-        try (VariantParser variantParser = parserFactory.forPath(vcfPath)) {
+        try (VariantParser variantParser = parser.get()) {
             // Ensure the VCF file contains the sample
             if (!variantParser.sampleNames().contains(sampleId))
                 throw new LiricalParseException("The sample " + sampleId + " is not present in VCF at '" + vcfPath.toAbsolutePath() + '\'');

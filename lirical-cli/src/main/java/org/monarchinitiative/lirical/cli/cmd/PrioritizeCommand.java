@@ -4,7 +4,9 @@ import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
+import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.model.Sex;
+import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import picocli.CommandLine;
@@ -58,7 +60,9 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
     }
 
     @Override
-    protected AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException {
+    protected AnalysisData prepareAnalysisData(Lirical lirical,
+                                               GenomeBuild genomeBuild,
+                                               TranscriptDatabase transcriptDb) throws LiricalParseException {
         HpoTermSanitizer sanitizer = new HpoTermSanitizer(lirical.phenotypeService().hpo());
 
         List<TermId> observedTerms;
@@ -89,7 +93,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
         if (vcfPath == null) {
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.variantParserFactory().orElse(null));
+            genes = readVariantsFromVcfFile(sampleId, vcfPath, genomeBuild, transcriptDb, lirical.variantParserFactory());
         }
 
         return AnalysisData.of(sampleId, parseAge(age), sex, observedTerms, negatedTerms, genes);

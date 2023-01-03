@@ -26,6 +26,7 @@ import java.util.*;
 abstract class AbstractPrioritizeCommand extends BaseLiricalCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPrioritizeCommand.class);
+    private static final String UNKNOWN_VERSION_PLACEHOLDER = "UNKNOWN VERSION";
 
     // ---------------------------------------------- OUTPUTS ----------------------------------------------------------
     @CommandLine.ArgGroup(validate = false, heading = "Output options:%n")
@@ -75,19 +76,28 @@ abstract class AbstractPrioritizeCommand extends BaseLiricalCommand {
         if (!errors.isEmpty())
             throw new LiricalException(String.format("Errors: %s", String.join(", ", errors)));
 
+        GenomeBuild genomeBuild = parseGenomeBuild(getGenomeBuild());
+        LOGGER.debug("Using genome build {}", genomeBuild);
+
+        LOGGER.debug("Using {} transcripts", runConfiguration.transcriptDb);
+        TranscriptDatabase transcriptDb = runConfiguration.transcriptDb;
+
         // 1 - bootstrap the app
-        Lirical lirical = bootstrapLirical();
+        Lirical lirical = bootstrapLirical(genomeBuild);
+        LOGGER.info("Configured LIRICAL {}", lirical.version()
+                .map("v%s"::formatted)
+                .orElse(UNKNOWN_VERSION_PLACEHOLDER));
 
         // 2 - prepare inputs
         LOGGER.info("Preparing the analysis data");
-        AnalysisData analysisData = prepareAnalysisData(lirical);
+        AnalysisData analysisData = prepareAnalysisData(lirical, genomeBuild, transcriptDb);
         if (analysisData.presentPhenotypeTerms().isEmpty() && analysisData.negatedPhenotypeTerms().isEmpty()) {
             LOGGER.warn("No phenotype terms were provided. Aborting..");
             return 1;
         }
 
         // 3 - run the analysis
-        AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical);
+        AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, transcriptDb);
         LOGGER.info("Starting the analysis");
         LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
         AnalysisResults results = analysisRunner.run(analysisData, analysisOptions);
@@ -96,9 +106,9 @@ abstract class AbstractPrioritizeCommand extends BaseLiricalCommand {
         LOGGER.info("Writing out the results");
         FilteringStats filteringStats = analysisData.genes().computeFilteringStats();
         AnalysisResultsMetadata metadata = AnalysisResultsMetadata.builder()
-                .setLiricalVersion(LIRICAL_VERSION)
-                .setHpoVersion(lirical.phenotypeService().hpo().getMetaInfo().getOrDefault("release", "UNKNOWN RELEASE"))
-                .setTranscriptDatabase(runConfiguration.transcriptDb.toString())
+                .setLiricalVersion(lirical.version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
+                .setHpoVersion(lirical.phenotypeService().hpo().version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
+                .setTranscriptDatabase(transcriptDb.toString())
                 .setLiricalPath(dataSection.liricalDataDirectory.toAbsolutePath().toString())
                 .setExomiserPath(dataSection.exomiserDatabase == null ? "" : dataSection.exomiserDatabase.toAbsolutePath().toString())
                 .setAnalysisDate(LocalDateTime.now().toString())
@@ -141,7 +151,7 @@ abstract class AbstractPrioritizeCommand extends BaseLiricalCommand {
         return errors;
     }
 
-    protected abstract AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException;
+    protected abstract AnalysisData prepareAnalysisData(Lirical lirical, GenomeBuild genomeBuild, TranscriptDatabase transcriptDb) throws LiricalParseException;
 
     protected OutputOptions createOutputOptions() {
         LrThreshold lrThreshold = output.lrThreshold == null ? LrThreshold.notInitialized() : LrThreshold.setToUserDefinedThreshold(output.lrThreshold);

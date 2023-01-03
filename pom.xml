@@ -25,7 +25,7 @@
         <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <phenol.version>2.0.0-RC4</phenol.version>
+        <phenol.version>2.0.0-RC5</phenol.version>
         <svart.version>2.0.0-RC1</svart.version>
         <jannovar.version>0.35</jannovar.version>
 <!--        <h2.version>1.4.197</h2.version> &lt;!&ndash; This is what Exomiser uses currently &ndash;&gt;-->
@@ -275,6 +275,11 @@
                         <source>${java.version}</source>
                         <target>${java.version}</target>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
