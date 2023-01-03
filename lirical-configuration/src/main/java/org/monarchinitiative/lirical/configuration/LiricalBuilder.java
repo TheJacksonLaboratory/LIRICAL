@@ -22,6 +22,8 @@ import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,6 +31,8 @@ import java.util.stream.Collectors;
 public class LiricalBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiricalBuilder.class);
+    private static final Properties PROPERTIES = readProperties();
+    private static final String LIRICAL_VERSION = PROPERTIES.getProperty("lirical.version", "UNKNOWN VERSION");
 
     private final Path dataDirectory;
     private final LiricalDataResolver liricalDataResolver;
@@ -277,7 +281,8 @@ public class LiricalBuilder {
                 phenotypeService,
                 backgroundVariantFrequencyServiceFactory,
                 variantMetadataServiceFactory,
-                analysisResultWriterFactory);
+                analysisResultWriterFactory,
+                LIRICAL_VERSION);
     }
 
     private static PhenotypeService configurePhenotypeService(Path dataDirectory, HpoDiseaseLoaderOptions options) throws LiricalDataException {
@@ -293,4 +298,14 @@ public class LiricalBuilder {
     }
 
 
+    private static Properties readProperties() {
+        Properties properties = new Properties();
+
+        try (InputStream is = LiricalBuilder.class.getResourceAsStream("/lirical.properties")) {
+            properties.load(is);
+        } catch (IOException e) {
+            LOGGER.warn("Error loading properties: {}", e.getMessage());
+        }
+        return properties;
+    }
 }

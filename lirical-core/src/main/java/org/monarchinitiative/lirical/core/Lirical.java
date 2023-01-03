@@ -17,9 +17,10 @@ public class Lirical {
     private final VariantMetadataServiceFactory variantMetadataServiceFactory;
     private final LiricalAnalysisRunner analysisRunner;
     private final AnalysisResultWriterFactory analysisResultWriterFactory;
+    private final String version; // nullable
 
     /**
-     * @deprecated use {@link #of(VariantParserFactory, PhenotypeService, BackgroundVariantFrequencyServiceFactory, VariantMetadataServiceFactory, AnalysisResultWriterFactory)} }
+     * @deprecated use {@link #of(VariantParserFactory, PhenotypeService, BackgroundVariantFrequencyServiceFactory, VariantMetadataServiceFactory, AnalysisResultWriterFactory, String)} }
      * instead
      */
     @Deprecated(since = "2.0.0-RC2", forRemoval = true)
@@ -32,26 +33,47 @@ public class Lirical {
         throw new LiricalRuntimeException("Sorry, this static constructor has been deprecated!");
     }
 
+    /**
+     * @deprecated use {@link #of(VariantParserFactory, PhenotypeService, BackgroundVariantFrequencyServiceFactory, VariantMetadataServiceFactory, AnalysisResultWriterFactory, String)} instead.
+     */
+    @Deprecated(since = "2.0.0-RC2", forRemoval = true)
     public static Lirical of(VariantParserFactory variantParserFactory,
                              PhenotypeService phenotypeService,
                              BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory,
                              VariantMetadataServiceFactory variantMetadataService,
                              AnalysisResultWriterFactory analysisResultWriterFactory) {
+        return of(variantParserFactory,
+                phenotypeService,
+                backgroundVariantFrequencyServiceFactory,
+                variantMetadataService,
+                analysisResultWriterFactory,
+                null);
+    }
+
+    public static Lirical of(VariantParserFactory variantParserFactory,
+                             PhenotypeService phenotypeService,
+                             BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory,
+                             VariantMetadataServiceFactory variantMetadataService,
+                             AnalysisResultWriterFactory analysisResultWriterFactory,
+                             String version) {
         return new Lirical(variantParserFactory,
                 phenotypeService,
                 backgroundVariantFrequencyServiceFactory,
                 variantMetadataService,
-                analysisResultWriterFactory);
+                analysisResultWriterFactory,
+                version);
     }
 
     private Lirical(VariantParserFactory variantParserFactory,
                     PhenotypeService phenotypeService,
                     BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory,
                     VariantMetadataServiceFactory variantMetadataServiceFactory,
-                    AnalysisResultWriterFactory analysisResultWriterFactory) {
+                    AnalysisResultWriterFactory analysisResultWriterFactory,
+                    String version) {
         this.variantParserFactory = variantParserFactory; // nullable
         this.phenotypeService = Objects.requireNonNull(phenotypeService);
         this.variantMetadataServiceFactory = Objects.requireNonNull(variantMetadataServiceFactory);
+        this.version = version; // nullable
         this.analysisRunner = LiricalAnalysisRunnerImpl.of(phenotypeService, backgroundVariantFrequencyServiceFactory);
         this.analysisResultWriterFactory = Objects.requireNonNull(analysisResultWriterFactory);
     }
@@ -91,5 +113,9 @@ public class Lirical {
 
     public AnalysisResultWriterFactory analysisResultsWriterFactory() {
         return analysisResultWriterFactory;
+    }
+
+    public Optional<String> version() {
+        return Optional.ofNullable(version);
     }
 }

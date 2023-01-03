@@ -30,8 +30,6 @@ import java.util.stream.Collectors;
 abstract class BaseLiricalCommand implements Callable<Integer> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseLiricalCommand.class);
-    private static final Properties PROPERTIES = readProperties();
-    protected static final String LIRICAL_VERSION = PROPERTIES.getProperty("lirical.version", "unknown version");
 
     private static String readBanner() {
         try (InputStream is = new BufferedInputStream(Objects.requireNonNull(BaseLiricalCommand.class.getResourceAsStream("/banner.txt")))) {
@@ -123,17 +121,6 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
         public float defaultAlleleFrequency = Float.NaN;
     }
 
-    private static Properties readProperties() {
-        Properties properties = new Properties();
-
-        try (InputStream is = BaseLiricalCommand.class.getResourceAsStream("/lirical.properties")) {
-            properties.load(is);
-        } catch (IOException e) {
-            LOGGER.warn("Error loading properties: {}", e.getMessage());
-        }
-        return properties;
-    }
-
     protected static void printBanner() {
         System.out.println(readBanner());
     }
@@ -193,7 +180,6 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
      * Build {@link Lirical} for a {@link GenomeBuild} based on {@link DataSection} and {@link RunConfiguration} sections.
      */
     protected Lirical bootstrapLirical(GenomeBuild genomeBuild) throws LiricalDataException {
-        LOGGER.info("Spooling up Lirical v{}", LIRICAL_VERSION);
         LiricalBuilder builder = LiricalBuilder.builder(dataSection.liricalDataDirectory);
 
         switch (genomeBuild) {

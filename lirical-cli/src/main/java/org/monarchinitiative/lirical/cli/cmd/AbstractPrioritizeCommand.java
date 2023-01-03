@@ -26,6 +26,7 @@ import java.util.*;
 abstract class AbstractPrioritizeCommand extends BaseLiricalCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPrioritizeCommand.class);
+    private static final String UNKNOWN_VERSION_PLACEHOLDER = "UNKNOWN VERSION";
 
     // ---------------------------------------------- OUTPUTS ----------------------------------------------------------
     @CommandLine.ArgGroup(validate = false, heading = "Output options:%n")
@@ -83,6 +84,9 @@ abstract class AbstractPrioritizeCommand extends BaseLiricalCommand {
 
         // 1 - bootstrap the app
         Lirical lirical = bootstrapLirical(genomeBuild);
+        LOGGER.info("Configured LIRICAL {}", lirical.version()
+                .map("v%s"::formatted)
+                .orElse(UNKNOWN_VERSION_PLACEHOLDER));
 
         // 2 - prepare inputs
         LOGGER.info("Preparing the analysis data");
@@ -102,8 +106,8 @@ abstract class AbstractPrioritizeCommand extends BaseLiricalCommand {
         LOGGER.info("Writing out the results");
         FilteringStats filteringStats = analysisData.genes().computeFilteringStats();
         AnalysisResultsMetadata metadata = AnalysisResultsMetadata.builder()
-                .setLiricalVersion(LIRICAL_VERSION)
-                .setHpoVersion(lirical.phenotypeService().hpo().getMetaInfo().getOrDefault("release", "UNKNOWN RELEASE"))
+                .setLiricalVersion(lirical.version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
+                .setHpoVersion(lirical.phenotypeService().hpo().version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
                 .setTranscriptDatabase(transcriptDb.toString())
                 .setLiricalPath(dataSection.liricalDataDirectory.toAbsolutePath().toString())
                 .setExomiserPath(dataSection.exomiserDatabase == null ? "" : dataSection.exomiserDatabase.toAbsolutePath().toString())
