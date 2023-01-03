@@ -140,12 +140,8 @@ public class BenchmarkCommand extends BaseLiricalCommand {
             LOGGER.info("Path to VCF file was not provided.");
             return List.of();
         }
-        if (lirical.variantParserFactory().isEmpty()) {
-            LOGGER.warn("Cannot process the provided VCF file {}, resources are not set.", vcfPath.toAbsolutePath());
-            return List.of();
-        }
 
-        Optional<VariantParser> parser = lirical.variantParserFactory().get().forPath(vcfPath, genomeBuild, transcriptDatabase);
+        Optional<VariantParser> parser = lirical.variantParserFactory().forPath(vcfPath, genomeBuild, transcriptDatabase);
         if (parser.isEmpty()) {
             LOGGER.warn("Cannot obtain parser for processing the VCF file {} with {} {} due to missing resources",
                     vcfPath.toAbsolutePath(), genomeBuild, transcriptDatabase);

@@ -93,7 +93,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
         if (vcfPath == null) {
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(sampleId, vcfPath, genomeBuild, transcriptDb, lirical.variantParserFactory().orElse(null));
+            genes = readVariantsFromVcfFile(sampleId, vcfPath, genomeBuild, transcriptDb, lirical.variantParserFactory());
         }
 
         return AnalysisData.of(sampleId, parseAge(age), sex, observedTerms, negatedTerms, genes);

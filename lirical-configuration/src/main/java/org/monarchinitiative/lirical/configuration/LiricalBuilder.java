@@ -260,7 +260,7 @@ public class LiricalBuilder {
             if (exomiserVariantDatabasePaths.isEmpty()) {
                 LOGGER.debug("Path to Exomiser database is unset. Variants will not be annotated.");
                 this.variantMetadataServiceFactory = VariantMetadataServiceFactory.noOpFactory();
-                variantParserFactory = null;
+                variantParserFactory = VariantParserFactory.noOpFactory();
             } else {
                 String summary = exomiserVariantDatabasePaths.entrySet().stream()
                         .map(e -> "%s -> %s".formatted(e.getKey(), e.getValue().toAbsolutePath()))
@@ -277,7 +277,7 @@ public class LiricalBuilder {
         AnalysisResultWriterFactory analysisResultWriterFactory = new AnalysisResultWriterFactoryImpl(phenotypeService.hpo(), phenotypeService.diseases());
 
         return Lirical.of(
-                variantParserFactory, // nullable
+                variantParserFactory,
                 phenotypeService,
                 backgroundVariantFrequencyServiceFactory,
                 variantMetadataServiceFactory,

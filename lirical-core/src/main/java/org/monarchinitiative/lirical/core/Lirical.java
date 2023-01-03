@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public class Lirical {
 
-    private final VariantParserFactory variantParserFactory; // nullable
+    private final VariantParserFactory variantParserFactory;
     private final PhenotypeService phenotypeService;
     private final VariantMetadataServiceFactory variantMetadataServiceFactory;
     private final LiricalAnalysisRunner analysisRunner;
@@ -70,7 +70,7 @@ public class Lirical {
                     VariantMetadataServiceFactory variantMetadataServiceFactory,
                     AnalysisResultWriterFactory analysisResultWriterFactory,
                     String version) {
-        this.variantParserFactory = variantParserFactory; // nullable
+        this.variantParserFactory = Objects.requireNonNull(variantParserFactory);
         this.phenotypeService = Objects.requireNonNull(phenotypeService);
         this.variantMetadataServiceFactory = Objects.requireNonNull(variantMetadataServiceFactory);
         this.version = version; // nullable
@@ -79,10 +79,10 @@ public class Lirical {
     }
 
     /**
-     * @return variant parser factory if Exomiser variant database is present. Otherwise, an empty optional is returned.
+     * @return variant parser factory for parsing variants for LIRICAL analysis.
      */
-    public Optional<VariantParserFactory> variantParserFactory() {
-        return Optional.ofNullable(variantParserFactory);
+    public VariantParserFactory variantParserFactory() {
+        return variantParserFactory;
     }
 
     public PhenotypeService phenotypeService() {
