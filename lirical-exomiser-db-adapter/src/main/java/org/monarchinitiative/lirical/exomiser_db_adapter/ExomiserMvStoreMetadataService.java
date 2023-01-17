@@ -33,17 +33,21 @@ public class ExomiserMvStoreMetadataService implements VariantMetadataService {
      */
     private static final int CACHE_SIZE = 16;
 
+    private static MVStore store;
+
     /**
      * A map with data from the Exomiser database.
      */
     private final MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap;
 
     public static ExomiserMvStoreMetadataService of(Path mvStore) {
-        MVStore store = new MVStore.Builder()
-                .fileName(mvStore.toAbsolutePath().toString())
-                .readOnly()
-                .open();
-        store.setCacheSize(CACHE_SIZE);
+        if (store == null) {
+            store = new MVStore.Builder()
+                    .fileName(mvStore.toAbsolutePath().toString())
+                    .readOnly()
+                    .open();
+            store.setCacheSize(CACHE_SIZE);
+        }
 
         return new ExomiserMvStoreMetadataService(store);
     }
