@@ -46,7 +46,7 @@ Use the `PhenopacketGenerator <https://github.com/TheJacksonLaboratory/Phenopack
 to create a Phenopacket.
 
 To set up PhenopacketGenerator, you will first need to set the location of the hp.obo file. Download hpo.obo
-from the `Download page <https://hpo.jax.org/app/download/ontology>`_ of the HPO website. Enter your Biocurator id by
+from the `Download page <https://hpo.jax.org/app/data/ontology>`_ of the HPO website. Enter your Biocurator id by
 selecting "Set biocurator id" from the edit menu, and enter an arbitrary Phenopacket ID and proband ID.
 Use the dropdown menus to enter "9 years" for Age and "Female" for sex.
 
