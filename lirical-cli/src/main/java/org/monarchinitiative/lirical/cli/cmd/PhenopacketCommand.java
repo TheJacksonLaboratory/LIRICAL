@@ -13,9 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +43,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"-p", "--phenopacket"},
             required = true,
-            description = "Path to phenopacket JSON file.")
+            description = "Path to phenopacket file in JSON, YAML or protobuf format.")
     public Path phenopacketPath;
 
     @CommandLine.Option(names = {"--vcf"},
@@ -61,7 +62,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
         LOGGER.info("Reading phenopacket from {}.", phenopacketPath.toAbsolutePath());
 
         PhenopacketData data = null;
-        try (InputStream is = Files.newInputStream(phenopacketPath)) {
+        try (InputStream is = new BufferedInputStream(new FileInputStream(phenopacketPath.toFile()))) {
             PhenopacketImporter v2 = PhenopacketImporters.v2();
             data = v2.read(is);
             LOGGER.info("Success!");
@@ -70,7 +71,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
         }
 
         if (data == null) {
-            try (InputStream is = Files.newInputStream(phenopacketPath)) {
+            try (InputStream is = new BufferedInputStream(new FileInputStream(phenopacketPath.toFile()))) {
                 PhenopacketImporter v1 = PhenopacketImporters.v1();
                 data = v1.read(is);
             } catch (PhenopacketImportException | IOException e) {
