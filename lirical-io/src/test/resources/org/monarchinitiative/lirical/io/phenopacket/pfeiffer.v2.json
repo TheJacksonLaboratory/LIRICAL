@@ -1,19 +1,26 @@
 {
+  "id": "pfeiffer-phenopacket",
   "subject": {
     "id": "II:3/Family 2",
-    "ageAtCollection": {
-      "age": "N/A"
+    "dateOfBirth": "1970-01-01T00:00:00Z",
+    "timeAtLastEncounter": {
+      "age": {
+        "iso8601duration": "P12Y3M"
+      }
     },
+    "sex": "UNKNOWN_SEX",
+    "karyotypicSex": "UNKNOWN_KARYOTYPE",
     "taxonomy": {
       "id": "NCBITaxon:9606",
       "label": "Homo sapiens"
     }
   },
-  "phenotypes": [{
+  "phenotypicFeatures": [{
     "type": {
       "id": "HP:0009719",
       "label": "Hypomelanotic macule"
     },
+    "excluded": false,
     "evidence": [{
       "evidenceCode": {
         "id": "ECO:0000033",
@@ -21,7 +28,7 @@
       },
       "reference": {
         "id": "PMID:18830229",
-        "description": "NM_000368.4:c.671T>G\nNM_000368.4:c.3103G>A"
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
       }
     }]
   }, {
@@ -29,6 +36,7 @@
       "id": "HP:0010614",
       "label": "Fibroma"
     },
+    "excluded": false,
     "evidence": [{
       "evidenceCode": {
         "id": "ECO:0000033",
@@ -36,7 +44,7 @@
       },
       "reference": {
         "id": "PMID:18830229",
-        "description": "NM_000368.4:c.671T>G\nNM_000368.4:c.3103G>A"
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
       }
     }]
   }, {
@@ -44,6 +52,7 @@
       "id": "HP:0012736",
       "label": "Profound global developmental delay"
     },
+    "excluded": false,
     "evidence": [{
       "evidenceCode": {
         "id": "ECO:0000033",
@@ -51,7 +60,7 @@
       },
       "reference": {
         "id": "PMID:18830229",
-        "description": "NM_000368.4:c.671T>G\nNM_000368.4:c.3103G>A"
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
       }
     }]
   }, {
@@ -59,6 +68,7 @@
       "id": "HP:0001250",
       "label": "Seizures"
     },
+    "excluded": false,
     "evidence": [{
       "evidenceCode": {
         "id": "ECO:0000033",
@@ -66,7 +76,7 @@
       },
       "reference": {
         "id": "PMID:18830229",
-        "description": "NM_000368.4:c.671T>G\nNM_000368.4:c.3103G>A"
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
       }
     }]
   }, {
@@ -74,6 +84,7 @@
       "id": "HP:0100804",
       "label": "Ungual fibroma"
     },
+    "excluded": false,
     "evidence": [{
       "evidenceCode": {
         "id": "ECO:0000033",
@@ -81,7 +92,7 @@
       },
       "reference": {
         "id": "PMID:18830229",
-        "description": "NM_000368.4:c.671T>G\nNM_000368.4:c.3103G>A"
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
       }
     }]
   }, {
@@ -89,6 +100,7 @@
       "id": "HP:0009721",
       "label": "Shagreen patch"
     },
+    "excluded": false,
     "evidence": [{
       "evidenceCode": {
         "id": "ECO:0000033",
@@ -96,7 +108,7 @@
       },
       "reference": {
         "id": "PMID:18830229",
-        "description": "NM_000368.4:c.671T>G\nNM_000368.4:c.3103G>A"
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
       }
     }]
   }, {
@@ -104,6 +116,7 @@
       "id": "HP:0012733",
       "label": "Macule"
     },
+    "excluded": false,
     "evidence": [{
       "evidenceCode": {
         "id": "ECO:0000033",
@@ -111,117 +124,27 @@
       },
       "reference": {
         "id": "PMID:18830229",
-        "description": "NM_000368.4:c.671T>G\nNM_000368.4:c.3103G>A"
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
       }
     }]
-  }],
-  "genes": [{
-    "id": "ENTREZ:7248",
-    "symbol": "TSC1"
-  }],
-  "variants": [{
-    "vcfAllele": {
-      "id": "GRCh37",
-      "chr": "1",
-      "pos": 957693,
-      "ref": "A",
-      "alt": "T"
-    },
-    "zygosity": {
-      "id": "GENO:0000135",
-      "label": "heterozygous"
-    }
-  }, {
-    "vcfAllele": {
-      "id": "GRCh37",
-      "chr": "1",
-      "pos": 977517,
-      "ref": "C",
-      "alt": "CC"
-    },
-    "zygosity": {
-      "id": "GENO:0000135",
-      "label": "heterozygous"
-    }
-  }, {
-    "vcfAllele": {
-      "id": "GRCh37",
-      "chr": "1",
-      "pos": 1167851,
-      "ref": "A",
-      "alt": "G"
-    },
-    "zygosity": {
-      "id": "GENO:0000135",
-      "label": "heterozygous"
-    }
-  }, {
-    "vcfAllele": {
-      "id": "GRCh37",
-      "chr": "1",
-      "pos": 1167659,
-      "ref": "A",
-      "alt": "G"
-    },
-    "zygosity": {
-      "id": "GENO:0000135",
-      "label": "heterozygous"
-    }
-  }, {
-    "vcfAllele": {
-      "id": "GRCh37",
-      "chr": "1",
-      "pos": 1273476,
-      "ref": "CA",
-      "alt": "C"
-    },
-    "zygosity": {
-      "id": "GENO:0000135",
-      "label": "heterozygous"
-    }
-  }, {
-    "vcfAllele": {
-      "id": "GRCh37",
-      "chr": "9",
-      "pos": 135796816,
-      "ref": "A",
-      "alt": "C"
-    },
-    "zygosity": {
-      "id": "GENO:0000135",
-      "label": "heterozygous"
-    }
-  }, {
-    "vcfAllele": {
-      "id": "GRCh37",
-      "chr": "9",
-      "pos": 135772014,
-      "ref": "C",
-      "alt": "T"
-    },
-    "zygosity": {
-      "id": "GENO:0000135",
-      "label": "heterozygous"
-    }
   }],
   "diseases": [{
     "term": {
       "id": "OMIM:191100",
       "label": "TUBEROUS SCLEROSIS 1; TSC1"
-    }
-  }],
-  "htsFiles": [{
-    "htsFormat": "VCF",
-    "genomeAssembly": "GRCh37",
-    "individualToSampleIdentifiers": {
     },
-    "file": {
-      "path": "/path/to/Pfeiffer.vcf",
-      "uri": "",
-      "description": "Pfeiffer sample"
+    "excluded": false
+  }],
+  "files": [{
+    "uri": "file:/path/to/Pfeiffer.vcf",
+    "fileAttributes": {
+      "genomeAssembly": "GRCh37",
+      "fileFormat": "vcf",
+      "description": ""
     }
   }],
   "metaData": {
+    "created": "1970-01-01T00:00:00Z",
     "createdBy": "HPO:lccarmody",
     "resources": [{
       "id": "hp",
@@ -262,6 +185,7 @@
       "name": "Online Mendelian Inheritance in Man",
       "url": "https://www.omim.org",
       "namespacePrefix": "OMIM"
-    }]
+    }],
+    "phenopacketSchemaVersion": "2.0.0"
   }
 }

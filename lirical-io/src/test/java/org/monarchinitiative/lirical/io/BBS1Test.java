@@ -5,8 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.io.analysis.*;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +37,7 @@ public class BBS1Test {
     public static void init() throws Exception {
         yamlConfig = YamlParser.parse(TEST_YAML_DIR.resolve("BBS1.yml"));
 
-        try (InputStream is = Files.newInputStream(TEST_PHENOPACKET_DIR.resolve("BBS1.json"))) {
+        try (InputStream is = new BufferedInputStream(new FileInputStream(TEST_PHENOPACKET_DIR.resolve("BBS1.json").toFile()))) {
             DATA = PhenopacketImporters.v1().read(is);
         }
     }

@@ -19,10 +19,7 @@ import org.phenopackets.schema.v1.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.time.Period;
 import java.time.format.DateTimeParseException;
@@ -43,7 +40,6 @@ import java.util.stream.Collectors;
 class PhenopacketV1Importer implements PhenopacketImporter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PhenopacketV1Importer.class);
-    private static final JsonFormat.Parser PARSER = JsonFormat.parser();
     private static final boolean ALWAYS_PASSING_VARIANT_FILTERS = true;
 
     private static final PhenopacketV1Importer INSTANCE = new PhenopacketV1Importer();
@@ -58,14 +54,7 @@ class PhenopacketV1Importer implements PhenopacketImporter {
 
     @Override
     public PhenopacketData read(InputStream is) throws PhenopacketImportException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        Phenopacket.Builder builder = Phenopacket.newBuilder();
-        try {
-            PARSER.merge(reader, builder);
-        } catch (IOException e) {
-            throw new PhenopacketImportException(e);
-        }
-        Phenopacket phenopacket = builder.build();
+        Phenopacket phenopacket = PhenopacketImportUtil.readPhenopacket(is, Phenopacket.class);
 
         Individual subject = phenopacket.getSubject();
         String sampleId = subject.getId();
