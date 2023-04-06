@@ -1,0 +1,11 @@
+## LIRICAL Analysis Template.
+# These are all the possible options for running LIRICAL. Use this as a template for your own set-up.
+---
+sampleId: Patient 4
+hpoIds: ['HP:0001659', 'HP:0001166', 'HP:0001631', 'HP:0000193', 'HP:0012385', 'HP:0011645', 'HP:0000272',
+         'HP:0000347', 'HP:0001655', 'HP:0000768', 'HP:0004927', 'HP:0002650', 'HP:0001704']
+# negatedHpoIds: []
+age: P9Y
+sex: FEMALE
+# Set real path to a VCF file
+vcf: LDS2.vcf.gz

@@ -11,7 +11,7 @@ one of the standard methods for diagnostics. Current algorithms such as
 and statistical approaches to prioritize the typically long lists of genes with candidate pathogenic variants, but do not
 provide robust estimates of the strength of the predictions beyond the placement in a ranked list, nor do they provide
 measures of how much any individual phenotypic observation has contributed to the prioritization result.
-LIRICAL exploits the clinical likelihood ratio framework to provide an estimate of the posttest probability of candidate
+LIRICAL exploits the clinical likelihood ratio framework to provide an estimate of the post-test probability of candidate
 diagnoses, the likelihood ratio for each observed HPO phenotype, and the predicted pathogenicity of observed variants.
 
 LIRICAL makes use of the clinical likelihood ratio (LR) framework to perform phenotype-driven genomic diagnostics that addresses
