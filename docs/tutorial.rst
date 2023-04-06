@@ -23,23 +23,23 @@ a disease-associated mutation in the *TGFBR2* gene in *Patient 4*.
 
 We have simulated an exome VCF file by adding the disease associated variant to
 a VCF file derived from `project.NIST.hc.snps.indels.NIST7035.vcf` and we prepared a *phenopacket*
-to represent patient's clinical data (see below).
-
-The files are available in the
+to represent patient's clinical data (see below). The files are available in the
 `examples <https://github.com/TheJacksonLaboratory/LIRICAL/tree/master/lirical-cli/src/examples>`_
 folder or in the distribution ZIP.
 
 Creating a phenopacket
 ~~~~~~~~~~~~~~~~~~~~~~
 
+Creating the phenopacket is an optional step and the example phenopacket can be used for the purpose of this tutorial.
+
 Here is an excerpt of the text that described patient 4 in the above cited article:
 
 .. parsed-literal::
 
-    Patient  4  is  a  9-year-old  girl.  She  was  clinically  diagnosed  with  suspected
-    Marfan syndrome  according  to  the  first  impression.  She  was  144  cm  tall and
-    weighed  24  kg.  Her  father  was  176  cm  tall  and  weighed 53  kg.  The  phenotypes
-    of  this  patient  include strabismus, refractive  error, pectus  carinatum,  scoliosis,
+    Patient 4 is a 9-year-old girl. She was clinically diagnosed with suspected
+    Marfan syndrome according to the first impression. She was 144 cm tall and
+    weighed 24 kg. Her father was 176 cm tall and weighed 53 kg. The phenotypes
+    of this patient include strabismus, refractive error, pectus carinatum, scoliosis,
     arachnodactyly, and camptodactyly. The patient's main cardiovascular abnormalities
     were Sinus of Valsalva aneurysm, aortic root dilation, aortic regurgitation,
     atrial septal defect, patent foramen ovale, pulmonary artery dilatation, and
