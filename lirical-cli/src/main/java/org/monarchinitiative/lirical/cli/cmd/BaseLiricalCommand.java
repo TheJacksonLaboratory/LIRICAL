@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -48,10 +49,10 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
         @CommandLine.Option(names = {"-d", "--data"},
                 required = true,
                 description = "Path to Lirical data directory.")
-        public Path liricalDataDirectory;
+        public Path liricalDataDirectory = null;
 
             @CommandLine.Option(names = {"-e", "--exomiser"},
-                description = "Path to the Exomiser variant database.")
+                description = {"Path to the Exomiser variant database.", "DEPRECATED - use -e19 or -e38 instead"})
         public Path exomiserDatabase = null;
 
         @CommandLine.Option(names = {"-e19", "--exomiser-hg19"},
@@ -130,9 +131,17 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
         List<String> errors = new LinkedList<>();
         // resources
         if (dataSection.liricalDataDirectory == null) {
-            String msg = "Path to Lirical data directory must be provided via `-d | --data` option";
-            LOGGER.error(msg);
-            errors.add(msg);
+            Path codeHomeParent = codeHomeDir();
+            LOGGER.debug("Data directory is unset, searching in the code home directory at: {}", codeHomeParent);
+            Path codeHomeDataDir = codeHomeParent.resolve("data");
+            if (Files.isDirectory(codeHomeDataDir)) {
+                LOGGER.debug("Found data folder at: {}", codeHomeDataDir.toAbsolutePath());
+                dataSection.liricalDataDirectory = codeHomeDataDir;
+            } else {
+                String msg = "Path to Lirical data directory must be provided via `-d | --data` option";
+                LOGGER.error(msg);
+                errors.add(msg);
+            }
         }
 
         // Obsolete options must/should not be used
@@ -326,6 +335,12 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
         } else {
             LOGGER.info("Elapsed time " + (stopTime - startTime) * (1.0) / 1000 + " seconds.");
         }
+    }
+
+    private static Path codeHomeDir() {
+        String codePath = BaseLiricalCommand.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        LOGGER.debug("Found code path at {}", codePath);
+        return Path.of(codePath).toAbsolutePath().getParent();
     }
 
 }
