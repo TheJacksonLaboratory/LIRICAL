@@ -80,12 +80,17 @@ Exomiser database files
 LIRICAL uses data files from the `Exomiser <https://github.com/exomiser/Exomiser>`_
 to annotate the VCF file and support variant interpretation.
 We recommend that always the latest version of these files be used.
-The data files are stored at the
+The Exomiser data files can be obtained from the
 `Exomiser download site <https://exomiser.monarchinitiative.org/exomiser/download>`_.
 You may need to scroll (right hand side) to see the subdirectory ``latest``, which includes the current version of
 these files. Download either ``2302_hg19.zip`` (for the hg19/GRCh37 genome assembly)  or ``2302_hg38.zip `` for the
 hg38/GRCh38 assembly). Of course, the datafile you use should match the assembly used to align and call
-the exome/genome data you want to analyze with LIRICAL. Unpack the ZIP file, e.g.,::
+the exome/genome data you want to analyze with LIRICAL.
+
+.. note::
+  LIRICAL was tested for compatibility with `2302` Exomiser data version.
+
+Unpack the ZIP file, e.g.::
 
   unzip 2302_hg19.zip
 
@@ -103,8 +108,8 @@ Remember the path, since it will be needed to run LIRICAL with exome/genome data
 to set path to the Exomiser variant database.
 
 .. note::
-  The ``-e`` option that was used to point to Exomiser data directory has been deprecated
-  and will *not* work starting from LIRICAL v2.
+  The ``-e`` option that used to point to Exomiser data directory in the previous LIRICAL has been deprecated
+  and will *not* work in v2.
 
 
 .. _rstdownload:
@@ -131,9 +136,13 @@ in the current working directory. You can change this default with the ``-d`` or
 (If you change this, then you will need to pass the location of your directory to all other LIRICAL commands
 using the ``-d`` flag).
 
-Download the files into the ``data`` folder by running::
+Download the files into the ``data`` folder located next to the LIRICAL JAR file by running:
 
+.. parsed-literal::
+  cd lirical-cli-|release|
   lirical download
+
+This will ensure LIRICAL finds the data folder automatically (see below).
 
 .. note::
   We assume the LIRICAL alias was set as described in the :ref:`rstsetupalias` section.
@@ -145,4 +154,9 @@ overwrite any previously downloaded files::
   lirical download -d datafiles --overwrite
 
 If desired, you can download these files on your own but you need to place them all in the
-same directory to run LIRICAL.
+same directory and provide the path to the directory using the `-d | --data` option.
+
+The path to the LIRICAL data directory can be provided in two ways:
+
+1. explicitly, using ``-d | --data`` option
+2. implicitly, if the ``data`` folder is located next to the LIRICAL JAR file

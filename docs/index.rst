@@ -16,11 +16,10 @@ as `Human Phenotype Ontology (HPO) <http://www.human-phenotype-ontology.org>`_ t
    :caption: Contents:
 
    setup
+   tutorial
    running
    LIRICAL output files <output>
    explanations
    options
    advanced
-   tutorial
-
 
