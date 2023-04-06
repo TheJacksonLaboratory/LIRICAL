@@ -23,6 +23,7 @@ public class Lirical {
      * @deprecated use {@link #of(VariantParserFactory, PhenotypeService, BackgroundVariantFrequencyServiceFactory, VariantMetadataServiceFactory, AnalysisResultWriterFactory, String)} }
      * instead
      */
+    // REMOVE(v2.0.0)
     @Deprecated(since = "2.0.0-RC2", forRemoval = true)
     public static Lirical of(VariantParserFactory variantParserFactory,
                              PhenotypeService phenotypeService,
@@ -36,6 +37,7 @@ public class Lirical {
     /**
      * @deprecated use {@link #of(VariantParserFactory, PhenotypeService, BackgroundVariantFrequencyServiceFactory, VariantMetadataServiceFactory, AnalysisResultWriterFactory, String)} instead.
      */
+    // REMOVE(v2.0.0)
     @Deprecated(since = "2.0.0-RC2", forRemoval = true)
     public static Lirical of(VariantParserFactory variantParserFactory,
                              PhenotypeService phenotypeService,
@@ -90,6 +92,7 @@ public class Lirical {
     }
 
     @Deprecated(since = "2.0.0-RC2", forRemoval = true)
+    // REMOVE(v2.0.0)
     public FunctionalVariantAnnotator functionalVariantAnnotator() {
         return null;
     }
@@ -99,6 +102,7 @@ public class Lirical {
      * @deprecated use {@link #variantMetadataServiceFactory()} instead
      */
     @Deprecated(since = "2.0.0-RC2", forRemoval = true)
+    // REMOVE(v2.0.0)
     public VariantMetadataService variantMetadataService() {
         return null;
     }

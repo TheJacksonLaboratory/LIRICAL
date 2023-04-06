@@ -21,6 +21,7 @@ public interface AnalysisResultWriterFactory {
      *
      * @deprecated use {@link #getWriter(OutputFormat)} instead.
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     default AnalysisResultsWriter getWriter(AnalysisData analysisData,
                                               AnalysisResults analysisResults,

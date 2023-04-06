@@ -18,6 +18,7 @@ public interface AnalysisOptions {
     /**
      * @deprecated to be removed in <code>2.0.0</code>, use {@link #builder()} instead.
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
     static AnalysisOptions of(boolean useGlobal, PretestDiseaseProbability pretestDiseaseProbability) {
         return of(useGlobal, pretestDiseaseProbability, false);
@@ -26,6 +27,7 @@ public interface AnalysisOptions {
     /**
      * @deprecated to be removed in <code>2.0.0</code>, use {@link #builder()} instead.
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
     static AnalysisOptions of(boolean useGlobal,
                               PretestDiseaseProbability pretestDiseaseProbability,
@@ -37,6 +39,7 @@ public interface AnalysisOptions {
     /**
      * @deprecated to be removed in <code>2.0.0</code>, use the {@link #builder()} instead.
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
     static AnalysisOptions of(boolean useGlobal,
                               PretestDiseaseProbability pretestDiseaseProbability,
@@ -78,6 +81,7 @@ public interface AnalysisOptions {
      * @return a variant frequency to assume for the variants with no available frequency data.
      * @deprecated the parameter has been deprecated in favor of a constant in {@link VariantMetadataService#DEFAULT_FREQUENCY}.
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     default float defaultVariantAlleleFrequency() {
         return Float.NaN;
@@ -125,6 +129,7 @@ public interface AnalysisOptions {
      * @return variant pathogenicity threshold value.
      * @deprecated use {@link #variantDeleteriousnessThreshold()} instead.
      */
+    // REMOVE(v2.0.0)
     @Deprecated(since = "2.0.0-RC2", forRemoval = true)
     default float pathogenicityThreshold() {
         return variantDeleteriousnessThreshold();

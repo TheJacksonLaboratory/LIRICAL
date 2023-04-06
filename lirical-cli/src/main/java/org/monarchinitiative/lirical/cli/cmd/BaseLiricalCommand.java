@@ -112,6 +112,7 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
                 description = "Variant with greater pathogenicity score is considered deleterious (default: ${DEFAULT-VALUE}).")
         public float pathogenicityThreshold = .8f;
 
+        // REMOVE(v2.0.0)
         @Deprecated(forRemoval = true, since = "2.0.0-RC2")
         @CommandLine.Option(names = {"--default-allele-frequency"},
                 description = {

@@ -197,6 +197,7 @@ public class TestResult implements Comparable<TestResult> {
      * @return true if a genotype likelihood ratio was assigned to this test result.
      */
     @Deprecated(forRemoval = true)
+    // REMOVE(v2.0.0)
     public boolean hasGenotypeLR() {
         return false;
     }
@@ -206,6 +207,7 @@ public class TestResult implements Comparable<TestResult> {
     }
 
     @Deprecated(forRemoval = true) // get explanations from results
+    // REMOVE(v2.0.0)
     public List<String> getObservedPhenotypeExplanation() {
         // TODO - this may need to be provided in reverse order
         return observedResults.stream()
@@ -214,6 +216,7 @@ public class TestResult implements Comparable<TestResult> {
     }
 
     @Deprecated(forRemoval = true) // get explanations from excludedResults
+    // REMOVE(v2.0.0)
     public List<String> getExcludedPhenotypeExplanation() {
         // TODO - this may need to be provided in reverse order
         return excludedResults.stream()
