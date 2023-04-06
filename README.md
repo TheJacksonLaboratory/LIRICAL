@@ -7,7 +7,7 @@
 
 ## LIkelihood Ratio Interpretation of Clinical AbnormaLities
 
-LIRICAL is designed to provide clincially interpretable computational analysis of phenotypic
+LIRICAL is designed to provide clinically interpretable computational analysis of phenotypic
 abnormalities (encoded using the [Human Phenotype Ontology](http://www.human-phenotyope-ontology.org)),
 optionally combined with an analysis of variants and genotypes if a VCF file is provided with the
 results of diagnostic gene panel, exome, or genome sequencing.

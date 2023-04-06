@@ -33,6 +33,7 @@ public class JannovarFunctionalVariantAnnotator implements FunctionalVariantAnno
     /**
      * @deprecated to be removed in v2.0.0, use {@link #of(JannovarData, GeneIdentifiers)} instead.
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
     public static JannovarFunctionalVariantAnnotator of(JannovarData jannovarData, List<GeneIdentifier> geneIdentifiers) {
         return of(jannovarData, GeneIdentifiers.of(geneIdentifiers));

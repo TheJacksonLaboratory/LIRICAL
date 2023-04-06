@@ -28,6 +28,7 @@ public final class OutputOptions {
     /**
      * @deprecated use the {@link #OutputOptions(LrThreshold, MinDiagnosisCount, float, boolean, Path, String)} instead.
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true, since = "2.0.0-RC2")
     public OutputOptions(LrThreshold lrThreshold,
                          MinDiagnosisCount minDiagnosisCount,

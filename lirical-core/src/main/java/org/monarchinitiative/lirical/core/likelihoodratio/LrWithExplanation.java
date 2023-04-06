@@ -66,6 +66,7 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
     /**
      * @deprecated use {@link #explanation()}
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
     public String getExplanation(Ontology ontology) {
         String qtermlabel = String.format("%s[%s]", ontology.getTermMap().get(this.queryTerm).getName(), queryTerm.getValue());
@@ -102,6 +103,7 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
      * @return an HTML string that explains this phenotypic LR result.
      * @deprecated use {@link #escapedExplanation()}
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
     String getEscapedExplanation(Ontology ontology) {
         String qtermlabel = String.format("%s[%s]", ontology.getTermMap().get(this.queryTerm).getName(), queryTerm.getValue());

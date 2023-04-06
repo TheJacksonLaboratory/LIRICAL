@@ -14,6 +14,7 @@ public interface Gene2Genotype extends Identified {
         return Gene2GenotypeDefault.of(id, variants);
     }
 
+    // REMOVE(v2.0.0)
     @Override
     @Deprecated(forRemoval = true)
     default TermId id() {
@@ -25,6 +26,7 @@ public interface Gene2Genotype extends Identified {
     /**
      * @return HGVS gene symbol, e.g. <code>FBN2</code>
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
     default String symbol() {
         return geneId().symbol();

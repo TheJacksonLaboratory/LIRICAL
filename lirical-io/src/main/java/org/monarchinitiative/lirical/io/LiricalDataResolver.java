@@ -48,6 +48,7 @@ public class LiricalDataResolver {
     /**
      * @deprecated use {@link #hpoJson()}
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
     public Path hpoObo() {
         return dataDirectory.resolve("hp.obo");
@@ -61,6 +62,7 @@ public class LiricalDataResolver {
      *
      * @deprecated to be removed in v2.0.0, use {@link #hgncCompleteSet()} as a source of gene identifiers.
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
     public Path homoSapiensGeneInfo() {
         return dataDirectory.resolve("Homo_sapiens.gene_info.gz");
@@ -97,6 +99,7 @@ public class LiricalDataResolver {
     /**
      * @deprecated use {@link #transcriptCacheFor(GenomeBuild, org.monarchinitiative.lirical.core.model.TranscriptDatabase)} instead
      */
+    // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
     public Path transcriptCacheFor(GenomeBuild genomeBuild, TranscriptDatabase txDb) {
         return switch (genomeBuild) {

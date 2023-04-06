@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
  * @version 0.0.2 (2018-04-04)
  * @deprecated use {@link AnalysisData} and {@link AnalysisResults} instead.
  */
+// REMOVE(v2.0.0)
 @Deprecated
 public final class HpoCase {
     private static final Logger logger = LoggerFactory.getLogger(HpoCase.class);

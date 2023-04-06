@@ -18,8 +18,8 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.phenopackets</groupId>
-            <artifactId>phenopacket-schema</artifactId>
+            <groupId>org.phenopackets.phenopackettools</groupId>
+            <artifactId>phenopacket-tools-io</artifactId>
         </dependency>
         <dependency>
             <groupId>org.monarchinitiative.phenol</groupId>
