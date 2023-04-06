@@ -11,7 +11,6 @@ import picocli.CommandLine;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.concurrent.Callable;
 
 /**
  * Download a number of files needed for the analysis. We download by default to a subdirectory called
@@ -19,13 +18,13 @@ import java.util.concurrent.Callable;
  * {@code Homo_sapiencs_gene_info.gz}, and {@code mim2gene_medgen}.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-
 @CommandLine.Command(name = "download",
         aliases = {"D"},
         sortOptions = false,
         mixinStandardHelpOptions = true,
         description = "Download files for LIRICAL.")
-public class DownloadCommand implements Callable<Integer>{
+public class DownloadCommand extends BaseCommand {
+
     private static final Logger logger = LoggerFactory.getLogger(DownloadCommand.class);
 
     @CommandLine.Option(names={"-d","--data"},
@@ -37,7 +36,7 @@ public class DownloadCommand implements Callable<Integer>{
     public boolean overwrite = false;
 
     @Override
-    public Integer call() {
+    public Integer execute() {
         try {
             logger.info("Downloading data to {}", datadir.toAbsolutePath());
 

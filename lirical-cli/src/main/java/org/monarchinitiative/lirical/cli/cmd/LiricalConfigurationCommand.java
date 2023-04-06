@@ -18,28 +18,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
-import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 /**
  * Base class that describes data and configuration sections of the CLI, and contains common functionalities.
  */
-abstract class BaseLiricalCommand implements Callable<Integer> {
+abstract class LiricalConfigurationCommand extends BaseCommand {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaseLiricalCommand.class);
-
-    private static String readBanner() {
-        try (InputStream is = new BufferedInputStream(Objects.requireNonNull(BaseLiricalCommand.class.getResourceAsStream("/banner.txt")))) {
-            return new String(is.readAllBytes());
-        } catch (IOException e) {
-            // swallow
-            return "";
-        }
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(LiricalConfigurationCommand.class);
 
     // ---------------------------------------------- RESOURCES --------------------------------------------------------
     @CommandLine.ArgGroup(validate = false, heading = "Resource paths:%n")
@@ -121,10 +110,6 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
                         "NOTE: the option has been DEPRECATED"
         })
         public float defaultAlleleFrequency = Float.NaN;
-    }
-
-    protected static void printBanner() {
-        System.out.println(readBanner());
     }
 
     protected List<String> checkInput() {
@@ -338,7 +323,7 @@ abstract class BaseLiricalCommand implements Callable<Integer> {
     }
 
     private static Path codeHomeDir() {
-        String codePath = BaseLiricalCommand.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        String codePath = LiricalConfigurationCommand.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         LOGGER.debug("Found code path at {}", codePath);
         return Path.of(codePath).toAbsolutePath().getParent();
     }

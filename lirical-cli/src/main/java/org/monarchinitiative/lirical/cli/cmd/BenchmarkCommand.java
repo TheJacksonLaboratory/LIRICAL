@@ -40,7 +40,7 @@ import java.util.zip.GZIPOutputStream;
         mixinStandardHelpOptions = true,
         sortOptions = false,
         description = "Benchmark LIRICAL by analyzing a phenopacket (with or without VCF)")
-public class BenchmarkCommand extends BaseLiricalCommand {
+public class BenchmarkCommand extends LiricalConfigurationCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkCommand.class);
 
@@ -68,43 +68,53 @@ public class BenchmarkCommand extends BaseLiricalCommand {
     protected String genomeBuild = "hg38";
 
     @Override
-    public Integer call() throws Exception {
-        printBanner();
+    public Integer execute() {
         long start = System.currentTimeMillis();
-        // The benchmark has a logic of its own, hence the `call()` method is overridden.
+        // The benchmark has a logic of its own, hence the `execute()` method is overridden.
         // 0 - check input
         List<String> errors = checkInput();
-        if (!errors.isEmpty())
-            throw new LiricalException(String.format("Errors: %s", String.join(", ", errors)));
-        GenomeBuild genomeBuild = parseGenomeBuild(getGenomeBuild());
-        TranscriptDatabase transcriptDb = runConfiguration.transcriptDb;
+        if (!errors.isEmpty()) {
+            LOGGER.error("Errors:");
+            for (String error : errors)
+                LOGGER.error("  {}", error);
+            return 1;
+        }
 
-        // 1 - bootstrap LIRICAL.
-        Lirical lirical = bootstrapLirical(genomeBuild);
+        try {
+            GenomeBuild genomeBuild = parseGenomeBuild(getGenomeBuild());
+            TranscriptDatabase transcriptDb = runConfiguration.transcriptDb;
 
-        // 2 - prepare the simulation data shared by all phenopackets.
-        AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, transcriptDb);
-        List<LiricalVariant> backgroundVariants = readBackgroundVariants(lirical, genomeBuild, transcriptDb);
+            // 1 - bootstrap LIRICAL.
+            Lirical lirical = bootstrapLirical(genomeBuild);
 
-        try (BufferedWriter writer = openWriter(outputPath);
-             CSVPrinter printer = CSVFormat.DEFAULT.print(writer)) {
-            printer.printRecord("phenopacket", "background_vcf", "sample_id", "rank",
-                    "is_causal", "disease_id", "post_test_proba"); // header
+            // 2 - prepare the simulation data shared by all phenopackets.
+            AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, transcriptDb);
+            List<LiricalVariant> backgroundVariants = readBackgroundVariants(lirical, genomeBuild, transcriptDb);
 
-            for (Path phenopacketPath : phenopacketPaths) {
-                // 3 - prepare benchmark data per phenopacket
-                BenchmarkData benchmarkData = prepareBenchmarkData(lirical, backgroundVariants, phenopacketPath);
+            try (BufferedWriter writer = openWriter(outputPath);
+                 CSVPrinter printer = CSVFormat.DEFAULT.print(writer)) {
+                printer.printRecord("phenopacket", "background_vcf", "sample_id", "rank",
+                        "is_causal", "disease_id", "post_test_proba"); // header
 
-                // 4 - run the analysis.
-                LOGGER.info("Starting the analysis: {}", analysisOptions);
-                LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
-                AnalysisResults results = analysisRunner.run(benchmarkData.analysisData(), analysisOptions);
+                for (Path phenopacketPath : phenopacketPaths) {
+                    // 3 - prepare benchmark data per phenopacket
+                    BenchmarkData benchmarkData = prepareBenchmarkData(lirical, backgroundVariants, phenopacketPath);
 
-                // 5 - summarize the results.
-                String phenopacketName = phenopacketPath.toFile().getName();
-                String backgroundVcf = vcfPath == null ? "" : vcfPath.toFile().getName();
-                writeResults(phenopacketName, backgroundVcf, benchmarkData, results, printer);
+                    // 4 - run the analysis.
+                    LOGGER.info("Starting the analysis: {}", analysisOptions);
+                    LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
+                    AnalysisResults results = analysisRunner.run(benchmarkData.analysisData(), analysisOptions);
+
+                    // 5 - summarize the results.
+                    String phenopacketName = phenopacketPath.toFile().getName();
+                    String backgroundVcf = vcfPath == null ? "" : vcfPath.toFile().getName();
+                    writeResults(phenopacketName, backgroundVcf, benchmarkData, results, printer);
+                }
             }
+        } catch (IOException | LiricalException e) {
+            LOGGER.error("Error: {}", e.getMessage());
+            LOGGER.debug("More info:", e);
+            return 1;
         }
         LOGGER.info("Benchmark results were stored to {}", outputPath.toAbsolutePath());
 
