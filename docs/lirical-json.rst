@@ -3,7 +3,10 @@
 LIRICAL JSON Output
 ===================
 
-Lirical outputs results in a JSON format if ``--output-format json`` option is included in the command-line.
+Lirical outputs results in a JSON format if ``--output-format json`` option is included in the command-line::
+
+  lirical phenopacket -p LDS2.v2.json \
+    --output-format json
 
 The JSON document contains three sections, the sections are described in the following text along with examples.
 

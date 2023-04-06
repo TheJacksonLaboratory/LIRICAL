@@ -124,13 +124,14 @@ LIRICAL requires some additional files to run.
 3. ``hgnc_complete_set.txt`` A text file from HUGO Gene Nomenclature Committee (HGNC) with information about human genes
 4. ``mim2gene_medgen`` A file from the NCBI medgen project with OMIM-derived links between genes and diseases
 5. Jannovar transcript annotation files with definitions of transcripts and genes:
+
   * ``hg19_refseq.ser``
   * ``hg19_ucsc.ser``
   * ``hg38_refseq.ser``
   * ``hg38_ucsc.ser``
 
-LIRICAL offers a convenience function to download all files to a local directory::
 
+LIRICAL offers a convenience function to download all files to a local directory.
 By default, LIRICAL will download all files into a newly created subdirectory called ``data``
 in the current working directory. You can change this default with the ``-d`` or ``--data`` options
 (If you change this, then you will need to pass the location of your directory to all other LIRICAL commands

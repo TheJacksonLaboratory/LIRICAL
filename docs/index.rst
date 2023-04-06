@@ -18,8 +18,7 @@ as `Human Phenotype Ontology (HPO) <http://www.human-phenotype-ontology.org>`_ t
    setup
    tutorial
    running
-   LIRICAL output files <output>
+   output
    explanations
-   options
    advanced
 

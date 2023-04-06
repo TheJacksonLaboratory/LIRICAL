@@ -69,8 +69,6 @@ click "Analyze", select HPO terms, click "Add selected terms", then "Confirm and
     :align: center
     :alt: LDS2 text mining
 
-    Text mining of clinical data by `PhenopacketGenerator <https://github.com/TheJacksonLaboratory/PhenopacketGenerator>`_.
-
 Then, select the location of the VCF file that you saved in the previous step, and enter the Genome assembly (``hg19``).
 
 
@@ -79,11 +77,9 @@ Then, select the location of the VCF file that you saved in the previous step, a
     :align: center
     :alt: LDS2 text mining
 
-    Information to create a Phenopacket by `PhenopacketGenerator <https://github.com/TheJacksonLaboratory/PhenopacketGenerator>`_.
+You can now export the phenopacket. Use the filename ``LDS2.json``
+(or choose another name and adjust the following command accordingly).
 
-
-You can now export the phenopacket. Use the
-filename ``LDS2.json`` (or choose another name and adjust the following command accordingly).
 
 Running LIRICAL
 ~~~~~~~~~~~~~~~
