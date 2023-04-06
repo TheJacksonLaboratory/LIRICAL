@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- We're not interested in seeing all events produced by the following libraries: -->
-    <logger name="de.charite.compbio.jannovar" level="WARN" />
-    <logger name="org.monarchinitiative.phenol" level="DEBUG" />
-
     <property name="pattern" value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
 
     <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
