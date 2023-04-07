@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.core.likelihoodratio.poisson;
 
-import static org.monarchinitiative.lirical.core.likelihoodratio.poisson.SaddlePointExpansion.TWO_PI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class and the other classes in this package were adapted and mainly copied from the
@@ -9,6 +10,8 @@ import static org.monarchinitiative.lirical.core.likelihoodratio.poisson.SaddleP
  * into LIRICAL.
  */
 public class PoissonDistribution {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PoissonDistribution.class);
 
     private final double mean;
 
@@ -31,7 +34,7 @@ public class PoissonDistribution {
     }
 
 
-    public double logProbability(double x) {
+    private double logProbability(double x) {
         if (x < 0 || x == Integer.MAX_VALUE) {
             return Double.NEGATIVE_INFINITY;
         } else if (x == 0) {
@@ -40,9 +43,10 @@ public class PoissonDistribution {
             try {
                 return -SaddlePointExpansion.getStirlingError(x) -
                                 SaddlePointExpansion.getDeviancePart(x, mean) -
-                                0.5 * Math.log(TWO_PI) - 0.5 * Math.log(x);
+                                0.5 * Math.log(SaddlePointExpansion.TWO_PI) - 0.5 * Math.log(x);
             } catch (NumberIsTooSmallException | NumberIsTooLargeException e) {
-                e.printStackTrace();
+                LOGGER.warn("{}", e.getMessage());
+                LOGGER.debug("{}", e.getMessage(), e);
                 return Double.NEGATIVE_INFINITY;
             }
         }

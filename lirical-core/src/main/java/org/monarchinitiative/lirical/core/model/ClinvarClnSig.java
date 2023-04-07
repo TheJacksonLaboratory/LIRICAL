@@ -1,5 +1,8 @@
 package org.monarchinitiative.lirical.core.model;
 
+/**
+ * Clinvar clinical significance categories.
+ */
 public enum ClinvarClnSig {
 
     PATHOGENIC,

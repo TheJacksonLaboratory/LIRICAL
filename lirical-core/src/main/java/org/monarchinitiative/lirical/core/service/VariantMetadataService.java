@@ -10,8 +10,10 @@ public interface VariantMetadataService {
 
     /**
      * We will assume a frequency of 1:100,000 if no frequency data is available.
+     * <p>
+     * Note that the frequency is stored as a percentage.
      */
-    float DEFAULT_FREQUENCY = 1e-5f;
+    float DEFAULT_FREQUENCY = 1e-3f;
 
     // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true, since = "2.0.0-RC2")

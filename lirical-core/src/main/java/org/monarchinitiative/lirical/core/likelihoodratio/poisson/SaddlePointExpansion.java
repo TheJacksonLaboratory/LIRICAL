@@ -66,7 +66,7 @@ package org.monarchinitiative.lirical.core.likelihoodratio.poisson;
          * @param z the value.
          * @return the Striling's series error.
          */
-        static double getStirlingError(double z) throws NumberIsTooSmallException,NumberIsTooLargeException{
+        static double getStirlingError(double z) throws NumberIsTooSmallException, NumberIsTooLargeException{
             double ret;
             if (z < 15.0) {
                 double z2 = 2.0 * z;

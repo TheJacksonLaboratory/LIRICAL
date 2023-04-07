@@ -21,9 +21,9 @@ import org.monarchinitiative.phenol.annotations.constants.hpo.HpoModeOfInheritan
  */
 public class GenotypeLikelihoodRatio {
     private static final Logger logger = LoggerFactory.getLogger(GenotypeLikelihoodRatio.class);
-    /** A heuristic to downweight an  disease by a factor of 1/10 if the number of predicted pathogenic alleles in
+    /** A heuristic to down-weight a disease by a factor of 1/10 if the number of predicted pathogenic alleles in
      * the VCF file is above lambda_d. */
-    final double HEURISTIC_PATH_ALLELE_COUNT_ABOVE_LAMBDA_D = 0.10;
+    private static final double HEURISTIC_PATH_ALLELE_COUNT_ABOVE_LAMBDA_D = 0.10;
     private static final double DEFAULT_GLR = 0.05;
     /** A small-ish number to avoid dividing by zero. */
     private static final double EPSILON = 1e-5;
@@ -140,7 +140,7 @@ public class GenotypeLikelihoodRatio {
         // Therefore, we apply the main algorithm for calculating the LR genotype score.
 
         double lambda_background = backgroundVariantFrequencyService.frequencyForGene(g2g.geneId().id())
-                .orElse(backgroundVariantFrequencyService.defaultVariantFrequency());
+                .orElse(backgroundVariantFrequencyService.defaultVariantBackgroundFrequency());
         if (inheritancemodes == null || inheritancemodes.isEmpty()) {
             // This is probably because the HPO annotation file is incomplete
             logger.warn("No inheritance mode annotation found for geneId {}, reverting to default", g2g.geneId().id().getValue());
@@ -207,9 +207,19 @@ public class GenotypeLikelihoodRatio {
         // we do not crash if something unexpected occurs. (Should actually never be used)
         double returnvalue = max == null ? DEFAULT_GLR : max;
         if (heuristicPathCountAboveLambda) {
-            return GenotypeLrWithExplanation.explainPathCountAboveLambdaB(g2g.geneId(), returnvalue, maxInheritanceMode, lambda_background, observedWeightedPathogenicVariantCount);
+            return GenotypeLrWithExplanation.explainPathCountAboveLambdaB(g2g.geneId(),
+                    returnvalue,
+                    maxInheritanceMode,
+                    lambda_background,
+                    observedWeightedPathogenicVariantCount);
         } else {
-            return GenotypeLrWithExplanation.explanation(g2g.geneId(), returnvalue, maxInheritanceMode,lambda_background, B, D, observedWeightedPathogenicVariantCount);
+            return GenotypeLrWithExplanation.explanation(g2g.geneId(),
+                    returnvalue,
+                    maxInheritanceMode,
+                    lambda_background,
+                    B,
+                    D,
+                    observedWeightedPathogenicVariantCount);
         }
     }
 

@@ -22,6 +22,7 @@ import java.util.List;
 /**
  * @deprecated the class will be removed from the public API in v2.0.0. Use {@link ExomiserMvStoreMetadataServiceFactory} instead.
  */
+// REMOVE(v2.0.0) - make package private
 @Deprecated
 public class ExomiserMvStoreMetadataService implements VariantMetadataService {
 

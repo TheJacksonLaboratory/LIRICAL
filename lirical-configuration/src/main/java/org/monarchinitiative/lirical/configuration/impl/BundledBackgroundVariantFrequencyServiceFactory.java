@@ -30,7 +30,8 @@ public class BundledBackgroundVariantFrequencyServiceFactory implements Backgrou
     }
 
     @Override
-    public Optional<BackgroundVariantFrequencyService> forGenomeBuild(GenomeBuild genomeBuild, double defaultVariantBackgroundFrequency) {
+    public Optional<BackgroundVariantFrequencyService> forGenomeBuild(GenomeBuild genomeBuild,
+                                                                      double defaultVariantBackgroundFrequency) {
         try (BufferedReader br = openBundledBackgroundFrequencyFile(genomeBuild)) {
             Map<TermId, Double> frequencyMap = BackgroundVariantFrequencyParser.parse(br);
             return Optional.of(BackgroundVariantFrequencyService.of(frequencyMap, defaultVariantBackgroundFrequency));
