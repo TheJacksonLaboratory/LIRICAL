@@ -4,6 +4,8 @@ import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
+import org.monarchinitiative.lirical.core.model.GenomeBuild;
+import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
 import org.monarchinitiative.lirical.io.analysis.*;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -11,9 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -40,11 +43,11 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"-p", "--phenopacket"},
             required = true,
-            description = "Path to phenopacket JSON file.")
+            description = "Path to phenopacket file in JSON, YAML or protobuf format.")
     public Path phenopacketPath;
 
     @CommandLine.Option(names = {"--vcf"},
-            description = "Path to VCF file. This path has priority over any VCF files described in phenopacket.")
+            description = "Path to a VCF file. This path has priority over any VCF files described in phenopacket.")
     public Path vcfPath;
 
     @Override
@@ -53,24 +56,26 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
     }
 
     @Override
-    protected AnalysisData prepareAnalysisData(Lirical lirical) throws LiricalParseException {
-        LOGGER.info("Reading phenopacket from {}.", phenopacketPath.toAbsolutePath());
+    protected AnalysisData prepareAnalysisData(Lirical lirical,
+                                               GenomeBuild genomeBuild,
+                                               TranscriptDatabase transcriptDb) throws LiricalParseException {
+        LOGGER.info("Reading phenopacket from {}", phenopacketPath.toAbsolutePath());
 
         PhenopacketData data = null;
-        try (InputStream is = Files.newInputStream(phenopacketPath)) {
+        try (InputStream is = new BufferedInputStream(new FileInputStream(phenopacketPath.toFile()))) {
             PhenopacketImporter v2 = PhenopacketImporters.v2();
             data = v2.read(is);
             LOGGER.info("Success!");
         } catch (PhenopacketImportException | IOException e) {
-            LOGGER.info("Unable to parse as v2 phenopacket, trying v1.");
+            LOGGER.info("Unable to parse as v2 phenopacket, trying v1");
         }
 
         if (data == null) {
-            try (InputStream is = Files.newInputStream(phenopacketPath)) {
+            try (InputStream is = new BufferedInputStream(new FileInputStream(phenopacketPath.toFile()))) {
                 PhenopacketImporter v1 = PhenopacketImporters.v1();
                 data = v1.read(is);
             } catch (PhenopacketImportException | IOException e) {
-                LOGGER.info("Unable to parser as v1 phenopacket.");
+                LOGGER.info("Unable to parse as v1 phenopacket");
                 throw new LiricalParseException("Unable to parse phenopacket from " + phenopacketPath.toAbsolutePath());
             }
         }
@@ -89,7 +94,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
         if (vcfPath == null) {
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(sampleId, vcfPath, lirical.variantParserFactory().orElse(null));
+            genes = readVariantsFromVcfFile(sampleId, vcfPath, genomeBuild, transcriptDb, lirical.variantParserFactory());
         }
         return AnalysisData.of(sampleId,
                 data.getAge().orElse(null),

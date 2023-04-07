@@ -7,8 +7,6 @@ import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.lirical.core.model.ClinvarClnSig;
 import org.monarchinitiative.lirical.core.model.VariantMetadata;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
-import org.monarchinitiative.lirical.exomiser_db_adapter.serializers.AlleleKeyDataType;
-import org.monarchinitiative.lirical.exomiser_db_adapter.serializers.AllelePropertiesDataType;
 import org.monarchinitiative.lirical.exomiser_db_adapter.model.AlleleProtoAdaptor;
 import org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency.FrequencyData;
 import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.ClinVarData;
@@ -17,16 +15,16 @@ import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.Var
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Objects;
 
+/**
+ * @deprecated the class will be removed from the public API in v2.0.0. Use {@link ExomiserMvStoreMetadataServiceFactory} instead.
+ */
+// REMOVE(v2.0.0) - make package private
+@Deprecated
 public class ExomiserMvStoreMetadataService implements VariantMetadataService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExomiserMvStoreMetadataService.class);
 
 
     // Note: Repeated retrieval of AlleleProperties from MVMap will hopefully not pose a huge performance issue
@@ -36,26 +34,27 @@ public class ExomiserMvStoreMetadataService implements VariantMetadataService {
      */
     private static final int CACHE_SIZE = 16;
 
+    private static MVStore store;
+
     /**
      * A map with data from the Exomiser database.
      */
     private final MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap;
-    private final Options options;
 
-    public static ExomiserMvStoreMetadataService of(Path mvStore,
-                                                    Options options) {
-        MVStore store = new MVStore.Builder()
-                .fileName(mvStore.toAbsolutePath().toString())
-                .readOnly()
-                .open();
-        store.setCacheSize(CACHE_SIZE);
+    public static ExomiserMvStoreMetadataService of(Path mvStore) {
+        if (store == null) {
+            store = new MVStore.Builder()
+                    .fileName(mvStore.toAbsolutePath().toString())
+                    .readOnly()
+                    .open();
+            store.setCacheSize(CACHE_SIZE);
+        }
 
-        return new ExomiserMvStoreMetadataService(store, options);
+        return new ExomiserMvStoreMetadataService(store);
     }
 
-    private ExomiserMvStoreMetadataService(MVStore mvStore, Options options) {
+    private ExomiserMvStoreMetadataService(MVStore mvStore) {
         this.alleleMap = MvStoreUtil.openAlleleMVMap(mvStore);
-        this.options = options;
     }
 
     @Override
@@ -67,7 +66,7 @@ public class ExomiserMvStoreMetadataService implements VariantMetadataService {
         ClinvarClnSig clinvarClnSig;
 
         if (alleleProp == null) {
-            frequency = options.defaultFrequency();
+            frequency = DEFAULT_FREQUENCY;
             pathogenicity = effects.stream()
                     .map(VariantEffectPathogenicityScore::getPathogenicityScoreOf)
                     .max(Float::compareTo)

@@ -16,10 +16,37 @@ public interface VariantMetadata {
                 clinvarClnSig);
     }
 
+    /**
+     * Get variant frequency as a percentage or an empty optional if the variant has not been observed in any available
+     * variant database.
+     * <p>
+     * For instance, <code>0.5</code> for a variant with frequency <code>1/500</code>.
+     *
+     * @return optional variant frequency as a percentage.
+     */
     Optional<Float> frequency();
 
+    /**
+     * Get estimate of the overall variant pathogenicity.
+     * <p>
+     * The estimate must be in range <code>[0, 1]</code> where <code>0</code> and <code>1</code> represent
+     * the <em>least</em> and the <em>most</em> deleterious variants.
+     * <p>
+     * The estimate can be an aggregate of multiple scoring tools or a product of a single tool.
+     *
+     * @return the overall variant pathogenicity estimate.
+     */
     float pathogenicity();
 
+    /**
+     * Get aggregated variant pathogenicity score.
+     * <p>
+     * The Clinvar pathogenic or likely pathogenic variants are assigned a score of <code>1</code>.
+     * The other variants are assigned a product of the {@link #frequencyScore()} and {@link #pathogenicity()}.
+     * An empty optional is returned if the {@link #frequencyScore()} is missing.
+     *
+     * @return optional pathogenicity score.
+     */
     default Optional<Float> pathogenicityScore() {
         // Heuristic -- Count ClinVar pathogenic or likely pathogenic as 1.0 (maximum pathogenicity score)
         // regardless of the Exomiser pathogenicity score
@@ -28,6 +55,9 @@ public interface VariantMetadata {
                 : frequencyScore().map(fs -> fs * pathogenicity());
     }
 
+    /**
+     * @return Clinvar clinical significance category.
+     */
     ClinvarClnSig clinvarClnSig();
 
     /**

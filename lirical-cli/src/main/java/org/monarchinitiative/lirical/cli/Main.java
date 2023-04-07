@@ -7,7 +7,7 @@ import java.util.concurrent.Callable;
 
 import static picocli.CommandLine.Help.Ansi.Style.*;
 
-@CommandLine.Command(name = "java -jar lirical-cli.jar",
+@CommandLine.Command(name = "lirical",
         header = "LIkelihood Ratio Interpretation of Clinical AbnormaLities\n",
         mixinStandardHelpOptions = true,
         usageHelpWidth = Main.WIDTH,
@@ -15,9 +15,9 @@ import static picocli.CommandLine.Help.Ansi.Style.*;
         footer = Main.FOOTER)
 public class Main implements Callable<Integer> {
 
-    public static final String VERSION = "lirical-cli v2.0.0-RC1";
+    public static final String VERSION = "lirical v2.0.0-RC2";
     public static final int WIDTH = 120;
-    public static final String FOOTER = "\nSee the full documentation at https://lirical.readthedocs.io/en/master";
+    public static final String FOOTER = "\nSee the full documentation at https://thejacksonlaboratory.github.io/LIRICAL/stable";
 
     private static final CommandLine.Help.ColorScheme COLOR_SCHEME = new CommandLine.Help.ColorScheme.Builder()
             .commands(bold, fg_blue, underline)

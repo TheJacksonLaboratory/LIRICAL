@@ -7,11 +7,20 @@ import java.util.Optional;
 
 public interface BackgroundVariantFrequencyService {
 
-    static BackgroundVariantFrequencyService of(Map<TermId, Double> frequencyMap, double defaultVariantFrequency) {
-        return new BackgroundVariantFrequencyServiceImpl(frequencyMap, defaultVariantFrequency);
+    static BackgroundVariantFrequencyService of(Map<TermId, Double> frequencyMap, double defaultVariantBackgroundFrequency) {
+        return new BackgroundVariantFrequencyServiceImpl(frequencyMap, defaultVariantBackgroundFrequency);
     }
 
-    double defaultVariantFrequency();
+    /**
+     * @deprecated use {@link #defaultVariantBackgroundFrequency()} instead
+     */
+    // REMOVE(v2.0.0)
+    @Deprecated(forRemoval = true)
+    default double defaultVariantFrequency() {
+        return defaultVariantBackgroundFrequency();
+    }
+
+    double defaultVariantBackgroundFrequency();
 
     Optional<Double> frequencyForGene(TermId geneId);
 

@@ -9,17 +9,17 @@ import java.util.Optional;
 class BackgroundVariantFrequencyServiceImpl implements BackgroundVariantFrequencyService {
 
     private final Map<TermId, Double> frequencyMap;
-    private final double defaultVariantFrequency;
+    private final double defaultVariantBackgroundFrequency;
 
     BackgroundVariantFrequencyServiceImpl(Map<TermId, Double> frequencyMap,
-                                          double defaultVariantFrequency) {
+                                          double defaultVariantBackgroundFrequency) {
         this.frequencyMap = Objects.requireNonNull(frequencyMap);
-        this.defaultVariantFrequency = defaultVariantFrequency;
+        this.defaultVariantBackgroundFrequency = defaultVariantBackgroundFrequency;
     }
 
     @Override
-    public double defaultVariantFrequency() {
-        return defaultVariantFrequency;
+    public double defaultVariantBackgroundFrequency() {
+        return defaultVariantBackgroundFrequency;
     }
 
     @Override

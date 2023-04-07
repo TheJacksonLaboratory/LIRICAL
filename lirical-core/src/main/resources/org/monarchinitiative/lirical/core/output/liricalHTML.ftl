@@ -769,7 +769,7 @@
                 itself. The
                 results of LIRICAL should not be construed as medical advice and should always be reviewed by medical
                 professionals.</p>
-            <p>See LIRICAL's <a href="https://lirical.readthedocs.io/en/latest/" target="_blank">online
+            <p>See LIRICAL's <a href="https://thejacksonlaboratory.github.io/LIRICAL/stable" target="_blank">online
                     documentation</a>.</p>
 
             <h4><i>This LIRICAL run had the following configuration:</i></h4>

@@ -2,26 +2,31 @@ package org.monarchinitiative.lirical.core.output;
 
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
 
-import java.util.Objects;
+import java.util.Optional;
 
-public class AnalysisResultWriterFactory {
+/**
+ * Factory class for getting {@link AnalysisResultsWriter}s.
+ */
+public interface AnalysisResultWriterFactory {
 
-    private final Ontology hpo;
-    private final HpoDiseases diseases;
+    /**
+     * Get {@link AnalysisResultsWriter} or an empty {@link Optional} if the factory does not know about
+     * an {@link AnalysisResultsWriter} for the given {@link OutputFormat}.
+     */
+    Optional<AnalysisResultsWriter> getWriter(OutputFormat outputFormat);
 
-    public AnalysisResultWriterFactory(Ontology hpo, HpoDiseases diseases) {
-        this.hpo = Objects.requireNonNull(hpo);
-        this.diseases = Objects.requireNonNull(diseases);
-    }
-
-
-    public AnalysisResultsWriter getWriter(AnalysisData analysisData,
-                                           AnalysisResults analysisResults,
-                                           AnalysisResultsMetadata metadata) {
-        return new AnalysisResultsWriter(hpo, diseases, analysisData, analysisResults, metadata);
+    /**
+     * Since deprecation, the method always throws a {@link RuntimeException}.
+     *
+     * @deprecated use {@link #getWriter(OutputFormat)} instead.
+     */
+    // REMOVE(v2.0.0)
+    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
+    default AnalysisResultsWriter getWriter(AnalysisData analysisData,
+                                              AnalysisResults analysisResults,
+                                              AnalysisResultsMetadata metadata) {
+        throw new RuntimeException("The method has been deprecated.");
     }
 
 }

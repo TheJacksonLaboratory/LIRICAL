@@ -1,0 +1,191 @@
+{
+  "id": "pfeiffer-phenopacket",
+  "subject": {
+    "id": "II:3/Family 2",
+    "dateOfBirth": "1970-01-01T00:00:00Z",
+    "timeAtLastEncounter": {
+      "age": {
+        "iso8601duration": "P12Y3M"
+      }
+    },
+    "sex": "UNKNOWN_SEX",
+    "karyotypicSex": "UNKNOWN_KARYOTYPE",
+    "taxonomy": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    }
+  },
+  "phenotypicFeatures": [{
+    "type": {
+      "id": "HP:0009719",
+      "label": "Hypomelanotic macule"
+    },
+    "excluded": false,
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:18830229",
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
+      }
+    }]
+  }, {
+    "type": {
+      "id": "HP:0010614",
+      "label": "Fibroma"
+    },
+    "excluded": false,
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:18830229",
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
+      }
+    }]
+  }, {
+    "type": {
+      "id": "HP:0012736",
+      "label": "Profound global developmental delay"
+    },
+    "excluded": false,
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:18830229",
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
+      }
+    }]
+  }, {
+    "type": {
+      "id": "HP:0001250",
+      "label": "Seizures"
+    },
+    "excluded": false,
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:18830229",
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
+      }
+    }]
+  }, {
+    "type": {
+      "id": "HP:0100804",
+      "label": "Ungual fibroma"
+    },
+    "excluded": false,
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:18830229",
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
+      }
+    }]
+  }, {
+    "type": {
+      "id": "HP:0009721",
+      "label": "Shagreen patch"
+    },
+    "excluded": false,
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:18830229",
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
+      }
+    }]
+  }, {
+    "type": {
+      "id": "HP:0012733",
+      "label": "Macule"
+    },
+    "excluded": false,
+    "evidence": [{
+      "evidenceCode": {
+        "id": "ECO:0000033",
+        "label": "author statement supported by traceable reference"
+      },
+      "reference": {
+        "id": "PMID:18830229",
+        "description": "NM_000368.4:c.671T\u003eG\nNM_000368.4:c.3103G\u003eA"
+      }
+    }]
+  }],
+  "diseases": [{
+    "term": {
+      "id": "OMIM:191100",
+      "label": "TUBEROUS SCLEROSIS 1; TSC1"
+    },
+    "excluded": false
+  }],
+  "files": [{
+    "uri": "file:/path/to/Pfeiffer.vcf",
+    "fileAttributes": {
+      "genomeAssembly": "GRCh37",
+      "fileFormat": "vcf",
+      "description": ""
+    }
+  }],
+  "metaData": {
+    "created": "1970-01-01T00:00:00Z",
+    "createdBy": "HPO:lccarmody",
+    "resources": [{
+      "id": "hp",
+      "name": "human phenotype ontology",
+      "url": "http://purl.obolibrary.org/obo/hp.owl",
+      "version": "2018-03-08",
+      "namespacePrefix": "HP",
+      "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
+    }, {
+      "id": "pato",
+      "name": "Phenotype And Trait Ontology",
+      "url": "http://purl.obolibrary.org/obo/pato.owl",
+      "version": "2018-03-28",
+      "namespacePrefix": "PATO",
+      "iriPrefix": "http://purl.obolibrary.org/obo/PATO_"
+    }, {
+      "id": "geno",
+      "name": "Genotype Ontology",
+      "url": "http://purl.obolibrary.org/obo/geno.owl",
+      "version": "19-03-2018",
+      "namespacePrefix": "GENO",
+      "iriPrefix": "http://purl.obolibrary.org/obo/GENO_"
+    }, {
+      "id": "ncbitaxon",
+      "name": "NCBI organismal classification",
+      "url": "http://purl.obolibrary.org/obo/ncbitaxon.owl",
+      "version": "2018-03-02",
+      "namespacePrefix": "NCBITaxon"
+    }, {
+      "id": "eco",
+      "name": "Evidence and Conclusion Ontology",
+      "url": "http://purl.obolibrary.org/obo/eco.owl",
+      "version": "2018-11-10",
+      "namespacePrefix": "ECO",
+      "iriPrefix": "http://purl.obolibrary.org/obo/ECO_"
+    }, {
+      "id": "omim",
+      "name": "Online Mendelian Inheritance in Man",
+      "url": "https://www.omim.org",
+      "namespacePrefix": "OMIM"
+    }],
+    "phenopacketSchemaVersion": "2.0.0"
+  }
+}
