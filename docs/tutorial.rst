@@ -49,14 +49,10 @@ Here is an excerpt of the text that described patient 4 in the above cited artic
 Use the `PhenopacketGenerator <https://github.com/TheJacksonLaboratory/PhenopacketGenerator>`_
 to create a Phenopacket.
 
-To set up PhenopacketGenerator, you will first need to set the location of the `hp.obo` file.
-
-.. note::
-  We already downloaded HPO in JSON format but PhenopacketGenerator requires the OBO file.
-
-Enter your Biocurator id by selecting "Set biocurator id" from the edit menu,
-and enter an arbitrary Phenopacket ID and proband ID.
-Use the dropdown menus to enter "9 years" for Age and "Female" for sex.
+To set up PhenopacketGenerator, you will first need to set the location of the hp.obo file
+from the `Download page <https://hpo.jax.org/app/data/ontology>`_ of the HPO website.
+Enter your Biocurator id by selecting "Set biocurator id" from the edit menu, and enter an arbitrary Phenopacket ID
+and proband ID. Use the dropdown menus to enter "9 years" for Age and "Female" for sex.
 
 From the edit menu, select "Set path to hp.obo file", then select the location of the hpo.obo on your computer.
 After a moment, the ontology will load and "Enter HPO terms" will be clickable. Load HPO terms for this case by
