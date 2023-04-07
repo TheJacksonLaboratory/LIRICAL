@@ -45,13 +45,14 @@ jobs:
         DOCS_VERSION=latest
         mkdir -p gh-pages/${DOCS_VERSION}
         touch gh-pages/.nojekyll
+        tree -L 2
         
         ## Copy Javadoc
         # Copy aggregated Javadoc into `apidocs` folder. 
         # The aggregated docs are built by Maven in `package` phase.
         
         APIDOCS=$(pwd)/gh-pages/${DOCS_VERSION}/apidocs
-        printf "Copying Javadocs from %s to %s\n" $(pwd)/target/site/apidocs ${APIDOCS} 
+        printf "Copying Javadocs from %s to %s\n" $(pwd)/target/site/apidocs ${APIDOCS}
         cp -r target/site/apidocs ${APIDOCS}
         
         ## Build the docs
