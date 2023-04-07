@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorial &mdash; LIRICAL 2.0.0-RC3-SNAPSHOT documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Running LIRICAL" href="running.html" />
+    <link rel="prev" title="Setting up LIRICAL" href="setup.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LIRICAL
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up LIRICAL</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#setup">Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-data">The data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-phenopacket">Creating a phenopacket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-lirical">Running LIRICAL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#viewing-the-results">Viewing the results</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="running.html">Running LIRICAL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations.html">LIRICAL: How does it work?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">LIRICAL Advanced Options</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LIRICAL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/tutorial.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial">
+<span id="rsttutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h1>
+<p>This tutorial shows how to use LIRICAL to evaluate an exome.</p>
+<section id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading"></a></h2>
+<p>Follow the instructions in <a class="reference internal" href="setup.html#rstsetup"><span class="std std-ref">Setting up LIRICAL</span></a> to get LIRICAL executable, download the database files
+and the Exomiser database.
+Note the location of the Exomiser variant database file.</p>
+</section>
+<section id="the-data">
+<h2>The data<a class="headerlink" href="#the-data" title="Permalink to this heading"></a></h2>
+<p>We will run an exome analysis of a case reported in
+<a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/?term=30101859">Cao et al., 2018</a>. The authors describe
+a disease-associated mutation in the <em>TGFBR2</em> gene in <em>Patient 4</em>.</p>
+<p>We have simulated an exome VCF file by adding the disease associated variant to
+a VCF file derived from <cite>project.NIST.hc.snps.indels.NIST7035.vcf</cite> and we prepared a <em>phenopacket</em>
+to represent patient’s clinical data (see below). The files are available in the
+<a class="reference external" href="https://github.com/TheJacksonLaboratory/LIRICAL/tree/master/lirical-cli/src/examples">examples</a>
+folder or in the distribution ZIP.</p>
+</section>
+<section id="creating-a-phenopacket">
+<h2>Creating a phenopacket<a class="headerlink" href="#creating-a-phenopacket" title="Permalink to this heading"></a></h2>
+<p>Creating the phenopacket is an optional step and the example phenopacket can be used for the purpose of this tutorial.</p>
+<p>Here is an excerpt of the text that described patient 4 in the above cited article:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Patient</span> <span class="mi">4</span> <span class="ow">is</span> <span class="n">a</span> <span class="mi">9</span><span class="o">-</span><span class="n">year</span><span class="o">-</span><span class="n">old</span> <span class="n">girl</span><span class="o">.</span> <span class="n">She</span> <span class="n">was</span> <span class="n">clinically</span> <span class="n">diagnosed</span> <span class="k">with</span> <span class="n">suspected</span>
+<span class="n">Marfan</span> <span class="n">syndrome</span> <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="n">first</span> <span class="n">impression</span><span class="o">.</span> <span class="n">She</span> <span class="n">was</span> <span class="mi">144</span> <span class="n">cm</span> <span class="n">tall</span> <span class="ow">and</span>
+<span class="n">weighed</span> <span class="mi">24</span> <span class="n">kg</span><span class="o">.</span> <span class="n">Her</span> <span class="n">father</span> <span class="n">was</span> <span class="mi">176</span> <span class="n">cm</span> <span class="n">tall</span> <span class="ow">and</span> <span class="n">weighed</span> <span class="mi">53</span> <span class="n">kg</span><span class="o">.</span> <span class="n">The</span> <span class="n">phenotypes</span>
+<span class="n">of</span> <span class="n">this</span> <span class="n">patient</span> <span class="n">include</span> <span class="n">strabismus</span><span class="p">,</span> <span class="n">refractive</span> <span class="n">error</span><span class="p">,</span> <span class="n">pectus</span> <span class="n">carinatum</span><span class="p">,</span> <span class="n">scoliosis</span><span class="p">,</span>
+<span class="n">arachnodactyly</span><span class="p">,</span> <span class="ow">and</span> <span class="n">camptodactyly</span><span class="o">.</span> <span class="n">The</span> <span class="n">patient</span><span class="s1">&#39;s main cardiovascular abnormalities</span>
+<span class="n">were</span> <span class="n">Sinus</span> <span class="n">of</span> <span class="n">Valsalva</span> <span class="n">aneurysm</span><span class="p">,</span> <span class="n">aortic</span> <span class="n">root</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">aortic</span> <span class="n">regurgitation</span><span class="p">,</span>
+<span class="n">atrial</span> <span class="n">septal</span> <span class="n">defect</span><span class="p">,</span> <span class="n">patent</span> <span class="n">foramen</span> <span class="n">ovale</span><span class="p">,</span> <span class="n">pulmonary</span> <span class="n">artery</span> <span class="n">dilatation</span><span class="p">,</span> <span class="ow">and</span>
+<span class="n">tricuspid</span> <span class="n">valve</span> <span class="n">prolapse</span> <span class="k">with</span> <span class="n">regurgitation</span><span class="o">.</span> <span class="n">Craniofacial</span> <span class="n">abnormalities</span> <span class="n">of</span> <span class="n">the</span>
+<span class="n">patient</span> <span class="n">include</span> <span class="n">bifid</span> <span class="n">uvula</span><span class="p">,</span> <span class="n">malar</span> <span class="n">hypoplasia</span><span class="p">,</span> <span class="ow">and</span> <span class="n">micrognathia</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Use the <a class="reference external" href="https://github.com/TheJacksonLaboratory/PhenopacketGenerator">PhenopacketGenerator</a>
+to create a Phenopacket.</p>
+<p>To set up PhenopacketGenerator, you will first need to set the location of the hp.obo file
+from the <a class="reference external" href="https://hpo.jax.org/app/data/ontology">Download page</a> of the HPO website.
+Enter your Biocurator id by selecting “Set biocurator id” from the edit menu, and enter an arbitrary Phenopacket ID
+and proband ID. Use the dropdown menus to enter “9 years” for Age and “Female” for sex.</p>
+<p>From the edit menu, select “Set path to hp.obo file”, then select the location of the hpo.obo on your computer.
+After a moment, the ontology will load and “Enter HPO terms” will be clickable. Load HPO terms for this case by
+clicking “Enter HPO term”. Paste the clinical description above into the text-mining window of PhenopacketGenerator,
+click “Analyze”, select HPO terms, click “Add selected terms”, then “Confirm and Close”.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/hpo-textmining-lds.png"><img alt="LDS2 text mining" src="_images/hpo-textmining-lds.png" style="width: 75%;" /></a>
+</figure>
+<p>Then, select the location of the VCF file that you saved in the previous step, and enter the Genome assembly (<code class="docutils literal notranslate"><span class="pre">hg19</span></code>).</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/phenopacketgenerator.png"><img alt="LDS2 text mining" src="_images/phenopacketgenerator.png" style="width: 75%;" /></a>
+</figure>
+<p>You can now export the phenopacket. Use the filename <code class="docutils literal notranslate"><span class="pre">LDS2.json</span></code>
+(or choose another name and adjust the following command accordingly).</p>
+</section>
+<section id="running-lirical">
+<h2>Running LIRICAL<a class="headerlink" href="#running-lirical" title="Permalink to this heading"></a></h2>
+<p>Run LIRICAL as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lirical</span> <span class="n">phenopacket</span> \
+<span class="o">--</span><span class="n">exomiser</span><span class="o">-</span><span class="n">hg19</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="mi">2302</span><span class="n">_hg19_variants</span><span class="o">.</span><span class="n">mv</span><span class="o">.</span><span class="n">db</span> \
+<span class="o">--</span><span class="n">assembly</span> <span class="n">hg19</span> \
+<span class="o">--</span><span class="n">phenopacket</span> <span class="n">LDS2</span><span class="o">.</span><span class="n">v2</span><span class="o">.</span><span class="n">json</span> \
+<span class="o">--</span><span class="n">vcf</span> <span class="n">LDS2</span><span class="o">.</span><span class="n">vcf</span><span class="o">.</span><span class="n">gz</span> \
+<span class="o">--</span><span class="n">prefix</span> <span class="n">LDS2</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We assume the LIRICAL alias was set as described in the <a class="reference internal" href="setup.html#rstsetupalias"><span class="std std-ref">Set up alias</span></a> section.</p>
+</div>
+</section>
+<section id="viewing-the-results">
+<h2>Viewing the results<a class="headerlink" href="#viewing-the-results" title="Permalink to this heading"></a></h2>
+<p>The above command will create a new file called <cite>LDS2.html</cite> (the <code class="docutils literal notranslate"><span class="pre">-x</span> <span class="pre">|</span> <span class="pre">--prefix</span></code> option controls the prefix of the output file).
+Open this file in a web browser. The top of the page shows some information about the input files and a list of observed
+and excluded HPO terms. The next section shows summarized representations of the top candidates.</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="_images/lirical-sparkline-lds2.png"><img alt="LIRICAL sparkline" src="_images/lirical-sparkline-lds2.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-text">Summary view of the top candidates.</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<p>Each row in the summary shows the rank, post-test probability, and name/ID of the disease. The row includes a sparkline
+representation of the phenotypic profiles of each candidate, with green bars indicating positive contributions and red bars
+negative contributions to the diagnosis. The last bar represents the genotype likelihood ratio if LIRICAL was run with
+a VCF file. Hovering over the individual bars will show the name of the HPO term or gene, and all sparklines show the terms
+in the same order.</p>
+<p>LIRICAL then presents a detailed analysis of each of the top candidates. The summary shows information about identified
+variants and the phenotypic profile. Hovering over the graphic shows information about the likelihood ratio and the type of the
+match.</p>
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="_images/lirical-detailed-TGFBR2.png"><img alt="LIRICAL sparkline" src="_images/lirical-detailed-TGFBR2.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-text">Detailed view of the top candidate Loeys-Dietz syndrome type 2.</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<p>The remaining part of the HTML output page contains information about the other top candidates and a list of all
+diseases analyzed. The bottom of the page includes explanations and documents the settings used for the analysis.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="setup.html" class="btn btn-neutral float-left" title="Setting up LIRICAL" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="running.html" class="btn btn-neutral float-right" title="Running LIRICAL" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Peter Robinson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
