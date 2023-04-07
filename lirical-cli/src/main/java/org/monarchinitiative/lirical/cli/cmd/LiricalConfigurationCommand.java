@@ -94,7 +94,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 description = {
                 "Default frequency of called-pathogenic variants in the general population (gnomAD).",
                         "In the vast majority of cases, we can derive this information from gnomAD.",
-                        "This constant is used if for whatever reason, data was not available.",
+                        "This constant is used if for whatever reason, data was not available for a gene.",
                         "(default: ${DEFAULT-VALUE})."})
         public double defaultVariantBackgroundFrequency = 0.1;
 
