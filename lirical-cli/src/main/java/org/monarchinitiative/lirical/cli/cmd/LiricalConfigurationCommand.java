@@ -241,7 +241,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         builder.useGlobal(runConfiguration.globalAnalysisMode);
 
         LOGGER.debug("Using uniform pretest disease probabilities.");
-        PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(lirical.phenotypeService().diseases());
+        PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(lirical.phenotypeService().diseases(), diseaseDatabases);
         builder.pretestProbability(pretestDiseaseProbability);
 
         LOGGER.debug("Disregarding diseases with no deleterious variants? {}", runConfiguration.disregardDiseaseWithNoDeleteriousVariants);
