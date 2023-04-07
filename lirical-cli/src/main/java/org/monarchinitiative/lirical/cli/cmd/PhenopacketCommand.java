@@ -47,7 +47,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
     public Path phenopacketPath;
 
     @CommandLine.Option(names = {"--vcf"},
-            description = "Path to VCF file. This path has priority over any VCF files described in phenopacket.")
+            description = "Path to a VCF file. This path has priority over any VCF files described in phenopacket.")
     public Path vcfPath;
 
     @Override
@@ -59,7 +59,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
     protected AnalysisData prepareAnalysisData(Lirical lirical,
                                                GenomeBuild genomeBuild,
                                                TranscriptDatabase transcriptDb) throws LiricalParseException {
-        LOGGER.info("Reading phenopacket from {}.", phenopacketPath.toAbsolutePath());
+        LOGGER.info("Reading phenopacket from {}", phenopacketPath.toAbsolutePath());
 
         PhenopacketData data = null;
         try (InputStream is = new BufferedInputStream(new FileInputStream(phenopacketPath.toFile()))) {
@@ -67,7 +67,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
             data = v2.read(is);
             LOGGER.info("Success!");
         } catch (PhenopacketImportException | IOException e) {
-            LOGGER.info("Unable to parse as v2 phenopacket, trying v1.");
+            LOGGER.info("Unable to parse as v2 phenopacket, trying v1");
         }
 
         if (data == null) {
@@ -75,7 +75,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
                 PhenopacketImporter v1 = PhenopacketImporters.v1();
                 data = v1.read(is);
             } catch (PhenopacketImportException | IOException e) {
-                LOGGER.info("Unable to parser as v1 phenopacket.");
+                LOGGER.info("Unable to parse as v1 phenopacket");
                 throw new LiricalParseException("Unable to parse phenopacket from " + phenopacketPath.toAbsolutePath());
             }
         }

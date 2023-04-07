@@ -184,7 +184,7 @@ public interface AnalysisOptions {
 
         public Builder addDiseaseDatabases(Collection<DiseaseDatabase> diseaseDatabases) {
             if (diseaseDatabases == null) {
-                LOGGER.warn("Disease databases should not be `null`!");
+                LOGGER.warn("Disease databases must not be `null`!");
                 return this;
             }
             this.diseaseDatabases.addAll(diseaseDatabases);

@@ -22,7 +22,6 @@ public class LiricalDataResolver {
 
     private LiricalDataResolver(Path dataDirectory) throws LiricalDataException {
         this.dataDirectory = Objects.requireNonNull(dataDirectory, "Data directory must not be null!");
-        LOGGER.debug("Using Lirical directory at `{}`.", dataDirectory.toAbsolutePath());
         checkV1Resources();
     }
 
