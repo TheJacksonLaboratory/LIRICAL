@@ -38,7 +38,7 @@ jobs:
     - name: Build LIRICAL
       run: ./mvnw -Prelease -DskipTests package # We test elsewhere
 
-    - name: Generate examples and build documentation
+    - name: Build documentation
       run: |
         ## Init the target folder. 
         # We will put all site documentation there.
