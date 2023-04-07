@@ -39,8 +39,7 @@ abstract class BaseCommand implements Callable<Integer> {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         context.getLogger(Logger.ROOT_LOGGER_NAME).setLevel(level);
 
-        if (!(level.equals(Level.WARN) || level.equals(Level.ERROR)))
-            printBanner();
+        printBanner();
     }
 
     private static String readBanner() {
@@ -59,10 +58,9 @@ abstract class BaseCommand implements Callable<Integer> {
         }
 
         return switch (verbosity) {
-            case 0 -> Level.WARN;
-            case 1 -> Level.INFO;
-            case 2 -> Level.DEBUG;
-            case 3 -> Level.TRACE;
+            case 0 -> Level.INFO;
+            case 1 -> Level.DEBUG;
+            case 2 -> Level.TRACE;
             default -> Level.ALL;
         };
     }

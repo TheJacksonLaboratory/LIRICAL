@@ -10,6 +10,7 @@ v2.0.0 (TBD)
 - Enhance HTML report, add `JSON` output format
 - Add ``prioritize`` command for running LIRICAL entirely from CLI
 - Add support for phenopacket schema ``v2``
+- Host documentation and API docs on github.io
 
 -------------------
 v1.3.3 (2021-05-14)

@@ -61,7 +61,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         ProgressReporter progressReporter = new ProgressReporter(1_000, "diseases");
         Stream<TestResult> testResultStream = phenotypeService.diseases().hpoDiseases()
                 .parallel() // why not?
-                .filter(d -> diseaseDatabasePrefixes.contains(d.id().getPrefix()))
+                .filter(disease -> diseaseDatabasePrefixes.contains(disease.id().getPrefix()))
                 .peek(d -> progressReporter.log())
                 .map(disease -> analyzeDisease(genotypeLikelihoodRatio.get(), disease, data, options, diseaseToGenotype))
                 .flatMap(Optional::stream);

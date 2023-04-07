@@ -116,20 +116,21 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
 
     protected List<String> checkInput() {
         List<String> errors = new LinkedList<>();
+
+        Path codeHomeParent = codeHomeDir();
         // resources
         if (dataSection.liricalDataDirectory == null) {
-            Path codeHomeParent = codeHomeDir();
-            LOGGER.debug("Data directory is unset, searching in the code home directory at: {}", codeHomeParent);
+            LOGGER.debug("Data directory is unset, searching next to the LIRICAL file");
             Path codeHomeDataDir = codeHomeParent.resolve("data");
             if (Files.isDirectory(codeHomeDataDir)) {
-                LOGGER.debug("Found data folder at: {}", codeHomeDataDir.toAbsolutePath());
                 dataSection.liricalDataDirectory = codeHomeDataDir;
             } else {
-                String msg = "Path to Lirical data directory must be provided via `-d | --data` option";
+                String msg = "Path to LIRICAL data directory must be provided via `-d | --data` option";
                 LOGGER.error(msg);
                 errors.add(msg);
             }
         }
+        LOGGER.info("Using data folder at {}", dataSection.liricalDataDirectory.toAbsolutePath());
 
         // Obsolete options must/should not be used
         if (dataSection.exomiserDatabase != null) {
@@ -250,7 +251,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
 
         List<TermId> diseaseIds = lirical.phenotypeService().diseases().stream()
                 .map(Identified::id)
-                .filter(diseaseId -> Collections.binarySearch(diseaseDatabasePrefixes, diseaseId.getPrefix()) > 0)
+                .filter(diseaseId -> diseaseDatabasePrefixes.contains(diseaseId.getPrefix()))
                 .toList();
         PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(diseaseIds);
         builder.pretestProbability(pretestDiseaseProbability);
@@ -335,7 +336,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
 
     private static Path codeHomeDir() {
         String codePath = LiricalConfigurationCommand.class.getProtectionDomain().getCodeSource().getLocation().getFile();
-        LOGGER.debug("Found code path at {}", codePath);
+        LOGGER.info("Running LIRICAL from {}", codePath);
         return Path.of(codePath).toAbsolutePath().getParent();
     }
 
