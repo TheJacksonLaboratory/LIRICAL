@@ -9,6 +9,7 @@ v2.0.0 (TBD)
 - Prune and split codebase into several Maven modules
 - Enhance HTML report, add `JSON` output format
 - Add ``prioritize`` command for running LIRICAL entirely from CLI
+- Change the YAML input format
 - Add support for phenopacket schema ``v2``
 - Host documentation and API docs on github.io
 
