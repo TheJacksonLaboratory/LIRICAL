@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LIRICAL’s Genotype Score &mdash; LIRICAL 2.0.0-RC2-SNAPSHOT documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="LIRICAL Advanced Options" href="advanced.html" />
+    <link rel="prev" title="LIRICAL’s Phenotype Score" href="phenotype-score.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LIRICAL
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up LIRICAL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="running.html">Running LIRICAL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output files</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="explanations.html">LIRICAL: How does it work?</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="phenotype-score.html">LIRICAL’s Phenotype Score</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">LIRICAL’s Genotype Score</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#related-analysis-options">Related analysis options</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#transcript-databases">Transcript databases</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#background-variant-frequencies">Background variant frequencies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#global-mode">Global mode</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">LIRICAL Advanced Options</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LIRICAL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="explanations.html">LIRICAL: How does it work?</a></li>
+      <li class="breadcrumb-item active">LIRICAL’s Genotype Score</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/genotype-score.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="lirical-s-genotype-score">
+<span id="rstgenotype-score"></span><h1>LIRICAL’s Genotype Score<a class="headerlink" href="#lirical-s-genotype-score" title="Permalink to this heading"></a></h1>
+<p>We can estimate the pathogenicity of a variant on the basis of a
+computational pathogenicity score that ranges from 0 (predicted benign) to 1 (maximum pathogenicity prediction).
+LIRICAL uses the pathogenicity score prediction of <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/26562621">Exomiser</a>.
+Our model depends on the assumed mode of inheritance of the disease,
+and provides an estimate likelihood ratio for the observed genotype.
+For example, we expect two pathogenic alleles in an autosomal recessive disease and one in an autosomal dominant disease.
+Our model takes into account the expected frequency of seeing predicted pathogenic variants in the population.
+Genes known to carry few common functional variants in healthy individuals may be judged more likely
+to cause certain kinds of disease than genes known to carry many such variants
+(<a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3749936/">Petrovski et al., 2013</a>).</p>
+<p>LIRICAL’s model provides an integrated score for each gene that assesses the observed genotype, comparing its probability
+given that a disease associated with the gene is present in the proband vs. the probability that the genotype is unrelated
+to the clinical manifestations observed in the proband. See the manuscript for algorithmic details.</p>
+<section id="related-analysis-options">
+<h2>Related analysis options<a class="headerlink" href="#related-analysis-options" title="Permalink to this heading"></a></h2>
+<p>The following genotype configuration options can be set on top of the phenotype-only analysis.</p>
+<section id="transcript-databases">
+<span id="rsttx-dbs"></span><h3>Transcript databases<a class="headerlink" href="#transcript-databases" title="Permalink to this heading"></a></h3>
+<p>LIRICAL can use transcript data from UCSC or RefSeq.
+The default is <a class="reference external" href="https://www.ncbi.nlm.nih.gov/refseq/">RefSeq</a>,
+but transcript definitions from <a class="reference external" href="http://genome.ucsc.edu/">UCSC</a> can also be used.</p>
+</section>
+<section id="background-variant-frequencies">
+<span id="rstbg-var-freqs"></span><h3>Background variant frequencies<a class="headerlink" href="#background-variant-frequencies" title="Permalink to this heading"></a></h3>
+<p>LIRICAL uses a background frequency file that records the freqeuncy of predicted pathogenic variants
+in protein-coding genes (as estimated from gnomAD data). By default, LIRICAL will use pre-fabricated
+files for this (that are included in the <code class="docutils literal notranslate"><span class="pre">src/main/resources/background</span></code> directory). This is recommended
+for most users. If you create your own background file, then you can use it with the <code class="docutils literal notranslate"><span class="pre">-b</span></code> option, that should
+then indicate the path to a non-default background frequency file.</p>
+</section>
+<section id="global-mode">
+<span id="rstglobal-mode"></span><h3>Global mode<a class="headerlink" href="#global-mode" title="Permalink to this heading"></a></h3>
+<p>By default, LIRICAL ranks candidate genes for which at least one pathogenic allele is present in the VCF file.
+However, LIRICAL can also be run in a <code class="docutils literal notranslate"><span class="pre">--global</span></code> mode in which diseases are ranked irrespective of
+whether a disease gene is known for a disease or whether the gene is found to have a pathogenic allele or not.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="phenotype-score.html" class="btn btn-neutral float-left" title="LIRICAL’s Phenotype Score" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="advanced.html" class="btn btn-neutral float-right" title="LIRICAL Advanced Options" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Peter Robinson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
