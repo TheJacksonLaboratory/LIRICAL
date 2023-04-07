@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.core.likelihoodratio.poisson;
 
-public class Gamma {
+class Gamma {
     /**
      * <a href="http://en.wikipedia.org/wiki/Euler-Mascheroni_constant">Euler-Mascheroni constant</a>
      * @since 2.0
@@ -180,7 +180,7 @@ public class Gamma {
      * @return the value of {@code log(Gamma(x))}, {@code Double.NaN} if
      * {@code x <= 0.0}.
      */
-    static double logGamma(double x) throws NumberIsTooLargeException,NumberIsTooSmallException {
+    static double logGamma(double x) throws NumberIsTooLargeException, NumberIsTooSmallException {
         double ret;
 
         if (Double.isNaN(x) || (x <= 0.0)) {
@@ -340,8 +340,7 @@ public class Gamma {
      * @throws NumberIsTooLargeException if {@code x > 1.5}.
      * @since 3.1
      */
-    private static double logGamma1p(final double x)
-            throws NumberIsTooSmallException, NumberIsTooLargeException {
+    private static double logGamma1p(final double x) throws NumberIsTooSmallException, NumberIsTooLargeException {
 
         if (x < -0.5) {
             throw new NumberIsTooSmallException(x, -0.5);
