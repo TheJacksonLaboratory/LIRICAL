@@ -19,7 +19,7 @@ jobs:
         fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
         ref: master
     
-    - name: Set up Python 3.
+    - name: Set up Python 3
       uses: actions/setup-python@v4
       with:
         python-version: 3.9
@@ -63,10 +63,9 @@ jobs:
         mv docs/_build/html/* gh-pages/${DOCS_VERSION}/
 
 
-    - name: Deploy documentation.
+    - name: Deploy documentation
       if: ${{ github.event_name == 'push' }}
       uses: JamesIves/github-pages-deploy-action@v4.4.1
       with:
-        branch: gh-pages
-        force: true
         folder: gh-pages
+        force: false
