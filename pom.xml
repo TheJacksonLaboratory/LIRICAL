@@ -344,7 +344,6 @@
                         <generateBackupPoms>false</generateBackupPoms>
                     </configuration>
                 </plugin>
-
             </plugins>
         </pluginManagement>
         <plugins>
