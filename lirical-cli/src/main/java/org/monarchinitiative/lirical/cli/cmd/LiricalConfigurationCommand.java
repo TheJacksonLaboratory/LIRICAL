@@ -14,6 +14,8 @@ import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.background.CustomBackgroundVariantFrequencyServiceFactory;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
+import org.monarchinitiative.phenol.ontology.data.Identified;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -241,7 +243,16 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         builder.useGlobal(runConfiguration.globalAnalysisMode);
 
         LOGGER.debug("Using uniform pretest disease probabilities.");
-        PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(lirical.phenotypeService().diseases(), diseaseDatabases);
+        List<String> diseaseDatabasePrefixes = diseaseDatabases.stream()
+                .map(DiseaseDatabase::prefix)
+                .sorted()
+                .toList();
+
+        List<TermId> diseaseIds = lirical.phenotypeService().diseases().stream()
+                .map(Identified::id)
+                .filter(diseaseId -> Collections.binarySearch(diseaseDatabasePrefixes, diseaseId.getPrefix()) > 0)
+                .toList();
+        PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(diseaseIds);
         builder.pretestProbability(pretestDiseaseProbability);
 
         LOGGER.debug("Disregarding diseases with no deleterious variants? {}", runConfiguration.disregardDiseaseWithNoDeleteriousVariants);
