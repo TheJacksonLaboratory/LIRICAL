@@ -44,7 +44,6 @@ jobs:
         # We will put all site documentation there.
         DOCS_VERSION=stable
         mkdir -p gh-pages/${DOCS_VERSION}
-        rm -r gh-pages/${DOCS_VERSION}/*
         touch gh-pages/.nojekyll
         
         ## Copy Javadoc
