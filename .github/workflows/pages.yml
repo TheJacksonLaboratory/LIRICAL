@@ -47,6 +47,8 @@ jobs:
           DOCS_VERSION=${2}
           
           git checkout ${BRANCH}
+          git fetch
+          git pull
           ## Init the target folder.
           # We will put all site documentation there.
           mkdir -p gh-pages/${DOCS_VERSION}
