@@ -55,7 +55,8 @@ jobs:
           
           ## Javadoc
           # Build the docs
-          ./mvnw clean compile javadoc:aggregate
+          ./mvnw clean compile
+          ./mvnw -Ddoclint=none -Dinherited=false javadoc:aggregate
           # Copy aggregated Javadoc into `apidocs` folder.
           # The aggregated docs are built by Maven in `package` phase.
           APIDOCS=$(pwd)/gh-pages/${DOCS_VERSION}/apidocs
