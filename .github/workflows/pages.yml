@@ -45,7 +45,7 @@ jobs:
         mkdir -p gh-pages
         touch gh-pages/.nojekyll
         
-        function build_docs() {
+        function build_docs {
           BRANCH=${1}
           DOCS_VERSION=${2}
           
