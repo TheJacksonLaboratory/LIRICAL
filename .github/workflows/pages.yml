@@ -2,8 +2,6 @@
 name: Deploy docs to GitHub pages
 
 on:
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
   # Runs on pushes targeting the master and develop branches
   push:
     branches: [ master, develop ]
@@ -43,15 +41,17 @@ jobs:
         touch gh-pages/.nojekyll
         
         function build_docs {
+          # The function will checkout a branch and build the Javadoc & documentation 
+          # into provided documentation directory.
           BRANCH=${1}
-          DOCS_VERSION=${2}
+          DOCDIR=${2}
           
           git checkout ${BRANCH}
           git fetch
           git pull
           ## Init the target folder.
           # We will put all site documentation there.
-          mkdir -p gh-pages/${DOCS_VERSION}
+          mkdir -p gh-pages/${DOCDIR}
           
           ## Javadoc
           # Build the docs
@@ -59,25 +59,27 @@ jobs:
           ./mvnw -Ddoclint=none -Dinherited=false javadoc:aggregate
           # Copy aggregated Javadoc into `apidocs` folder.
           # The aggregated docs are built by Maven in `package` phase.
-          APIDOCS=$(pwd)/gh-pages/${DOCS_VERSION}/apidocs
+          APIDOCS=$(pwd)/gh-pages/${DOCDIR}/apidocs
           printf "Copying Javadocs from %s to %s\n" $(pwd)/target/site/apidocs ${APIDOCS}
           cp -r target/site/apidocs ${APIDOCS}
           
           ## Build the docs
           # Generate the HTML pages and move the generated content into the target folder.
-          printf "Building the %s documentation\n" ${DOCS_VERSION}
+          printf "Building the %s documentation\n" ${DOCDIR}
           cd docs/
           make html
           cd ..
-          mv docs/_build/html/* gh-pages/${DOCS_VERSION}
+          mv docs/_build/html/* gh-pages/${DOCDIR}
         }
         
+        # We store the docs for `master` in `stable` dir
         build_docs master stable
+        # We store the docs for `develop` in `latest` dir
         build_docs develop latest
 
 
     - name: Deploy documentation
-#      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.event_name == 'push' }}
       uses: JamesIves/github-pages-deploy-action@v4.4.1
       with:
         folder: gh-pages
