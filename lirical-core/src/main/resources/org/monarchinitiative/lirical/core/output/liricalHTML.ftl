@@ -605,10 +605,10 @@
                         <td>${dd.posttestprob}</td>
                     </tr>
                 </table>
-
                 <br/>
                 <div class="genotype">
                     <div class="genotype-head">
+                        <#if dd.entrezGeneId != "n/a">
                         <h3>
                             <span class="hgvs-symbol">
                                 ${dd.geneSymbol}
@@ -619,6 +619,7 @@
                                 </span>
                             </span>
                         </h3>
+                        </#if>
                         <#if dd.hasGenotypeExplanation()>
                             <p class="genotype-explanation">${dd.genotypeExplanation}</p>
                         </#if>
