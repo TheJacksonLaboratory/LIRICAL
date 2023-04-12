@@ -2,9 +2,7 @@ package org.monarchinitiative.lirical.io.analysis;
 
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
-import org.monarchinitiative.lirical.core.model.Age;
-import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
-import org.monarchinitiative.lirical.core.model.Sex;
+import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
 import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
@@ -28,7 +26,7 @@ class YamlAnalysisDataParser extends SanitizingAnalysisDataParser {
     }
 
     @Override
-    public AnalysisData parse(InputStream is) throws LiricalParseException {
+    public AnalysisData parse(InputStream is, GenomeBuild build, TranscriptDatabase database) throws LiricalParseException {
         YamlConfig config;
         try {
             config = YamlParser.parse(is);
@@ -51,7 +49,7 @@ class YamlAnalysisDataParser extends SanitizingAnalysisDataParser {
                 .distinct()
                 .toList();
 
-        GenesAndGenotypes genes = parseGeneToGenotype(sampleId, config.vcfPath().orElse(null));
+        GenesAndGenotypes genes = parseGeneToGenotype(sampleId, config.vcfPath().orElse(null), build, database);
 
         return AnalysisData.of(sampleId, age, sex, presentTerms, absentTerms, genes);
     }

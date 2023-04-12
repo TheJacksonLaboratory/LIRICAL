@@ -11,11 +11,15 @@ import org.monarchinitiative.lirical.io.analysis.AnalysisDataParserFactory;
 abstract class AnalysisDataParserAwareCommand extends AbstractPrioritizeCommand {
 
     @Override
-    protected AnalysisData prepareAnalysisData(Lirical lirical, GenomeBuild genomeBuild, TranscriptDatabase transcriptDb) throws LiricalParseException {
+    protected AnalysisData prepareAnalysisData(Lirical lirical,
+                                               GenomeBuild genomeBuild,
+                                               TranscriptDatabase transcriptDb) throws LiricalParseException {
         HpoTermSanitizer sanitizer = new HpoTermSanitizer(lirical.phenotypeService().hpo());
         AnalysisDataParserFactory parserFactory = new AnalysisDataParserFactory(sanitizer, lirical.variantParserFactory(), lirical.phenotypeService().associationData());
-        return prepareAnalysisData(parserFactory);
+        return prepareAnalysisData(parserFactory, genomeBuild, transcriptDb);
     }
 
-    protected abstract AnalysisData prepareAnalysisData(AnalysisDataParserFactory factory) throws LiricalParseException;
+    protected abstract AnalysisData prepareAnalysisData(AnalysisDataParserFactory factory,
+                                                        GenomeBuild genomeBuild,
+                                                        TranscriptDatabase transcriptDb) throws LiricalParseException;
 }

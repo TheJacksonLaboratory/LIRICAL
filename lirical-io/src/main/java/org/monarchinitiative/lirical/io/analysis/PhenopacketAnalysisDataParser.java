@@ -3,6 +3,8 @@ package org.monarchinitiative.lirical.io.analysis;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
+import org.monarchinitiative.lirical.core.model.GenomeBuild;
+import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
 import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
@@ -24,10 +26,10 @@ class PhenopacketAnalysisDataParser extends SanitizingAnalysisDataParser {
 
 
     @Override
-    public AnalysisData parse(InputStream is) throws LiricalParseException {
+    public AnalysisData parse(InputStream is, GenomeBuild build, TranscriptDatabase database) throws LiricalParseException {
         PhenopacketData data = importer.read(is);
 
-        GenesAndGenotypes genes = parseGeneToGenotype(data.getSampleId(), data.getVcfPath().orElse(null));
+        GenesAndGenotypes genes = parseGeneToGenotype(data.getSampleId(), data.getVcfPath().orElse(null), build, database);
 
         return AnalysisData.of(data.getSampleId(),
                 data.getAge().orElse(null),

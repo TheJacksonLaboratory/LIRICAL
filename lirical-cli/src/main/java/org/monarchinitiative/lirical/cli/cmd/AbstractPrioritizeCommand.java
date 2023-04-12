@@ -76,7 +76,7 @@ abstract class AbstractPrioritizeCommand extends LiricalConfigurationCommand {
         if (!errors.isEmpty()) {
             LOGGER.error("Errors:");
             for (String error : errors)
-                LOGGER.error("- {}", error);
+                LOGGER.error("  {}", error);
             return 1;
         }
 

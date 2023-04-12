@@ -126,30 +126,28 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 dataSection.liricalDataDirectory = codeHomeDataDir;
             } else {
                 String msg = "Path to LIRICAL data directory must be provided via `-d | --data` option";
-                LOGGER.error(msg);
                 errors.add(msg);
             }
         }
-        LOGGER.info("Using data folder at {}", dataSection.liricalDataDirectory.toAbsolutePath());
+        if (dataSection.liricalDataDirectory != null)
+            LOGGER.info("Using data folder at {}", dataSection.liricalDataDirectory.toAbsolutePath());
 
         // Obsolete options must/should not be used
         if (dataSection.exomiserDatabase != null) {
             // Check the obsolete `-e | --exomiser` option is not being used.
             String msg = "`-e | --exomiser` option has been deprecated. Use `-e19 or -e38` to set paths to Exomiser variant databases for hg19 and hg38, respectively";
-            LOGGER.error(msg);
             errors.add(msg);
         }
 
         if (!Float.isNaN(runConfiguration.defaultAlleleFrequency)) {
             String msg = "`--default-allele-frequency` option has been deprecated.";
-            LOGGER.error(msg);
+            LOGGER.warn(msg);
         }
 
         Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
         if (genomeBuild.isEmpty()) {
             // We must have genome build!
             String msg = "Genome build must be set";
-            LOGGER.error(msg);
             errors.add(msg);
         } else {
             // Check Exomiser db seem to match the genome build.
@@ -157,14 +155,12 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 case HG19 -> {
                     if (dataSection.exomiserHg19Database == null && dataSection.exomiserHg38Database != null) {
                         String msg = "Genome build set to %s but Exomiser variant database is set for %s: %s".formatted(GenomeBuild.HG19, GenomeBuild.HG38, dataSection.exomiserHg38Database.toAbsolutePath());
-                        LOGGER.error(msg);
                         errors.add(msg);
                     }
                 }
                 case HG38 -> {
                     if (dataSection.exomiserHg38Database == null && dataSection.exomiserHg19Database != null) {
                         String msg = "Genome build set to %s but Exomiser variant database is set for %s: %s".formatted(GenomeBuild.HG38, GenomeBuild.HG19, dataSection.exomiserHg19Database.toAbsolutePath());
-                        LOGGER.error(msg);
                         errors.add(msg);
                     }
                 }
@@ -272,6 +268,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             return GenesAndGenotypes.empty();
         }
 
+        LOGGER.debug("Getting variant parser to parse a VCF file using {} assembly and {} transcripts", genomeBuild, transcriptDatabase);
         Optional<VariantParser> parser = parserFactory.forPath(vcfPath, genomeBuild, transcriptDatabase);
         if (parser.isEmpty()) {
             LOGGER.warn("Cannot obtain parser for processing the VCF file {} with {} {} due to missing resources",

@@ -16,7 +16,6 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 abstract class BaseAnalysisDataParser implements AnalysisDataParser {
 
@@ -30,15 +29,27 @@ abstract class BaseAnalysisDataParser implements AnalysisDataParser {
         this.associationData = associationData; // nullable
     }
 
-    protected GenesAndGenotypes parseGeneToGenotype(String sampleId, Path vcfPath) throws LiricalParseException {
+    protected GenesAndGenotypes parseGeneToGenotype(String sampleId,
+                                                    Path vcfPath,
+                                                    GenomeBuild genomeBuild,
+                                                    TranscriptDatabase transcriptDatabase) throws LiricalParseException {
         if (vcfPath == null) {
+            LOGGER.info("VCF path is not set. Performing phenotype-only analysis");
             return GenesAndGenotypes.empty();
         } else {
             if (variantParserFactory == null || associationData == null) {
-                LOGGER.warn("Unable to parse VCF at {} since parser or association data is missing", vcfPath.toAbsolutePath());
+                LOGGER.warn("Unable to parse VCF at {} since parser or association data is missing. Falling back to phenotype-only analysis", vcfPath.toAbsolutePath());
                 return GenesAndGenotypes.empty();
             } else {
-                try (VariantParser variantParser = variantParserFactory.forPath(vcfPath)) {
+                LOGGER.debug("Getting variant parser to parse a VCF file using {} assembly and {} transcripts", genomeBuild, transcriptDatabase);
+                Optional<VariantParser> vp = variantParserFactory.forPath(vcfPath, genomeBuild, transcriptDatabase);
+                if (vp.isEmpty()) {
+                    LOGGER.warn("Cannot obtain parser for processing the VCF file {} with {} {} due to missing resources. Falling back to phenotype-only analysis",
+                            vcfPath.toAbsolutePath(), genomeBuild, transcriptDatabase);
+                    return GenesAndGenotypes.empty();
+                }
+
+                try (VariantParser variantParser = vp.get()) {
                     // Ensure the VCF file contains the sample
                     if (!variantParser.sampleNames().contains(sampleId))
                         throw new LiricalParseException("The sample " + sampleId + " is not present in VCF at '" + vcfPath.toAbsolutePath() + '\'');
