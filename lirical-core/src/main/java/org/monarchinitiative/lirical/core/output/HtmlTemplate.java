@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -154,7 +153,7 @@ public class HtmlTemplate extends LiricalTemplate {
                 return genotypeLr.explanation();
             }
         } else {
-            return "No known disease gene";
+            return null;
         }
     }
 
