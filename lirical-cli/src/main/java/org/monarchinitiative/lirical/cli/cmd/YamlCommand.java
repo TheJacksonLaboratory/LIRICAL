@@ -3,6 +3,8 @@ package org.monarchinitiative.lirical.cli.cmd;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.AnalysisDataParser;
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
+import org.monarchinitiative.lirical.core.model.GenomeBuild;
+import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 import org.monarchinitiative.lirical.io.analysis.AnalysisDataFormat;
 import org.monarchinitiative.lirical.io.analysis.AnalysisDataParserFactory;
 import org.slf4j.Logger;
@@ -43,12 +45,14 @@ public class YamlCommand extends AnalysisDataParserAwareCommand {
     }
 
     @Override
-    protected AnalysisData prepareAnalysisData(AnalysisDataParserFactory factory) throws LiricalParseException {
+    protected AnalysisData prepareAnalysisData(AnalysisDataParserFactory factory,
+                                               GenomeBuild genomeBuild,
+                                               TranscriptDatabase transcriptDb) throws LiricalParseException {
         AnalysisDataParser parser = factory.forFormat(AnalysisDataFormat.YAML);
 
         LOGGER.info("Parsing YAML input file at {}", yamlPath);
         try (InputStream is = Files.newInputStream(yamlPath)) {
-            return parser.parse(is);
+            return parser.parse(is, genomeBuild, transcriptDb);
         } catch (IOException e) {
             throw new LiricalParseException(e);
         }
