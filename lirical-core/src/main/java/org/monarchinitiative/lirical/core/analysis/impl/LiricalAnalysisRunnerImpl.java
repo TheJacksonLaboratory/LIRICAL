@@ -118,7 +118,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
                 GenotypeLrWithExplanation candidate = genotypeLikelihoodRatio.evaluateGenotype(analysisData.sampleId(), g2g, disease.modesOfInheritance());
                 bestGenotypeLr = takeNonNullOrGreaterLr(bestGenotypeLr, candidate);
 
-                if (options.disregardDiseaseWithNoDeleteriousVariants()) {
+                if (!options.includeDiseasesWithNoDeleteriousVariants()) {
                     // has at least one pathogenic clinvar variant or predicted pathogenic variant?
                     if (g2g.pathogenicClinVarCount(analysisData.sampleId()) > 0
                             || g2g.pathogenicAlleleCount(analysisData.sampleId(), options.variantDeleteriousnessThreshold()) > 0) {
@@ -127,7 +127,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
                 }
             }
 
-            if (options.disregardDiseaseWithNoDeleteriousVariants() && noPredictedDeleteriousVariantsWereFound)
+            if (!options.includeDiseasesWithNoDeleteriousVariants() && noPredictedDeleteriousVariantsWereFound)
                 return Optional.empty();
 
             /*

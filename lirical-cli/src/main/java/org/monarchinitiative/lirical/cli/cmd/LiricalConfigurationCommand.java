@@ -74,9 +74,23 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         public boolean globalAnalysisMode = false;
 
         @CommandLine.Option(names = {"--ddndv"},
-                description = "Disregard a disease if no deleterious variants are found in the gene associated with the disease. "
-                        + "Used only if running with a VCF file. (default: ${DEFAULT-VALUE})")
-        public boolean disregardDiseaseWithNoDeleteriousVariants = true;
+                description = {
+                "Disregard a disease if no deleterious variants are found in the gene associated with the disease.",
+                        "Used only if running with a VCF file.",
+                        "NOTE: the option has been DEPRECATED, use `--dwndv` instead",
+                        "(default: true)"
+                })
+        // REMOVE(v2.0.0)
+        @Deprecated(forRemoval = true)
+        public Boolean disregardDiseaseWithNoDeleteriousVariants = null;
+
+        @CommandLine.Option(names = {"--sdwndv"},
+                description = {
+                "Include diseases even if no deleterious variants are found in the gene associated with the disease.",
+                        "Only applicable to the HTML report when running with a VCF file (genotype-aware mode).",
+                        "(default: ${DEFAULT-VALUE})"
+                })
+        public boolean showDiseasesWithNoDeleteriousVariants = false;
 
         @CommandLine.Option(names = {"--transcript-db"},
                 paramLabel = "{REFSEQ,UCSC}",
@@ -141,6 +155,11 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
 
         if (!Float.isNaN(runConfiguration.defaultAlleleFrequency)) {
             String msg = "`--default-allele-frequency` option has been deprecated.";
+            LOGGER.warn(msg);
+        }
+
+        if (runConfiguration.disregardDiseaseWithNoDeleteriousVariants != null) {
+            String msg = "`--ddndv` option has been deprecated and has no effect. Use `--dwndv` instead.";
             LOGGER.warn(msg);
         }
 
@@ -252,8 +271,8 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(diseaseIds);
         builder.pretestProbability(pretestDiseaseProbability);
 
-        LOGGER.debug("Disregarding diseases with no deleterious variants? {}", runConfiguration.disregardDiseaseWithNoDeleteriousVariants);
-        builder.disregardDiseaseWithNoDeleteriousVariants(runConfiguration.disregardDiseaseWithNoDeleteriousVariants);
+        LOGGER.debug("Showing diseases with no deleterious variants in the gene associated with the disease? {}", runConfiguration.showDiseasesWithNoDeleteriousVariants);
+        builder.includeDiseasesWithNoDeleteriousVariants(!runConfiguration.showDiseasesWithNoDeleteriousVariants);
 
         return builder.build();
     }
