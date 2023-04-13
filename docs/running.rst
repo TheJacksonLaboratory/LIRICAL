@@ -75,7 +75,8 @@ The configuration options tweak parameters of the LIRICAL analysis.
 * ``--ddndv``: disregard a disease if no deleterious variants are found in the gene associated with the disease.
   Used only if running with a VCF file (default: ``true``).
   **Deprecation note**: the option has been deprecated and will be removed since `v2.0.0` because
-  it was not possible to be unset. The replacement option ``--sdwndv`` controls the functionality.
+  it was not possible to be unset. Using the option **will stop the analysis**.
+  Use ``--sdwndv`` as a replacement.
 * ``--sdwndv``: show diseases even if no deleterious variants are found in the gene associated with the disease.
   The option is a flag (takes no value) and its presence will lead to showing *all* diseases,
   even those with no deleterious variants.

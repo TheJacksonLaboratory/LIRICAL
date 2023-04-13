@@ -159,8 +159,9 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         }
 
         if (runConfiguration.disregardDiseaseWithNoDeleteriousVariants != null) {
-            String msg = "`--ddndv` option has been deprecated and has no effect. Use `--dwndv` instead.";
+            String msg = "`--ddndv` option has been deprecated and must not be used. Use `--sdwndv` if you want to show all diseases in the HTML report.";
             LOGGER.warn(msg);
+            errors.add(msg);
         }
 
         Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
