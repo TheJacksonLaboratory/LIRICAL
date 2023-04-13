@@ -74,6 +74,12 @@ The configuration options tweak parameters of the LIRICAL analysis.
 * ``-g | --global``: global analysis, see :ref:`rstglobal-mode` for more info (default: ``false``).
 * ``--ddndv``: disregard a disease if no deleterious variants are found in the gene associated with the disease.
   Used only if running with a VCF file (default: ``true``).
+  **Deprecation note**: the option has been deprecated and will be removed since `v2.0.0` because
+  it was not possible to be unset. The replacement option ``--sdwndv`` controls the functionality.
+* ``--sdwndv``: show diseases even if no deleterious variants are found in the gene associated with the disease.
+  The option is a flag (takes no value) and its presence will lead to showing *all* diseases,
+  even those with no deleterious variants.
+  Only applicable to the HTML report when running with a VCF file (genotype-aware mode).
 * ``--transcript-db``: transcript database (default: ``RefSeq``), see :ref:`rsttx-dbs` for more info.
 * ``--use-orphanet``: use `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>`_ annotations (default: ``false``)
 * ``--strict``: use strict penalties if the genotype does not match the disease model
