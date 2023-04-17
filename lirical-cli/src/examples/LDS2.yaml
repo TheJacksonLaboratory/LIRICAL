@@ -7,5 +7,5 @@ hpoIds: ['HP:0001659', 'HP:0001166', 'HP:0001631', 'HP:0000193', 'HP:0012385', '
 # negatedHpoIds: []
 age: P9Y
 sex: FEMALE
-# Set real path to a VCF file
-vcf: LDS2.vcf.gz
+# Set real path to a VCF file. For instance, path to the example `LDS2.vcf.gz` file located next to this YAML config.
+# vcf: /path/to/LDS2.vcf.gz
