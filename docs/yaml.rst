@@ -13,8 +13,7 @@ LIRICAL uses default values for many configuration options, and a simple YAML co
 include the following information::
 
     ## LIRICAL Analysis Template.
-    # These are all the possible options for running LIRICAL. Use this as a template for
-    # your own set-up.
+    # These are all the possible options for running LIRICAL. Use this as a template for your own set-up.
     ---
     sampleId: NF2-example
     hpoIds: ['HP:0002321', 'HP:0000365', 'HP:0000360', 'HP:0009589', 'HP:0002858']
@@ -32,7 +31,9 @@ indicate the start of the contents of the file.
 3. ``negatedHpoIds`` a list of HPO terms that represent abnormalities that were **excluded** in the proband.
 4. ``age`` age of the individual entered using the ISO8601 duration notation. E.g. ``P20Y6M`` for an individual with age of 20 years and 6 months.
 5. ``sex`` sex of the individual, either ``MALE`` or ``FEMALE``.
-6. ``vcf`` is the path to the file we want to analyze. Note that the VCF file must contain the sample corresponding to ``sampleId``.
+6. ``vcf`` is the path to the file we want to analyze.
+   Note that the VCF file must contain the sample corresponding to ``sampleId`` and
+   the CLI must include ``--assembly`` and ``-e19 | -e38`` options to run with a VCF file.
 
 You can use the example file as a starting point for your own configuration file.
 An example YAML file can also be found
