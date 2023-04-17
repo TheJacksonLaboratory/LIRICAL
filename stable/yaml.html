@@ -85,8 +85,7 @@ is commonly used for configuration files.</p>
 <p>LIRICAL uses default values for many configuration options, and a simple YAML configuration file would
 include the following information:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">## LIRICAL Analysis Template.</span>
-<span class="c1"># These are all the possible options for running LIRICAL. Use this as a template for</span>
-<span class="c1"># your own set-up.</span>
+<span class="c1"># These are all the possible options for running LIRICAL. Use this as a template for your own set-up.</span>
 <span class="o">---</span>
 <span class="n">sampleId</span><span class="p">:</span> <span class="n">NF2</span><span class="o">-</span><span class="n">example</span>
 <span class="n">hpoIds</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;HP:0002321&#39;</span><span class="p">,</span> <span class="s1">&#39;HP:0000365&#39;</span><span class="p">,</span> <span class="s1">&#39;HP:0000360&#39;</span><span class="p">,</span> <span class="s1">&#39;HP:0009589&#39;</span><span class="p">,</span> <span class="s1">&#39;HP:0002858&#39;</span><span class="p">]</span>
@@ -104,7 +103,9 @@ indicate the start of the contents of the file.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">negatedHpoIds</span></code> a list of HPO terms that represent abnormalities that were <strong>excluded</strong> in the proband.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">age</span></code> age of the individual entered using the ISO8601 duration notation. E.g. <code class="docutils literal notranslate"><span class="pre">P20Y6M</span></code> for an individual with age of 20 years and 6 months.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">sex</span></code> sex of the individual, either <code class="docutils literal notranslate"><span class="pre">MALE</span></code> or <code class="docutils literal notranslate"><span class="pre">FEMALE</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">vcf</span></code> is the path to the file we want to analyze. Note that the VCF file must contain the sample corresponding to <code class="docutils literal notranslate"><span class="pre">sampleId</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vcf</span></code> is the path to the file we want to analyze.
+Note that the VCF file must contain the sample corresponding to <code class="docutils literal notranslate"><span class="pre">sampleId</span></code> and
+the CLI must include <code class="docutils literal notranslate"><span class="pre">--assembly</span></code> and <code class="docutils literal notranslate"><span class="pre">-e19</span> <span class="pre">|</span> <span class="pre">-e38</span></code> options to run with a VCF file.</p></li>
 </ol>
 <p>You can use the example file as a starting point for your own configuration file.
 An example YAML file can also be found

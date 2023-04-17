@@ -44,18 +44,17 @@ Run LIRICAL with a specific command with the ``-h`` option to get information ab
 LIRICAL has four main commands, ``download``, ``prioritize``, ``phenopacket``, and ``yaml``.
 We will *not* discuss the ``download`` command since it has already been covered in the :ref:`rstdownload` section
 
-LIRICAL prioritization commands
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 Shared CLI options
-~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
 
-LIRICAL performs phenotype-driven prioritization of various data inputs.
-However, all prioritization commands share several CLI arguments.
+LIRICAL offers several commands for receiving phenotype and genotype inputs via CLI, phenopacket, or a YAML file.
+However the commands share many CLI arguments for setting up the resource paths, the analysis configuration,
+and where results should be written. We describe the shared CLI arguments in this section.
 
-**Resource paths:**
+Resource paths
+~~~~~~~~~~~~~~
 
-Resource path options point LIRICAL to resources required for analysis.
+The options from this group point LIRICAL to resources required for analysis.
 
 * ``-d | --data``: path to LIRICAL data directory.
   Required if the ``data`` folder is not set up next to the LIRICAL JAR file.
@@ -67,9 +66,10 @@ Resource path options point LIRICAL to resources required for analysis.
   This option should not be used unless there is a very good reason to do that.
   The background variant frequencies are bundled with the LIRICAL code. See :ref:`rstbg-var-freqs` for more info.
 
-**Configuration options**
+Configuration options
+~~~~~~~~~~~~~~~~~~~~~
 
-The configuration options tweak parameters of the LIRICAL analysis.
+The configuration options tweak the analysis.
 
 * ``-g | --global``: global analysis, see :ref:`rstglobal-mode` for more info (default: ``false``).
 * ``--ddndv``: disregard a disease if no deleterious variants are found in the gene associated with the disease.
@@ -80,9 +80,10 @@ The configuration options tweak parameters of the LIRICAL analysis.
   in terms of number of called pathogenic alleles (default: ``false``).
 * ``--pathogenicity-threshold``: Variants with greater pathogenicity score is considered deleterious (default: ``0.8``).
 
-**Output options**
+Output options
+~~~~~~~~~~~~~~
 
-The output options dictate the format and location for the analysis outputs.
+The output options dictate the format and location for the analysis results.
 
 * ``-o | --output-directory``: where to write the analysis outputs (default: current working directory).
 * ``-f | --output-format``: Output format to use for writing the results, can be provided multiple times.
@@ -95,11 +96,16 @@ The output options dictate the format and location for the analysis outputs.
   the pathogenicity threshold (default: ``false``).
 
 
+LIRICAL prioritization commands
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+LIRICAL provides three commands for receiving phenotype and genotype inputs via CLI, as a phenopacket, or as a YAML file.
+
 ``prioritize`` - run LIRICAL with via CLI options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Since `v2` release, all required inputs can be provided as command line arguments of the ``prioritize`` command.
-This leads to a rather lengthy CLI. However, this can be useful for using with pipeline engines such
+This leads to a rather lengthy CLI. However, the CLI can be useful e.g. for using with pipeline engines such
 as Nextflow or Snakemake.
 
 The ``prioritize`` command takes the following options:
@@ -189,8 +195,8 @@ Let's consider an example of an individual with `Pfeiffer syndrome <https://omim
 
 Save the file above as ``pfeiffer.json``.
 
-Running LIRICAL with clinical data
-##################################
+**Running LIRICAL with clinical data**
+
 
 LIRICAL will perform phenotype-only analysis if the ``phenopacket`` command incantation does not contain a ``--vcf`` option.
 In this case, the only required argument is the phenopacket::
@@ -198,13 +204,12 @@ In this case, the only required argument is the phenopacket::
   lirical phenopacket -p pfeiffer.json
 
 
-Running LIRICAL with a VCF file
-###############################
+**Running LIRICAL with a VCF file**
 
-Alternatively, LIRICAL can include the VCF file if the path is provided using ``--vcf`` option::
+Alternatively, LIRICAL can include the VCF file if the path is provided using ``--vcf`` option.
+Note, we must also provide ``--assembly`` and ``-e19`` (or ``-e38``) options to indicate the genome assembly and path to Exomiser variant database::
 
-  lirical phenopacket -p pfeiffer.json --vcf path/to/pfeiffer.vcf.gz
-
+  lirical phenopacket -p pfeiffer.json --vcf path/to/pfeiffer.vcf.gz --assembly hg19 -e19 /path/to/exomiser/2302_hg19_variants.mv.db
 
 
 ``yaml`` - running LIRICAL with a YAML file
@@ -217,9 +222,15 @@ would be simply::
 
   lirical yaml -y example.yml
 
+This will run the phenotype-only analysis of the *Patient 4*.
+
+To run the genotype-aware analysis, modify the YAML file such that the ``vcf`` field points to the location
+of the VCF file on your file system. Then, the analysis is run as::
+
+ lirical yaml -y example.yml --assembly hg19 -e19 /path/to/exomiser/2302_hg19_variants.mv.db
 
 
 Choosing between YAML and Phenopacket input formats
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 How should users choose between :ref:`rstyamlorphenopackethpo`?
