@@ -11,6 +11,9 @@ import java.util.Objects;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class Age {
+    // TODO - make the unknown age unambiguous.
+    //  If we use the Age#ageNotKnown() to represent the absence of age, then the AnalysisData#age() should be non-null (Optional?)
+    //  Otherwise, we should allow AnalysisData#age() to be null and drop Age#ageNotKnown().
     private final boolean isUnknown;
     private final boolean isGestational;
     private final int years;
