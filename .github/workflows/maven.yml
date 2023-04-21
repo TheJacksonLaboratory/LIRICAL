@@ -11,15 +11,13 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    env:
-      JDK_VERSION: ${{ matrix.jdk }}
-
     strategy:
       fail-fast: false
       matrix:
         os: [ windows-latest, macOS-latest, ubuntu-latest ]
         jdk: [ 17 ]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
@@ -27,9 +25,9 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: '17'
+          java-version: ${{ matrix.jdk }}
           distribution: 'adopt'
 
       - name: Build with Maven
-        run: ./mvnw --batch-mode verify
+        run: ./mvnw --quiet --batch-mode verify
 
