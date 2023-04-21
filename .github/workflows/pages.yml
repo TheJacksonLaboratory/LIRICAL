@@ -54,11 +54,9 @@ jobs:
           mkdir -p gh-pages/${DOCDIR}
           
           ## Javadoc
-          # Build the docs
-          ./mvnw clean compile
-          ./mvnw -Ddoclint=none -Dinherited=false javadoc:aggregate
+          # Build the aggregated Javadoc
+          ./mvnw --quiet -Ddoclint=none -Dinherited=false clean javadoc:aggregate
           # Copy aggregated Javadoc into `apidocs` folder.
-          # The aggregated docs are built by Maven in `package` phase.
           APIDOCS=$(pwd)/gh-pages/${DOCDIR}/apidocs
           printf "Copying Javadocs from %s to %s\n" $(pwd)/target/site/apidocs ${APIDOCS}
           cp -r target/site/apidocs ${APIDOCS}
