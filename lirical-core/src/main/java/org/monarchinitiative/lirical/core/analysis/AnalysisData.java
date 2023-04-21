@@ -28,8 +28,10 @@ public interface AnalysisData {
 
     String sampleId();
 
+    // TODO - make non-null or wrap into Optional. See the TODO in Age for more info.
     Age age();
 
+    // TODO - make non-null or wrap into Optional.
     Sex sex();
 
     List<TermId> presentPhenotypeTerms();

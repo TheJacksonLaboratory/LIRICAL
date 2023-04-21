@@ -25,8 +25,8 @@ public class AnalysisDataSerializer extends StdSerializer<AnalysisData> {
         gen.writeStartObject();
 
         gen.writeStringField("sampleId", value.sampleId());
-        if (!value.age().equals(Age.ageNotKnown())) {
-            Age age = value.age();
+        Age age = value.age();
+        if (age != null && !age.equals(Age.ageNotKnown())) {
             Period p = Period.of(age.getYears(), age.getMonths(), age.getDays());
             gen.writeObjectField("age", p.normalized().toString());
         }
