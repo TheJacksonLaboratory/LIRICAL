@@ -18,6 +18,7 @@ org.monarchinitiative.lirical.core.model
 org.monarchinitiative.lirical.core.output
 org.monarchinitiative.lirical.core.output.svg
 org.monarchinitiative.lirical.core.service
+org.monarchinitiative.lirical.core.util
 org.monarchinitiative.lirical.exomiser_db_adapter
 org.monarchinitiative.lirical.exomiser_db_adapter.model
 org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency
