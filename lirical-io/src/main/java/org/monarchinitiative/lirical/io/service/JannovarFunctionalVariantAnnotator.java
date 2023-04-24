@@ -9,6 +9,7 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.PositionType;
 import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
+import org.monarchinitiative.lirical.core.util.BinarySearch;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifiers;
 import org.monarchinitiative.svart.CoordinateSystem;
@@ -88,7 +89,7 @@ public class JannovarFunctionalVariantAnnotator implements FunctionalVariantAnno
 
     private Function<Annotation, Optional<TranscriptAnnotation>> toTranscriptAnnotation() {
         return ann -> {
-            Optional<GeneIdentifier> id = Utils.binarySearch(identifiers, GeneIdentifier::symbol, ann.getGeneSymbol());
+            Optional<GeneIdentifier> id = BinarySearch.binarySearch(identifiers, GeneIdentifier::symbol, ann.getGeneSymbol());
 
             if (id.isEmpty()) {
                 LOGGER.trace("Unknown gene symbol {}", ann.getGeneSymbol());

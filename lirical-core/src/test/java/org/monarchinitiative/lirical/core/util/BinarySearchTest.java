@@ -1,18 +1,16 @@
-package org.monarchinitiative.lirical.io.service;
+package org.monarchinitiative.lirical.core.util;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
-public class UtilsTest {
-
+public class BinarySearchTest {
     @ParameterizedTest
     @CsvSource({
             "1|2, 1",
@@ -25,16 +23,10 @@ public class UtilsTest {
     })
     public void binarySearch_evenItemCount(String payload, int key) {
         String[] array = payload.split("\\|");
-        Optional<String> resultArray = Utils.binarySearch(array, Integer::parseInt, key);
+        Optional<String> resultArray = BinarySearch.binarySearch(array, Integer::parseInt, key);
 
         assertThat(resultArray.isPresent(), equalTo(true));
         assertThat(resultArray.get(), equalTo(String.valueOf(key)));
-
-        List<String> list = Arrays.asList(array);
-        Optional<String> result = Utils.binarySearch(list, Integer::parseInt, key);
-
-        assertThat(result.isPresent(), equalTo(true));
-        assertThat(result.get(), equalTo(String.valueOf(key)));
     }
 
     @ParameterizedTest
@@ -45,15 +37,9 @@ public class UtilsTest {
     })
     public void binarySearch_evenItemCount_notPresent(String payload, int key) {
         String[] array = payload.split("\\|");
-        Optional<String> resultArray = Utils.binarySearch(array, Integer::parseInt, key);
+        Optional<String> resultArray = BinarySearch.binarySearch(array, Integer::parseInt, key);
 
         assertThat(resultArray.isEmpty(), equalTo(true));
-
-
-        List<String> items = Arrays.asList(array);
-        Optional<String> result = Utils.binarySearch(items, Integer::parseInt, key);
-
-        assertThat(result.isEmpty(), equalTo(true));
     }
 
     @ParameterizedTest
@@ -72,17 +58,10 @@ public class UtilsTest {
     })
     public void binarySearch_oddItemCount(String payload, int key) {
         String[] array = payload.split("\\|");
-        Optional<String> resultArray = Utils.binarySearch(array, Integer::parseInt, key);
+        Optional<String> resultArray = BinarySearch.binarySearch(array, Integer::parseInt, key);
 
         assertThat(resultArray.isPresent(), equalTo(true));
         assertThat(resultArray.get(), equalTo(String.valueOf(key)));
-
-
-        List<String> items = Arrays.asList(array);
-        Optional<String> result = Utils.binarySearch(items, Integer::parseInt, key);
-
-        assertThat(result.isPresent(), equalTo(true));
-        assertThat(result.get(), equalTo(String.valueOf(key)));
     }
 
     @ParameterizedTest
@@ -94,23 +73,14 @@ public class UtilsTest {
     })
     public void binarySearch_oddItemCount_notPresent(String payload, int key) {
         String[] array = payload.split("\\|");
-        Optional<String> resultArray = Utils.binarySearch(array, Integer::parseInt, key);
+        Optional<String> resultArray = BinarySearch.binarySearch(array, Integer::parseInt, key);
 
         assertThat(resultArray.isEmpty(), equalTo(true));
-
-
-        List<String> items = Arrays.asList(array);
-        Optional<String> result = Utils.binarySearch(items, Integer::parseInt, key);
-
-        assertThat(result.isEmpty(), equalTo(true));
     }
 
     @Test
     public void binarySearch_emptyCollection() {
-        Optional<String> result = Utils.binarySearch(List.of(), Integer::parseInt, 1);
-        assertThat(result.isEmpty(), equalTo(true));
-
-        Optional<String> resultArray = Utils.binarySearch(new String[]{}, Integer::parseInt, 1);
+        Optional<String> resultArray = BinarySearch.binarySearch(new String[0], Integer::parseInt, 1);
         assertThat(resultArray.isEmpty(), equalTo(true));
     }
 }

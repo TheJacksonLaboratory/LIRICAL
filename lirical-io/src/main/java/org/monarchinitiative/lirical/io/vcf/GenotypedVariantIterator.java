@@ -5,6 +5,7 @@ import htsjdk.variant.variantcontext.*;
 import org.monarchinitiative.lirical.core.model.AlleleCount;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.model.GenotypedVariant;
+import org.monarchinitiative.lirical.core.model.SampleAlleleCount;
 import org.monarchinitiative.svart.Contig;
 import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.assembly.GenomicAssembly;
@@ -69,18 +70,18 @@ class GenotypedVariantIterator implements Iterator<GenotypedVariant> {
                 Allele ref = vc.getReference();
                 for (Allele alt : alts) {
                     GenomicVariant variant = converter.convert(contig, vc.getID(), start, ref.getBaseString(), alt.getBaseString());
-                    Map<String, AlleleCount> countMap = countGenotypes(ref, alt, vc.getGenotypes());
-                    queue.add(GenotypedVariant.of(genomeBuild, variant, countMap, vc.isNotFiltered()));
+                    List<SampleAlleleCount> alleleCounts = countGenotypes(ref, alt, vc.getGenotypes());
+                    queue.add(GenotypedVariant.of(genomeBuild, variant, alleleCounts, vc.isNotFiltered()));
                 }
             }
             break;
         }
     }
 
-    private static Map<String, AlleleCount> countGenotypes(Allele ref,
-                                                           Allele alt,
-                                                           GenotypesContext genotypes) {
-        Map<String, AlleleCount> countMap = new HashMap<>(genotypes.size());
+    private static List<SampleAlleleCount> countGenotypes(Allele ref,
+                                                          Allele alt,
+                                                          GenotypesContext genotypes) {
+        List<SampleAlleleCount> alleleCounts = new ArrayList<>(genotypes.size());
         for (Genotype gt : genotypes) {
             if (gt.isNoCall())
                 continue;
@@ -105,9 +106,9 @@ class GenotypedVariantIterator implements Iterator<GenotypedVariant> {
             } else {
                 ac = AlleleCount.of(((byte) refCount), (byte) altCount);
             }
-            countMap.put(gt.getSampleName(), ac);
+            alleleCounts.add(SampleAlleleCount.of(gt.getSampleName(), ac));
         }
-        return Collections.unmodifiableMap(countMap);
+        return alleleCounts;
     }
 
 }
