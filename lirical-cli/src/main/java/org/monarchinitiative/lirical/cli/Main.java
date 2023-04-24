@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.cli;
 
 import org.monarchinitiative.lirical.cli.cmd.*;
+import org.monarchinitiative.lirical.cli.cmd.experimental.ExperimentalCommand;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
@@ -38,6 +39,8 @@ public class Main implements Callable<Integer> {
                 .addSubcommand("prioritize", new PrioritizeCommand())
                 .addSubcommand("phenopacket", new PhenopacketCommand())
                 .addSubcommand("yaml", new YamlCommand())
+                // hidden commands
+                .addSubcommand("experimental", new ExperimentalCommand())
                 .addSubcommand("benchmark", new BenchmarkCommand());
         cline.setToggleBooleanFlags(false);
         System.exit(cline.execute(args));

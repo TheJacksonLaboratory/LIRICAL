@@ -7,6 +7,7 @@ import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.core.analysis.ProgressReporter;
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbabilities;
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbability;
+import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.io.VariantParser;
 import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.lirical.core.model.*;
@@ -22,6 +23,8 @@ import picocli.CommandLine;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Period;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 abstract class LiricalConfigurationCommand extends BaseCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiricalConfigurationCommand.class);
+    protected static final String UNKNOWN_VERSION_PLACEHOLDER = "UNKNOWN VERSION";
 
     // ---------------------------------------------- RESOURCES --------------------------------------------------------
     @CommandLine.ArgGroup(validate = false, heading = "Resource paths:%n")
@@ -332,6 +336,20 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 .toList();
 
         return GenesAndGenotypes.of(g2g);
+    }
+
+    protected static Age parseAge(String age) {
+        if (age == null) {
+            LOGGER.debug("The age was not provided");
+            return Age.ageNotKnown();
+        }
+        try {
+            Period period = Period.parse(age);
+            LOGGER.info("Using age {}", period);
+            return Age.parse(period);
+        } catch (DateTimeParseException e) {
+            throw new LiricalRuntimeException("Unable to parse age '" + age + "': " + e.getMessage(), e);
+        }
     }
 
     protected static void reportElapsedTime(long startTime, long stopTime) {
