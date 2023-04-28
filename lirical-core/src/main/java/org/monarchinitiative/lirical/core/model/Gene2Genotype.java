@@ -51,7 +51,12 @@ public interface Gene2Genotype extends Identified {
     }
 
     default int pathogenicAlleleCount(String sampleId, float pathogenicityThreshold) {
-        return variants().filter(var -> var.pathogenicityScore().map(f -> f >= pathogenicityThreshold).orElse(false))
+        // The first part of the filter clause ensures we do not clash with ClinVar variant interpretation.
+        // In other words, a ClinVar benign or likely benign variant CANNOT be interpreted as deleterious
+        // based on in silico pathogenicity scores.
+        return variants()
+                .filter(var -> var.clinvarClnSig().notBenignOrLikelyBenign()
+                        && var.pathogenicityScore().map(f -> f >= pathogenicityThreshold).orElse(false))
                 .map(var -> var.alleleCount(sampleId))
                 .flatMap(Optional::stream)
                 .mapToInt(AlleleCount::alt)
@@ -59,7 +64,11 @@ public interface Gene2Genotype extends Identified {
     }
 
     default double getSumOfPathBinScores(String sampleId, float pathogenicityThreshold) {
-        return variants().filter(variant -> variant.pathogenicityScore().orElse(0f) >= pathogenicityThreshold)
+        // Same as in `pathogenicAlleleCount(..)` above, the first part of the filter clause ensures
+        // we do not clash with ClinVar variant interpretation.
+        return variants()
+                .filter(variant -> variant.clinvarClnSig().notBenignOrLikelyBenign()
+                        && variant.pathogenicityScore().orElse(0f) >= pathogenicityThreshold)
                 .mapToDouble(variant -> {
                     int altAlleleCount = variant.alleleCount(sampleId).map(AlleleCount::alt).orElse((byte) 0);
                     return altAlleleCount * variant.pathogenicity();
