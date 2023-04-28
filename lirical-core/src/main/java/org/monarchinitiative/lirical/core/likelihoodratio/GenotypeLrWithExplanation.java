@@ -6,10 +6,12 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.Objects;
 
-
+/**
+ * Results of genotype likelihood ratio evaluation for a single gene.
+ */
 public class GenotypeLrWithExplanation  {
     private final GeneIdentifier geneId;
-    /** The likelihood ratio of the genotype. */
+    /** The untransformed likelihood ratio of the genotype. */
     private final double lr;
     private final String explanation;
 
@@ -87,15 +89,34 @@ public class GenotypeLrWithExplanation  {
         this.explanation = Objects.requireNonNull(explanation, "Explanation must not be null");
     }
 
-
+    /**
+     * Get the gene identifier for this genotype LR.
+     */
     public GeneIdentifier geneId() {
         return geneId;
     }
 
+    /**
+     * Get the genotype likelihood ratio for the gene. Use {@link #log10Lr()} to get the log LR.
+     *
+     * @return the genotype likelihood ratio
+     */
     public double lr() {
         return lr;
     }
 
+    /**
+     * Get the log<sub>10</sub> LR for the gene. Use {@link #lr()} to get the non-transformed value.
+     *
+     * @return the log<sub>10</sub> of the genotype LR
+     */
+    public double log10Lr() {
+        return Math.log10(lr);
+    }
+
+    /**
+     * @return an explanation of the genotype likelihood ratio
+     */
     public String explanation() {
         return explanation;
     }
