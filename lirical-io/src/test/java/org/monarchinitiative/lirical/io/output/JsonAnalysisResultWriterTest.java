@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.core.analysis.TestResult;
+import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLrMatchType;
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.core.likelihoodratio.LrMatchType;
 import org.monarchinitiative.lirical.core.likelihoodratio.LrWithExplanation;
@@ -74,7 +75,11 @@ public class JsonAnalysisResultWriterTest {
     private static AnalysisResults createTestAnalysisResults() {
         List<LrWithExplanation> observed = List.of(LrWithExplanation.of(a, b, LrMatchType.EXACT_MATCH, 1.34, "EXPLANATION"));
         List<LrWithExplanation> excluded = List.of(LrWithExplanation.of(a, c, LrMatchType.EXCLUDED_QUERY_TERM_NOT_PRESENT_IN_DISEASE, 1.23, "EXCLUDED_EXPLANATION"));
-        GenotypeLrWithExplanation genotypeLr = GenotypeLrWithExplanation.of(GeneIdentifier.of(TermId.of("NCBIGene:1234"), "GENE_SYMBOL"), 1.23, "GENE_EXPLANATION");
+        GenotypeLrWithExplanation genotypeLr = GenotypeLrWithExplanation.of(
+                GeneIdentifier.of(TermId.of("NCBIGene:1234"), "GENE_SYMBOL"),
+                GenotypeLrMatchType.LIRICAL_GT_MODEL,
+                1.23,
+                "GENE_EXPLANATION");
         return AnalysisResults.of(
                 List.of(
                         TestResult.of(
