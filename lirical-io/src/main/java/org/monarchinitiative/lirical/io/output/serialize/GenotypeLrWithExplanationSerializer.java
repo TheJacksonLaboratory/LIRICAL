@@ -22,6 +22,7 @@ public class GenotypeLrWithExplanationSerializer extends StdSerializer<GenotypeL
         gen.writeStartObject();
 
         gen.writeObjectField("geneId", value.geneId());
+        gen.writeObjectField("matchType", value.matchType());
         gen.writeNumberField("lr", value.lr());
         gen.writeStringField("explanation", value.explanation());
 

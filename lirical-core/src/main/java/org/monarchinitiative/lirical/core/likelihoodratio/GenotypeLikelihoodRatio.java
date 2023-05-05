@@ -112,7 +112,7 @@ public class GenotypeLikelihoodRatio {
         }
         // special case 2: Clinvar-pathogenic variant(s) found in this gene.
         // The likelihood ratio is defined as 1000**count, where 1 for autosomal dominant and
-        // 2 for autosomal recessive. (If the count of pathogenic alleles does not match
+        // 2 for autosomal recessive. If the count of pathogenic alleles does not match
         // the expected count, return 1000.
 
         int pathogenicClinVarAlleleCount = g2g.pathogenicClinVarCount(sampleId);

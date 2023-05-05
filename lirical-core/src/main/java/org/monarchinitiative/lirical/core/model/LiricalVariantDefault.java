@@ -54,8 +54,8 @@ class LiricalVariantDefault implements LiricalVariant {
     }
 
     @Override
-    public ClinvarClnSig clinvarClnSig() {
-        return variantMetadata.clinvarClnSig();
+    public Optional<ClinVarAlleleData> clinVarAlleleData() {
+        return variantMetadata.clinVarAlleleData();
     }
 
     @Override
