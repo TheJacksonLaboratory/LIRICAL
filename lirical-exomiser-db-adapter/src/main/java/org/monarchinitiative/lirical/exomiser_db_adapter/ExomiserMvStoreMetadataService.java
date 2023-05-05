@@ -4,6 +4,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
+import org.monarchinitiative.lirical.core.model.ClinVarAlleleData;
 import org.monarchinitiative.lirical.core.model.ClinvarClnSig;
 import org.monarchinitiative.lirical.core.model.VariantMetadata;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
@@ -15,6 +16,8 @@ import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.Var
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -26,6 +29,7 @@ import java.util.List;
 @Deprecated
 public class ExomiserMvStoreMetadataService implements VariantMetadataService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExomiserMvStoreMetadataService.class);
 
     // Note: Repeated retrieval of AlleleProperties from MVMap will hopefully not pose a huge performance issue
     // since MVMap uses caching (16MB, 16 segments) by default.
@@ -63,7 +67,7 @@ public class ExomiserMvStoreMetadataService implements VariantMetadataService {
 
         float frequency;
         float pathogenicity;
-        ClinvarClnSig clinvarClnSig;
+        ClinVarAlleleData clinVarAlleleData;
 
         if (alleleProp == null) {
             frequency = DEFAULT_FREQUENCY;
@@ -71,7 +75,7 @@ public class ExomiserMvStoreMetadataService implements VariantMetadataService {
                     .map(VariantEffectPathogenicityScore::getPathogenicityScoreOf)
                     .max(Float::compareTo)
                     .orElse(0f);
-            clinvarClnSig = ClinvarClnSig.NOT_PROVIDED;
+            clinVarAlleleData = null;
         } else {
             FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
             frequency = frequencyData.getMaxFreq();
@@ -79,24 +83,35 @@ public class ExomiserMvStoreMetadataService implements VariantMetadataService {
             PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);
             pathogenicity = calculatePathogenicity(effects, pathogenicityData);
 
-            clinvarClnSig = processClinicalSignificance(pathogenicityData);
+            clinVarAlleleData = processClinicalSignificance(pathogenicityData);
         }
 
-        return VariantMetadata.of(frequency, pathogenicity, clinvarClnSig);
+        
+        return VariantMetadata.of(frequency, pathogenicity, clinVarAlleleData);
 
     }
 
-    private static ClinvarClnSig processClinicalSignificance(PathogenicityData pathogenicityData) {
+    private static ClinVarAlleleData processClinicalSignificance(PathogenicityData pathogenicityData) {
         ClinvarClnSig clinvarClnSig;
         ClinVarData cVarData = pathogenicityData.getClinVarData();
-        // Only use ClinVar data if it is backed up by assertions.
+        String alleleId = cVarData.getAlleleId();
+
         if (cVarData.getReviewStatus().startsWith("no_assertion")) {
             clinvarClnSig = ClinvarClnSig.NOT_PROVIDED;
         } else {
-            ClinVarData.ClinSig primaryInterpretation = cVarData.getPrimaryInterpretation();
-            clinvarClnSig = mapToClinvarClnSig(primaryInterpretation);
+            clinvarClnSig = mapToClinvarClnSig(cVarData.getPrimaryInterpretation());
         }
-        return clinvarClnSig;
+
+        if (clinvarClnSig.equals(ClinvarClnSig.NOT_PROVIDED) && alleleId.isBlank())
+            return null; // we have no useful data
+
+        try {
+            long alleleIdd = Long.parseLong(alleleId);
+            return ClinVarAlleleData.of(clinvarClnSig, alleleIdd);
+        } catch (NumberFormatException nfe) {
+            LOGGER.warn("Non-parsable ClinVar allele ID {}, please report to developers.", alleleId);
+            return ClinVarAlleleData.of(clinvarClnSig, null);
+        }
     }
 
     private static ClinvarClnSig mapToClinvarClnSig(ClinVarData.ClinSig primaryInterpretation) {
