@@ -1,11 +1,7 @@
 package org.monarchinitiative.lirical.io.analysis;
 
-import com.google.protobuf.util.JsonFormat;
-
+import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.lirical.core.model.Age;
-import org.monarchinitiative.lirical.core.model.AlleleCount;
-import org.monarchinitiative.lirical.core.model.GenomeBuild;
-import org.monarchinitiative.lirical.core.model.GenotypedVariant;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import org.monarchinitiative.svart.Contig;
@@ -16,6 +12,7 @@ import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.monarchinitiative.svart.util.VcfConverter;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
+import org.phenopackets.schema.v1.core.Sex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,7 +165,7 @@ class PhenopacketV1Importer implements PhenopacketImporter {
                         return Optional.empty();
                     }
                 }
-                Map<String, AlleleCount> alleles = Map.of(sampleId, alleleCount);
+                List<SampleAlleleCount> alleles = List.of(SampleAlleleCount.of(sampleId, alleleCount));
 
                 // 3 - assemble the final variant. Uff..
                 return Optional.of(GenotypedVariant.of(genomeBuild,

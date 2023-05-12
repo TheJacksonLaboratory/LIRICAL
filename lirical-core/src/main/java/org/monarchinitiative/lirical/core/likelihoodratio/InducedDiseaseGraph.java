@@ -43,7 +43,7 @@ public class InducedDiseaseGraph {
     }
 
     public static InducedDiseaseGraph create(HpoDisease disease, Ontology ontology) {
-        Map<TermId, Double> termFrequencies = new HashMap<>(disease.annotationCount());
+        Map<TermId, Double> termFrequencies = new HashMap<>(disease.annotations().size());
 
         for (HpoDiseaseAnnotation annotation : disease.annotations()) {
             double frequency = annotation.frequency();

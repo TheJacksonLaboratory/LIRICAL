@@ -45,7 +45,10 @@ public interface Gene2Genotype extends Identified {
     }
 
     default int pathogenicClinVarCount(String sampleId) {
-        return variants().filter(lv -> lv.clinvarClnSig().isPathogenicOrLikelyPathogenic())
+        return variants()
+                .filter(lv -> lv.clinVarAlleleData()
+                        .map(cv -> cv.getClinvarClnSig().isPathogenicOrLikelyPathogenic())
+                        .orElse(false))
                 .mapToInt(var -> var.pathogenicClinVarAlleleCount(sampleId))
                 .sum();
     }
@@ -55,7 +58,9 @@ public interface Gene2Genotype extends Identified {
         // In other words, a ClinVar benign or likely benign variant CANNOT be interpreted as deleterious
         // based on in silico pathogenicity scores.
         return variants()
-                .filter(var -> var.clinvarClnSig().notBenignOrLikelyBenign()
+                .filter(var -> var.clinVarAlleleData()
+                          .map(cv -> cv.getClinvarClnSig().notBenignOrLikelyBenign())
+                          .orElse(true)
                         && var.pathogenicityScore().map(f -> f >= pathogenicityThreshold).orElse(false))
                 .map(var -> var.alleleCount(sampleId))
                 .flatMap(Optional::stream)
@@ -67,7 +72,9 @@ public interface Gene2Genotype extends Identified {
         // Same as in `pathogenicAlleleCount(..)` above, the first part of the filter clause ensures
         // we do not clash with ClinVar variant interpretation.
         return variants()
-                .filter(variant -> variant.clinvarClnSig().notBenignOrLikelyBenign()
+                .filter(variant -> variant.clinVarAlleleData()
+                        .map(cv -> cv.getClinvarClnSig().notBenignOrLikelyBenign())
+                        .orElse(true)
                         && variant.pathogenicityScore().orElse(0f) >= pathogenicityThreshold)
                 .mapToDouble(variant -> {
                     int altAlleleCount = variant.alleleCount(sampleId).map(AlleleCount::alt).orElse((byte) 0);

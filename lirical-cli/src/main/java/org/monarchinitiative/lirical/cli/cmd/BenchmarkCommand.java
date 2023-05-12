@@ -98,7 +98,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
 
                 for (Path phenopacketPath : phenopacketPaths) {
                     // 3 - prepare benchmark data per phenopacket
-                    BenchmarkData benchmarkData = prepareBenchmarkData(lirical, backgroundVariants, phenopacketPath);
+                    BenchmarkData benchmarkData = prepareBenchmarkData(lirical, genomeBuild, backgroundVariants, phenopacketPath);
 
                     // 4 - run the analysis.
                     LOGGER.info("Starting the analysis: {}", analysisOptions);
@@ -173,6 +173,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
     }
 
     private BenchmarkData prepareBenchmarkData(Lirical lirical,
+                                               GenomeBuild genomeBuild,
                                                List<LiricalVariant> backgroundVariants,
                                                Path phenopacketPath) throws LiricalParseException {
         LOGGER.info("Reading phenopacket from {}.", phenopacketPath.toAbsolutePath());
