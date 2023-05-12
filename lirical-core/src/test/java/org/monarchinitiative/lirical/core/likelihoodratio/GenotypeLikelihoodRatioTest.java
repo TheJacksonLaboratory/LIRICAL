@@ -124,6 +124,6 @@ public class GenotypeLikelihoodRatioTest {
         assertThat(gle.geneId(), equalTo(thrbId));
         assertThat(gle.matchType(), equalTo(GenotypeLrMatchType.LIRICAL_GT_MODEL));
         assertThat(gle.lr(), is(closeTo(1.719420800179587e109, EPSILON)));
-        assertThat(gle.explanation(), equalTo("log<sub>10</sub>(LR)=109.235 P(G|D)=0.0000. P(G|&#172;D)=0.0000.  Mode of inheritance: autosomal recessive. Observed weighted pathogenic variant count: 44.80. &lambda;<sub>disease</sub>=2. &lambda;<sub>background</sub>=0.0070."));
+        assertThat(gle.explanation(), equalTo("log<sub>10</sub>(LR)=109.235 P(G|D)=0.0000. P(G|&#172;D)=0.0000.  Mode of inheritance: autosomal recessive. Observed weighted deleterious variant count: 44.80. &lambda;<sub>disease</sub>=2. &lambda;<sub>background</sub>=0.0070."));
     }
 }
