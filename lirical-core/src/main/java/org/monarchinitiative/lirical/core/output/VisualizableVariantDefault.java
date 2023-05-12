@@ -1,7 +1,6 @@
 package org.monarchinitiative.lirical.core.output;
 
 import org.monarchinitiative.lirical.core.model.*;
-import org.monarchinitiative.lirical.core.service.VariantMetadataService;
 import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicVariant;
 import org.monarchinitiative.svart.Strand;
@@ -115,10 +114,11 @@ class VisualizableVariantDefault implements VisualizableVariant {
 
     @Override
     public String getClinvar() {
-        ClinvarClnSig clnsig = variant.clinvarClnSig();
-        return (clnsig.equals(ClinvarClnSig.NOT_PROVIDED))
-                ? "n/a"
-                : clnsig.toString();
+        return variant.clinVarAlleleData()
+                .map(ClinVarAlleleData::getClinvarClnSig)
+                .filter(cv -> !cv.equals(ClinvarClnSig.NOT_PROVIDED))
+                .map(Object::toString)
+                .orElse("n/a");
     }
 
     @Override
