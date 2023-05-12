@@ -4,6 +4,7 @@ org.monarchinitiative.lirical.background.backgroundfrequency
 org.monarchinitiative.lirical.background.vcf
 org.monarchinitiative.lirical.cli
 org.monarchinitiative.lirical.cli.cmd
+org.monarchinitiative.lirical.cli.cmd.experimental
 org.monarchinitiative.lirical.configuration
 org.monarchinitiative.lirical.configuration.impl
 org.monarchinitiative.lirical.core
