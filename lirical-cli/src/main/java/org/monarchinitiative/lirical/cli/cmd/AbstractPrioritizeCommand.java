@@ -4,17 +4,12 @@ import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.analysis.*;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.monarchinitiative.lirical.core.output.*;
-import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import picocli.CommandLine;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.time.Period;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 /**
@@ -24,49 +19,9 @@ import java.util.*;
  *
  * @author Peter N Robinson
  */
-abstract class AbstractPrioritizeCommand extends LiricalConfigurationCommand {
+abstract class AbstractPrioritizeCommand extends OutputCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPrioritizeCommand.class);
-    private static final String UNKNOWN_VERSION_PLACEHOLDER = "UNKNOWN VERSION";
-
-    // ---------------------------------------------- OUTPUTS ----------------------------------------------------------
-    @CommandLine.ArgGroup(validate = false, heading = "Output options:%n")
-    public Output output = new Output();
-
-    public static class Output {
-        @CommandLine.Option(names = {"-o", "--output-directory"},
-                description = "Directory into which to write output (default: ${DEFAULT-VALUE}).")
-        public Path outdir = Path.of("");
-
-        @CommandLine.Option(names = {"-f", "--output-format"},
-                arity = "0..*",
-                description = {
-                "An output format to use for writing the results, can be provided multiple times.",
-                        "Choose from {${COMPLETION-CANDIDATES}}",
-                        "Default: ${DEFAULT-VALUE}"
-                })
-        public Set<OutputFormat> outputFormats = Set.of(OutputFormat.HTML);
-        /**
-         * Prefix of the output file. For instance, if the user enters {@code -x sample1} and an HTML file is output,
-         * the name of the HTML file will be {@code sample1.html}. If a TSV file is output, the name of the file will
-         * be {@code sample1.tsv}.
-         */
-        @CommandLine.Option(names = {"-x", "--prefix"},
-                description = "Prefix of outfile (default: ${DEFAULT-VALUE}).")
-        public String outfilePrefix = "lirical";
-
-        @CommandLine.Option(names = {"-t", "--threshold"},
-                description = "Minimum post-test probability to show diagnosis in HTML output. The value should range between [0,1].")
-        public Double lrThreshold = null;
-
-        @CommandLine.Option(names = {"-m", "--mindiff"},
-                description = "Minimal number of differential diagnoses to show.")
-        public Integer minDifferentialsToShow = null;
-
-        @CommandLine.Option(names = {"--display-all-variants"},
-                description = "Display all variants in output, not just variants passing pathogenicity threshold (default ${DEFAULT-VALUE})")
-        public boolean displayAllVariants = false;
-    }
 
     @Override
     public Integer execute() {
@@ -124,7 +79,7 @@ abstract class AbstractPrioritizeCommand extends LiricalConfigurationCommand {
                     .setGlobalMode(runConfiguration.globalAnalysisMode)
                     .build();
 
-            OutputOptions outputOptions = createOutputOptions();
+            OutputOptions outputOptions = createOutputOptions(output.outfilePrefix);
             AnalysisResultWriterFactory factory = lirical.analysisResultsWriterFactory();
 
             for (OutputFormat fmt : output.outputFormats) {
@@ -143,46 +98,6 @@ abstract class AbstractPrioritizeCommand extends LiricalConfigurationCommand {
         return 0;
     }
 
-    protected List<String> checkInput() {
-        List<String> errors = super.checkInput();
-
-        // thresholds
-        if (output.lrThreshold != null && output.minDifferentialsToShow != null) {
-            String msg = "Only one of the options -t/--threshold and -m/--mindiff can be used at once.";
-            LOGGER.error(msg);
-            errors.add(msg);
-        }
-        if (output.lrThreshold != null) {
-            if (output.lrThreshold < 0.0 || output.lrThreshold > 1.0) {
-                String msg = "Post-test probability (-t/--threshold) must be between 0.0 and 1.0.";
-                LOGGER.error(msg);
-                errors.add(msg);
-            }
-        }
-        return errors;
-    }
-
     protected abstract AnalysisData prepareAnalysisData(Lirical lirical, GenomeBuild genomeBuild, TranscriptDatabase transcriptDb) throws LiricalParseException;
-
-    protected OutputOptions createOutputOptions() {
-        LrThreshold lrThreshold = output.lrThreshold == null ? LrThreshold.notInitialized() : LrThreshold.setToUserDefinedThreshold(output.lrThreshold);
-        MinDiagnosisCount minDiagnosisCount = output.minDifferentialsToShow == null ? MinDiagnosisCount.notInitialized() : MinDiagnosisCount.setToUserDefinedMinCount(output.minDifferentialsToShow);
-        return new OutputOptions(lrThreshold, minDiagnosisCount, runConfiguration.pathogenicityThreshold,
-                output.displayAllVariants, output.outdir, output.outfilePrefix);
-    }
-
-    protected static Age parseAge(String age) {
-        if (age == null) {
-            LOGGER.debug("The age was not provided");
-            return Age.ageNotKnown();
-        }
-        try {
-            Period period = Period.parse(age);
-            LOGGER.info("Using age {}", period);
-            return Age.parse(period);
-        } catch (DateTimeParseException e) {
-            throw new LiricalRuntimeException("Unable to parse age '" + age + "': " + e.getMessage(), e);
-        }
-    }
 
 }
