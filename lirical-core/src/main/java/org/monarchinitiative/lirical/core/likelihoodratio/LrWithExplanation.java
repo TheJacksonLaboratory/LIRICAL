@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.core.likelihoodratio;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
