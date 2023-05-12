@@ -53,14 +53,29 @@ public interface Gene2Genotype extends Identified {
                 .sum();
     }
 
+    /**
+     * @deprecated the method was deprecated and will be removed in <code>v3.0.0</code>.
+     * Use {@link #deleteriousAlleleCount(String, float)} instead.
+     * @see #deleteriousAlleleCount(String, float)
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
     default int pathogenicAlleleCount(String sampleId, float pathogenicityThreshold) {
+        return deleteriousAlleleCount(sampleId, pathogenicityThreshold);
+    }
+
+    /**
+     * Get the count of alleles of predicted pathogenic/deleterious variants in a gene for the {@code sampleId}.
+     * The variants with pathogenicity score above the {@code pathogenicityThreshold}
+     * are deemed to be predicted pathogenic/deleterious.
+     */
+    default int deleteriousAlleleCount(String sampleId, float pathogenicityThreshold) {
         // The first part of the filter clause ensures we do not clash with ClinVar variant interpretation.
         // In other words, a ClinVar benign or likely benign variant CANNOT be interpreted as deleterious
         // based on in silico pathogenicity scores.
         return variants()
                 .filter(var -> var.clinVarAlleleData()
-                          .map(cv -> cv.getClinvarClnSig().notBenignOrLikelyBenign())
-                          .orElse(true)
+                        .map(cv -> cv.getClinvarClnSig().notBenignOrLikelyBenign())
+                        .orElse(true)
                         && var.pathogenicityScore().map(f -> f >= pathogenicityThreshold).orElse(false))
                 .map(var -> var.alleleCount(sampleId))
                 .flatMap(Optional::stream)

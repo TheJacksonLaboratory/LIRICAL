@@ -28,12 +28,12 @@ public class GenotypeLrWithExplanation  {
 
     static GenotypeLrWithExplanation twoPathClinVarAllelesRecessive(GeneIdentifier geneId, double ratio) {
         final String expl = String.format("log<sub>10</sub>(LR)=%.3f. Two pathogenic ClinVar variants detected with autosomal recessive disease.",  Math.log10(ratio));
-        return new GenotypeLrWithExplanation(geneId, GenotypeLrMatchType.TWO_DELETERIOUS_CLINVAR_VARIANTS_IN_AR, ratio, expl);
+        return new GenotypeLrWithExplanation(geneId, GenotypeLrMatchType.TWO_P_OR_LP_CLINVAR_ALLELES_IN_AR, ratio, expl);
     }
 
     static GenotypeLrWithExplanation pathClinVar(GeneIdentifier geneId, double ratio) {
         final String expl = String.format("log<sub>10</sub>(LR)=%.3f. Pathogenic ClinVar variant detected.", Math.log10(ratio));
-        return new GenotypeLrWithExplanation(geneId, GenotypeLrMatchType.ONE_DELETERIOUS_CLINVAR_VARIANT_IN_AD, ratio, expl);
+        return new GenotypeLrWithExplanation(geneId, GenotypeLrMatchType.ONE_P_OR_LP_CLINVAR_ALLELE_IN_AD, ratio, expl);
     }
 
      static GenotypeLrWithExplanation explainOneAlleleRecessive(GeneIdentifier geneId, double ratio, double observedWeightedPathogenicVariantCount, double lambda_background) {
@@ -56,14 +56,20 @@ public class GenotypeLrWithExplanation  {
         return new GenotypeLrWithExplanation(geneId, GenotypeLrMatchType.HIGH_NUMBER_OF_OBSERVED_PREDICTED_PATHOGENIC_VARIANTS, ratio, expl);
     }
 
-    static GenotypeLrWithExplanation explanation(GeneIdentifier geneId, double ratio, TermId modeOfInh, double lambda_b, double D, double B, double observedWeightedPathogenicVariantCount) {
+    static GenotypeLrWithExplanation explanation(GeneIdentifier geneId,
+                                                 double ratio,
+                                                 TermId modeOfInh,
+                                                 double lambda_b,
+                                                 double D,
+                                                 double B,
+                                                 double observedWeightedDeleteriousVariantCount) {
         int lambda_disease = 1;
         if (modeOfInh.equals(HpoModeOfInheritanceTermIds.AUTOSOMAL_RECESSIVE) || modeOfInh.equals(HpoModeOfInheritanceTermIds.X_LINKED_RECESSIVE)) {
             lambda_disease = 2;
         }
         String msg = String.format("P(G|D)=%.4f. P(G|&#172;D)=%.4f", D, B);
-        msg = String.format("log<sub>10</sub>(LR)=%.3f %s. %s. Observed weighted pathogenic variant count: %.2f. &lambda;<sub>disease</sub>=%d. &lambda;<sub>background</sub>=%.4f.",
-                Math.log10(ratio), msg, getMoIString(modeOfInh), observedWeightedPathogenicVariantCount,  lambda_disease, lambda_b);
+        msg = String.format("log<sub>10</sub>(LR)=%.3f %s. %s. Observed weighted deleterious variant count: %.2f. &lambda;<sub>disease</sub>=%d. &lambda;<sub>background</sub>=%.4f.",
+                Math.log10(ratio), msg, getMoIString(modeOfInh), observedWeightedDeleteriousVariantCount,  lambda_disease, lambda_b);
         return new GenotypeLrWithExplanation(geneId, GenotypeLrMatchType.LIRICAL_GT_MODEL, ratio, msg);
     }
 

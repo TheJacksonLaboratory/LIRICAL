@@ -18,16 +18,16 @@ public enum GenotypeLrMatchType {
     NO_VARIANTS_DETECTED_AR,
 
     /**
-     * One ClinVar pathogenic or likely pathogenic variant discovered in a disease
+     * One ClinVar pathogenic or likely pathogenic allele discovered in a disease
      * with autosomal dominant inheritance.
      */
-    ONE_DELETERIOUS_CLINVAR_VARIANT_IN_AD,
+    ONE_P_OR_LP_CLINVAR_ALLELE_IN_AD,
 
     /**
-     * Two ClinVar pathogenic or likely pathogenic variants discovered in a disease
+     * Two ClinVar pathogenic or likely pathogenic alleles discovered in a disease
      * with autosomal recessive inheritance.
      */
-    TWO_DELETERIOUS_CLINVAR_VARIANTS_IN_AR,
+    TWO_P_OR_LP_CLINVAR_ALLELES_IN_AR,
 
     /**
      * One deleterious allele detected with autosomal recessive disease.
@@ -45,8 +45,29 @@ public enum GenotypeLrMatchType {
 
     /**
      * Gene scored using LIRICAL genotype LR model.
+     * <p>
+     * For more details, consult the <em>Material and Methods | Likelihood Ratio for Genotypes</em> section
+     * of the <a href="https://pubmed.ncbi.nlm.nih.gov/32755546/">LIRICAL manuscript</a>.
      */
     LIRICAL_GT_MODEL,
+
+    /**
+     * DO NOT USE.
+     *
+     * @deprecated the method has been deprecated and will be removed in <code>v3.0.0</code>.
+     * Use {@link #ONE_P_OR_LP_CLINVAR_ALLELE_IN_AD} instead.
+     */
+    @Deprecated(forRemoval = true, since = "v2.0.0")
+    ONE_DELETERIOUS_CLINVAR_VARIANT_IN_AD,
+
+    /**
+     * DO NOT USE.
+     *
+     * @deprecated the method has been deprecated and will be removed in <code>v3.0.0</code>.
+     * Use {@link #TWO_P_OR_LP_CLINVAR_ALLELES_IN_AR} instead.
+     */
+    @Deprecated(forRemoval = true, since = "v2.0.0")
+    TWO_DELETERIOUS_CLINVAR_VARIANTS_IN_AR,
 
     /**
      * DO NOT USE. A placeholder value used in the deprecated methods for backward compatibility.
