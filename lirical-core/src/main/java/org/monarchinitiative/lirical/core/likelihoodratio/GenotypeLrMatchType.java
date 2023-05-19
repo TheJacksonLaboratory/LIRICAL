@@ -58,6 +58,7 @@ public enum GenotypeLrMatchType {
      * Use {@link #ONE_P_OR_LP_CLINVAR_ALLELE_IN_AD} instead.
      */
     @Deprecated(forRemoval = true, since = "v2.0.0")
+    // REMOVE(v3.0.0)
     ONE_DELETERIOUS_CLINVAR_VARIANT_IN_AD,
 
     /**
@@ -67,6 +68,7 @@ public enum GenotypeLrMatchType {
      * Use {@link #TWO_P_OR_LP_CLINVAR_ALLELES_IN_AR} instead.
      */
     @Deprecated(forRemoval = true, since = "v2.0.0")
+    // REMOVE(v3.0.0)
     TWO_DELETERIOUS_CLINVAR_VARIANTS_IN_AR,
 
     /**
