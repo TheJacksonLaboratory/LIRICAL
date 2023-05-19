@@ -48,7 +48,7 @@ public class GenotypeLikelihoodRatioTest {
         Gene2Genotype g2g = setupGeneToGenotype(MADE_UP_GENE, 1, 1, 0.8);
         GenotypeLikelihoodRatio glr = new GenotypeLikelihoodRatio(BackgroundVariantFrequencyService.of(Map.of(), 0.1), OPTIONS);
         GenotypeLrWithExplanation gle = glr.evaluateGenotype(SAMPLE_ID, g2g, List.of(AUTOSOMAL_DOMINANT));
-        assertThat(gle.matchType(), equalTo(GenotypeLrMatchType.ONE_DELETERIOUS_CLINVAR_VARIANT_IN_AD));
+        assertThat(gle.matchType(), equalTo(GenotypeLrMatchType.ONE_P_OR_LP_CLINVAR_ALLELE_IN_AD));
         Assertions.assertEquals(1000, gle.lr(), EPSILON);
     }
 
@@ -63,7 +63,7 @@ public class GenotypeLikelihoodRatioTest {
         GenotypeLikelihoodRatio glr = new GenotypeLikelihoodRatio(BackgroundVariantFrequencyService.of(Map.of(), 0.1), OPTIONS);
         GenotypeLrWithExplanation gle = glr.evaluateGenotype(SAMPLE_ID, g2g, List.of(AUTOSOMAL_RECESSIVE));
 
-        assertThat(gle.matchType(), equalTo(GenotypeLrMatchType.TWO_DELETERIOUS_CLINVAR_VARIANTS_IN_AR));
+        assertThat(gle.matchType(), equalTo(GenotypeLrMatchType.TWO_P_OR_LP_CLINVAR_ALLELES_IN_AR));
         Assertions.assertEquals(1000. * 1000, gle.lr(), EPSILON);
     }
 
@@ -112,7 +112,7 @@ public class GenotypeLikelihoodRatioTest {
         when(g2g.geneId()).thenReturn(thrbId);
         when(g2g.hasVariants()).thenReturn(true);
         when(g2g.pathogenicClinVarCount(SAMPLE_ID)).thenReturn(0);
-        when(g2g.pathogenicAlleleCount(SAMPLE_ID, PATHOGENICITY_THRESHOLD)).thenReturn(56);
+        when(g2g.deleteriousAlleleCount(SAMPLE_ID, PATHOGENICITY_THRESHOLD)).thenReturn(56);
         when(g2g.getSumOfPathBinScores(SAMPLE_ID, PATHOGENICITY_THRESHOLD)).thenReturn(44.80000);
 
         Map<TermId, Double> gene2Background = Map.of(thrbId.id(), 0.006973);
@@ -124,6 +124,6 @@ public class GenotypeLikelihoodRatioTest {
         assertThat(gle.geneId(), equalTo(thrbId));
         assertThat(gle.matchType(), equalTo(GenotypeLrMatchType.LIRICAL_GT_MODEL));
         assertThat(gle.lr(), is(closeTo(1.719420800179587e109, EPSILON)));
-        assertThat(gle.explanation(), equalTo("log<sub>10</sub>(LR)=109.235 P(G|D)=0.0000. P(G|&#172;D)=0.0000.  Mode of inheritance: autosomal recessive. Observed weighted pathogenic variant count: 44.80. &lambda;<sub>disease</sub>=2. &lambda;<sub>background</sub>=0.0070."));
+        assertThat(gle.explanation(), equalTo("log<sub>10</sub>(LR)=109.235 P(G|D)=0.0000. P(G|&#172;D)=0.0000.  Mode of inheritance: autosomal recessive. Observed weighted deleterious variant count: 44.80. &lambda;<sub>disease</sub>=2. &lambda;<sub>background</sub>=0.0070."));
     }
 }
