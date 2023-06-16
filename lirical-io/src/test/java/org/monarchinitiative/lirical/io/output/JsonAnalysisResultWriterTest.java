@@ -65,7 +65,7 @@ public class JsonAnalysisResultWriterTest {
                 .setExomiserPath("exomiserPath")
                 .setAnalysisDate(LocalDateTime.now().toString())
                 .setSampleName("sampleId")
-                .setnGoodQualityVariants(2)
+                .setnPassingVariants(2)
                 .setnFilteredVariants(4)
                 .setGenesWithVar(6)
                 .setGlobalMode(true)

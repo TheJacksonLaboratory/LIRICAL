@@ -62,7 +62,14 @@ public interface GenotypedVariant {
     Optional<AlleleCount> alleleCount(String sample);
 
     /**
-     * @return true if the variant passed the filters in the variant source
+     * @return {@code true} if the variant <em>passed</em> the filters, according to the variant source (e.g. VCF file).
      */
     boolean passedFilters();
+
+    /**
+     * @return {@code true} if the variant <em>failed</em> the filters, according to the variant source (e.g. VCF file).
+     */
+    default boolean failedFilters() {
+        return !passedFilters();
+    }
 }

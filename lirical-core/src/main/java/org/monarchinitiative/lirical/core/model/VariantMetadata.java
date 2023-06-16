@@ -98,8 +98,12 @@ public interface VariantMetadata {
         });
     }
 
-
+    /**
+     * @deprecated the function has been deprecated without replacement and will be removed in <code>v3.0.0</code>.
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
     static int compareByPathogenicity(VariantMetadata left, VariantMetadata right) {
+        // REMOVE(v3.0.0)
         return Float.compare(left.pathogenicity(), right.pathogenicity());
     }
 

@@ -33,6 +33,10 @@ class LiricalVariantIterator implements Iterator<LiricalVariant> {
     @Override
     public LiricalVariant next() {
         GenotypedVariant gv = iterator.next();
+        if (gv.failedFilters())
+            // No point in annotating variant that failed the initial filtering.
+            return new LiricalVariantFailingFilters(gv);
+
         List<TranscriptAnnotation> annotations = variantAnnotator.annotate(gv.variant());
 
         List<VariantEffect> effects = annotations.stream()

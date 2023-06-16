@@ -35,13 +35,15 @@ public interface GenesAndGenotypes extends Iterable<Gene2Genotype> {
     default FilteringStats computeFilteringStats() {
         AtomicLong passed = new AtomicLong();
         AtomicLong failed = new AtomicLong();
-        genes().flatMap(Gene2Genotype::variants)
-                .forEach(v -> {
-                    if (v.passedFilters())
-                        passed.incrementAndGet();
-                    else failed.incrementAndGet();
-                });
-        return new FilteringStats(passed.get(), failed.get());
+        AtomicLong genesWithVariants = new AtomicLong();
+        genes().forEach(g -> {
+            if (g.hasVariants())
+                genesWithVariants.incrementAndGet();
+            passed.addAndGet(g.variantCount());
+            failed.addAndGet(g.filteredOutVariantCount());
+        });
+
+        return new FilteringStats(passed.get(), failed.get(), genesWithVariants.get());
     }
 
 }
