@@ -59,7 +59,9 @@ public interface VariantMetadata {
     default Optional<Float> pathogenicityScore() {
         // Heuristic -- Count ClinVar pathogenic or likely pathogenic as 1.0 (maximum pathogenicity score)
         // regardless of the Exomiser pathogenicity score
-        return clinvarClnSig().isPathogenicOrLikelyPathogenic()
+        return clinVarAlleleData()
+                .map(a -> a.getClinvarClnSig().isPathogenicOrLikelyPathogenic())
+                .orElse(false) // go to the frequencyScore branch
                 ? Optional.of(1f)
                 : frequencyScore().map(fs -> fs * pathogenicity());
     }
