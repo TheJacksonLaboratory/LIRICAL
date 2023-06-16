@@ -61,6 +61,13 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         @CommandLine.Option(names = {"-b", "--background"},
                 description = "Path to non-default background frequency file.")
         public Path backgroundFrequencyFile = null;
+
+        @CommandLine.Option(names = "--parallelism",
+        description = {
+                "The number of workers/threads to use.",
+                "The value must be a positive integer.",
+                "Default: ${DEFAULT-VALUE}"})
+        public int parallelism = 1;
     }
 
 
@@ -191,6 +198,11 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             }
         }
 
+        if (dataSection.parallelism <= 0) {
+            String msg = "Parallelism must be a positive integer but was %d".formatted(dataSection.parallelism);
+            errors.add(msg);
+        }
+
         return errors;
     }
 
@@ -220,7 +232,8 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             builder.backgroundVariantFrequencyServiceFactory(backgroundFreqFactory);
         }
 
-        return builder.build();
+        return builder.parallelism(dataSection.parallelism)
+                .build();
     }
 
     protected abstract String getGenomeBuild();

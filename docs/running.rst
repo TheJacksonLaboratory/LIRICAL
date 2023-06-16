@@ -51,10 +51,10 @@ LIRICAL offers several commands for receiving phenotype and genotype inputs via 
 However the commands share many CLI arguments for setting up the resource paths, the analysis configuration,
 and where results should be written. We describe the shared CLI arguments in this section.
 
-Resource paths
-~~~~~~~~~~~~~~
+Resources
+~~~~~~~~~
 
-The options from this group point LIRICAL to resources required for analysis.
+The options from this group set up resources required for LIRICAL analysis.
 
 * ``-d | --data``: path to LIRICAL data directory.
   Required if the ``data`` folder is not set up next to the LIRICAL JAR file.
@@ -65,6 +65,7 @@ The options from this group point LIRICAL to resources required for analysis.
 * ``-b | --background``: path to file with background variant frequencies for genes.
   This option should not be used unless there is a very good reason to do that.
   The background variant frequencies are bundled with the LIRICAL code. See :ref:`rstbg-var-freqs` for more info.
+* ``--parallelism``: the number of workers/threads to use. The value must be a positive integer (default: ``1``).
 
 Configuration options
 ~~~~~~~~~~~~~~~~~~~~~
@@ -82,7 +83,7 @@ The configuration options tweak the analysis.
   even those with no deleterious variants.
   Only applicable to the HTML report when running with a VCF file (genotype-aware mode).
 * ``--transcript-db``: transcript database (default: ``RefSeq``), see :ref:`rsttx-dbs` for more info.
-* ``--use-orphanet``: use `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>`_ annotations (default: ``false``)
+* ``--use-orphanet``: use `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>`_ annotations (default: ``false``).
 * ``--strict``: use strict penalties if the genotype does not match the disease model
   in terms of number of called pathogenic alleles (default: ``false``).
 * ``--pathogenicity-threshold``: Variants with greater pathogenicity score is considered deleterious (default: ``0.8``).
@@ -94,9 +95,9 @@ The output options dictate the format and location for the analysis results.
 
 * ``-o | --output-directory``: where to write the analysis outputs (default: current working directory).
 * ``-f | --output-format``: Output format to use for writing the results, can be provided multiple times.
-  Choose from `html`, `tsv`, and `json` (default: ``html``)
+  Choose from `html`, `tsv`, and `json` (default: ``html``).
 * ``-x | --prefix``: prefix of the output files (default: ``lirical``)
-* ``-t | --threshold``: minimum post-test probability to show diagnosis in the HTML report.
+* ``-t | --threshold``: minimum post-test probability to show diagnosi.s in the HTML report.
   The value must be in range :math:`[0, 1]`. The option must not be used with ``-m | -mindiff`` option at the same time.
 * ``-m | --mindiff``: Minimal number of differential diagnoses to show.
 * ``--display-all-variants``: Display all variants in the HTML report, not just the variants passing
@@ -124,7 +125,7 @@ The ``prioritize`` command takes the following options:
 * ``--assembly`` genome build, choose from `hg19` or `hg38`, must be provided if ``--vcf`` is used (default: ``hg38``).
 * ``--vcf``: path to VCF file with exome/genome sequencing results. The file can be compressed.
 * ``--sample-id``: proband's identifier (default: `Sample`).
-* ``--age``: proband's age as an ISO8601 duration
+* ``--age``: proband's age as an ISO8601 duration.
   (e.g. ``P9Y`` for 9 years, ``P2Y3M`` for 2 years and 3 months, or ``P33W`` for the 33th gestational week).
 * ``--sex``: proband's sex, choose from `MALE`, `FEMALE`, `UNKNOWN` (default: `UNKNOWN`).
 
