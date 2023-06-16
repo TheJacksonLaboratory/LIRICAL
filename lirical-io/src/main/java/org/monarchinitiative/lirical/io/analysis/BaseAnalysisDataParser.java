@@ -2,10 +2,9 @@ package org.monarchinitiative.lirical.io.analysis;
 
 import org.monarchinitiative.lirical.core.analysis.AnalysisDataParser;
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
-import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.lirical.core.io.VariantParser;
 import org.monarchinitiative.lirical.core.io.VariantParserFactory;
-import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
+import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,22 +62,7 @@ abstract class BaseAnalysisDataParser implements AnalysisDataParser {
                             .toList();
                     LOGGER.info("Read {} variants", variants.size());
 
-                    // Group variants by gene symbol. It would be better to group the variants by e.g. Entrez ID,
-                    // but the ID is not available from TranscriptAnnotation
-                    Map<GeneIdentifier, List<LiricalVariant>> gene2Genotype = new HashMap<>();
-                    for (LiricalVariant variant : variants) {
-                        variant.annotations().stream()
-                                .map(TranscriptAnnotation::getGeneId)
-                                .distinct()
-                                .forEach(geneId -> gene2Genotype.computeIfAbsent(geneId, e -> new LinkedList<>()).add(variant));
-                    }
-
-                    // Collect the variants into Gene2Genotype container
-                    List<Gene2Genotype> g2g = gene2Genotype.entrySet().stream()
-                            .map(e -> Gene2Genotype.of(e.getKey(), e.getValue()))
-                            .toList();
-
-                    return GenesAndGenotypes.of(g2g);
+                    return GenesAndGenotypes.fromVariants(variants);
                 } catch (Exception e) {
                     throw new LiricalParseException(e);
                 }

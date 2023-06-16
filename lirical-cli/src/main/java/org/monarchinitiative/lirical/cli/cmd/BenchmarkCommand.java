@@ -211,7 +211,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                 }
 
                 // Read the VCF file.
-                genes = prepareGenesAndGenotypes(backgroundAndCausal);
+                genes = GenesAndGenotypes.fromVariants(backgroundAndCausal);
             }
         }
 

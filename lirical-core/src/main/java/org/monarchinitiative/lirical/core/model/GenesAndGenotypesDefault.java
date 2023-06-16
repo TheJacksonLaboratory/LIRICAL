@@ -1,9 +1,6 @@
 package org.monarchinitiative.lirical.core.model;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 class GenesAndGenotypesDefault {
 
@@ -11,15 +8,12 @@ class GenesAndGenotypesDefault {
         return GenesAndGenotypesEmpty.INSTANCE;
     }
 
-    public static GenesAndGenotypes of(List<Gene2Genotype> genes) {
-        return new GenesAndGenotypesFull(genes);
+    public static GenesAndGenotypes of(Collection<Gene2Genotype> genes) {
+        List<Gene2Genotype> geneList = List.copyOf(Objects.requireNonNull(genes, "Gene list must not be null"));
+        return new GenesAndGenotypesFull(geneList);
     }
 
     record GenesAndGenotypesFull(List<Gene2Genotype> geneList) implements GenesAndGenotypes {
-
-        GenesAndGenotypesFull(List<Gene2Genotype> geneList) {
-            this.geneList = Objects.requireNonNull(geneList, "Gene list must not be null");
-        }
 
         @Override
         public int size() {

@@ -7,12 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-record LiricalVariantFailingFilters(GenotypedVariant gv) implements LiricalVariant {
-
-    @Override
-    public List<TranscriptAnnotation> annotations() {
-        return List.of();
-    }
+record LiricalVariantFailingFilters(GenotypedVariant gv, List<TranscriptAnnotation> annotations) implements LiricalVariant {
 
     @Override
     public GenomeBuild genomeBuild() {
