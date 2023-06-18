@@ -59,7 +59,9 @@ public interface VariantMetadata {
     default Optional<Float> pathogenicityScore() {
         // Heuristic -- Count ClinVar pathogenic or likely pathogenic as 1.0 (maximum pathogenicity score)
         // regardless of the Exomiser pathogenicity score
-        return clinvarClnSig().isPathogenicOrLikelyPathogenic()
+        return clinVarAlleleData()
+                .map(a -> a.getClinvarClnSig().isPathogenicOrLikelyPathogenic())
+                .orElse(false) // go to the frequencyScore branch
                 ? Optional.of(1f)
                 : frequencyScore().map(fs -> fs * pathogenicity());
     }
@@ -98,8 +100,12 @@ public interface VariantMetadata {
         });
     }
 
-
+    /**
+     * @deprecated the function has been deprecated without replacement and will be removed in <code>v3.0.0</code>.
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
     static int compareByPathogenicity(VariantMetadata left, VariantMetadata right) {
+        // REMOVE(v3.0.0)
         return Float.compare(left.pathogenicity(), right.pathogenicity());
     }
 

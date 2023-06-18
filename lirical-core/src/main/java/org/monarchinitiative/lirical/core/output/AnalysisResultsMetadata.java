@@ -8,9 +8,9 @@ public class AnalysisResultsMetadata {
     private String exomiserPath;
     private String analysisDate;
     private String sampleName;
-    private long nGoodQualityVariants;
+    private long nPassingVariants;
     private long nFilteredVariants;
-    private int genesWithVar;
+    private long genesWithVar;
     private boolean globalMode;
 
     private AnalysisResultsMetadata(String liricalVersion,
@@ -20,9 +20,9 @@ public class AnalysisResultsMetadata {
                                     String exomiserPath,
                                     String analysisDate,
                                     String sampleName,
-                                    long nGoodQualityVariants,
+                                    long nPassingVariants,
                                     long nFilteredVariants,
-                                    int genesWithVar,
+                                    long genesWithVar,
                                     boolean globalMode) {
         this.liricalVersion = liricalVersion;
         this.hpoVersion = hpoVersion;
@@ -31,7 +31,7 @@ public class AnalysisResultsMetadata {
         this.exomiserPath = exomiserPath;
         this.analysisDate = analysisDate;
         this.sampleName = sampleName;
-        this.nGoodQualityVariants = nGoodQualityVariants;
+        this.nPassingVariants = nPassingVariants;
         this.nFilteredVariants = nFilteredVariants;
         this.genesWithVar = genesWithVar;
         this.globalMode = globalMode;
@@ -89,12 +89,12 @@ public class AnalysisResultsMetadata {
         this.sampleName = sampleName;
     }
 
-    public long getnGoodQualityVariants() {
-        return nGoodQualityVariants;
+    public long getnPassingVariants() {
+        return nPassingVariants;
     }
 
-    public void setnGoodQualityVariants(long nGoodQualityVariants) {
-        this.nGoodQualityVariants = nGoodQualityVariants;
+    public void setnPassingVariants(long nPassingVariants) {
+        this.nPassingVariants = nPassingVariants;
     }
 
     public long getnFilteredVariants() {
@@ -105,11 +105,11 @@ public class AnalysisResultsMetadata {
         this.nFilteredVariants = nFilteredVariants;
     }
 
-    public int getGenesWithVar() {
+    public long getGenesWithVar() {
         return genesWithVar;
     }
 
-    public void setGenesWithVar(int genesWithVar) {
+    public void setGenesWithVar(long genesWithVar) {
         this.genesWithVar = genesWithVar;
     }
 
@@ -135,7 +135,7 @@ public class AnalysisResultsMetadata {
                 ", exomiserPath='" + exomiserPath + '\'' +
                 ", analysisDate='" + analysisDate + '\'' +
                 ", sampleName='" + sampleName + '\'' +
-                ", nGoodQualityVariants=" + nGoodQualityVariants +
+                ", nPassingVariants=" + nPassingVariants +
                 ", nFilteredVariants=" + nFilteredVariants +
                 ", genesWithVar=" + genesWithVar +
                 ", globalMode=" + globalMode +
@@ -150,9 +150,9 @@ public class AnalysisResultsMetadata {
         private String exomiserPath;
         private String analysisDate;
         private String sampleName = "SAMPLE_ID";
-        private long nGoodQualityVariants;
+        private long nPassingVariants;
         private long nFilteredVariants;
-        private int genesWithVar;
+        private long genesWithVar;
         private boolean globalMode;
 
         private Builder() {
@@ -193,8 +193,8 @@ public class AnalysisResultsMetadata {
             return this;
         }
 
-        public Builder setnGoodQualityVariants(long nGoodQualityVariants) {
-            this.nGoodQualityVariants = nGoodQualityVariants;
+        public Builder setnPassingVariants(long nPassingVariants) {
+            this.nPassingVariants = nPassingVariants;
             return this;
         }
 
@@ -203,7 +203,7 @@ public class AnalysisResultsMetadata {
             return this;
         }
 
-        public Builder setGenesWithVar(int genesWithVar) {
+        public Builder setGenesWithVar(long genesWithVar) {
             this.genesWithVar = genesWithVar;
             return this;
         }
@@ -221,7 +221,7 @@ public class AnalysisResultsMetadata {
                     exomiserPath,
                     analysisDate,
                     sampleName,
-                    nGoodQualityVariants,
+                    nPassingVariants,
                     nFilteredVariants,
                     genesWithVar,
                     globalMode);

@@ -124,7 +124,7 @@ public class PhenopacketsCommand extends OutputCommand {
                         .setExomiserPath(dataSection.exomiserDatabase == null ? "" : dataSection.exomiserDatabase.toAbsolutePath().toString())
                         .setAnalysisDate(LocalDateTime.now().toString())
                         .setSampleName(analysisData.sampleId())
-                        .setnGoodQualityVariants(filteringStats.nGoodQualityVariants())
+                        .setnPassingVariants(filteringStats.nPassingVariants())
                         .setnFilteredVariants(filteringStats.nFilteredVariants())
                         .setGenesWithVar(0) // TODO
                         .setGlobalMode(runConfiguration.globalAnalysisMode)

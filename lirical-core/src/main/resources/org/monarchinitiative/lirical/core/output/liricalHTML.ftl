@@ -713,7 +713,7 @@
                     often
                     accession numbers of poorly defined entities. The following list shows gene IDs that could not
                     be identified in this run. If there are many entries in this list, we recommend trying a different
-                    annotation source (e.g., refseq). See also the online documentation of LIRICAL.</p>
+                    annotation source (e.g., RefSeq). See also the online documentation of LIRICAL.</p>
                 <a id="show-symbol-table" class="table-btn" onclick="showSymbolTable()">Show Table</a>
                 <a id="hide-symbol-table" class="table-btn" onclick="hideSymbolTable()">Hide Table</a>
                 <table class="redTable" id="symbol-table">
@@ -739,7 +739,7 @@
                 It displays detailed information for the top differential diagnoses (by default all diseases
                 with a posttest probability above ${postprobthreshold} and at least 5; these thresholds can be
                 adjusted if desired). The following text provides brief explanations of the symbols used by
-                LIRICAL to explain how phenotype likelihood ratio scores were generaed.</p>
+                LIRICAL to explain how phenotype likelihood ratio scores were generated.</p>
             <ul class="no-list-style">
                 <li><b>E</b>: Exact match between query term and disease term.</li>
                 <li><b>Q&lt;D</b>: Query term is a child of disease term.</li>
@@ -749,7 +749,7 @@
                 <li><b>X</b>: Query term is explicitly annotated as being not present in disease</li>
                 <li><b>XX</b>: Term excluded by query and explicitly annotated as being not present in disease</li>
                 <li><b>XA</b>: Term excluded by query and not explicitly annotated as being present in disease</li>
-                <li><b>XP</b>: Term excluded by query but is explictly annotated as being present in disease</li>
+                <li><b>XP</b>: Term excluded by query but is explicitly annotated as being present in disease</li>
                 <li><b>U</b>: Flag for unusual background query (please report to developers)</li>
             </ul>
         </article>
@@ -781,8 +781,8 @@
                 <#if resultsMeta.transcriptDatabase?has_content>
                     <li>Transcript database: ${resultsMeta.transcriptDatabase}</li>
                 </#if>
-                <#if resultsMeta.nGoodQualityVariants?has_content>
-                    <li>Good quality variants: ${resultsMeta.nGoodQualityVariants}</li>
+                <#if resultsMeta.nPassingVariants?has_content>
+                    <li>Good quality variants: ${resultsMeta.nPassingVariants}</li>
                 </#if>
                 <#if resultsMeta.nFilteredVariants?has_content>
                     <li>Variants removed due to failing quality filter: ${resultsMeta.nFilteredVariants}</li>

@@ -13,7 +13,6 @@ import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.background.CustomBackgroundVariantFrequencyServiceFactory;
-import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.monarchinitiative.phenol.ontology.data.Identified;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -61,6 +60,13 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         @CommandLine.Option(names = {"-b", "--background"},
                 description = "Path to non-default background frequency file.")
         public Path backgroundFrequencyFile = null;
+
+        @CommandLine.Option(names = "--parallelism",
+        description = {
+                "The number of workers/threads to use.",
+                "The value must be a positive integer.",
+                "Default: ${DEFAULT-VALUE}"})
+        public int parallelism = 1;
     }
 
 
@@ -191,6 +197,11 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             }
         }
 
+        if (dataSection.parallelism <= 0) {
+            String msg = "Parallelism must be a positive integer but was %d".formatted(dataSection.parallelism);
+            errors.add(msg);
+        }
+
         return errors;
     }
 
@@ -220,7 +231,8 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             builder.backgroundVariantFrequencyServiceFactory(backgroundFreqFactory);
         }
 
-        return builder.build();
+        return builder.parallelism(dataSection.parallelism)
+                .build();
     }
 
     protected abstract String getGenomeBuild();
@@ -317,25 +329,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             throw new LiricalParseException(e);
         }
 
-        return prepareGenesAndGenotypes(variants);
-    }
-
-    protected static GenesAndGenotypes prepareGenesAndGenotypes(List<LiricalVariant> variants) {
-        // Group variants by Entrez ID.
-        Map<GeneIdentifier, List<LiricalVariant>> gene2Genotype = new HashMap<>();
-        for (LiricalVariant variant : variants) {
-            variant.annotations().stream()
-                    .map(TranscriptAnnotation::getGeneId)
-                    .distinct()
-                    .forEach(geneId -> gene2Genotype.computeIfAbsent(geneId, e -> new LinkedList<>()).add(variant));
-        }
-
-        // Collect the variants into Gene2Genotype container
-        List<Gene2Genotype> g2g = gene2Genotype.entrySet().stream()
-                .map(e -> Gene2Genotype.of(e.getKey(), e.getValue()))
-                .toList();
-
-        return GenesAndGenotypes.of(g2g);
+        return GenesAndGenotypes.fromVariants(variants);
     }
 
     protected static Age parseAge(String age) {

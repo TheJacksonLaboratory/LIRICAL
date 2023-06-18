@@ -2,6 +2,7 @@ package org.monarchinitiative.lirical.configuration;
 
 import org.monarchinitiative.lirical.configuration.impl.BundledBackgroundVariantFrequencyServiceFactory;
 import org.monarchinitiative.lirical.core.Lirical;
+import org.monarchinitiative.lirical.core.LiricalOptions;
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbability;
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
@@ -42,6 +43,8 @@ public class LiricalBuilder {
 
     private VariantMetadataServiceFactory variantMetadataServiceFactory = null;
     private FunctionalVariantAnnotatorService functionalVariantAnnotatorService = null;
+
+    private int parallelism = 1;
 
     public static LiricalBuilder builder(Path liricalDataDirectory) throws LiricalDataException {
         return new LiricalBuilder(liricalDataDirectory);
@@ -251,6 +254,16 @@ public class LiricalBuilder {
         return this;
     }
 
+    /**
+     * Set the number threads/workers in the LIRICAL worker pool.
+     */
+    public LiricalBuilder parallelism(int parallelism) {
+        if (parallelism <=0)
+            throw new IllegalArgumentException("Parallelism %d must be greater than 0".formatted(parallelism));
+        this.parallelism = parallelism;
+        return this;
+    }
+
     public Lirical build() throws LiricalDataException {
         // First, services
         if (phenotypeService == null) {
@@ -291,13 +304,16 @@ public class LiricalBuilder {
         // Analysis result writer factory
         AnalysisResultWriterFactory analysisResultWriterFactory = new AnalysisResultWriterFactoryImpl(phenotypeService.hpo(), phenotypeService.diseases());
 
+        // Last, the global options.
+        LiricalOptions options = new LiricalOptions(LIRICAL_VERSION, parallelism);
+
         return Lirical.of(
                 variantParserFactory,
                 phenotypeService,
                 backgroundVariantFrequencyServiceFactory,
                 variantMetadataServiceFactory,
                 analysisResultWriterFactory,
-                LIRICAL_VERSION);
+                options);
     }
 
     private static PhenotypeService configurePhenotypeService(Path dataDirectory, HpoDiseaseLoaderOptions options) throws LiricalDataException {

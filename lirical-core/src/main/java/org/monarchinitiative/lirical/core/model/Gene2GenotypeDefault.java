@@ -9,24 +9,16 @@ import java.util.stream.Stream;
 
 class Gene2GenotypeDefault {
 
-    static Gene2Genotype of(GeneIdentifier geneId, Collection<LiricalVariant> variants) {
-        Objects.requireNonNull(geneId, "Gene ID must not be null");
-        Objects.requireNonNull(variants, "Variants must not be null");
-        if (variants.isEmpty()) {
-            return new Gene2GenotypeNoVariants(geneId);
-        } else {
-            return new Gene2GenotypeFull(geneId, variants);
-        }
-    }
-
-    private static class Gene2GenotypeFull implements Gene2Genotype {
+    static class Gene2GenotypeFull implements Gene2Genotype {
 
         private final GeneIdentifier geneId;
         private final List<LiricalVariant> variants;
+        private final int filteredOutVariantCount;
 
-        private Gene2GenotypeFull(GeneIdentifier geneId, Collection<LiricalVariant> variants) {
+        Gene2GenotypeFull(GeneIdentifier geneId, Collection<LiricalVariant> variants, int filteredOutVariantCount) {
             this.geneId = geneId;
             this.variants = List.copyOf(variants);
+            this.filteredOutVariantCount = filteredOutVariantCount;
         }
 
         @Override
@@ -45,16 +37,21 @@ class Gene2GenotypeDefault {
         }
 
         @Override
+        public int filteredOutVariantCount() {
+            return filteredOutVariantCount;
+        }
+
+        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Gene2GenotypeFull that = (Gene2GenotypeFull) o;
-            return Objects.equals(geneId, that.geneId) && Objects.equals(variants, that.variants);
+            return filteredOutVariantCount == that.filteredOutVariantCount && Objects.equals(geneId, that.geneId) && Objects.equals(variants, that.variants);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(geneId, variants);
+            return Objects.hash(geneId, variants, filteredOutVariantCount);
         }
 
         @Override
@@ -62,11 +59,12 @@ class Gene2GenotypeDefault {
             return "Gene2GenotypeFull{" +
                     "geneId=" + geneId +
                     ", variants=" + variants +
-                    '}';
+                    ", filteredOutVariantCount=" + filteredOutVariantCount
+                    + '}';
         }
     }
 
-    private record Gene2GenotypeNoVariants(GeneIdentifier geneId) implements Gene2Genotype {
+    record Gene2GenotypeNoVariants(GeneIdentifier geneId, int filteredOutVariantCount) implements Gene2Genotype {
 
         @Override
         public GeneIdentifier geneId() {
@@ -84,6 +82,5 @@ class Gene2GenotypeDefault {
         }
 
     }
-
 
 }
