@@ -11,6 +11,8 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
@@ -50,7 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Running LIRICAL</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#shared-cli-options">Shared CLI options</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#resource-paths">Resource paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#resources">Resources</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#configuration-options">Configuration options</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#output-options">Output options</a></li>
 </ul>
@@ -137,9 +139,9 @@ We will <em>not</em> discuss the <code class="docutils literal notranslate"><spa
 <p>LIRICAL offers several commands for receiving phenotype and genotype inputs via CLI, phenopacket, or a YAML file.
 However the commands share many CLI arguments for setting up the resource paths, the analysis configuration,
 and where results should be written. We describe the shared CLI arguments in this section.</p>
-<section id="resource-paths">
-<h3>Resource paths<a class="headerlink" href="#resource-paths" title="Permalink to this heading"></a></h3>
-<p>The options from this group point LIRICAL to resources required for analysis.</p>
+<section id="resources">
+<h3>Resources<a class="headerlink" href="#resources" title="Permalink to this heading"></a></h3>
+<p>The options from this group set up resources required for LIRICAL analysis.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">|</span> <span class="pre">--data</span></code>: path to LIRICAL data directory.
 Required if the <code class="docutils literal notranslate"><span class="pre">data</span></code> folder is not set up next to the LIRICAL JAR file.</p></li>
@@ -150,6 +152,7 @@ Required if the analysis is run with exome/genome sequencing files and <code cla
 <li><p><code class="docutils literal notranslate"><span class="pre">-b</span> <span class="pre">|</span> <span class="pre">--background</span></code>: path to file with background variant frequencies for genes.
 This option should not be used unless there is a very good reason to do that.
 The background variant frequencies are bundled with the LIRICAL code. See <a class="reference internal" href="genotype-score.html#rstbg-var-freqs"><span class="std std-ref">Background variant frequencies</span></a> for more info.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--parallelism</span></code>: the number of workers/threads to use. The value must be a positive integer (default: <code class="docutils literal notranslate"><span class="pre">1</span></code>).</p></li>
 </ul>
 </section>
 <section id="configuration-options">
@@ -167,7 +170,7 @@ The option is a flag (takes no value) and its presence will lead to showing <em>
 even those with no deleterious variants.
 Only applicable to the HTML report when running with a VCF file (genotype-aware mode).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--transcript-db</span></code>: transcript database (default: <code class="docutils literal notranslate"><span class="pre">RefSeq</span></code>), see <a class="reference internal" href="genotype-score.html#rsttx-dbs"><span class="std std-ref">Transcript databases</span></a> for more info.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--use-orphanet</span></code>: use <a class="reference external" href="https://www.orpha.net/consor/cgi-bin/index.php">Orphanet</a> annotations (default: <code class="docutils literal notranslate"><span class="pre">false</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--use-orphanet</span></code>: use <a class="reference external" href="https://www.orpha.net/consor/cgi-bin/index.php">Orphanet</a> annotations (default: <code class="docutils literal notranslate"><span class="pre">false</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--strict</span></code>: use strict penalties if the genotype does not match the disease model
 in terms of number of called pathogenic alleles (default: <code class="docutils literal notranslate"><span class="pre">false</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--pathogenicity-threshold</span></code>: Variants with greater pathogenicity score is considered deleterious (default: <code class="docutils literal notranslate"><span class="pre">0.8</span></code>).</p></li>
@@ -179,9 +182,9 @@ in terms of number of called pathogenic alleles (default: <code class="docutils 
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">-o</span> <span class="pre">|</span> <span class="pre">--output-directory</span></code>: where to write the analysis outputs (default: current working directory).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">-f</span> <span class="pre">|</span> <span class="pre">--output-format</span></code>: Output format to use for writing the results, can be provided multiple times.
-Choose from <cite>html</cite>, <cite>tsv</cite>, and <cite>json</cite> (default: <code class="docutils literal notranslate"><span class="pre">html</span></code>)</p></li>
+Choose from <cite>html</cite>, <cite>tsv</cite>, and <cite>json</cite> (default: <code class="docutils literal notranslate"><span class="pre">html</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">-x</span> <span class="pre">|</span> <span class="pre">--prefix</span></code>: prefix of the output files (default: <code class="docutils literal notranslate"><span class="pre">lirical</span></code>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">-t</span> <span class="pre">|</span> <span class="pre">--threshold</span></code>: minimum post-test probability to show diagnosis in the HTML report.
+<li><p><code class="docutils literal notranslate"><span class="pre">-t</span> <span class="pre">|</span> <span class="pre">--threshold</span></code>: minimum post-test probability to show diagnosi.s in the HTML report.
 The value must be in range <span class="math notranslate nohighlight">\([0, 1]\)</span>. The option must not be used with <code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">|</span> <span class="pre">-mindiff</span></code> option at the same time.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">|</span> <span class="pre">--mindiff</span></code>: Minimal number of differential diagnoses to show.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--display-all-variants</span></code>: Display all variants in the HTML report, not just the variants passing
@@ -206,7 +209,7 @@ that correspond to the phenotype terms negated/excluded in the proband.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--assembly</span></code> genome build, choose from <cite>hg19</cite> or <cite>hg38</cite>, must be provided if <code class="docutils literal notranslate"><span class="pre">--vcf</span></code> is used (default: <code class="docutils literal notranslate"><span class="pre">hg38</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--vcf</span></code>: path to VCF file with exome/genome sequencing results. The file can be compressed.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--sample-id</span></code>: proband’s identifier (default: <cite>Sample</cite>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--age</span></code>: proband’s age as an ISO8601 duration
+<li><p><code class="docutils literal notranslate"><span class="pre">--age</span></code>: proband’s age as an ISO8601 duration.
 (e.g. <code class="docutils literal notranslate"><span class="pre">P9Y</span></code> for 9 years, <code class="docutils literal notranslate"><span class="pre">P2Y3M</span></code> for 2 years and 3 months, or <code class="docutils literal notranslate"><span class="pre">P33W</span></code> for the 33th gestational week).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--sex</span></code>: proband’s sex, choose from <cite>MALE</cite>, <cite>FEMALE</cite>, <cite>UNKNOWN</cite> (default: <cite>UNKNOWN</cite>).</p></li>
 </ul>
