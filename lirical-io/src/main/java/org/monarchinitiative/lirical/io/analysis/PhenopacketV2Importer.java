@@ -59,13 +59,7 @@ class PhenopacketV2Importer implements PhenopacketImporter {
         org.monarchinitiative.lirical.core.model.Sex sex = toSex(subject.getSex());
 
         // Disease IDs
-        List<TermId> diseaseIds = phenopacket.getDiseasesList().stream()
-                .map(Disease::getTerm)
-                .map(OntologyClass::getId)
-                .map(AnalysisIoUtils::createTermId)
-                .flatMap(Optional::stream)
-                .distinct()
-                .toList();
+        TermId diseaseIds = getDisease(phenopacket);
 
         // Variants
         List<GenotypedVariant> variants = List.of(); // TODO - implement real variant parsing.
@@ -127,5 +121,26 @@ class PhenopacketV2Importer implements PhenopacketImporter {
                 yield Age.ageNotKnown();
             }
         };
+    }
+
+    private TermId getDisease(Phenopacket phenopacket) throws PhenopacketImportException {
+        List<Interpretation> interpretationsList = phenopacket.getInterpretationsList();
+        if (interpretationsList.size() == 1) {
+            Interpretation interp = interpretationsList.get(0);
+            if (interp.hasDiagnosis()) {
+                return TermId.of(interp.getDiagnosis().getDisease().getId());
+            }
+        }
+        List<TermId> diseaseIds = phenopacket.getDiseasesList().stream()
+                .map(Disease::getTerm)
+                .map(OntologyClass::getId)
+                .map(AnalysisIoUtils::createTermId)
+                .flatMap(Optional::stream)
+                .distinct()
+                .toList();
+        if (diseaseIds.size() == 1) {
+            return diseaseIds.get(0);
+        }
+        throw new PhenopacketImportException("Invalid Number of Diseases.");
     }
 }

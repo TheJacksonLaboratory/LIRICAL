@@ -12,6 +12,7 @@ import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.monarchinitiative.svart.util.VcfConverter;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
+import org.phenopackets.schema.v2.core.Interpretation;
 import org.phenopackets.schema.v1.core.Sex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,13 +88,7 @@ class PhenopacketV1Importer implements PhenopacketImporter {
         String genomeBuild = firstVcf.map(HtsFile::getGenomeAssembly).orElse(null);
 
         // Disease IDs
-        List<TermId> diseaseIds = phenopacket.getDiseasesList().stream()
-                .map(Disease::getTerm)
-                .map(OntologyClass::getId)
-                .map(AnalysisIoUtils::createTermId)
-                .flatMap(Optional::stream)
-                .distinct()
-                .toList();
+        TermId diseaseIds = getDisease(phenopacket);
 
         // Variants
         List<GenotypedVariant> variants = phenopacket.getVariantsList().stream()
@@ -205,6 +200,25 @@ class PhenopacketV1Importer implements PhenopacketImporter {
             case MALE -> org.monarchinitiative.lirical.core.model.Sex.MALE;
             case UNKNOWN_SEX, OTHER_SEX, UNRECOGNIZED -> org.monarchinitiative.lirical.core.model.Sex.UNKNOWN;
         };
+    }
+
+    private TermId getDisease(Phenopacket phenopacket) throws PhenopacketImportException {
+        List<Disease> diseasesList = phenopacket.getDiseasesList();
+        if (diseasesList.size() == 1) {
+            Disease disease = diseasesList.get(0);
+            return TermId.of(disease.getTerm().getId());
+        }
+        List<TermId> diseaseIds = phenopacket.getDiseasesList().stream()
+                .map(Disease::getTerm)
+                .map(OntologyClass::getId)
+                .map(AnalysisIoUtils::createTermId)
+                .flatMap(Optional::stream)
+                .distinct()
+                .toList();
+        if (diseaseIds.size() == 1) {
+            return diseaseIds.get(0);
+        }
+        throw new PhenopacketImportException("Invalid Number of Diseases.");
     }
 
 }

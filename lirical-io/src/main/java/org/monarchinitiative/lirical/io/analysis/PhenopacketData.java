@@ -20,7 +20,7 @@ public class PhenopacketData {
     private final List<GenotypedVariant> variants;
     private final Age age;
     private final Sex sex;
-    private final List<TermId> diseaseIds;
+    private final TermId diseaseId;
     private final Path vcfPath;
 
     PhenopacketData(String genomeAssembly,
@@ -29,7 +29,7 @@ public class PhenopacketData {
                     List<TermId> negatedHpoTerms,
                     Age age,
                     Sex sex,
-                    List<TermId> diseaseIds,
+                    TermId diseaseId,
                     List<GenotypedVariant> variants,
                     Path vcfPath) {
         this.genomeAssembly = genomeAssembly;
@@ -39,7 +39,7 @@ public class PhenopacketData {
         this.variants = variants;
         this.age = age;
         this.sex = sex;
-        this.diseaseIds = Objects.requireNonNull(diseaseIds);
+        this.diseaseId = Objects.requireNonNull(diseaseId);
         this.vcfPath = vcfPath;
     }
 
@@ -71,8 +71,8 @@ public class PhenopacketData {
         return Optional.ofNullable(sex);
     }
 
-    public List<TermId> getDiseaseIds() {
-        return diseaseIds;
+    public TermId getDiseaseId() {
+        return diseaseId;
     }
 
     public Optional<Path> getVcfPath() {

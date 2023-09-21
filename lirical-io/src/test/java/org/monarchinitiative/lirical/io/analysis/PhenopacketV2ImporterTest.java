@@ -49,7 +49,7 @@ public class PhenopacketV2ImporterTest {
         assertThat(data.getHpoTerms().map(TermId::getValue).toList(), hasItems("HP:0009719", "HP:0010614", "HP:0012736", "HP:0001250", "HP:0100804", "HP:0009721", "HP:0012733"));
         assertThat(data.getNegatedHpoTerms().count(), equalTo(0L));
 
-        assertThat(data.getDiseaseIds().stream().map(TermId::getValue).toList(), hasItems("OMIM:191100"));
+        assertThat(data.getDiseaseId().getValue(), equalTo("OMIM:191100"));
 
         assertThat(data.getVcfPath().isPresent(), equalTo(true));
         assertThat(data.getVcfPath().get(), equalTo(Path.of("/path/to/Pfeiffer.vcf")));
