@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -59,13 +60,21 @@ class PhenopacketV2Importer implements PhenopacketImporter {
         org.monarchinitiative.lirical.core.model.Sex sex = toSex(subject.getSex());
 
         // Disease IDs
-        List<TermId> diseaseIds = phenopacket.getDiseasesList().stream()
-                .map(Disease::getTerm)
-                .map(OntologyClass::getId)
-                .map(AnalysisIoUtils::createTermId)
-                .flatMap(Optional::stream)
-                .distinct()
-                .toList();
+        List<TermId> diseaseIds = new ArrayList<>();
+        List<Interpretation> interpretationsList = phenopacket.getInterpretationsList();
+        for (Interpretation interp : interpretationsList) {
+            TermId diseaseId = TermId.of(interp.getDiagnosis().getDisease().getId());
+            diseaseIds.add(diseaseId);
+        }
+        if (diseaseIds.isEmpty()) {
+            diseaseIds = phenopacket.getDiseasesList().stream()
+                    .map(Disease::getTerm)
+                    .map(OntologyClass::getId)
+                    .map(AnalysisIoUtils::createTermId)
+                    .flatMap(Optional::stream)
+                    .distinct()
+                    .toList();
+        }
 
         // Variants
         List<GenotypedVariant> variants = List.of(); // TODO - implement real variant parsing.
