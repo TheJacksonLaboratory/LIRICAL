@@ -61,10 +61,9 @@ class PhenopacketV2Importer implements PhenopacketImporter {
 
         // Disease IDs
         List<TermId> diseaseIds = new ArrayList<>();
-        List<Interpretation> interpretationsList = phenopacket.getInterpretationsList();
-        for (Interpretation interp : interpretationsList) {
-            TermId diseaseId = TermId.of(interp.getDiagnosis().getDisease().getId());
-            diseaseIds.add(diseaseId);
+        for (Interpretation interp : phenopacket.getInterpretationsList()) {
+            AnalysisIoUtils.createTermId(interp.getDiagnosis().getDisease().getId())
+                    .ifPresent(diseaseIds::add);
         }
         if (diseaseIds.isEmpty()) {
             diseaseIds = phenopacket.getDiseasesList().stream()
