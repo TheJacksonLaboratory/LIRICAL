@@ -11,11 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=ff08b871"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -93,7 +93,7 @@
            <div itemprop="articleBody">
              
   <section id="lirical-s-genotype-score">
-<span id="rstgenotype-score"></span><h1>LIRICAL’s Genotype Score<a class="headerlink" href="#lirical-s-genotype-score" title="Permalink to this heading"></a></h1>
+<span id="rstgenotype-score"></span><h1>LIRICAL’s Genotype Score<a class="headerlink" href="#lirical-s-genotype-score" title="Link to this heading"></a></h1>
 <p>We can estimate the pathogenicity of a variant on the basis of a
 computational pathogenicity score that ranges from 0 (predicted benign) to 1 (maximum pathogenicity prediction).
 LIRICAL uses the pathogenicity score prediction of <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/26562621">Exomiser</a>.
@@ -108,16 +108,16 @@ to cause certain kinds of disease than genes known to carry many such variants
 given that a disease associated with the gene is present in the proband vs. the probability that the genotype is unrelated
 to the clinical manifestations observed in the proband. See the manuscript for algorithmic details.</p>
 <section id="related-analysis-options">
-<h2>Related analysis options<a class="headerlink" href="#related-analysis-options" title="Permalink to this heading"></a></h2>
+<h2>Related analysis options<a class="headerlink" href="#related-analysis-options" title="Link to this heading"></a></h2>
 <p>The following genotype configuration options can be set on top of the phenotype-only analysis.</p>
 <section id="transcript-databases">
-<span id="rsttx-dbs"></span><h3>Transcript databases<a class="headerlink" href="#transcript-databases" title="Permalink to this heading"></a></h3>
+<span id="rsttx-dbs"></span><h3>Transcript databases<a class="headerlink" href="#transcript-databases" title="Link to this heading"></a></h3>
 <p>LIRICAL can use transcript data from UCSC or RefSeq.
 The default is <a class="reference external" href="https://www.ncbi.nlm.nih.gov/refseq/">RefSeq</a>,
 but transcript definitions from <a class="reference external" href="http://genome.ucsc.edu/">UCSC</a> can also be used.</p>
 </section>
 <section id="background-variant-frequencies">
-<span id="rstbg-var-freqs"></span><h3>Background variant frequencies<a class="headerlink" href="#background-variant-frequencies" title="Permalink to this heading"></a></h3>
+<span id="rstbg-var-freqs"></span><h3>Background variant frequencies<a class="headerlink" href="#background-variant-frequencies" title="Link to this heading"></a></h3>
 <p>LIRICAL uses a background frequency file that records the freqeuncy of predicted pathogenic variants
 in protein-coding genes (as estimated from gnomAD data). By default, LIRICAL will use pre-fabricated
 files for this (that are included in the <code class="docutils literal notranslate"><span class="pre">src/main/resources/background</span></code> directory). This is recommended
@@ -125,7 +125,7 @@ for most users. If you create your own background file, then you can use it with
 then indicate the path to a non-default background frequency file.</p>
 </section>
 <section id="global-mode">
-<span id="rstglobal-mode"></span><h3>Global mode<a class="headerlink" href="#global-mode" title="Permalink to this heading"></a></h3>
+<span id="rstglobal-mode"></span><h3>Global mode<a class="headerlink" href="#global-mode" title="Link to this heading"></a></h3>
 <p>By default, LIRICAL ranks candidate genes for which at least one pathogenic allele is present in the VCF file.
 However, LIRICAL can also be run in a <code class="docutils literal notranslate"><span class="pre">--global</span></code> mode in which diseases are ranked irrespective of
 whether a disease gene is known for a disease or whether the gene is found to have a pathogenic allele or not.</p>

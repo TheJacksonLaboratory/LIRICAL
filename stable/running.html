@@ -11,11 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=ff08b871"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -96,7 +96,7 @@
            <div itemprop="articleBody">
              
   <section id="running-lirical">
-<span id="rstrunning"></span><h1>Running LIRICAL<a class="headerlink" href="#running-lirical" title="Permalink to this heading"></a></h1>
+<span id="rstrunning"></span><h1>Running LIRICAL<a class="headerlink" href="#running-lirical" title="Link to this heading"></a></h1>
 <p>LIRICAL is a command-line Java tool that runs with Java version 17 or higher.
 LIRICAL can be run both with and without genomic data in form of a VCF file from genome, exome,
 or NGS gene-panel sequencing.</p>
@@ -135,12 +135,12 @@ or NGS gene-panel sequencing.</p>
 <p>LIRICAL has four main commands, <code class="docutils literal notranslate"><span class="pre">download</span></code>, <code class="docutils literal notranslate"><span class="pre">prioritize</span></code>, <code class="docutils literal notranslate"><span class="pre">phenopacket</span></code>, and <code class="docutils literal notranslate"><span class="pre">yaml</span></code>.
 We will <em>not</em> discuss the <code class="docutils literal notranslate"><span class="pre">download</span></code> command since it has already been covered in the <a class="reference internal" href="setup.html#rstdownload"><span class="std std-ref">LIRICAL data files</span></a> section</p>
 <section id="shared-cli-options">
-<h2>Shared CLI options<a class="headerlink" href="#shared-cli-options" title="Permalink to this heading"></a></h2>
+<h2>Shared CLI options<a class="headerlink" href="#shared-cli-options" title="Link to this heading"></a></h2>
 <p>LIRICAL offers several commands for receiving phenotype and genotype inputs via CLI, phenopacket, or a YAML file.
 However the commands share many CLI arguments for setting up the resource paths, the analysis configuration,
 and where results should be written. We describe the shared CLI arguments in this section.</p>
 <section id="resource-paths">
-<h3>Resource paths<a class="headerlink" href="#resource-paths" title="Permalink to this heading"></a></h3>
+<h3>Resource paths<a class="headerlink" href="#resource-paths" title="Link to this heading"></a></h3>
 <p>The options from this group point LIRICAL to resources required for analysis.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">|</span> <span class="pre">--data</span></code>: path to LIRICAL data directory.
@@ -155,7 +155,7 @@ The background variant frequencies are bundled with the LIRICAL code. See <a cla
 </ul>
 </section>
 <section id="configuration-options">
-<h3>Configuration options<a class="headerlink" href="#configuration-options" title="Permalink to this heading"></a></h3>
+<h3>Configuration options<a class="headerlink" href="#configuration-options" title="Link to this heading"></a></h3>
 <p>The configuration options tweak the analysis.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">-g</span> <span class="pre">|</span> <span class="pre">--global</span></code>: global analysis, see <a class="reference internal" href="genotype-score.html#rstglobal-mode"><span class="std std-ref">Global mode</span></a> for more info (default: <code class="docutils literal notranslate"><span class="pre">false</span></code>).</p></li>
@@ -169,7 +169,7 @@ in terms of number of called pathogenic alleles (default: <code class="docutils 
 </ul>
 </section>
 <section id="output-options">
-<h3>Output options<a class="headerlink" href="#output-options" title="Permalink to this heading"></a></h3>
+<h3>Output options<a class="headerlink" href="#output-options" title="Link to this heading"></a></h3>
 <p>The output options dictate the format and location for the analysis results.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">-o</span> <span class="pre">|</span> <span class="pre">--output-directory</span></code>: where to write the analysis outputs (default: current working directory).</p></li>
@@ -185,10 +185,10 @@ the pathogenicity threshold (default: <code class="docutils literal notranslate"
 </section>
 </section>
 <section id="lirical-prioritization-commands">
-<h2>LIRICAL prioritization commands<a class="headerlink" href="#lirical-prioritization-commands" title="Permalink to this heading"></a></h2>
+<h2>LIRICAL prioritization commands<a class="headerlink" href="#lirical-prioritization-commands" title="Link to this heading"></a></h2>
 <p>LIRICAL provides three commands for receiving phenotype and genotype inputs via CLI, as a phenopacket, or as a YAML file.</p>
 <section id="prioritize-run-lirical-with-via-cli-options">
-<h3><code class="docutils literal notranslate"><span class="pre">prioritize</span></code> - run LIRICAL with via CLI options<a class="headerlink" href="#prioritize-run-lirical-with-via-cli-options" title="Permalink to this heading"></a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">prioritize</span></code> - run LIRICAL with via CLI options<a class="headerlink" href="#prioritize-run-lirical-with-via-cli-options" title="Link to this heading"></a></h3>
 <p>Since <cite>v2</cite> release, all required inputs can be provided as command line arguments of the <code class="docutils literal notranslate"><span class="pre">prioritize</span></code> command.
 This leads to a rather lengthy CLI. However, the CLI can be useful e.g. for using with pipeline engines such
 as Nextflow or Snakemake.</p>
@@ -207,7 +207,7 @@ that correspond to the phenotype terms negated/excluded in the proband.</p></li>
 </ul>
 </section>
 <section id="phenopacket-run-lirical-with-a-phenopacket">
-<h3><code class="docutils literal notranslate"><span class="pre">phenopacket</span></code> - run LIRICAL with a Phenopacket<a class="headerlink" href="#phenopacket-run-lirical-with-a-phenopacket" title="Permalink to this heading"></a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">phenopacket</span></code> - run LIRICAL with a Phenopacket<a class="headerlink" href="#phenopacket-run-lirical-with-a-phenopacket" title="Link to this heading"></a></h3>
 <p>LIRICAL can be run with clinical data (HPO terms) only or with clinical data and a VCF file representing the
 results of gene panel, exome, or genome sequencing. The preferred input format is
 <a class="reference external" href="https://phenopacket-schema.readthedocs.io/en/latest/">Phenopackets</a>,
@@ -219,7 +219,7 @@ links detailed phenotype descriptions with disease, patient, and genetic informa
 <figcaption>
 <p><span class="caption-text">For convenience, we provide a tool called
 <a class="reference external" href="https://github.com/TheJacksonLaboratory/PhenopacketGenerator">PhenopacketGenerator</a> that can be used
-to create a Phenopacket with a list of HPO terms and the path to a VCF file with which LIRICAL can be run.</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+to create a Phenopacket with a list of HPO terms and the path to a VCF file with which LIRICAL can be run.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>LIRICAL can be run with clinical data (HPO terms) only or with clinical data and a VCF file representing the
@@ -286,7 +286,7 @@ Note, we must also provide <code class="docutils literal notranslate"><span clas
 </div>
 </section>
 <section id="yaml-running-lirical-with-a-yaml-file">
-<h3><code class="docutils literal notranslate"><span class="pre">yaml</span></code> - running LIRICAL with a YAML file<a class="headerlink" href="#yaml-running-lirical-with-a-yaml-file" title="Permalink to this heading"></a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">yaml</span></code> - running LIRICAL with a YAML file<a class="headerlink" href="#yaml-running-lirical-with-a-yaml-file" title="Link to this heading"></a></h3>
 <p>The other allowed input format is <a class="reference internal" href="yaml.html#rstyaml"><span class="std std-ref">YAML input format</span></a>.</p>
 <p>A typical command that runs LIRICAL using settings shown in the YAML file with the default data directory
 would be simply:</p>
@@ -302,7 +302,7 @@ of the VCF file on your file system. Then, the analysis is run as:</p>
 </section>
 </section>
 <section id="choosing-between-yaml-and-phenopacket-input-formats">
-<h2>Choosing between YAML and Phenopacket input formats<a class="headerlink" href="#choosing-between-yaml-and-phenopacket-input-formats" title="Permalink to this heading"></a></h2>
+<h2>Choosing between YAML and Phenopacket input formats<a class="headerlink" href="#choosing-between-yaml-and-phenopacket-input-formats" title="Link to this heading"></a></h2>
 <p>How should users choose between <a class="reference internal" href="yaml-or-phenopacket.html#rstyamlorphenopackethpo"><span class="std std-ref">YAML or Phenopacket as input</span></a>?</p>
 </section>
 </section>

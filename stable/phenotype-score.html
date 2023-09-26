@@ -11,11 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=ff08b871"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -94,7 +94,7 @@
            <div itemprop="articleBody">
              
   <section id="lirical-s-phenotype-score">
-<span id="rstphenotype-score"></span><h1>LIRICAL’s Phenotype Score<a class="headerlink" href="#lirical-s-phenotype-score" title="Permalink to this heading"></a></h1>
+<span id="rstphenotype-score"></span><h1>LIRICAL’s Phenotype Score<a class="headerlink" href="#lirical-s-phenotype-score" title="Link to this heading"></a></h1>
 <p>LIRICAL calculates a likelihood ratio score for phenotypic observations for each differential diagnosis. The phenotype
 likelihood ratio score can be combined with LIRICAL’s genotype likelihood ratio score for a combined analysis of
 phenotypes and genetic data (such as exome or genome sequencing) or can be used as a tool to assess phenotype data
@@ -124,7 +124,7 @@ disease has the phenotypic feature. The denominator is always calculated as the 
 an individual with an arbitrary Mendelian disease has the feature in question (which is calculated based on
 the entire HPO database for Mendelian diseases). See the manuscript for more details.</p>
 <section id="h-i-is-identical-to-one-of-the-terms-to-which-mathcal-d-is-annotated">
-<h2>1. <span class="math notranslate nohighlight">\(h_i\)</span> is identical to one of the terms to which <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> is annotated.<a class="headerlink" href="#h-i-is-identical-to-one-of-the-terms-to-which-mathcal-d-is-annotated" title="Permalink to this heading"></a></h2>
+<h2>1. <span class="math notranslate nohighlight">\(h_i\)</span> is identical to one of the terms to which <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> is annotated.<a class="headerlink" href="#h-i-is-identical-to-one-of-the-terms-to-which-mathcal-d-is-annotated" title="Link to this heading"></a></h2>
 <p>In this case, <span class="math notranslate nohighlight">\(P(h_i|\mathcal{D})\)</span> is equal to the frequency of <span class="math notranslate nohighlight">\(h_i\)</span> among all individuals with
 disease <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> (by default, this is taken to be 100%, but in many cases more precise frequencies
 are available in the HPO database).</p>
@@ -132,7 +132,7 @@ are available in the HPO database).</p>
 84.767.</p>
 <blockquote>
 <div><table class="docutils align-default" id="id2">
-<caption><span class="caption-text">Exact phenotypic feature match (E)</span><a class="headerlink" href="#id2" title="Permalink to this table"></a></caption>
+<caption><span class="caption-text">Exact phenotypic feature match (E)</span><a class="headerlink" href="#id2" title="Link to this table"></a></caption>
 <colgroup>
 <col style="width: 100%" />
 </colgroup>
@@ -148,7 +148,7 @@ are available in the HPO database).</p>
 </div></blockquote>
 </section>
 <section id="h-i-is-an-ancestor-superclass-of-one-or-more-of-the-terms-to-which-mathcal-d-is-annotated">
-<h2>2. <span class="math notranslate nohighlight">\(h_i\)</span> is an ancestor (superclass) of one or more of the terms to which <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> is annotated.<a class="headerlink" href="#h-i-is-an-ancestor-superclass-of-one-or-more-of-the-terms-to-which-mathcal-d-is-annotated" title="Permalink to this heading"></a></h2>
+<h2>2. <span class="math notranslate nohighlight">\(h_i\)</span> is an ancestor (superclass) of one or more of the terms to which <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> is annotated.<a class="headerlink" href="#h-i-is-an-ancestor-superclass-of-one-or-more-of-the-terms-to-which-mathcal-d-is-annotated" title="Link to this heading"></a></h2>
 <p>Because of the annotation propagation rule of subclass hierarchies in ontologies,
 <span class="math notranslate nohighlight">\(P(h_i|\mathcal{D})\)</span> is implicitly annotated to all of the ancestors of the set of annotating terms. For instance,
 if the computational disease model of some disease <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> includes the HPO term <em>Polar cataract</em>
@@ -160,7 +160,7 @@ cataract can also be said to have a cataract).</p>
 any of the ancestors of <span class="math notranslate nohighlight">\(h_i\)</span> in $mathcal{D}$.</p>
 <blockquote>
 <div><table class="docutils align-default" id="id3">
-<caption><span class="caption-text">Query term is parent of a disease term term (D&lt;Q)</span><a class="headerlink" href="#id3" title="Permalink to this table"></a></caption>
+<caption><span class="caption-text">Query term is parent of a disease term term (D&lt;Q)</span><a class="headerlink" href="#id3" title="Link to this table"></a></caption>
 <colgroup>
 <col style="width: 100%" />
 </colgroup>
@@ -176,7 +176,7 @@ any of the ancestors of <span class="math notranslate nohighlight">\(h_i\)</span
 </div></blockquote>
 </section>
 <section id="h-i-is-a-child-term-subclass-of-one-or-more-of-the-terms-to-which-mathcal-d-is-annotated">
-<h2>3. <span class="math notranslate nohighlight">\(h_i\)</span>  is a child term (subclass) of one or more of the terms to which <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> is annotated.<a class="headerlink" href="#h-i-is-a-child-term-subclass-of-one-or-more-of-the-terms-to-which-mathcal-d-is-annotated" title="Permalink to this heading"></a></h2>
+<h2>3. <span class="math notranslate nohighlight">\(h_i\)</span>  is a child term (subclass) of one or more of the terms to which <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> is annotated.<a class="headerlink" href="#h-i-is-a-child-term-subclass-of-one-or-more-of-the-terms-to-which-mathcal-d-is-annotated" title="Link to this heading"></a></h2>
 <p>In this case, <span class="math notranslate nohighlight">\(h_i\)</span> is a descendant (i.e., specific subclass of) some term <span class="math notranslate nohighlight">\(h_j\)</span> of <span class="math notranslate nohighlight">\(\mathcal{D}\)</span>.
 For instance, disease <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> might be annotated to <em>Syncope</em>
 (<a class="reference external" href="https://hpo.jax.org/app/browse/term/HP:0001279">HP:0001279</a>), and the query term <span class="math notranslate nohighlight">\(h_i\)</span> is
@@ -188,7 +188,7 @@ we will adjust the frequency of <em>Syncope</em> in disease <span class="math no
 of child terms of <span class="math notranslate nohighlight">\(h_j\)</span> (so in our example, we would use the frequency <span class="math notranslate nohighlight">\(0.72\times 1/3=0.24\)</span>).</p>
 <blockquote>
 <div><table class="docutils align-default" id="id4">
-<caption><span class="caption-text">Query term is child of disease term (Q&lt;D)</span><a class="headerlink" href="#id4" title="Permalink to this table"></a></caption>
+<caption><span class="caption-text">Query term is child of disease term (Q&lt;D)</span><a class="headerlink" href="#id4" title="Link to this table"></a></caption>
 <colgroup>
 <col style="width: 100%" />
 </colgroup>
@@ -206,7 +206,7 @@ of child terms of <span class="math notranslate nohighlight">\(h_j\)</span> (so 
 is a subclass of <em>Retinal degeneration</em> (<a class="reference external" href="https://hpo.jax.org/app/browse/term/HP:0000546">HP:0000546</a>).</p>
 </section>
 <section id="h-i-and-some-term-to-which-mathcal-d-is-annotated-have-a-non-root-common-ancestor">
-<h2>4. <span class="math notranslate nohighlight">\(h_i\)</span>  and some term to which <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> is annotated have a non-root common ancestor.<a class="headerlink" href="#h-i-and-some-term-to-which-mathcal-d-is-annotated-have-a-non-root-common-ancestor" title="Permalink to this heading"></a></h2>
+<h2>4. <span class="math notranslate nohighlight">\(h_i\)</span>  and some term to which <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> is annotated have a non-root common ancestor.<a class="headerlink" href="#h-i-and-some-term-to-which-mathcal-d-is-annotated-have-a-non-root-common-ancestor" title="Link to this heading"></a></h2>
 <p>This option pertains if options (ii) and (iii) do not, i.e., <span class="math notranslate nohighlight">\(h_i\)</span>  is not a child term of any disease term
 <span class="math notranslate nohighlight">\(h_j\)</span>  and no disease term <span class="math notranslate nohighlight">\(h_j\)</span>  is a child of <span class="math notranslate nohighlight">\(h_i\)</span> .</p>
 <p>If this is the case, then we find the closest common-ancestor, and determine the likelihood ratio according to the
@@ -215,7 +215,7 @@ higher up in the HPO hierarchy, the likelihood ratio tends to be lower and somet
 to limit the amount of negative influence of any one query term, the likelihood ratio is defined to be at least 1/100.</p>
 <blockquote>
 <div><table class="docutils align-default" id="id5">
-<caption><span class="caption-text">Non-root distant match (Q~D)</span><a class="headerlink" href="#id5" title="Permalink to this table"></a></caption>
+<caption><span class="caption-text">Non-root distant match (Q~D)</span><a class="headerlink" href="#id5" title="Link to this table"></a></caption>
 <colgroup>
 <col style="width: 100%" />
 </colgroup>
@@ -237,11 +237,11 @@ morphology</em>. Therefore, it is considered to be a non-root distant match. It 
 of 0.127.</p>
 </section>
 <section id="h-i-does-not-have-any-non-root-common-ancestor-with-any-term-to-which-mathcal-d-is-annotated">
-<h2>5. <span class="math notranslate nohighlight">\(h_i\)</span> does not have any non-root common ancestor with any term to which <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> is annotated.<a class="headerlink" href="#h-i-does-not-have-any-non-root-common-ancestor-with-any-term-to-which-mathcal-d-is-annotated" title="Permalink to this heading"></a></h2>
+<h2>5. <span class="math notranslate nohighlight">\(h_i\)</span> does not have any non-root common ancestor with any term to which <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> is annotated.<a class="headerlink" href="#h-i-does-not-have-any-non-root-common-ancestor-with-any-term-to-which-mathcal-d-is-annotated" title="Link to this heading"></a></h2>
 <p>In this case, a heuristic value of 1/100 is assigned for the likelihood ratio.</p>
 <blockquote>
 <div><table class="docutils align-default" id="id6">
-<caption><span class="caption-text">No match (NM)</span><a class="headerlink" href="#id6" title="Permalink to this table"></a></caption>
+<caption><span class="caption-text">No match (NM)</span><a class="headerlink" href="#id6" title="Link to this table"></a></caption>
 <colgroup>
 <col style="width: 100%" />
 </colgroup>
@@ -257,7 +257,7 @@ of 0.127.</p>
 </div></blockquote>
 </section>
 <section id="phenotypic-abnormality-h-i-is-explicitly-excluded-from-disease-mathcal-d">
-<h2>6. phenotypic abnormality <span class="math notranslate nohighlight">\(h_i\)</span> is explicitly excluded from disease <span class="math notranslate nohighlight">\(\mathcal{D}\)</span>.<a class="headerlink" href="#phenotypic-abnormality-h-i-is-explicitly-excluded-from-disease-mathcal-d" title="Permalink to this heading"></a></h2>
+<h2>6. phenotypic abnormality <span class="math notranslate nohighlight">\(h_i\)</span> is explicitly excluded from disease <span class="math notranslate nohighlight">\(\mathcal{D}\)</span>.<a class="headerlink" href="#phenotypic-abnormality-h-i-is-explicitly-excluded-from-disease-mathcal-d" title="Link to this heading"></a></h2>
 <p>In the HPO annotation resource, each disease is represented by a list of HPO terms that characterize it together with
 metadata including provenance, and in some cases, frequency and onset information.
 Some diseases additionally have explicitly excluded terms (there are a total of 921 such annotations in the September
@@ -269,7 +269,7 @@ arbitrary value of <span class="math notranslate nohighlight">\(\frac{1}{1000}\)
 one thousand if an HPO term is present in the proband that is explicitly excluded from the disease.</p>
 <blockquote>
 <div><table class="docutils align-default" id="id7">
-<caption><span class="caption-text">Excluded in query and present in disease (XP)</span><a class="headerlink" href="#id7" title="Permalink to this table"></a></caption>
+<caption><span class="caption-text">Excluded in query and present in disease (XP)</span><a class="headerlink" href="#id7" title="Link to this table"></a></caption>
 <colgroup>
 <col style="width: 100%" />
 </colgroup>
@@ -288,7 +288,7 @@ calculated without additional heuristics. These query terms generally result in 
 the differential diagnostic ranking much.</p>
 <blockquote>
 <div><table class="docutils align-default" id="id8">
-<caption><span class="caption-text">Excluded in query and not annotated in disease (XA)</span><a class="headerlink" href="#id8" title="Permalink to this table"></a></caption>
+<caption><span class="caption-text">Excluded in query and not annotated in disease (XA)</span><a class="headerlink" href="#id8" title="Link to this table"></a></caption>
 <colgroup>
 <col style="width: 100%" />
 </colgroup>
@@ -307,7 +307,7 @@ value is assigned, i.e., the ratio for a candidate diagnosis is increased by a f
 present in the proband that is explicitly excluded from the disease.</p>
 <blockquote>
 <div><table class="docutils align-default" id="id9">
-<caption><span class="caption-text">Excluded in both query and disease (XX)</span><a class="headerlink" href="#id9" title="Permalink to this table"></a></caption>
+<caption><span class="caption-text">Excluded in both query and disease (XX)</span><a class="headerlink" href="#id9" title="Link to this table"></a></caption>
 <colgroup>
 <col style="width: 100%" />
 </colgroup>

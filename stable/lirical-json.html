@@ -11,11 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=ff08b871"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -91,7 +91,7 @@
            <div itemprop="articleBody">
              
   <section id="lirical-json-output">
-<span id="rstlirical-json"></span><h1>LIRICAL JSON Output<a class="headerlink" href="#lirical-json-output" title="Permalink to this heading"></a></h1>
+<span id="rstlirical-json"></span><h1>LIRICAL JSON Output<a class="headerlink" href="#lirical-json-output" title="Link to this heading"></a></h1>
 <p>Lirical outputs results in a JSON format if <code class="docutils literal notranslate"><span class="pre">--output-format</span> <span class="pre">json</span></code> option is included in the command-line:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lirical</span> <span class="n">phenopacket</span> <span class="o">-</span><span class="n">p</span> <span class="n">LDS2</span><span class="o">.</span><span class="n">v2</span><span class="o">.</span><span class="n">json</span> \
   <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">format</span> <span class="n">json</span>
@@ -100,7 +100,7 @@
 <p>The JSON document contains three sections, the sections are described in the following text along with examples.</p>
 <p>Examples of each section are provided below:</p>
 <section id="analysis-data">
-<h2>Analysis data<a class="headerlink" href="#analysis-data" title="Permalink to this heading"></a></h2>
+<h2>Analysis data<a class="headerlink" href="#analysis-data" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">analysisData</span></code> contains the analysis inputs (e.g. sample ID, age, present/excluded phenotypic features):</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;analysisData&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;sampleId&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EXAMPLE&quot;</span><span class="p">,</span>
@@ -113,7 +113,7 @@
 </div>
 </section>
 <section id="analysis-metadata">
-<h2>Analysis metadata<a class="headerlink" href="#analysis-metadata" title="Permalink to this heading"></a></h2>
+<h2>Analysis metadata<a class="headerlink" href="#analysis-metadata" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">analysisMetadata</span></code> includes user-provided options, analysis date, resource versions, etc.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;analysisMetadata&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;liricalVersion&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;liricalVersion&quot;</span><span class="p">,</span>
@@ -127,7 +127,7 @@
 </div>
 </section>
 <section id="analysis-results">
-<h2>Analysis results<a class="headerlink" href="#analysis-results" title="Permalink to this heading"></a></h2>
+<h2>Analysis results<a class="headerlink" href="#analysis-results" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">analysisResults</span></code> has a list of <cite>TestResult</cite>s for each of the tested diseases.</p>
 <p>Here we show an example for a made-up disease <cite>OMIM:1234567</cite>.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;analysisResults&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">{</span>

@@ -11,11 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=4a533813"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -87,16 +87,16 @@
            <div itemprop="articleBody">
              
   <section id="tutorial">
-<span id="rsttutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this heading"></a></h1>
+<span id="rsttutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
 <p>This tutorial shows how to use LIRICAL to evaluate an exome.</p>
 <section id="setup">
-<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading"></a></h2>
+<h2>Setup<a class="headerlink" href="#setup" title="Link to this heading"></a></h2>
 <p>Follow the instructions in <a class="reference internal" href="setup.html#rstsetup"><span class="std std-ref">Setting up LIRICAL</span></a> to get LIRICAL executable, download the database files
 and the Exomiser database.
 Note the location of the Exomiser variant database file.</p>
 </section>
 <section id="the-data">
-<h2>The data<a class="headerlink" href="#the-data" title="Permalink to this heading"></a></h2>
+<h2>The data<a class="headerlink" href="#the-data" title="Link to this heading"></a></h2>
 <p>We will run an exome analysis of a case reported in
 <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/?term=30101859">Cao et al., 2018</a>. The authors describe
 a disease-associated mutation in the <em>TGFBR2</em> gene in <em>Patient 4</em>.</p>
@@ -107,7 +107,7 @@ to represent patient’s clinical data (see below). The files are available in t
 folder or in the distribution ZIP.</p>
 </section>
 <section id="creating-a-phenopacket">
-<h2>Creating a phenopacket<a class="headerlink" href="#creating-a-phenopacket" title="Permalink to this heading"></a></h2>
+<h2>Creating a phenopacket<a class="headerlink" href="#creating-a-phenopacket" title="Link to this heading"></a></h2>
 <p>Creating the phenopacket is an optional step and the example phenopacket can be used for the purpose of this tutorial.</p>
 <p>Here is an excerpt of the text that described patient 4 in the above cited article:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Patient</span> <span class="mi">4</span> <span class="ow">is</span> <span class="n">a</span> <span class="mi">9</span><span class="o">-</span><span class="n">year</span><span class="o">-</span><span class="n">old</span> <span class="n">girl</span><span class="o">.</span> <span class="n">She</span> <span class="n">was</span> <span class="n">clinically</span> <span class="n">diagnosed</span> <span class="k">with</span> <span class="n">suspected</span>
@@ -142,7 +142,7 @@ click “Analyze”, select HPO terms, click “Add selected terms”, then “C
 (or choose another name and adjust the following command accordingly).</p>
 </section>
 <section id="running-lirical">
-<h2>Running LIRICAL<a class="headerlink" href="#running-lirical" title="Permalink to this heading"></a></h2>
+<h2>Running LIRICAL<a class="headerlink" href="#running-lirical" title="Link to this heading"></a></h2>
 <p>Run LIRICAL as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lirical</span> <span class="n">phenopacket</span> \
 <span class="o">--</span><span class="n">exomiser</span><span class="o">-</span><span class="n">hg19</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="mi">2302</span><span class="n">_hg19_variants</span><span class="o">.</span><span class="n">mv</span><span class="o">.</span><span class="n">db</span> \
@@ -158,14 +158,14 @@ click “Analyze”, select HPO terms, click “Add selected terms”, then “C
 </div>
 </section>
 <section id="viewing-the-results">
-<h2>Viewing the results<a class="headerlink" href="#viewing-the-results" title="Permalink to this heading"></a></h2>
+<h2>Viewing the results<a class="headerlink" href="#viewing-the-results" title="Link to this heading"></a></h2>
 <p>The above command will create a new file called <cite>LDS2.html</cite> (the <code class="docutils literal notranslate"><span class="pre">-x</span> <span class="pre">|</span> <span class="pre">--prefix</span></code> option controls the prefix of the output file).
 Open this file in a web browser. The top of the page shows some information about the input files and a list of observed
 and excluded HPO terms. The next section shows summarized representations of the top candidates.</p>
 <figure class="align-center" id="id1">
 <a class="reference internal image-reference" href="_images/lirical-sparkline-lds2.png"><img alt="LIRICAL sparkline" src="_images/lirical-sparkline-lds2.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text">Summary view of the top candidates.</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Summary view of the top candidates.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>Each row in the summary shows the rank, post-test probability, and name/ID of the disease. The row includes a sparkline
@@ -179,7 +179,7 @@ match.</p>
 <figure class="align-center" id="id2">
 <a class="reference internal image-reference" href="_images/lirical-detailed-TGFBR2.png"><img alt="LIRICAL sparkline" src="_images/lirical-detailed-TGFBR2.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-text">Detailed view of the top candidate Loeys-Dietz syndrome type 2.</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Detailed view of the top candidate Loeys-Dietz syndrome type 2.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <p>The remaining part of the HTML output page contains information about the other top candidates and a list of all
