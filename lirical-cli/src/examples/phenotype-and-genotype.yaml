@@ -1,0 +1,18 @@
+## LIRICAL Analysis Template.
+# Use this as a template for your own set-up.
+---
+# Sample ID
+sampleId: MARFAN_EXAMPLE
+# List of observed HPO terms
+hpoIds: ['HP:0001519', 'HP:0001083', 'HP:0001653']
+# List of excluded HPO terms
+negatedHpoIds: ['HP:0000275']
+
+# Age in ISO8601 notation (e.g. 'P12Y6M5D' to indicate 12 years, 6 months, and 5 days).
+age: P20Y6M
+# Choose from {MALE, FEMALE}
+sex: FEMALE
+# Path to a VCF file. Update to match path to your VCF file,
+#  or to point to an example VCF with deleterious FBN1 variant
+#  stored at `lirical-cli/src/examples/marfan.vcf`.
+#vcf: /path/to/marfan.vcf

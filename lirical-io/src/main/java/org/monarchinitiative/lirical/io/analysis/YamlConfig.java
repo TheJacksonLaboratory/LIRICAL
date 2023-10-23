@@ -10,11 +10,11 @@ import java.util.Optional;
  */
 public class YamlConfig {
 
-    private String sampleId;
-    private List<String> hpoIds;
-    private List<String> negatedHpoIds;
+    private String sampleId = "Sample ID";
+    private List<String> hpoIds = List.of();
+    private List<String> negatedHpoIds = List.of();
     private String age;
-    private String sex;
+    private String sex = "UNKNOWN";
     private String vcf;
 
     public void setSampleId(String sampleId) {
@@ -66,7 +66,7 @@ public class YamlConfig {
     }
 
     public Optional<Path> vcfPath() {
-        return vcf == null ?
+        return vcf == null || vcf.isBlank() ?
                 Optional.empty()
                 : Optional.of(Path.of(vcf));
     }

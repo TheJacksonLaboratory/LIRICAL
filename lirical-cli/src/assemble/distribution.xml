@@ -20,6 +20,13 @@
         </fileSet>
         <!-- Include the JARs -->
         <fileSet>
+            <directory>${project.basedir}/src</directory>
+            <outputDirectory>./</outputDirectory>
+            <includes>
+                <include>examples/</include>
+            </includes>
+        </fileSet>
+        <fileSet>
             <directory>${project.build.directory}</directory>
             <outputDirectory>./</outputDirectory>
             <includes>

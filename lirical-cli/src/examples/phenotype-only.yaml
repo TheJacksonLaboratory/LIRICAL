@@ -1,0 +1,13 @@
+## LIRICAL Analysis Template.
+# Use this as a template for your own set-up.
+---
+sampleId: Sample ID
+hpoIds: ['HP:0002352', 'HP:0002490', 'HP:0001290']
+negatedHpoIds: ['HP:0000486']
+
+# Age in ISO8601 notation (e.g. 'P12Y6M5D' to indicate 12 years, 6 months, and 5 days).
+#age:
+# Choose from {MALE, FEMALE}
+#sex:
+# Path to a VCF file (optional)
+#vcf:

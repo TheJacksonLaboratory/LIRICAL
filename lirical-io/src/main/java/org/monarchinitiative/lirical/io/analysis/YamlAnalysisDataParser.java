@@ -56,6 +56,9 @@ class YamlAnalysisDataParser extends SanitizingAnalysisDataParser {
 
 
     private static Sex parseSex(String sex) {
+        if (sex == null)
+            return Sex.UNKNOWN;
+
         return switch (sex.toLowerCase()) {
             case "male" -> Sex.MALE;
             case "female" -> Sex.FEMALE;
