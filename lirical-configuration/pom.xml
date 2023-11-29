@@ -18,6 +18,11 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.monarchinitiative.lirical</groupId>
+            <artifactId>lirical-exomiser-db-adapter</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.monarchinitiative.phenol</groupId>
             <artifactId>phenol-core</artifactId>
         </dependency>
@@ -30,9 +35,8 @@
             <artifactId>phenol-annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.monarchinitiative.lirical</groupId>
-            <artifactId>lirical-exomiser-db-adapter</artifactId>
-            <version>${project.parent.version}</version>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
         </dependency>
     </dependencies>
 

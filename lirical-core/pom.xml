@@ -27,17 +27,16 @@
         <dependency>
             <groupId>de.charite.compbio</groupId>
             <artifactId>jannovar-core</artifactId>
-            <exclusions>
-                <!-- We do not use parts of Jannovar that use the following libs: -->
-                <exclusion>
-                    <groupId>commons-net</groupId>
-                    <artifactId>commons-net</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.ini4j</groupId>
-                    <artifactId>ini4j</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
