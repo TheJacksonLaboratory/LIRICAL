@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.core.output.AnalysisResultsMetadata;
@@ -36,6 +37,7 @@ public class JsonAnalysisResultWriter implements AnalysisResultsWriter {
         objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         objectMapper.registerModule(prepareModule());
+        objectMapper.registerModule(new Jdk8Module());
     }
 
     @Override
@@ -63,13 +65,7 @@ public class JsonAnalysisResultWriter implements AnalysisResultsWriter {
         SimpleModule module = new SimpleModule("JsonAnalysisResultSerializer", VERSION);
 
         // serializers
-        module.addSerializer(new AnalysisResultsMetadataSerializer());
-        module.addSerializer(new AnalysisDataSerializer());
-
-        module.addSerializer(new AnalysisResultsSerializer());
-        module.addSerializer(new TestResultSerializer());
-        module.addSerializer(new LrWithExplanationSerializer());
-        module.addSerializer(new GenotypeLrWithExplanationSerializer());
+        // TODO - remove when using phenol >=2.0.5
         module.addSerializer(new GeneIdentifierSerializer());
 
         return module;

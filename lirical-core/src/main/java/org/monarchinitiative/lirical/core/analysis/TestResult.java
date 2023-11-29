@@ -1,6 +1,8 @@
 package org.monarchinitiative.lirical.core.analysis;
 
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.core.likelihoodratio.LrWithExplanation;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -94,6 +96,7 @@ public class TestResult implements Comparable<TestResult> {
         return observedLr * excludedLr * genotypeLrForCalculationOfCompositeLr;
     }
 
+    @JsonGetter(value = "observedPhenotypicFeatures")
     public List<LrWithExplanation> observedResults() {
         return observedResults;
     }
@@ -102,6 +105,7 @@ public class TestResult implements Comparable<TestResult> {
         return observedResults.stream().map(LrWithExplanation::queryTerm).toList();
     }
 
+    @JsonGetter(value = "excludedPhenotypicFeatures")
     public List<LrWithExplanation> excludedResults() {
         return excludedResults;
     }
@@ -113,6 +117,7 @@ public class TestResult implements Comparable<TestResult> {
     /**
      * @return the composite likelihood ratio (product of the LRs of the individual tests).
      */
+    @JsonGetter
     public double getCompositeLR() {
         return compositeLR;
     }
@@ -120,6 +125,7 @@ public class TestResult implements Comparable<TestResult> {
     /**
      * @return the total count of tests performed (excluding genotype).
      */
+    @JsonIgnore
     public int getNumberOfTests() {
         return observedResults.size() + excludedResults.size();
     }
@@ -138,7 +144,7 @@ public class TestResult implements Comparable<TestResult> {
         return pretestOdds() * getCompositeLR();
     }
 
-
+    @JsonGetter
     public double pretestProbability() {
         return pretestProbability;
     }
@@ -148,6 +154,7 @@ public class TestResult implements Comparable<TestResult> {
         return po / (1 + po);
     }
 
+    @JsonGetter
     public double posttestProbability() {
         return posttestProbability;
     }
@@ -189,6 +196,7 @@ public class TestResult implements Comparable<TestResult> {
     /**
      * @return name of the disease being tested.
      */
+    @JsonGetter
     public TermId diseaseId() {
         return diseaseId;
     }
@@ -202,10 +210,12 @@ public class TestResult implements Comparable<TestResult> {
         return false;
     }
 
+    @JsonGetter(value = "genotypeLR")
     public Optional<GenotypeLrWithExplanation> genotypeLr() {
         return Optional.ofNullable(genotypeLr);
     }
 
+    @JsonIgnore
     @Deprecated(forRemoval = true) // get explanations from results
     // REMOVE(v2.0.0)
     public List<String> getObservedPhenotypeExplanation() {
@@ -215,6 +225,7 @@ public class TestResult implements Comparable<TestResult> {
                 .toList();
     }
 
+    @JsonIgnore
     @Deprecated(forRemoval = true) // get explanations from excludedResults
     // REMOVE(v2.0.0)
     public List<String> getExcludedPhenotypeExplanation() {
@@ -229,6 +240,7 @@ public class TestResult implements Comparable<TestResult> {
      *
      * @return maximum abs(LR)
      */
+    @JsonIgnore
     public double getMaximumIndividualLR() {
         double m1 = this.observedResults.stream()
                 .map(LrWithExplanation::lr)

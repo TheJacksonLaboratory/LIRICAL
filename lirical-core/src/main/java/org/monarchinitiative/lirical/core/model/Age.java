@@ -1,5 +1,8 @@
 package org.monarchinitiative.lirical.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.time.Period;
 import java.util.Objects;
 
@@ -10,6 +13,7 @@ import java.util.Objects;
  * and {@link #isGestational()} flag will be set.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
+@JsonSerialize(using = AgeSerializer.class)
 public class Age {
     // TODO - make the unknown age unambiguous.
     //  If we use the Age#ageNotKnown() to represent the absence of age, then the AnalysisData#age() should be non-null (Optional?)
@@ -45,30 +49,37 @@ public class Age {
         return NOT_KNOWN;
     }
 
+    @JsonIgnore
     public int getYears() {
         return years;
     }
 
+    @JsonIgnore
     public int getMonths() {
         return months;
     }
 
+    @JsonIgnore
     public int getWeeks() {
         return weeks;
     }
 
+    @JsonIgnore
     public int getDays() {
         return days;
     }
 
+    @JsonIgnore
     public boolean isUnknown() {
         return isUnknown;
     }
 
+    @JsonIgnore
     public boolean isGestational() {
         return isGestational;
     }
 
+    @JsonIgnore
     public boolean isPostnatal() {
         return !isGestational;
     }

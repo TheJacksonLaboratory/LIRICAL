@@ -1,5 +1,7 @@
 package org.monarchinitiative.lirical.core.likelihoodratio;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.monarchinitiative.phenol.annotations.constants.hpo.HpoModeOfInheritanceTermIds;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -109,6 +111,7 @@ public class GenotypeLrWithExplanation  {
     /**
      * Get the gene identifier for this genotype LR.
      */
+    @JsonGetter
     public GeneIdentifier geneId() {
         return geneId;
     }
@@ -116,6 +119,7 @@ public class GenotypeLrWithExplanation  {
     /**
      * Get the genotype LR match type.
      */
+    @JsonGetter
     public GenotypeLrMatchType matchType() {
         return matchType;
     }
@@ -125,6 +129,7 @@ public class GenotypeLrWithExplanation  {
      *
      * @return the genotype likelihood ratio
      */
+    @JsonGetter
     public double lr() {
         return lr;
     }
@@ -134,6 +139,7 @@ public class GenotypeLrWithExplanation  {
      *
      * @return the log<sub>10</sub> of the genotype LR
      */
+    @JsonIgnore
     public double log10Lr() {
         return Math.log10(lr);
     }
@@ -141,6 +147,7 @@ public class GenotypeLrWithExplanation  {
     /**
      * @return an explanation of the genotype likelihood ratio
      */
+    @JsonGetter
     public String explanation() {
         return explanation;
     }

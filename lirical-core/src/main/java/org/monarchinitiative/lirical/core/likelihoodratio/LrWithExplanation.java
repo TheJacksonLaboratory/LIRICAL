@@ -1,5 +1,7 @@
 package org.monarchinitiative.lirical.core.likelihoodratio;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -36,22 +38,27 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
         this.explanation = explanation;
     }
 
+    @JsonGetter(value = "query")
     public TermId queryTerm() {
         return queryTerm;
     }
 
+    @JsonGetter(value = "match")
     public TermId matchingTerm() {
         return matchingTerm;
     }
 
+    @JsonGetter
     public LrMatchType matchType() {
         return matchType;
     }
 
+    @JsonGetter
     public double lr() {
         return lr;
     }
 
+    @JsonGetter
     public String explanation() {
         return explanation;
     }
@@ -59,6 +66,7 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
     /**
      * @return explanation text suitable for including in HTML documents
      */
+    @JsonIgnore
     public String escapedExplanation() {
         return StringUtils.replaceEach(explanation, EXPLANATION_SEARCH_LIST, EXPLANATION_REPLACEMENT_LIST);
     }

@@ -25,7 +25,7 @@
         <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <phenol.version>2.0.0</phenol.version>
+        <phenol.version>[2.0.4,3.0.0)</phenol.version>
         <svart.version>2.0.0-RC3</svart.version>
         <jannovar.version>0.35</jannovar.version>
 <!--        <h2.version>1.4.197</h2.version> &lt;!&ndash; This is what Exomiser uses currently &ndash;&gt;-->
@@ -166,6 +166,11 @@
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jdk8</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>${snakeyaml.version}</version>
@@ -200,7 +205,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.2.0</version>
+                <version>5.7.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
