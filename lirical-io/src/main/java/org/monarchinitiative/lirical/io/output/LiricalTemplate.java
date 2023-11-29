@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.core.output;
+package org.monarchinitiative.lirical.io.output;
 
 import freemarker.template.Configuration;
 import freemarker.template.Version;
@@ -6,6 +6,8 @@ import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
 import org.monarchinitiative.lirical.core.model.LiricalVariant;
+import org.monarchinitiative.lirical.core.output.AnalysisResultsMetadata;
+import org.monarchinitiative.lirical.core.output.OutputOptions;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -120,7 +122,7 @@ public abstract class LiricalTemplate {
     }
 
     protected Function<LiricalVariant, VisualizableVariant> toVisualizableVariant() {
-        return lv -> new VisualizableVariantDefault(analysisData.sampleId(), lv, isPassingPathogenicThreshold(lv));
+        return lv -> VisualizableVariant.of(analysisData.sampleId(), lv, isPassingPathogenicThreshold(lv));
     }
 
     private boolean isPassingPathogenicThreshold(LiricalVariant lv) {

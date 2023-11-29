@@ -1,5 +1,6 @@
-package org.monarchinitiative.lirical.core.output;
+package org.monarchinitiative.lirical.io.output;
 
+import org.monarchinitiative.lirical.core.model.LiricalVariant;
 import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
 
 import java.util.List;
@@ -9,6 +10,10 @@ import java.util.List;
  */
 public interface VisualizableVariant {
     // Note: the interface MUST be public, otherwise FreeMarker will not work.
+
+    static VisualizableVariant of(String sampleId, LiricalVariant lv, boolean isPassingPathogenicityThreshold) {
+        return new VisualizableVariantDefault(sampleId, lv, isPassingPathogenicityThreshold);
+    }
 
     String contigName();
 

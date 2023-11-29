@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.core.output;
+package org.monarchinitiative.lirical.io.output;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

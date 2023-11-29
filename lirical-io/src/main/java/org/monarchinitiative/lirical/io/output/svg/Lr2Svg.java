@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.core.output.svg;
+package org.monarchinitiative.lirical.io.output.svg;
 
 
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLrWithExplanation;

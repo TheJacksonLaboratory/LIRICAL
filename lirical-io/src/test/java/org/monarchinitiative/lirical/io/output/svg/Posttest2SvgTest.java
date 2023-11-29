@@ -1,9 +1,9 @@
-package org.monarchinitiative.lirical.core.output.svg;
+package org.monarchinitiative.lirical.io.output.svg;
 
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.monarchinitiative.lirical.core.TestResources;
+import org.mockito.Mockito;
 import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.core.analysis.TestResult;
 import org.monarchinitiative.lirical.core.likelihoodratio.LrMatchType;
@@ -12,12 +12,16 @@ import org.monarchinitiative.lirical.core.likelihoodratio.LrWithExplanationFacto
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 
 public class Posttest2SvgTest {
@@ -27,13 +31,20 @@ public class Posttest2SvgTest {
     private static List<HpoDisease> DISEASES;
     private static AnalysisResults RESULTS;
 
+    public static MinimalOntology HPO;
+
     @BeforeAll
     public static void setup() throws NullPointerException {
+        TermId some = TermId.of("HP:0000006");
+
+        HPO = Mockito.mock(MinimalOntology.class);
+        when(HPO.termForTermId(some)).thenReturn(Optional.of(Term.of(some, "Some term")));
+
         double PRETEST_PROB = 0.001;
-        FACTORY = new LrWithExplanationFactory(TestResources.hpo());
+        FACTORY = new LrWithExplanationFactory(HPO);
         List<TestResult> results = new ArrayList<>();
         //result 1
-        TermId some = TermId.of("HP:0000006");
+
         List<LrWithExplanation> reslist = createTestList(some, 1d, 10d, 100d);
         List<LrWithExplanation> excluded = List.of();
         List<HpoDiseaseAnnotation> annotations = List.of();

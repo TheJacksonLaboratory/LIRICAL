@@ -1,8 +1,7 @@
-package org.monarchinitiative.lirical.core.output;
+package org.monarchinitiative.lirical.io.output;
 
 import org.monarchinitiative.lirical.core.analysis.TestResult;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-
 
 import java.util.List;
 import java.util.Objects;
