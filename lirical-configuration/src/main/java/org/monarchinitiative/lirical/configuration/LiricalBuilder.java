@@ -19,7 +19,7 @@ import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -318,7 +318,7 @@ public class LiricalBuilder {
 
     private static PhenotypeService configurePhenotypeService(Path dataDirectory, HpoDiseaseLoaderOptions options) throws LiricalDataException {
         LiricalDataResolver liricalDataResolver = LiricalDataResolver.of(dataDirectory);
-        Ontology hpo = LoadUtils.loadOntology(liricalDataResolver.hpoJson());
+        MinimalOntology hpo = LoadUtils.loadOntology(liricalDataResolver.hpoJson());
         HpoDiseases diseases = LoadUtils.loadHpoDiseases(liricalDataResolver.phenotypeAnnotations(), hpo, options);
         HpoAssociationData associationData = HpoAssociationData.builder(hpo)
                 .hgncCompleteSetArchive(liricalDataResolver.hgncCompleteSet())

@@ -9,7 +9,7 @@ import org.monarchinitiative.lirical.core.output.AnalysisResultsMetadata;
 import org.monarchinitiative.lirical.core.output.OutputOptions;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class TsvTemplate extends LiricalTemplate {
     private static final String[] tsvHeader = {"rank", "diseaseName", "diseaseCurie", "pretestprob", "posttestprob",
             "compositeLR", "entrezGeneId", "variants"};
 
-    TsvTemplate(Ontology hpo,
+    TsvTemplate(MinimalOntology hpo,
                 HpoDiseases diseases,
                 AnalysisData analysisData,
                 AnalysisResults analysisResults,

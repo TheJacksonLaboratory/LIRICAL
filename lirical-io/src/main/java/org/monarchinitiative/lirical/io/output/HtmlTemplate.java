@@ -11,7 +11,7 @@ import org.monarchinitiative.lirical.io.output.svg.Lr2Svg;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +52,7 @@ public class HtmlTemplate extends LiricalTemplate {
     /**
      * Constructor to initialize the data that will be needed to output an HTML page.
      */
-    HtmlTemplate(Ontology hpo,
+    HtmlTemplate(MinimalOntology hpo,
                  HpoDiseases diseases,
                  AnalysisData analysisData,
                  AnalysisResults analysisResults,

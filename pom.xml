@@ -32,7 +32,7 @@
         <h2.version>1.4.200</h2.version>
         <htsjdk.version>3.0.5</htsjdk.version>
         <jackson.version>2.15.0</jackson.version>
-        <phenopacket.version>2.0.2</phenopacket.version>
+        <phenopacket-schema.version>2.0.2</phenopacket-schema.version>
         <phenopacket-tools.version>1.0.0-RC3</phenopacket-tools.version>
         <protobuf.version>3.21.7</protobuf.version>
         <snakeyaml.version>2.0</snakeyaml.version>
@@ -67,6 +67,35 @@
                 <groupId>de.charite.compbio</groupId>
                 <artifactId>jannovar-core</artifactId>
                 <version>${jannovar.version}</version>
+                <exclusions>
+                    <!-- We do not use parts of Jannovar that use the following libs: -->
+                    <exclusion>
+                        <groupId>commons-compress</groupId>
+                        <artifactId>commons-compress</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-io</groupId>
+                        <artifactId>commons-io</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-net</groupId>
+                        <artifactId>commons-net</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.ini4j</groupId>
+                        <artifactId>ini4j</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.phenopackets</groupId>
+                <artifactId>phenopacket-schema</artifactId>
+                <version>${phenopacket-schema.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.phenopackets.phenopackettools</groupId>
+                <artifactId>phenopacket-tools-core</artifactId>
+                <version>${phenopacket-tools.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.phenopackets.phenopackettools</groupId>
@@ -76,6 +105,11 @@
             <dependency>
                 <groupId>org.phenopackets.phenopackettools</groupId>
                 <artifactId>phenopacket-tools-validator-core</artifactId>
+                <version>${phenopacket-tools.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.phenopackets.phenopackettools</groupId>
+                <artifactId>phenopacket-tools-util</artifactId>
                 <version>${phenopacket-tools.version}</version>
             </dependency>
             <dependency>
