@@ -4,8 +4,7 @@ package org.monarchinitiative.lirical.core.likelihoodratio;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
 import org.monarchinitiative.phenol.annotations.constants.hpo.HpoSubOntologyRootTermIds;
-import org.monarchinitiative.phenol.ontology.algo.OntologyAlgorithm;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.*;
@@ -42,7 +41,7 @@ public class InducedDiseaseGraph {
     private record CandidateMatch(TermId termId, int distance) {
     }
 
-    public static InducedDiseaseGraph create(HpoDisease disease, Ontology ontology) {
+    public static InducedDiseaseGraph create(HpoDisease disease, MinimalOntology ontology) {
         Map<TermId, Double> termFrequencies = new HashMap<>(disease.annotations().size());
 
         for (HpoDiseaseAnnotation annotation : disease.annotations()) {
@@ -52,8 +51,7 @@ public class InducedDiseaseGraph {
             stack.push(cmatch);
             while (!stack.empty()) {
                 CandidateMatch cm = stack.pop();
-                Set<TermId> parents = OntologyAlgorithm.getParentTerms(ontology, cm.termId, false);
-                for (TermId parentTermId : parents) {
+                for (TermId parentTermId : ontology.graph().getParents(cm.termId, false)) {
                     if (parentTermId.equals(HpoSubOntologyRootTermIds.PHENOTYPIC_ABNORMALITY)) {
                         continue;
                     }
@@ -68,10 +66,12 @@ public class InducedDiseaseGraph {
                 }
             }
         }
-        Set<TermId> absentPhenotypeTerms = disease.absentAnnotationsStream()
+
+        Set<TermId> negativeInducedGraph = disease.absentAnnotationsStream()
                 .map(HpoDiseaseAnnotation::id)
-                .collect(Collectors.toUnmodifiableSet());
-        Set<TermId> negativeInducedGraph = OntologyAlgorithm.getAncestorTerms(ontology, absentPhenotypeTerms, true);
+                .distinct()
+                .flatMap(absent -> ontology.graph().getAncestorsStream(absent, true))
+                .collect(Collectors.toSet());
 
         return new InducedDiseaseGraph(disease, termFrequencies, negativeInducedGraph);
     }
@@ -117,7 +117,7 @@ public class InducedDiseaseGraph {
      * @param ontology HPO
      * @return The best hit
      */
-    Term2Freq getClosestAncestor(TermId tid, Ontology ontology) {
+    Term2Freq getClosestAncestor(TermId tid, MinimalOntology ontology) {
         Queue<TermId> queue = new LinkedList<>();
         queue.add(tid);
 
@@ -126,8 +126,8 @@ public class InducedDiseaseGraph {
             if (term2frequencyMap.containsKey(t)) {
                 return new Term2Freq(t, term2frequencyMap.get(t));
             } else {
-                Set<TermId> parents = OntologyAlgorithm.getParentTerms(ontology, t, false);
-                queue.addAll(parents);
+                ontology.graph().getParents(t, false)
+                        .forEach(queue::add);
             }
         }
 
