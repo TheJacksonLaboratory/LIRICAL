@@ -4,7 +4,7 @@ package org.monarchinitiative.lirical.io.output.svg;
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.core.likelihoodratio.LrWithExplanation;
 import org.monarchinitiative.lirical.core.analysis.TestResult;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ public class Lr2Svg extends Lirical2Svg {
     /**
      * An object representing the Human Phenotype Ontology
      */
-    private final Ontology hpo;
+    private final MinimalOntology hpo;
     /**
      * We show the results as an SVG diagram for this disease.
      */
@@ -82,7 +82,7 @@ public class Lr2Svg extends Lirical2Svg {
                   int rank,
                   TermId diseaseId,
                   String originalDiseaseName,
-                  Ontology hpo,
+                  MinimalOntology hpo,
                   String symbol) {
         this.diseaseCURIE = diseaseId;
         this.diseaseName = prettifyDiseaseName(originalDiseaseName);
@@ -250,8 +250,10 @@ public class Lr2Svg extends Lirical2Svg {
                         "onmouseover=\"showTooltip(evt,'%s')\"/>\n", BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, observedTerms.get(originalIndex).escapedExplanation()));
             }
             // add label of corresponding HPO term
-            Term term = hpo.getTermMap().get(tid);
-            String label = String.format("%s [%s]", term.getName(), tid.getValue());
+            String termName = hpo.termForTermId(tid)
+                    .map(Term::getName)
+                    .orElse("UNKNOWN");
+            String label = String.format("%s [%s]", termName, tid.getValue());
             writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n", XbeginOfText, currentY + BOX_HEIGHT, label));
             currentY += BOX_HEIGHT + BOX_OFFSET;
             explanationIndex++;
@@ -280,8 +282,10 @@ public class Lr2Svg extends Lirical2Svg {
                         BOX_HEIGHT, (int) boxwidth, currentY, (int) xstart, color, excludedTerms.get(originalIndex).escapedExplanation()));
             }
             // add label of corresponding HPO term
-            Term term = hpo.getTermMap().get(tid);
-            String label = String.format("Excluded: %s [%s]", term.getName(), tid.getValue());
+            String termName = hpo.termForTermId(tid)
+                    .map(Term::getName)
+                    .orElse("UNKNOWN");
+            String label = String.format("Excluded: %s [%s]", termName, tid.getValue());
             writer.write(String.format("<text x=\"%d\" y=\"%d\" font-size=\"14px\" font-style=\"normal\">%s</text>\n", XbeginOfText, currentY + BOX_HEIGHT, label));
             currentY += BOX_HEIGHT + BOX_OFFSET;
             explanationIndex++;

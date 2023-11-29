@@ -3,7 +3,8 @@ package org.monarchinitiative.lirical.io.output.svg;
 import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.core.analysis.TestResult;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,18 +60,22 @@ public class Sparkline2Svg extends Lirical2Svg {
      * @param result A representation of the Case
      *
      */
-    public Sparkline2Svg(TestResult result, boolean useGenotype, Ontology ontology) {
+    public Sparkline2Svg(TestResult result, boolean useGenotype, MinimalOntology ontology) {
         this.termIdList = result.observedTerms();
         this.excludedTermIdList = result.excludedTerms();
         observedTermToolTipLabels = new ArrayList<>();
         for (TermId t : this.termIdList) {
-            String label = ontology.getTermMap().get(t).getName();
+            String label = ontology.termForTermId(t)
+                    .map(Term::getName)
+                    .orElse("UNKNOWN");
             String tooltip = String.format("%s [%s]", label, t.getValue());
             this.observedTermToolTipLabels.add(tooltip);
         }
         excludedTermToolTipLabels = new ArrayList<>();
         for (TermId t : this.excludedTermIdList) {
-            String label = ontology.getTermMap().get(t).getName();
+            String label = ontology.termForTermId(t)
+                    .map(Term::getName)
+                    .orElse("UNKNOWN");
             String tooltip = String.format("%s [%s]", label, t.getValue());
             this.excludedTermToolTipLabels.add(tooltip);
         }

@@ -8,7 +8,7 @@ import org.monarchinitiative.lirical.io.output.svg.Sparkline2Svg;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public class SparklinePacket {
      */
     public static List<SparklinePacket> sparklineFactory(AnalysisResults results,
                                                          HpoDiseases diseases,
-                                                         Ontology ontology,
+                                                         MinimalOntology ontology,
                                                          int N) {
         if (results.isEmpty())
             return List.of();

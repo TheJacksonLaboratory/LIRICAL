@@ -8,7 +8,7 @@ import org.monarchinitiative.lirical.core.model.Gene2Genotype;
 import org.monarchinitiative.lirical.core.model.LiricalVariant;
 import org.monarchinitiative.lirical.core.output.AnalysisResultsMetadata;
 import org.monarchinitiative.lirical.core.output.OutputOptions;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -46,7 +46,7 @@ public abstract class LiricalTemplate {
     protected List<String> topDiagnosisAnchors;
     protected final Map<TermId, Gene2Genotype> geneById;
 
-    protected LiricalTemplate(Ontology hpo,
+    protected LiricalTemplate(MinimalOntology hpo,
                               AnalysisData analysisData,
                               AnalysisResultsMetadata resultsMetadata,
                               OutputOptions outputOptions) {
@@ -64,26 +64,30 @@ public abstract class LiricalTemplate {
     protected abstract String outputFormatString();
 
     private void initTemplateData(AnalysisData analysisData,
-                                  Ontology ontology,
+                                  MinimalOntology ontology,
                                   AnalysisResultsMetadata resultsMetadata) {
         templateData.put("resultsMeta", resultsMetadata);
         List<String> observedHPOs = new ArrayList<>();
         for (TermId id:analysisData.presentPhenotypeTerms()) {
-            Term term = ontology.getTermMap().get(id);
-            String tstr = String.format("%s <a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>",term.getName(),id.getValue(),id.getValue());
+            String termName = ontology.termForTermId(id)
+                    .map(Term::getName)
+                    .orElse("UNKNOWN");
+            String tstr = String.format("%s <a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>",termName,id.getValue(),id.getValue());
             observedHPOs.add(tstr);
         }
         this.templateData.put("observedHPOs",observedHPOs);
         List<String> excludedHpos = new ArrayList<>();
         for (TermId id:analysisData.negatedPhenotypeTerms()) {
-            Term term = ontology.getTermMap().get(id);
-            String tstr = String.format("%s <a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>",term.getName(),id.getValue(),id.getValue());
+            String termName = ontology.termForTermId(id)
+                    .map(Term::getName)
+                    .orElse("UNKNOWN");
+            String tstr = String.format("%s <a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>",termName,id.getValue(),id.getValue());
             excludedHpos.add(tstr);
         }
         this.templateData.put("excludedHPOs",excludedHpos);
         // This is a flag for the output to only show the list if there are some phenotypes that were excluded in the
         // proband.
-        if (excludedHpos.size()>0) {
+        if (!excludedHpos.isEmpty()) {
             this.templateData.put("hasExcludedHPOs","true");
         }
     }
