@@ -3,8 +3,8 @@ package org.monarchinitiative.lirical.configuration;
 import org.monarchinitiative.lirical.core.output.AnalysisResultWriterFactory;
 import org.monarchinitiative.lirical.core.output.AnalysisResultsWriter;
 import org.monarchinitiative.lirical.core.output.OutputFormat;
-import org.monarchinitiative.lirical.core.output.TemplateBasedAnalysisResultsWriter;
 import org.monarchinitiative.lirical.io.output.JsonAnalysisResultWriter;
+import org.monarchinitiative.lirical.io.output.TemplateBasedAnalysisResultsWriter;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 

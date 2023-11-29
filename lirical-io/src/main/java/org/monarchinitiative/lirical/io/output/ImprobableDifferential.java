@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.core.output;
+package org.monarchinitiative.lirical.io.output;
 
 import java.text.DecimalFormat;
 

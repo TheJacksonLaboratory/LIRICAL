@@ -1,13 +1,14 @@
 package org.monarchinitiative.lirical.core.likelihoodratio;
 
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 public class LrWithExplanationFactory {
 
-    private final Ontology ontology;
+    private final MinimalOntology ontology;
 
-    public LrWithExplanationFactory(Ontology ontology) {
+    public LrWithExplanationFactory(MinimalOntology ontology) {
         this.ontology = ontology;
     }
 
@@ -20,8 +21,8 @@ public class LrWithExplanationFactory {
     }
 
     private String getExplanation(TermId queryTerm, TermId matchingTerm, LrMatchType matchType, double lr) {
-        String queryTermLabel = String.format("%s[%s]", ontology.getTermMap().get(queryTerm).getName(), queryTerm.getValue());
-        String matchTermLabel = String.format("%s[%s]", ontology.getTermMap().get(matchingTerm).getName(), matchingTerm.getValue());
+        String queryTermLabel = String.format("%s[%s]", ontology.termForTermId(queryTerm).map(Term::getName).orElse("UNKNOWN"), queryTerm.getValue());
+        String matchTermLabel = String.format("%s[%s]", ontology.termForTermId(matchingTerm).map(Term::getName).orElse("UNKNOWN"), matchingTerm.getValue());
         double log10LR = Math.log10(lr);
         return switch (matchType) {
             case EXACT_MATCH -> String.format("E:%s[%.3f]", queryTermLabel, log10LR);

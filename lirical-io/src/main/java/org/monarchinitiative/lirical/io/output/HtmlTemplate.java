@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.core.output;
+package org.monarchinitiative.lirical.io.output;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -6,7 +6,8 @@ import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
-import org.monarchinitiative.lirical.core.output.svg.Lr2Svg;
+import org.monarchinitiative.lirical.core.output.*;
+import org.monarchinitiative.lirical.io.output.svg.Lr2Svg;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;

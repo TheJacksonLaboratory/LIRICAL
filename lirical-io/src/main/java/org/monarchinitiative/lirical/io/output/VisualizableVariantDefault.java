@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.core.output;
+package org.monarchinitiative.lirical.io.output;
 
 import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.svart.CoordinateSystem;
