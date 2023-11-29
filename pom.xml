@@ -70,6 +70,14 @@
                 <exclusions>
                     <!-- We do not use parts of Jannovar that use the following libs: -->
                     <exclusion>
+                        <groupId>commons-compress</groupId>
+                        <artifactId>commons-compress</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-io</groupId>
+                        <artifactId>commons-io</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>commons-net</groupId>
                         <artifactId>commons-net</artifactId>
                     </exclusion>
