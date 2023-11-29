@@ -17,7 +17,6 @@ org.monarchinitiative.lirical.core.likelihoodratio
 org.monarchinitiative.lirical.core.likelihoodratio.poisson
 org.monarchinitiative.lirical.core.model
 org.monarchinitiative.lirical.core.output
-org.monarchinitiative.lirical.core.output.svg
 org.monarchinitiative.lirical.core.service
 org.monarchinitiative.lirical.core.util
 org.monarchinitiative.lirical.exomiser_db_adapter
@@ -30,5 +29,6 @@ org.monarchinitiative.lirical.io.analysis
 org.monarchinitiative.lirical.io.background
 org.monarchinitiative.lirical.io.output
 org.monarchinitiative.lirical.io.output.serialize
+org.monarchinitiative.lirical.io.output.svg
 org.monarchinitiative.lirical.io.service
 org.monarchinitiative.lirical.io.vcf
