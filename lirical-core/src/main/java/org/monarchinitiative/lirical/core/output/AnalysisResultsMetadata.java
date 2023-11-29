@@ -1,5 +1,8 @@
 package org.monarchinitiative.lirical.core.output;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class AnalysisResultsMetadata {
     private String liricalVersion;
     private String hpoVersion;
@@ -57,6 +60,7 @@ public class AnalysisResultsMetadata {
         this.transcriptDatabase = transcriptDatabase;
     }
 
+    @JsonIgnore
     public String getLiricalPath() {
         return liricalPath;
     }
@@ -65,6 +69,7 @@ public class AnalysisResultsMetadata {
         this.liricalPath = liricalPath;
     }
 
+    @JsonIgnore
     public String getExomiserPath() {
         return exomiserPath;
     }
@@ -89,6 +94,7 @@ public class AnalysisResultsMetadata {
         this.sampleName = sampleName;
     }
 
+    @JsonIgnore
     public long getnPassingVariants() {
         return nPassingVariants;
     }
@@ -97,6 +103,7 @@ public class AnalysisResultsMetadata {
         this.nPassingVariants = nPassingVariants;
     }
 
+    @JsonIgnore
     public long getnFilteredVariants() {
         return nFilteredVariants;
     }
@@ -105,6 +112,7 @@ public class AnalysisResultsMetadata {
         this.nFilteredVariants = nFilteredVariants;
     }
 
+    @JsonIgnore
     public long getGenesWithVar() {
         return genesWithVar;
     }
@@ -113,6 +121,7 @@ public class AnalysisResultsMetadata {
         this.genesWithVar = genesWithVar;
     }
 
+    @JsonGetter(value = "isGlobalAnalysisMode")
     public boolean getGlobalMode() {
         return globalMode;
     }

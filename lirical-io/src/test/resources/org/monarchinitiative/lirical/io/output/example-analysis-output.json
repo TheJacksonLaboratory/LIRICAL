@@ -17,19 +17,21 @@
   "analysisResults" : [ {
     "diseaseId" : "OMIM:1234567",
     "pretestProbability" : 1.2,
+    "compositeLR" : 2.027286,
+    "posttestProbability" : 1.0895759082370065,
     "observedPhenotypicFeatures" : [ {
-      "query" : "HP:0000001",
-      "match" : "HP:0000002",
       "matchType" : "EXACT_MATCH",
       "lr" : 1.34,
-      "explanation" : "EXPLANATION"
+      "explanation" : "EXPLANATION",
+      "query" : "HP:0000001",
+      "match" : "HP:0000002"
     } ],
     "excludedPhenotypicFeatures" : [ {
-      "query" : "HP:0000001",
-      "match" : "HP:0000003",
       "matchType" : "EXCLUDED_QUERY_TERM_NOT_PRESENT_IN_DISEASE",
       "lr" : 1.23,
-      "explanation" : "EXCLUDED_EXPLANATION"
+      "explanation" : "EXCLUDED_EXPLANATION",
+      "query" : "HP:0000001",
+      "match" : "HP:0000003"
     } ],
     "genotypeLR" : {
       "geneId" : {
@@ -39,8 +41,6 @@
       "matchType" : "LIRICAL_GT_MODEL",
       "lr" : 1.23,
       "explanation" : "GENE_EXPLANATION"
-    },
-    "compositeLR" : 2.027286,
-    "posttestProbability" : 1.0895759082370065
+    }
   } ]
 }
