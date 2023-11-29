@@ -3,7 +3,8 @@ package org.monarchinitiative.lirical.core.likelihoodratio;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 /**
@@ -76,9 +77,9 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
      */
     // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
-    public String getExplanation(Ontology ontology) {
-        String qtermlabel = String.format("%s[%s]", ontology.getTermMap().get(this.queryTerm).getName(), queryTerm.getValue());
-        String mtermlabel = String.format("%s[%s]", ontology.getTermMap().get(this.matchingTerm).getName(), matchingTerm.getValue());
+    public String getExplanation(MinimalOntology ontology) {
+        String qtermlabel = String.format("%s[%s]", ontology.termForTermId(queryTerm).map(Term::getName).orElse("UNKNOWN"), queryTerm.getValue());
+        String mtermlabel = String.format("%s[%s]", ontology.termForTermId(matchingTerm).map(Term::getName).orElse("UNKNOWN"), matchingTerm.getValue());
         double log10LR = Math.log10(lr);
         switch (this.matchType) {
             case EXACT_MATCH:
@@ -113,9 +114,9 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
      */
     // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
-    String getEscapedExplanation(Ontology ontology) {
-        String qtermlabel = String.format("%s[%s]", ontology.getTermMap().get(this.queryTerm).getName(), queryTerm.getValue());
-        String mtermlabel = String.format("%s[%s]", ontology.getTermMap().get(this.matchingTerm).getName(), matchingTerm.getValue());
+    String getEscapedExplanation(MinimalOntology ontology) {
+        String qtermlabel = String.format("%s[%s]", ontology.termForTermId(queryTerm).map(Term::getName).orElse("UNKNOWN"), queryTerm.getValue());
+        String mtermlabel = String.format("%s[%s]", ontology.termForTermId(matchingTerm).map(Term::getName).orElse("UNKNOWN"), matchingTerm.getValue());
         double log10LR = Math.log10(lr);
         switch (this.matchType) {
             case EXACT_MATCH:
