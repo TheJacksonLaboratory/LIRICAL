@@ -6,19 +6,19 @@ import org.monarchinitiative.lirical.core.output.OutputFormat;
 import org.monarchinitiative.lirical.io.output.JsonAnalysisResultWriter;
 import org.monarchinitiative.lirical.io.output.TemplateBasedAnalysisResultsWriter;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 
 import java.util.Objects;
 import java.util.Optional;
 
 class AnalysisResultWriterFactoryImpl implements AnalysisResultWriterFactory {
 
-    private final Ontology hpo;
+    private final MinimalOntology hpo;
     private final HpoDiseases diseases;
 
     private AnalysisResultsWriter html, tsv, json;
 
-    AnalysisResultWriterFactoryImpl(Ontology hpo, HpoDiseases diseases) {
+    AnalysisResultWriterFactoryImpl(MinimalOntology hpo, HpoDiseases diseases) {
         this.hpo = Objects.requireNonNull(hpo);
         this.diseases = Objects.requireNonNull(diseases);
     }

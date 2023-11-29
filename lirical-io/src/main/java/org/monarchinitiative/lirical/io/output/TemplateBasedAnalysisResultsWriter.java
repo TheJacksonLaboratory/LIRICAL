@@ -7,7 +7,7 @@ import org.monarchinitiative.lirical.core.output.AnalysisResultsWriter;
 import org.monarchinitiative.lirical.core.output.OutputFormat;
 import org.monarchinitiative.lirical.core.output.OutputOptions;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 
 import java.util.List;
 import java.util.Objects;
@@ -17,10 +17,10 @@ import java.util.Set;
 public class TemplateBasedAnalysisResultsWriter implements AnalysisResultsWriter {
 
     private final OutputFormat format;
-    private final Ontology hpo;
+    private final MinimalOntology hpo;
     private final HpoDiseases diseases;
 
-    public TemplateBasedAnalysisResultsWriter(OutputFormat format, Ontology hpo, HpoDiseases diseases) {
+    public TemplateBasedAnalysisResultsWriter(OutputFormat format, MinimalOntology hpo, HpoDiseases diseases) {
         this.format = Objects.requireNonNull(format);
         this.hpo = Objects.requireNonNull(hpo);
         this.diseases = Objects.requireNonNull(diseases);

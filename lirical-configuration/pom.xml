@@ -18,6 +18,18 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.monarchinitiative.phenol</groupId>
+            <artifactId>phenol-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.monarchinitiative.phenol</groupId>
+            <artifactId>phenol-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.monarchinitiative.phenol</groupId>
+            <artifactId>phenol-annotations</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.monarchinitiative.lirical</groupId>
             <artifactId>lirical-exomiser-db-adapter</artifactId>
             <version>${project.parent.version}</version>
