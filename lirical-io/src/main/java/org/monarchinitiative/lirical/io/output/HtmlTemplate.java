@@ -72,11 +72,7 @@ public class HtmlTemplate extends LiricalTemplate {
         int N = totalDetailedDiagnosesToShow(analysisResults);
         List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(analysisResults, diseases, hpo, N);
         this.templateData.put("sparkline", sparklinePackets);
-        this.templateData.put("hasGenotypes", "true");
-        if (symbolsWithoutGeneIds == null || symbolsWithoutGeneIds.isEmpty()) {
-            this.templateData.put("hasGeneSymbolsWithoutIds", "false");
-        } else {
-            this.templateData.put("hasGeneSymbolsWithoutIds", "true");
+        if (symbolsWithoutGeneIds != null && !symbolsWithoutGeneIds.isEmpty()) {
             this.templateData.put("geneSymbolsWithoutIds", symbolsWithoutGeneIds);
         }
         Map<TermId, HpoDisease> diseaseById = diseases.diseaseById();

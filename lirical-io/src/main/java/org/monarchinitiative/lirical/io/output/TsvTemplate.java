@@ -31,9 +31,6 @@ import java.util.stream.Stream;
 public class TsvTemplate extends LiricalTemplate {
     private static final Logger logger = LoggerFactory.getLogger(TsvTemplate.class);
 
-    private static final String[] tsvHeader = {"rank", "diseaseName", "diseaseCurie", "pretestprob", "posttestprob",
-            "compositeLR", "entrezGeneId", "variants"};
-
     TsvTemplate(MinimalOntology hpo,
                 HpoDiseases diseases,
                 AnalysisData analysisData,
@@ -42,7 +39,6 @@ public class TsvTemplate extends LiricalTemplate {
                 OutputOptions outputOptions) {
         super(hpo, analysisData, resultsMetadata, outputOptions);
         cfg.setClassForTemplateLoading(TsvTemplate.class, "");
-        templateData.put("header", String.join("\t", tsvHeader));
         AtomicInteger rank = new AtomicInteger();
         Map<TermId, HpoDisease> diseaseById = diseases.diseaseById();
         List<TsvDifferential> diff = new ArrayList<>();
