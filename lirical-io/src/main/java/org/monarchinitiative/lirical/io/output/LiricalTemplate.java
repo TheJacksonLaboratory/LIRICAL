@@ -11,8 +11,6 @@ import org.monarchinitiative.lirical.core.output.OutputOptions;
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,7 +25,6 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public abstract class LiricalTemplate {
-    private static final Logger logger = LoggerFactory.getLogger(LiricalTemplate.class);
 
     private final AnalysisData analysisData;
     /** Map of data that will be used for the FreeMark template. */
@@ -75,7 +72,7 @@ public abstract class LiricalTemplate {
             String tstr = String.format("%s <a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>",termName,id.getValue(),id.getValue());
             observedHPOs.add(tstr);
         }
-        this.templateData.put("observedHPOs",observedHPOs);
+        templateData.put("observedHPOs",observedHPOs);
         List<String> excludedHpos = new ArrayList<>();
         for (TermId id:analysisData.negatedPhenotypeTerms()) {
             String termName = ontology.termForTermId(id)
@@ -84,12 +81,10 @@ public abstract class LiricalTemplate {
             String tstr = String.format("%s <a href=\"https://hpo.jax.org/app/browse/term/%s\">%s</a>",termName,id.getValue(),id.getValue());
             excludedHpos.add(tstr);
         }
-        this.templateData.put("excludedHPOs",excludedHpos);
-        // This is a flag for the output to only show the list if there are some phenotypes that were excluded in the
-        // proband.
-        if (!excludedHpos.isEmpty()) {
-            this.templateData.put("hasExcludedHPOs","true");
-        }
+        templateData.put("excludedHPOs",excludedHpos);
+        // Indicates that LIRICAL was run without a VCF file.
+        templateData.put("phenotypeOnly", analysisData.genes().size() == 0);
+
     }
 
     /** Some of our name strings contain multiple synonyms. This function removes all but the first.*/
@@ -100,8 +95,6 @@ public abstract class LiricalTemplate {
         else
             return name;
     }
-
-    public Path getOutPath() { return outputPath;}
 
     protected static Path createOutputFile(Path outdir, String prefix, String format) {
         if (!Files.isDirectory(outdir))

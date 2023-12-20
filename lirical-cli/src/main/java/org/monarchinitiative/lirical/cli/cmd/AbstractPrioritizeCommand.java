@@ -70,7 +70,7 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
                     .setHpoVersion(lirical.phenotypeService().hpo().version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
                     .setTranscriptDatabase(transcriptDb.toString())
                     .setLiricalPath(dataSection.liricalDataDirectory.toAbsolutePath().toString())
-                    .setExomiserPath(dataSection.exomiserDatabase == null ? "" : dataSection.exomiserDatabase.toAbsolutePath().toString())
+                    .setExomiserPath(figureOutExomiserPath())
                     .setAnalysisDate(LocalDateTime.now().toString())
                     .setSampleName(analysisData.sampleId())
                     .setnPassingVariants(filteringStats.nPassingVariants())
@@ -96,6 +96,18 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
         }
 
         return 0;
+    }
+
+    private String figureOutExomiserPath() {
+        if (dataSection.exomiserHg19Database == null && dataSection.exomiserHg38Database == null) {
+            return "";
+        } else {
+            if (dataSection.exomiserHg19Database == null) {
+                return dataSection.exomiserHg38Database.toAbsolutePath().toString();
+            } else {
+                return dataSection.exomiserHg19Database.toAbsolutePath().toString();
+            }
+        }
     }
 
     protected abstract AnalysisData prepareAnalysisData(Lirical lirical, GenomeBuild genomeBuild, TranscriptDatabase transcriptDb) throws LiricalParseException;

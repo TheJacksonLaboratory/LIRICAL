@@ -470,7 +470,7 @@
 <main>
     <section class="sample-summary elevate-container">
         <a id="Phenotypes"></a>
-        <h1 class="center">${resultsMeta.sampleName!"n/a"} Phenotypic Features</h1>
+        <h1 class="center">Phenotypic features of ${resultsMeta.sampleName!"n/a"}</h1>
         <article>
             <div class="row">
                 <div class="column features-title center">
@@ -533,8 +533,29 @@
                 <p>${topdifferentialcount}</p>
             </div>
             <div style="text-align:center;">
-                <#if hasGenotypes?has_content>
+                <#if phenotypeOnly>
                     <table class="posttest">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Post-test probability</th>
+                            <th>Disease</th>
+                            <th>ID</th>
+                            <th>Phenotypes</th>
+                            <th>LR (log<sub>10</sub>)</th>
+                        </tr>
+                        <#list sparkline as sprk>
+                            <tr>
+                                <td class="posttest">${sprk.rank}</td>
+                                <td>${sprk.posttestBarSvg}</td>
+                                <td><a href="#diagnosis${sprk.rank}">${sprk.diseaseName}</a></td>
+                                <td>${sprk.diseaseAnchor}</td>
+                                <td>${sprk.sparklineSvg}</td>
+                                <td class="posttest">${sprk.compositeLikelihoodRatio}</td>
+                            </tr>
+                        </#list>
+                    </table>
+                <#else>
+                     <table class="posttest">
                         <tr>
                             <th>Rank</th>
                             <th>Post-test probability</th>
@@ -550,27 +571,6 @@
                                 <td><a href="#diagnosis${sprk.rank}">${sprk.diseaseName}</a></td>
                                 <td>${sprk.sparklineSvg}</td>
                                 <td class="posttest">${sprk.geneSparklineSvg}</td>
-                                <td class="posttest">${sprk.compositeLikelihoodRatio}</td>
-                            </tr>
-                        </#list>
-                    </table>
-                <#else>
-                    <table class="posttest">
-                        <tr>
-                            <th>Rank</th>
-                            <th>Post-test probability</th>
-                            <th>Disease</th>
-                            <th>ID</th>
-                            <th>Phenotypes</th>
-                            <th>LR (log)</th>
-                        </tr>
-                        <#list sparkline as sprk>
-                            <tr>
-                                <td class="posttest">${sprk.rank}</td>
-                                <td>${sprk.posttestBarSvg}</td>
-                                <td><a href="#diagnosis${sprk.rank}">${sprk.diseaseName}</a></td>
-                                <td>${sprk.diseaseAnchor}</td>
-                                <td>${sprk.sparklineSvg}</td>
                                 <td class="posttest">${sprk.compositeLikelihoodRatio}</td>
                             </tr>
                         </#list>
@@ -775,29 +775,31 @@
 
             <h4><i>This LIRICAL run had the following configuration:</i></h4>
             <ul>
+                <#if resultsMeta.liricalPath?has_content>
+                    <li>Path to LIRICAL data directory: ${resultsMeta.liricalPath}</li>
+                </#if>
                 <#if resultsMeta.hpoVersion?has_content>
                     <li>Human Phenotype Ontology version: ${resultsMeta.hpoVersion}</li>
                 </#if>
-                <#if resultsMeta.transcriptDatabase?has_content>
-                    <li>Transcript database: ${resultsMeta.transcriptDatabase}</li>
-                </#if>
-                <#if resultsMeta.nPassingVariants?has_content>
-                    <li>Good quality variants: ${resultsMeta.nPassingVariants}</li>
-                </#if>
-                <#if resultsMeta.nFilteredVariants?has_content>
-                    <li>Variants removed due to failing quality filter: ${resultsMeta.nFilteredVariants}</li>
-                </#if>
-                <#if resultsMeta.genesWithVar?has_content>
-                    <li>Genes found to have at least one variant: ${resultsMeta.genesWithVar}</li>
-                </#if>
-                <#if resultsMeta.liricalPath?has_content>
-                    <li>Path to Lirical data directory: ${resultsMeta.liricalPath}</li>
-                </#if>
-                <#if resultsMeta.exomiserPath?has_content>
-                    <li>Path to Exomiser data directory: ${resultsMeta.exomiserPath}</li>
-                </#if>
                 <#if resultsMeta.globalMode?has_content>
                     <li>Global analysis mode: ${resultsMeta.globalMode?string("Yes", "No")}</li>
+                </#if>
+                <#if !phenotypeOnly>
+                    <#if resultsMeta.transcriptDatabase?has_content>
+                        <li>Transcript database: ${resultsMeta.transcriptDatabase}</li>
+                    </#if>
+                    <#if resultsMeta.exomiserPath?has_content>
+                        <li>Path to Exomiser database file: ${resultsMeta.exomiserPath}</li>
+                    </#if>
+                    <#if resultsMeta.nPassingVariants?has_content>
+                        <li>Good quality variants: ${resultsMeta.nPassingVariants}</li>
+                    </#if>
+                    <#if resultsMeta.nFilteredVariants?has_content>
+                        <li>Variants removed due to failing quality filter: ${resultsMeta.nFilteredVariants}</li>
+                    </#if>
+                    <#if resultsMeta.genesWithVar?has_content>
+                        <li>Genes found to have at least one variant: ${resultsMeta.genesWithVar}</li>
+                    </#if>
                 </#if>
             </ul>
             </p>
