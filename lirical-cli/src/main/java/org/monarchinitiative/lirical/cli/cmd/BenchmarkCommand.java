@@ -155,11 +155,8 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
         // Check if all phenopackets are valid and die quickly if not.
         LOGGER.info("Checking validity of {} phenopackets", phenopacketPaths.size());
         for (Path phenopacketPath : phenopacketPaths) {
-            try {
-                readPhenopacketData(phenopacketPath);
-            } catch (LiricalParseException e) {
-                errors.add("Invalid phenopacket %s: %s".formatted(phenopacketPath.toAbsolutePath(), e.getMessage()));
-            }
+            if (!Files.isRegularFile(phenopacketPath) || !Files.isReadable(phenopacketPath))
+                errors.add("%s does not point to a readable file".formatted(phenopacketPath.toAbsolutePath()));
         }
 
         return errors;
