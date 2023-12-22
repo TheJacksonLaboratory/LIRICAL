@@ -98,7 +98,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
             boolean proceed = true;
             for (DataAndSanitationResultsAndPath result : sanitationResults) {
                 SanitationResult sanitationResult = result.result();
-                if (!Util.phenopacketIsEligibleForAnalysis(sanitationResult, runConfiguration.failurePolicy)) {
+                if (!Util.phenopacketIsEligibleForAnalysis(sanitationResult, runConfiguration.validationPolicy)) {
                     LOGGER.info("Found issues in {}", result.path().toAbsolutePath());
                     proceed = false;
                     summarizeSanitationResult(sanitationResult)

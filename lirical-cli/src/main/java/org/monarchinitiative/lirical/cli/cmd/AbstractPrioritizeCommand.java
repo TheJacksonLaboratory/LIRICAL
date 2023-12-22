@@ -70,7 +70,7 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
                 LOGGER.info("Aborting the run due to `--dry-run` option");
                 return 0;
             } else {
-                switch (runConfiguration.failurePolicy) {
+                switch (runConfiguration.validationPolicy) {
                     case STRICT -> {
                         if (result.hasErrorOrWarnings()) {
                             LOGGER.info("Aborting the run. Fix the errors and warnings or use more permissive failure policy");
@@ -83,8 +83,8 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
                             return 1;
                         }
                     }
-                    case KAMIKAZE -> { /* I'm going my merry way... */ }
-                    default -> throw new IllegalStateException("Unexpected value: " + runConfiguration.failurePolicy);
+                    case NONE -> { /* I'm going my merry way... */ }
+                    default -> throw new IllegalStateException("Unexpected value: " + runConfiguration.validationPolicy);
                 }
             }
 

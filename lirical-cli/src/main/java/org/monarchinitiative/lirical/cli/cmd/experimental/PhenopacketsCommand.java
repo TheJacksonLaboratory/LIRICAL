@@ -103,7 +103,7 @@ public class PhenopacketsCommand extends OutputCommand {
         try (LiricalAnalysisRunner analysisRunner = lirical.analysisRunner()) {
             for (SanitationResultsAndPath result : sanitationResults) {
                 SanitationResult sanitationResult = result.result();
-                if (!Util.phenopacketIsEligibleForAnalysis(sanitationResult, runConfiguration.failurePolicy)) {
+                if (!Util.phenopacketIsEligibleForAnalysis(sanitationResult, runConfiguration.validationPolicy)) {
                     summarizeSanitationResult(sanitationResult)
                             .ifPresent(summary -> LOGGER.info("Skipping phenopacket {}{}{}",
                                     result.path().toAbsolutePath(),

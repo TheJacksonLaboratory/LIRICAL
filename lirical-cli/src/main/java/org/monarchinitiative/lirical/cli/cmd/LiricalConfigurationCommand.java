@@ -138,14 +138,14 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         })
         public float defaultAlleleFrequency = Float.NaN;
 
-        @CommandLine.Option(names = {"--failure-policy"},
-                description = "Failure policy for the analysis (default: ${DEFAULT-VALUE})."
-        )
-        public FailurePolicy failurePolicy = FailurePolicy.LENIENT;
+        @CommandLine.Option(names = {"--validation-policy"},
+                paramLabel = "{STRICT, LENIENT, NONE}",
+                description = {"Validation policy for the analysis", "(default: ${DEFAULT-VALUE})."})
+        public ValidationPolicy validationPolicy = ValidationPolicy.LENIENT;
 
         @CommandLine.Option(names ={"--dry-run"},
                 description = {
-                        "Validate input, report the issues, and exit without running the analysis.",
+                        "Validate the input, report potential issues, and exit without running the analysis.",
                         "(default ${DEFAULT-VALUE})"
                 })
         public boolean dryRun = false;
@@ -417,9 +417,9 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
     }
 
     protected InputSanitizer selectSanitizer(InputSanitizerFactory factory) {
-        return switch (runConfiguration.failurePolicy) {
+        return switch (runConfiguration.validationPolicy) {
             case STRICT, LENIENT -> factory.forType(SanitizerType.DEFAULT);
-            case KAMIKAZE -> factory.forType(SanitizerType.NOOP);
+            case NONE -> factory.forType(SanitizerType.NOOP);
         };
     }
 
