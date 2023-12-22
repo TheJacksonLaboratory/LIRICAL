@@ -22,22 +22,6 @@
             <artifactId>svart</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.phenopackets</groupId>
-            <artifactId>phenopacket-schema</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.phenopackets.phenopackettools</groupId>
-            <artifactId>phenopacket-tools-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.phenopackets.phenopackettools</groupId>
-            <artifactId>phenopacket-tools-io</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.phenopackets.phenopackettools</groupId>
-            <artifactId>phenopacket-tools-util</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.monarchinitiative.phenol</groupId>
             <artifactId>phenol-core</artifactId>
         </dependency>
@@ -65,14 +49,6 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java-util</artifactId>
         </dependency>
     </dependencies>
 

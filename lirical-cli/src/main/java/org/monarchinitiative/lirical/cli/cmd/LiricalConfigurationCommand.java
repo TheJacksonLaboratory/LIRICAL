@@ -7,10 +7,12 @@ import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.core.analysis.ProgressReporter;
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbabilities;
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbability;
-import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.io.VariantParser;
 import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.lirical.core.model.*;
+import org.monarchinitiative.lirical.core.sanitize.SanitationResult;
+import org.monarchinitiative.lirical.core.sanitize.SanityIssue;
+import org.monarchinitiative.lirical.core.sanitize.SanityLevel;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.background.CustomBackgroundVariantFrequencyServiceFactory;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
@@ -22,8 +24,6 @@ import picocli.CommandLine;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Period;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -136,6 +136,18 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                         "NOTE: the option has been DEPRECATED"
         })
         public float defaultAlleleFrequency = Float.NaN;
+
+        @CommandLine.Option(names = {"--failure-policy"},
+                description = "Failure policy for the analysis (default: ${DEFAULT-VALUE})."
+        )
+        public FailurePolicy failurePolicy = FailurePolicy.LENIENT;
+
+        @CommandLine.Option(names ={"--dry-run"},
+                description = {
+                        "Validate input, report the issues, and exit without running the analysis.",
+                        "(default ${DEFAULT-VALUE})"
+                })
+        public boolean dryRun = false;
     }
 
     protected List<String> checkInput() {
@@ -311,38 +323,90 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                     vcfPath.toAbsolutePath(), genomeBuild, transcriptDatabase);
             return GenesAndGenotypes.empty();
         }
-        List<LiricalVariant> variants;
+
         try (VariantParser variantParser = parser.get()) {
-            // Ensure the VCF file contains the sample
-            if (!variantParser.sampleNames().contains(sampleId))
-                throw new LiricalParseException("The sample " + sampleId + " is not present in VCF at '" + vcfPath.toAbsolutePath() + '\'');
-            LOGGER.debug("Found sample {} in the VCF file at {}", sampleId, vcfPath.toAbsolutePath());
+            Collection<String> sampleNames = variantParser.sampleNames();
+            validateSampleId(sampleId, vcfPath, sampleNames);
 
             // Read variants
             LOGGER.info("Reading variants from {}", vcfPath.toAbsolutePath());
             ProgressReporter progressReporter = new ProgressReporter();
-            variants = variantParser.variantStream()
+            List<LiricalVariant> variants = variantParser.variantStream()
                     .peek(v -> progressReporter.log())
                     .toList();
             progressReporter.summarize();
+
+            return GenesAndGenotypes.fromVariants(sampleNames, variants);
         } catch (Exception e) {
             throw new LiricalParseException(e);
         }
-
-        return GenesAndGenotypes.fromVariants(variants);
     }
 
-    protected static Age parseAge(String age) {
-        if (age == null) {
-            LOGGER.debug("The age was not provided");
-            return Age.ageNotKnown();
+    /**
+     * Check if the VCF file is a single-sample or multi-sample VCF file with the given sample ID. If `sampleId` is
+     * {@code null}, we can only accept a single-sample VCF, mainly as a convenience.
+     *
+     * @throws LiricalParseException if the VCF includes no sample data, the sample is not present,
+     * or it is a multi-sample file and the sample ID is unset.
+     */
+    private static void validateSampleId(String sampleId, Path vcfPath, Collection<String> sampleNames) throws LiricalParseException {
+        if (sampleNames.isEmpty())
+            throw new LiricalParseException("No samples found in the VCF file at '" + vcfPath.toAbsolutePath() + '\'');
+        if (sampleId == null) {
+            if (sampleNames.size() != 1) {
+                // The user did not provide the sample ID. We can proceed if the variant source contains 1 subject only.
+                throw new LiricalParseException(("The VCF file includes %d samples but the ID of the index sample " +
+                        "is unset. Set the sample ID if VCF reports >1 sample").formatted(sampleNames.size()));
+            } else {
+                sampleId = sampleNames.iterator().next();
+                LOGGER.debug("Sample ID is unset. However, the VCF file includes just a single sample, " +
+                        "so we'll proceed with the sample {}", sampleId);
+            }
+        } else if (!sampleNames.contains(sampleId)) {
+            throw new LiricalParseException("The sample " + sampleId + " is not present in VCF at '" + vcfPath.toAbsolutePath() + '\'');
+        } else {
+            LOGGER.debug("Found sample {} in the VCF file at {}", sampleId, vcfPath.toAbsolutePath());
         }
-        try {
-            Period period = Period.parse(age);
-            LOGGER.info("Using age {}", period);
-            return Age.parse(period);
-        } catch (DateTimeParseException e) {
-            throw new LiricalRuntimeException("Unable to parse age '" + age + "': " + e.getMessage(), e);
+    }
+
+    protected static Optional<String> summarizeSanitationResult(SanitationResult sanitationResult) {
+        if (sanitationResult.hasErrorOrWarnings()) {
+            Map<SanityLevel, List<SanityIssue>> byLevel = sanitationResult.issues().stream()
+                    .collect(Collectors.groupingBy(SanityIssue::level));
+
+            List<SanityIssue> errors = byLevel.getOrDefault(SanityLevel.ERROR, List.of());
+            List<SanityIssue> warnings = byLevel.getOrDefault(SanityLevel.WARNING, List.of());
+
+            List<String> lines = new ArrayList<>();
+            lines.add("Found issues %d errors and %d warnings".formatted(errors.size(), warnings.size()));
+            if (!errors.isEmpty()) {
+                lines.add(" Errors \uD83D\uDE31");
+                for (SanityIssue issue : errors) {
+                    lines.add(" - %s. %s.".formatted(issue.message(), issue.solution()));
+                }
+            }
+
+            if (!warnings.isEmpty()) {
+                lines.add(" Warnings \uD83D\uDE27");
+                for (SanityIssue issue : warnings) {
+                    lines.add(" - %s. %s.".formatted(issue.message(), issue.solution()));
+                }
+            }
+
+            return Optional.of(String.join(System.lineSeparator(), lines));
+        }
+        return Optional.empty();
+    }
+
+    protected String figureOutExomiserPath() {
+        if (dataSection.exomiserHg19Database == null && dataSection.exomiserHg38Database == null) {
+            return "";
+        } else {
+            if (dataSection.exomiserHg19Database == null) {
+                return dataSection.exomiserHg38Database.toAbsolutePath().toString();
+            } else {
+                return dataSection.exomiserHg19Database.toAbsolutePath().toString();
+            }
         }
     }
 

@@ -1,10 +1,10 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
-import org.monarchinitiative.lirical.io.analysis.PhenopacketData;
-import org.monarchinitiative.lirical.io.analysis.PhenopacketImportException;
-import org.monarchinitiative.lirical.io.analysis.PhenopacketImporter;
-import org.monarchinitiative.lirical.io.analysis.PhenopacketImporters;
+import org.monarchinitiative.lirical.cli.pp.PhenopacketData;
+import org.monarchinitiative.lirical.cli.pp.PhenopacketImportException;
+import org.monarchinitiative.lirical.cli.pp.PhenopacketImporter;
+import org.monarchinitiative.lirical.cli.pp.PhenopacketImporters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,9 +27,9 @@ public class PhenopacketUtil {
         try (InputStream is = new BufferedInputStream(Files.newInputStream(phenopacket))) {
             PhenopacketImporter v2 = PhenopacketImporters.v2();
             data = v2.read(is);
-            LOGGER.info("Success!");
+            LOGGER.debug("Success!");
         } catch (PhenopacketImportException | IOException e) {
-            LOGGER.info("Unable to parse as v2 phenopacket, trying v1");
+            LOGGER.debug("Unable to parse as v2 phenopacket, trying v1");
         }
 
         if (data == null) {
@@ -37,7 +37,7 @@ public class PhenopacketUtil {
                 PhenopacketImporter v1 = PhenopacketImporters.v1();
                 data = v1.read(is);
             } catch (PhenopacketImportException | IOException e) {
-                LOGGER.info("Unable to parse as v1 phenopacket");
+                LOGGER.debug("Unable to parse as v1 phenopacket");
                 throw new LiricalParseException("Unable to parse phenopacket from " + phenopacket.toAbsolutePath());
             }
         }

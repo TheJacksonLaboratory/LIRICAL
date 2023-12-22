@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.core.model;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 class GenesAndGenotypesDefault {
 
@@ -8,12 +9,28 @@ class GenesAndGenotypesDefault {
         return GenesAndGenotypesEmpty.INSTANCE;
     }
 
+    /**
+     * @deprecated use {@link #of(Collection, Collection)} instead.
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
     public static GenesAndGenotypes of(Collection<Gene2Genotype> genes) {
-        List<Gene2Genotype> geneList = List.copyOf(Objects.requireNonNull(genes, "Gene list must not be null"));
-        return new GenesAndGenotypesFull(geneList);
+        Set<String> sampleNames = genes.stream()
+                .flatMap(Gene2Genotype::variants)
+                .flatMap(v -> v.sampleNames().stream())
+                .collect(Collectors.toSet());
+        return of(sampleNames, genes);
     }
 
-    record GenesAndGenotypesFull(List<Gene2Genotype> geneList) implements GenesAndGenotypes {
+    public static GenesAndGenotypes of(Collection<String> sampleNames,
+                                       Collection<Gene2Genotype> genes) {
+        return new GenesAndGenotypesFull(
+                List.copyOf(Objects.requireNonNull(sampleNames, "Sample names must not be null")),
+                List.copyOf(Objects.requireNonNull(genes, "Gene list must not be null"))
+        );
+    }
+
+    record GenesAndGenotypesFull(List<String> sampleNames,
+                                 List<Gene2Genotype> geneList) implements GenesAndGenotypes {
 
         @Override
         public int size() {
@@ -31,6 +48,11 @@ class GenesAndGenotypesDefault {
         private static final GenesAndGenotypesEmpty INSTANCE = new GenesAndGenotypesEmpty();
 
         private GenesAndGenotypesEmpty() {
+        }
+
+        @Override
+        public Collection<String> sampleNames() {
+            return List.of();
         }
 
         @Override

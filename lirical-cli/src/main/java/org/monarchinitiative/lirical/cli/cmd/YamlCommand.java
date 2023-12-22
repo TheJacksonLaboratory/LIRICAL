@@ -1,12 +1,8 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
-import org.monarchinitiative.lirical.core.analysis.AnalysisData;
-import org.monarchinitiative.lirical.core.analysis.AnalysisDataParser;
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
-import org.monarchinitiative.lirical.core.model.GenomeBuild;
-import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
-import org.monarchinitiative.lirical.io.analysis.AnalysisDataFormat;
-import org.monarchinitiative.lirical.io.analysis.AnalysisDataParserFactory;
+import org.monarchinitiative.lirical.cli.yaml.YamlParser;
+import org.monarchinitiative.lirical.core.analysis.AnalysisInputs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -26,7 +22,7 @@ import java.nio.file.Path;
         sortOptions = false,
         mixinStandardHelpOptions = true,
         description = "Run LIRICAL from a YAML file.")
-public class YamlCommand extends AnalysisDataParserAwareCommand {
+public class YamlCommand extends AbstractPrioritizeCommand {
     private static final Logger LOGGER = LoggerFactory.getLogger(YamlCommand.class);
 
     @CommandLine.Option(names = {"-y","--yaml"},
@@ -45,14 +41,10 @@ public class YamlCommand extends AnalysisDataParserAwareCommand {
     }
 
     @Override
-    protected AnalysisData prepareAnalysisData(AnalysisDataParserFactory factory,
-                                               GenomeBuild genomeBuild,
-                                               TranscriptDatabase transcriptDb) throws LiricalParseException {
-        AnalysisDataParser parser = factory.forFormat(AnalysisDataFormat.YAML);
-
+    protected AnalysisInputs prepareAnalysisInputs() throws LiricalParseException {
         LOGGER.info("Parsing YAML input file at {}", yamlPath);
         try (InputStream is = Files.newInputStream(yamlPath)) {
-            return parser.parse(is, genomeBuild, transcriptDb);
+            return YamlParser.parse(is);
         } catch (IOException e) {
             throw new LiricalParseException(e);
         }

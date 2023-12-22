@@ -1,19 +1,10 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
-import org.monarchinitiative.lirical.core.Lirical;
-import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
-import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
-import org.monarchinitiative.lirical.core.model.GenomeBuild;
-import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
-import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
-import org.monarchinitiative.lirical.io.analysis.*;
-import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.lirical.core.analysis.AnalysisInputs;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Run LIRICAL from a Phenopacket -- with or without accompanying VCF file.
@@ -40,7 +31,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"--vcf"},
             description = "Path to a VCF file. This path has priority over any VCF files described in phenopacket.")
-    public Path vcfPath;
+    public String vcfPath;
 
     @Override
     protected String getGenomeBuild() {
@@ -48,33 +39,21 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
     }
 
     @Override
-    protected AnalysisData prepareAnalysisData(Lirical lirical,
-                                               GenomeBuild genomeBuild,
-                                               TranscriptDatabase transcriptDb) throws LiricalParseException {
-        PhenopacketData data = PhenopacketUtil.readPhenopacketData(phenopacketPath);
+    protected AnalysisInputs prepareAnalysisInputs() throws LiricalParseException {
+        // We could have returned `data` right away, but we must ensure that VCF handed over via CLI has
+        // a greater priority
+        AnalysisInputs data = PhenopacketUtil.readPhenopacketData(phenopacketPath);
 
-        HpoTermSanitizer sanitizer = new HpoTermSanitizer(lirical.phenotypeService().hpo());
-        List<TermId> presentTerms = data.getHpoTerms().map(sanitizer::replaceIfObsolete).flatMap(Optional::stream).toList();
-        List<TermId> excludedTerms = data.getNegatedHpoTerms().map(sanitizer::replaceIfObsolete).flatMap(Optional::stream).toList();
+        String vcf = vcfPath != null
+                ? vcfPath
+                : data.vcf();
 
-        // Read VCF file.
-        GenesAndGenotypes genes;
-        // Path to VCF set via CLI has priority.
-        Path vcf = this.vcfPath != null
-                ? this.vcfPath
-                : data.getVcfPath().orElse(null);
-        String sampleId = data.getSampleId();
-        if (vcf == null) {
-            genes = GenesAndGenotypes.empty();
-        } else {
-            genes = readVariantsFromVcfFile(sampleId, vcf, genomeBuild, transcriptDb, lirical.variantParserFactory());
-        }
-        return AnalysisData.of(sampleId,
-                data.getAge().orElse(null),
-                data.getSex().orElse(null),
-                presentTerms,
-                excludedTerms,
-                genes);
+        return new AnalysisInputsDefault(data.sampleId(),
+                data.presentHpoTerms(),
+                data.excludedHpoTerms(),
+                data.age(),
+                data.sex(),
+                vcf);
     }
 
 }

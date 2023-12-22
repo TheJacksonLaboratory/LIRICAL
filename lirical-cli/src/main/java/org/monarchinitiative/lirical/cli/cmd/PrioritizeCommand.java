@@ -1,20 +1,11 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
-import org.monarchinitiative.lirical.core.Lirical;
-import org.monarchinitiative.lirical.core.analysis.AnalysisData;
-import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
-import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
-import org.monarchinitiative.lirical.core.model.GenomeBuild;
-import org.monarchinitiative.lirical.core.model.Sex;
-import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
-import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
-import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.lirical.core.analysis.AnalysisInputs;
 import picocli.CommandLine;
 
-import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @CommandLine.Command(name = "prioritize",
         aliases = {"R"},
@@ -38,11 +29,11 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"--vcf"},
             description = "Path to VCF file (optional).")
-    public Path vcfPath = null;
+    public String vcfPath = null;
 
     @CommandLine.Option(names = {"--sample-id"},
             description = "Proband's identifier (default: ${DEFAULT-VALUE}).")
-    public String sampleId = "Sample";
+    public String sampleId = null;
 
     @CommandLine.Option(names = {"--age"},
             description = "Proband's age.")
@@ -51,7 +42,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
     @CommandLine.Option(names = {"--sex"},
             paramLabel = "{MALE,FEMALE,UNKNOWN}",
             description = "Proband's sex (default: ${DEFAULT-VALUE}).")
-    public Sex sex = Sex.UNKNOWN;
+    public String sex = "UNKNOWN";
 
 
     @Override
@@ -60,43 +51,24 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
     }
 
     @Override
-    protected AnalysisData prepareAnalysisData(Lirical lirical,
-                                               GenomeBuild genomeBuild,
-                                               TranscriptDatabase transcriptDb) throws LiricalParseException {
-        HpoTermSanitizer sanitizer = new HpoTermSanitizer(lirical.phenotypeService().hpo());
-
-        List<TermId> observedTerms;
-        if (observed != null)
-            observedTerms = Arrays.stream(observed.split(","))
+    protected AnalysisInputs prepareAnalysisInputs() {
+        List<String> presentTerms = new ArrayList<>();
+        if (observed != null) {
+            Arrays.stream(observed.split(","))
                     .map(String::trim)
-                    .map(TermId::of)
-                    .map(sanitizer::replaceIfObsolete)
-                    .flatMap(Optional::stream)
                     .distinct()
-                    .toList();
-        else
-            observedTerms = List.of();
-
-        List<TermId> negatedTerms;
-        if (negated != null)
-            negatedTerms = Arrays.stream(negated.split(","))
-                    .map(String::trim)
-                    .map(TermId::of)
-                    .map(sanitizer::replaceIfObsolete)
-                    .flatMap(Optional::stream)
-                    .distinct()
-                    .toList();
-        else
-            negatedTerms = List.of();
-
-        GenesAndGenotypes genes;
-        if (vcfPath == null) {
-            genes = GenesAndGenotypes.empty();
-        } else {
-            genes = readVariantsFromVcfFile(sampleId, vcfPath, genomeBuild, transcriptDb, lirical.variantParserFactory());
+                    .forEachOrdered(presentTerms::add);
         }
 
-        return AnalysisData.of(sampleId, parseAge(age), sex, observedTerms, negatedTerms, genes);
+        List<String> excludedTerms = new ArrayList<>();
+        if (negated != null) {
+            Arrays.stream(negated.split(","))
+                    .map(String::trim)
+                    .distinct()
+                    .forEachOrdered(excludedTerms::add);
+        }
+
+        return new AnalysisInputsDefault(sampleId, presentTerms, excludedTerms, age, sex, vcfPath);
     }
 
 }
