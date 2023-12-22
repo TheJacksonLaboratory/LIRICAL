@@ -124,8 +124,10 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
             // 4 - run the analysis
             AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, transcriptDb);
             LOGGER.info("Starting the analysis");
-            LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
-            AnalysisResults results = analysisRunner.run(analysisData, analysisOptions);
+            AnalysisResults results;
+            try (LiricalAnalysisRunner analysisRunner = lirical.analysisRunner()) {
+                results = analysisRunner.run(analysisData, analysisOptions);
+            }
 
             // 5 - write out the results
             LOGGER.info("Writing out the results");

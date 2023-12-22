@@ -112,15 +112,15 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                 // Abort unless all phenopackets are eligible for analysis under the failure policy.
                 return 1;
 
-            LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
-            try (BufferedWriter writer = openWriter(outputPath);
+            try (LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
+                 BufferedWriter writer = openWriter(outputPath);
                  CSVPrinter printer = CSVFormat.DEFAULT.print(writer)) {
                 printer.printRecord("phenopacket", "background_vcf", "sample_id", "rank",
                         "is_causal", "disease_id", "post_test_proba"); // header
 
                 for (int i = 0; i < sanitationResults.size(); i++) {
                     DataAndSanitationResultsAndPath result = sanitationResults.get(i);
-                    LOGGER.info("Starting the analysis of [{}/{}] {}", i, sanitationResults.size(),
+                    LOGGER.info("Starting the analysis of [{}/{}] {}", i + 1, sanitationResults.size(),
                             result.path().toFile().getName());
                     // 3 - prepare benchmark data per phenopacket
                     BenchmarkData benchmarkData = prepareBenchmarkData(lirical, genomeBuild, transcriptDb, backgroundVariants, result);
@@ -212,7 +212,8 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                 genes = GenesAndGenotypes.empty();
             else {
                 // Annotate the causal variants found in the phenopacket.
-                FunctionalVariantAnnotator annotator = lirical.functionalVariantAnnotator();
+                FunctionalVariantAnnotator annotator = lirical.functionalVariantAnnotatorService()
+                        .getFunctionalAnnotator(genomeBuild, transcriptDatabase).orElseThrow();
                 VariantMetadataService metadataService = lirical.variantMetadataServiceFactory()
                         .getVariantMetadataService(genomeBuild).orElseThrow();
                 List<LiricalVariant> backgroundAndCausal = new ArrayList<>(backgroundVariants.size() + 10);

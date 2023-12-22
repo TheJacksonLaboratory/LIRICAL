@@ -101,61 +101,67 @@ public class PhenopacketsCommand extends OutputCommand {
         // 3 - process phenopackets
         LOGGER.info("Processing phenopackets");
         AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, runConfiguration.transcriptDb);
-        LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
-        for (SanitationResultsAndPath result : sanitationResults) {
-            SanitationResult sanitationResult = result.result();
-            if (!Util.phenopacketIsEligibleForAnalysis(sanitationResult, runConfiguration.failurePolicy)) {
-                summarizeSanitationResult(sanitationResult)
-                        .ifPresent(summary -> LOGGER.info("Skipping phenopacket {}{}{}",
-                                result.path().toAbsolutePath(),
-                                System.lineSeparator(),
-                                summary));
-            } else {
-                LOGGER.info("Processing {}", result.path().toAbsolutePath());
-            }
-            try {
-                SanitizedInputs sanitized = sanitationResult.sanitized();
-                AnalysisData analysisData = AnalysisData.of(sanitized.sampleId(),
-                        sanitized.age(), sanitized.sex(),
-                        sanitized.presentHpoTerms(),
-                        sanitized.excludedHpoTerms(),
-                        GenesAndGenotypes.empty());
 
-                LOGGER.debug("Running the analysis");
-                AnalysisResults results = analysisRunner.run(analysisData, analysisOptions);
-
-                LOGGER.debug("Writing out the results");
-                FilteringStats filteringStats = analysisData.genes().computeFilteringStats();
-                AnalysisResultsMetadata metadata = AnalysisResultsMetadata.builder()
-                        .setLiricalVersion(lirical.version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
-                        .setHpoVersion(hpo.version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
-                        .setTranscriptDatabase(runConfiguration.transcriptDb.toString())
-                        .setLiricalPath(dataSection.liricalDataDirectory.toAbsolutePath().toString())
-                        .setExomiserPath(figureOutExomiserPath())
-                        .setAnalysisDate(LocalDateTime.now().toString())
-                        .setSampleName(analysisData.sampleId())
-                        .setnPassingVariants(filteringStats.nPassingVariants())
-                        .setnFilteredVariants(filteringStats.nFilteredVariants())
-                        .setGenesWithVar(filteringStats.genesWithVariants())
-                        .setGlobalMode(runConfiguration.globalAnalysisMode)
-                        .build();
-
-                AnalysisResultWriterFactory factory = lirical.analysisResultsWriterFactory();
-
-                OutputOptions outputOptions = createOutputOptions(sanitized.sampleId());
-                for (OutputFormat fmt : output.outputFormats) {
-                    Optional<AnalysisResultsWriter> writer = factory.getWriter(fmt);
-                    if (writer.isPresent()) {
-                        writer.get().process(analysisData, results, metadata, outputOptions);
-                    }
+        try (LiricalAnalysisRunner analysisRunner = lirical.analysisRunner()) {
+            for (SanitationResultsAndPath result : sanitationResults) {
+                SanitationResult sanitationResult = result.result();
+                if (!Util.phenopacketIsEligibleForAnalysis(sanitationResult, runConfiguration.failurePolicy)) {
+                    summarizeSanitationResult(sanitationResult)
+                            .ifPresent(summary -> LOGGER.info("Skipping phenopacket {}{}{}",
+                                    result.path().toAbsolutePath(),
+                                    System.lineSeparator(),
+                                    summary));
+                } else {
+                    LOGGER.info("Processing {}", result.path().toAbsolutePath());
                 }
-            } catch (IOException | LiricalException e) {
-                LOGGER.error("Error processing {}: {}", result.path(), e.getMessage());
-                LOGGER.debug("More info:", e);
-                return 1;
+                try {
+                    SanitizedInputs sanitized = sanitationResult.sanitized();
+                    AnalysisData analysisData = AnalysisData.of(sanitized.sampleId(),
+                            sanitized.age(), sanitized.sex(),
+                            sanitized.presentHpoTerms(),
+                            sanitized.excludedHpoTerms(),
+                            GenesAndGenotypes.empty());
+
+                    LOGGER.debug("Running the analysis");
+                    AnalysisResults results = analysisRunner.run(analysisData, analysisOptions);
+
+                    LOGGER.debug("Writing out the results");
+                    FilteringStats filteringStats = analysisData.genes().computeFilteringStats();
+                    AnalysisResultsMetadata metadata = AnalysisResultsMetadata.builder()
+                            .setLiricalVersion(lirical.version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
+                            .setHpoVersion(hpo.version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
+                            .setTranscriptDatabase(runConfiguration.transcriptDb.toString())
+                            .setLiricalPath(dataSection.liricalDataDirectory.toAbsolutePath().toString())
+                            .setExomiserPath(figureOutExomiserPath())
+                            .setAnalysisDate(LocalDateTime.now().toString())
+                            .setSampleName(analysisData.sampleId())
+                            .setnPassingVariants(filteringStats.nPassingVariants())
+                            .setnFilteredVariants(filteringStats.nFilteredVariants())
+                            .setGenesWithVar(filteringStats.genesWithVariants())
+                            .setGlobalMode(runConfiguration.globalAnalysisMode)
+                            .build();
+
+                    AnalysisResultWriterFactory factory = lirical.analysisResultsWriterFactory();
+
+                    OutputOptions outputOptions = createOutputOptions(sanitized.sampleId());
+                    for (OutputFormat fmt : output.outputFormats) {
+                        Optional<AnalysisResultsWriter> writer = factory.getWriter(fmt);
+                        if (writer.isPresent()) {
+                            writer.get().process(analysisData, results, metadata, outputOptions);
+                        }
+                    }
+                } catch (IOException | LiricalException e) {
+                    LOGGER.error("Error processing {}: {}", result.path(), e.getMessage());
+                    LOGGER.debug("More info:", e);
+                    return 1;
+                }
             }
+            reportElapsedTime(start, System.currentTimeMillis());
+        } catch (IOException e) {
+            LOGGER.error("Error occurred: {}", e.getMessage());
+            LOGGER.debug("More info:", e);
+            return 1;
         }
-        reportElapsedTime(start, System.currentTimeMillis());
 
         return 0;
     }
