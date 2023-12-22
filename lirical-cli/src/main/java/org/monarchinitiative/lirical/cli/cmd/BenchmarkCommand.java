@@ -10,6 +10,7 @@ import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.monarchinitiative.lirical.core.io.VariantParser;
 import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.lirical.core.sanitize.InputSanitizer;
+import org.monarchinitiative.lirical.core.sanitize.InputSanitizerFactory;
 import org.monarchinitiative.lirical.core.sanitize.SanitationResult;
 import org.monarchinitiative.lirical.core.sanitize.SanitizedInputs;
 import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
@@ -239,7 +240,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
         }
 
         SanitationResult sanitationResult = resultsAndPath.result();
-        SanitizedInputs sanitized = sanitationResult.sanitized();
+        SanitizedInputs sanitized = sanitationResult.sanitizedInputs();
         AnalysisData analysisData = AnalysisData.of(sanitized.sampleId(),
                 sanitized.age(),
                 sanitized.sex(),
@@ -315,9 +316,10 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
     private record BenchmarkData(TermId diseaseId, AnalysisData analysisData) {
     }
 
-    private static List<DataAndSanitationResultsAndPath> sanitizePhenopackets(List<Path> phenopackets,
-                                                                              MinimalOntology hpo) {
-        InputSanitizer sanitizer = InputSanitizer.defaultSanitizer(hpo);
+    private List<DataAndSanitationResultsAndPath> sanitizePhenopackets(List<Path> phenopackets,
+                                                                       MinimalOntology hpo) {
+        InputSanitizerFactory factory = new InputSanitizerFactory(hpo);
+        InputSanitizer sanitizer = selectSanitizer(factory);
         List<DataAndSanitationResultsAndPath> sanitationResults = new ArrayList<>(phenopackets.size());
         for (Path phenopacketPath : phenopackets) {
             DataAndSanitationResultsAndPath resultAndPath;

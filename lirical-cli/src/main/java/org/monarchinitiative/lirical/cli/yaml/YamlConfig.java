@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.cli.yaml;
 
-import org.monarchinitiative.lirical.core.analysis.AnalysisInputs;
+import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.Optional;
  * This class is used to input the YAML configuration file.
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
-public class YamlConfig implements AnalysisInputs {
+public class YamlConfig implements SanitationInputs {
 
     private String sampleId;
     private List<String> hpoIds;

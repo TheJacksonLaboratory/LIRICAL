@@ -10,9 +10,7 @@ import org.monarchinitiative.lirical.core.model.FilteringStats;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.output.*;
-import org.monarchinitiative.lirical.core.sanitize.InputSanitizer;
-import org.monarchinitiative.lirical.core.sanitize.SanitationResult;
-import org.monarchinitiative.lirical.core.sanitize.SanitizedInputs;
+import org.monarchinitiative.lirical.core.sanitize.*;
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +113,7 @@ public class PhenopacketsCommand extends OutputCommand {
                     LOGGER.info("Processing {}", result.path().toAbsolutePath());
                 }
                 try {
-                    SanitizedInputs sanitized = sanitationResult.sanitized();
+                    SanitizedInputs sanitized = sanitationResult.sanitizedInputs();
                     AnalysisData analysisData = AnalysisData.of(sanitized.sampleId(),
                             sanitized.age(), sanitized.sex(),
                             sanitized.presentHpoTerms(),
@@ -175,20 +173,20 @@ public class PhenopacketsCommand extends OutputCommand {
         return errors;
     }
 
-    private static List<SanitationResultsAndPath> sanitizePhenopackets(List<Path> phenopackets,
-                                                                      MinimalOntology hpo) {
-        InputSanitizer sanitizer = InputSanitizer.defaultSanitizer(hpo);
+    private List<SanitationResultsAndPath> sanitizePhenopackets(List<Path> phenopackets,
+                                                                MinimalOntology hpo) {
+        InputSanitizerFactory factory = new InputSanitizerFactory(hpo);
+        InputSanitizer sanitizer = selectSanitizer(factory);
+
         List<SanitationResultsAndPath> sanitationResults = new ArrayList<>(phenopackets.size());
         for (Path phenopacketPath : phenopackets) {
-            SanitationResultsAndPath resultAndPath;
             try {
-                AnalysisInputs inputs = PhenopacketUtil.readPhenopacketData(phenopacketPath);
+                SanitationInputs inputs = PhenopacketUtil.readPhenopacketData(phenopacketPath);
                 SanitationResult sanitationResult = sanitizer.sanitize(inputs);
-                resultAndPath = new SanitationResultsAndPath(sanitationResult, phenopacketPath);
+                sanitationResults.add(new SanitationResultsAndPath(sanitationResult, phenopacketPath));
             } catch (LiricalException e) {
-                resultAndPath = new SanitationResultsAndPath(null, phenopacketPath);
+                sanitationResults.add(new SanitationResultsAndPath(null, phenopacketPath));
             }
-            sanitationResults.add(resultAndPath);
         }
         return sanitationResults;
     }

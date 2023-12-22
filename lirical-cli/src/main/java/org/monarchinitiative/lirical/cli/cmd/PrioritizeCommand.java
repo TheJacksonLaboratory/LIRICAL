@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
-import org.monarchinitiative.lirical.core.analysis.AnalysisInputs;
+import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 import picocli.CommandLine;
 
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
     }
 
     @Override
-    protected AnalysisInputs prepareAnalysisInputs() {
+    protected SanitationInputs procureSanitationInputs() {
         List<String> presentTerms = new ArrayList<>();
         if (observed != null) {
             Arrays.stream(observed.split(","))
@@ -68,7 +68,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
                     .forEachOrdered(excludedTerms::add);
         }
 
-        return new AnalysisInputsDefault(sampleId, presentTerms, excludedTerms, age, sex, vcfPath);
+        return new SanitationInputsDefault(sampleId, presentTerms, excludedTerms, age, sex, vcfPath);
     }
 
 }

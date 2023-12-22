@@ -1,19 +1,20 @@
 package org.monarchinitiative.lirical.core.sanitize;
 
-import org.monarchinitiative.lirical.core.analysis.AnalysisInputs;
-
 import java.util.Collection;
 
+/**
+ * Result of the input sanitation.
+ * <p>
+ * The result consists of the inputs that were sanitized to the greatest extent possible
+ * and of the collection of issues that were found. Note that the sanitized data may be invalid
+ * even after the sanitation if further sanitation is impossible without manual intervention.
+ */
 public interface SanitationResult {
-
-    static SanitationResult notRun(AnalysisInputs inputs) {
-        return new SanitationResultNotRun(inputs);
-    }
 
     /**
      * @return the inputs sanitized to the greatest extent possible.
      */
-    SanitizedInputs sanitized();
+    SanitizedInputs sanitizedInputs();
 
     /**
      * @return a collection with sanity issues found in the input data.
@@ -39,6 +40,9 @@ public interface SanitationResult {
                 .anyMatch(i -> i.level().equals(SanityLevel.ERROR));
     }
 
+    /**
+     * @return {@code true} if the input has no errors and at least one warning.
+     */
     default boolean hasWarningsOnly() {
         return !hasErrors() && issues().stream().anyMatch(i -> i.level().equals(SanityLevel.WARNING));
     }

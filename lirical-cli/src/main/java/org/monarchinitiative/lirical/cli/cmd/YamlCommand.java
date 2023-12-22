@@ -2,7 +2,7 @@ package org.monarchinitiative.lirical.cli.cmd;
 
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.cli.yaml.YamlParser;
-import org.monarchinitiative.lirical.core.analysis.AnalysisInputs;
+import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -41,7 +41,7 @@ public class YamlCommand extends AbstractPrioritizeCommand {
     }
 
     @Override
-    protected AnalysisInputs prepareAnalysisInputs() throws LiricalParseException {
+    protected SanitationInputs procureSanitationInputs() throws LiricalParseException {
         LOGGER.info("Parsing YAML input file at {}", yamlPath);
         try (InputStream is = Files.newInputStream(yamlPath)) {
             return YamlParser.parse(is);

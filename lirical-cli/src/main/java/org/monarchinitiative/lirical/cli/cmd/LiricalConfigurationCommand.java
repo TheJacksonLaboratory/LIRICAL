@@ -10,9 +10,7 @@ import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseasePro
 import org.monarchinitiative.lirical.core.io.VariantParser;
 import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.lirical.core.model.*;
-import org.monarchinitiative.lirical.core.sanitize.SanitationResult;
-import org.monarchinitiative.lirical.core.sanitize.SanityIssue;
-import org.monarchinitiative.lirical.core.sanitize.SanityLevel;
+import org.monarchinitiative.lirical.core.sanitize.*;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.background.CustomBackgroundVariantFrequencyServiceFactory;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
@@ -408,6 +406,13 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 return dataSection.exomiserHg19Database.toAbsolutePath().toString();
             }
         }
+    }
+
+    protected InputSanitizer selectSanitizer(InputSanitizerFactory factory) {
+        return switch (runConfiguration.failurePolicy) {
+            case STRICT, LENIENT -> factory.forType(SanitizerType.DEFAULT);
+            case KAMIKAZE -> factory.forType(SanitizerType.NOOP);
+        };
     }
 
     protected static void reportElapsedTime(long startTime, long stopTime) {

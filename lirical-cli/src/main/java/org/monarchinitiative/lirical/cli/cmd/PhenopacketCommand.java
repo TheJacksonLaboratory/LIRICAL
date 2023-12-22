@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
-import org.monarchinitiative.lirical.core.analysis.AnalysisInputs;
+import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
@@ -39,16 +39,16 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
     }
 
     @Override
-    protected AnalysisInputs prepareAnalysisInputs() throws LiricalParseException {
+    protected SanitationInputs procureSanitationInputs() throws LiricalParseException {
         // We could have returned `data` right away, but we must ensure that VCF handed over via CLI has
         // a greater priority
-        AnalysisInputs data = PhenopacketUtil.readPhenopacketData(phenopacketPath);
+        SanitationInputs data = PhenopacketUtil.readPhenopacketData(phenopacketPath);
 
         String vcf = vcfPath != null
                 ? vcfPath
                 : data.vcf();
 
-        return new AnalysisInputsDefault(data.sampleId(),
+        return new SanitationInputsDefault(data.sampleId(),
                 data.presentHpoTerms(),
                 data.excludedHpoTerms(),
                 data.age(),

@@ -8,9 +8,7 @@ import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.output.*;
-import org.monarchinitiative.lirical.core.sanitize.InputSanitizer;
-import org.monarchinitiative.lirical.core.sanitize.SanitationResult;
-import org.monarchinitiative.lirical.core.sanitize.SanitizedInputs;
+import org.monarchinitiative.lirical.core.sanitize.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,31 +27,6 @@ import java.util.Optional;
 abstract class AbstractPrioritizeCommand extends OutputCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPrioritizeCommand.class);
-
-    private static AnalysisData prepareAnalysisData(Lirical lirical,
-                                                    GenomeBuild genomeBuild,
-                                                    TranscriptDatabase transcriptDb,
-                                                    SanitizedInputs inputs) throws LiricalParseException {
-        // Read VCF file if present.
-        GenesAndGenotypes genes;
-        if (inputs.vcf() == null) {
-            genes = GenesAndGenotypes.empty();
-        } else {
-            genes = readVariantsFromVcfFile(inputs.sampleId(),
-                    inputs.vcf(),
-                    genomeBuild,
-                    transcriptDb,
-                    lirical.variantParserFactory());
-        }
-
-        // Put together the analysis data
-        return AnalysisData.of(inputs.sampleId(),
-                inputs.age(),
-                inputs.sex(),
-                inputs.presentHpoTerms(),
-                inputs.excludedHpoTerms(),
-                genes);
-    }
 
     @Override
     public Integer execute() {
@@ -75,7 +48,7 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
             TranscriptDatabase transcriptDb = runConfiguration.transcriptDb;
 
             LOGGER.info("Parsing the analysis inputs");
-            AnalysisInputs inputs = prepareAnalysisInputs();
+            SanitationInputs inputs = procureSanitationInputs();
 
             // 1 - bootstrap the app
             LOGGER.info("Bootstrapping LIRICAL");
@@ -85,15 +58,10 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
                     .orElse(UNKNOWN_VERSION_PLACEHOLDER));
 
             // 2 - sanitize inputs
-            SanitationResult result;
-            if (runConfiguration.failurePolicy.equals(FailurePolicy.KAMIKAZE)) {
-                result = SanitationResult.notRun(inputs);
-            } else {
-                InputSanitizer sanitizer = InputSanitizer.defaultSanitizer(lirical.phenotypeService().hpo());
-                result = sanitizer.sanitize(inputs);
-            }
-            summarizeSanitationResult(result)
-                    .ifPresent(LOGGER::info);
+            InputSanitizerFactory sanitizerFactory = new InputSanitizerFactory(lirical.phenotypeService().hpo());
+            InputSanitizer sanitizer = selectSanitizer(sanitizerFactory);
+            SanitationResult result = sanitizer.sanitize(inputs);
+            summarizeSanitationResult(result).ifPresent(LOGGER::info);
 
             // We abort on dry run or if the issues are above the failure policy tolerance.
             if (runConfiguration.dryRun) {
@@ -119,7 +87,7 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
             }
 
             // 3 - prepare analysis data
-            AnalysisData analysisData = prepareAnalysisData(lirical, genomeBuild, transcriptDb, result.sanitized());
+            AnalysisData analysisData = prepareAnalysisData(lirical, genomeBuild, transcriptDb, result.sanitizedInputs());
 
             // 4 - run the analysis
             AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, transcriptDb);
@@ -165,9 +133,30 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
         return 0;
     }
 
-    /**
-     * Perform the simplest input parsing.
-     */
-    protected abstract AnalysisInputs prepareAnalysisInputs() throws LiricalParseException;
+    protected abstract SanitationInputs procureSanitationInputs() throws LiricalParseException;
 
+    private static AnalysisData prepareAnalysisData(Lirical lirical,
+                                                    GenomeBuild genomeBuild,
+                                                    TranscriptDatabase transcriptDb,
+                                                    SanitizedInputs inputs) throws LiricalParseException {
+        // Read VCF file if present.
+        GenesAndGenotypes genes;
+        if (inputs.vcf() == null) {
+            genes = GenesAndGenotypes.empty();
+        } else {
+            genes = readVariantsFromVcfFile(inputs.sampleId(),
+                    inputs.vcf(),
+                    genomeBuild,
+                    transcriptDb,
+                    lirical.variantParserFactory());
+        }
+
+        // Put together the analysis data
+        return AnalysisData.of(inputs.sampleId(),
+                inputs.age(),
+                inputs.sex(),
+                inputs.presentHpoTerms(),
+                inputs.excludedHpoTerms(),
+                genes);
+    }
 }

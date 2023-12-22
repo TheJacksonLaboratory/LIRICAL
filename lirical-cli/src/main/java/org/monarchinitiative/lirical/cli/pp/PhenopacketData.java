@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.cli.pp;
 
 import org.monarchinitiative.lirical.core.model.GenotypedVariant;
-import org.monarchinitiative.lirical.core.analysis.AnalysisInputs;
+import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public class PhenopacketData implements AnalysisInputs {
+public class PhenopacketData implements SanitationInputs {
 
     private final String genomeAssembly;
     private final String sampleId;

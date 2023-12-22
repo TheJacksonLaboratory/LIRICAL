@@ -1,15 +1,15 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
-import org.monarchinitiative.lirical.core.analysis.AnalysisInputs;
+import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 
 import java.util.List;
 
-record AnalysisInputsDefault(
+record SanitationInputsDefault(
         String sampleId,
         List<String> presentHpoTerms,
         List<String> excludedHpoTerms,
         String age,
         String sex,
         String vcf
-) implements AnalysisInputs {
+) implements SanitationInputs {
 }

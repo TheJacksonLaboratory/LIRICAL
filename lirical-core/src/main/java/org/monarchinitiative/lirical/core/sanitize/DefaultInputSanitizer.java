@@ -2,7 +2,6 @@ package org.monarchinitiative.lirical.core.sanitize;
 
 import org.monarchinitiative.lirical.core.model.Age;
 import org.monarchinitiative.lirical.core.model.Sex;
-import org.monarchinitiative.lirical.core.analysis.AnalysisInputs;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.Term;
@@ -26,7 +25,7 @@ class DefaultInputSanitizer implements InputSanitizer {
     }
 
     @Override
-    public SanitationResult sanitize(AnalysisInputs inputs) {
+    public SanitationResult sanitize(SanitationInputs inputs) {
         List<SanityIssue> issues = new ArrayList<>();
         // sampleId is nullable, nothing to be checked there at this point.
         SanitizedInputs sanitized = new SanitizedInputs(inputs.sampleId());

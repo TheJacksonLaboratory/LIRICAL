@@ -3,15 +3,14 @@ package org.monarchinitiative.lirical.core.sanitize;
 import java.util.Collection;
 
 /**
- * Results of the sanitation of {@link org.monarchinitiative.lirical.core.analysis.AnalysisInputs} by {@link InputSanitizer}.
+ * Results of the sanitation of {@link SanitationInputs} by {@link InputSanitizer}.
  * <p>
- * The {@link #sanitized()} provides data that were sanitized to the greatest extent possible. The data may be invalid,
- * however, further sanitation is impossible without manual intervention.
+ * The {@link #sanitizedInputs()} provides data that were sanitized to the greatest extent possible.
  *
- * @param sanitized the sanitized data.
+ * @param sanitizedInputs the sanitized data.
  * @param issues a collection of issues found during sanitation.
  */
-record SanitationResultDefault(SanitizedInputs sanitized,
+record SanitationResultDefault(SanitizedInputs sanitizedInputs,
                                Collection<SanityIssue> issues) implements SanitationResult {
 
 }

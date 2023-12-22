@@ -1,6 +1,5 @@
 package org.monarchinitiative.lirical.core.sanitize;
 
-import org.monarchinitiative.lirical.core.analysis.AnalysisInputs;
 import org.monarchinitiative.lirical.core.model.Age;
 import org.monarchinitiative.lirical.core.model.Sex;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -14,12 +13,10 @@ class SanitationResultNotRun implements SanitationResult {
 
     private final SanitizedInputs sanitizedInputs;
 
-    SanitationResultNotRun(AnalysisInputs inputs) {
-        List<TermId> present = inputs.presentHpoTerms().stream().map(TermId::of).toList();
-        List<TermId> excluded = inputs.excludedHpoTerms().stream().map(TermId::of).toList();
+    SanitationResultNotRun(SanitationInputs inputs) {
         sanitizedInputs = new SanitizedInputs(inputs.sampleId(),
-                present,
-                excluded,
+                inputs.presentHpoTerms().stream().map(TermId::of).toList(),
+                inputs.excludedHpoTerms().stream().map(TermId::of).toList(),
                 Age.parse(Period.parse(inputs.age())),
                 Sex.valueOf(inputs.sex()),
                 Path.of(inputs.vcf())
@@ -28,7 +25,7 @@ class SanitationResultNotRun implements SanitationResult {
 
 
     @Override
-    public SanitizedInputs sanitized() {
+    public SanitizedInputs sanitizedInputs() {
         return sanitizedInputs;
     }
 
