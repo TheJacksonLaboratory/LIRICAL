@@ -114,6 +114,8 @@ public interface Gene2Genotype extends Identified {
      * Note, only the variant that passed the filtering are considered.
      */
     default int pathogenicClinVarCount(String sampleId) {
+        if (sampleId == null)
+            return 0;
         return variants()
                 .filter(lv -> lv.clinVarAlleleData()
                         .map(cv -> cv.getClinvarClnSig().isPathogenicOrLikelyPathogenic())
@@ -143,6 +145,8 @@ public interface Gene2Genotype extends Identified {
      * or likely benign variants as deleterious.
      */
     default int deleteriousAlleleCount(String sampleId, float pathogenicityThreshold) {
+        if (sampleId == null)
+            return 0;
         // The first part of the filter clause ensures we do not clash with ClinVar variant interpretation.
         // In other words, a ClinVar benign or likely benign variant CANNOT be interpreted as deleterious
         // based on in silico pathogenicity scores.
@@ -158,6 +162,8 @@ public interface Gene2Genotype extends Identified {
     }
 
     default double getSumOfPathBinScores(String sampleId, float pathogenicityThreshold) {
+        if (sampleId == null)
+            return 0.;
         // Same as in `pathogenicAlleleCount(..)` above, the first part of the filter clause ensures
         // we do not clash with ClinVar variant interpretation.
         return variants()

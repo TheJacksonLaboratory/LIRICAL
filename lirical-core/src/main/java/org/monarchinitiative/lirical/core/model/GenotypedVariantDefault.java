@@ -56,8 +56,10 @@ class GenotypedVariantDefault implements GenotypedVariant {
     }
 
     @Override
-    public Optional<AlleleCount> alleleCount(String sample) {
-        return BinarySearch.binarySearch(alleleCounts, SampleAlleleCount::getSampleId, sample)
+    public Optional<AlleleCount> alleleCount(String sampleId) {
+        if (sampleId == null)
+            return Optional.empty();
+        return BinarySearch.binarySearch(alleleCounts, SampleAlleleCount::getSampleId, sampleId)
                 .map(SampleAlleleCount::getAlleleCount);
     }
 

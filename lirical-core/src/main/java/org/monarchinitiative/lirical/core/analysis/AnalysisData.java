@@ -22,14 +22,17 @@ public interface AnalysisData {
                            Collection<TermId> presentPhenotypeTerms,
                            Collection<TermId> negatedPhenotypeTerms,
                            GenesAndGenotypes genes) {
-        return new AnalysisDataDefault(sampleId,
+        return new AnalysisDataDefault(Objects.requireNonNull(sampleId),
                 age,
                 Objects.requireNonNull(sex),
-                List.copyOf(presentPhenotypeTerms),
-                List.copyOf(negatedPhenotypeTerms),
+                List.copyOf(Objects.requireNonNull(presentPhenotypeTerms)),
+                List.copyOf(Objects.requireNonNull(negatedPhenotypeTerms)),
                 genes);
     }
 
+    /**
+     * @return a non-null sample ID.
+     */
     String sampleId();
 
     // TODO - make non-null or wrap into Optional. See the TODO in Age for more info.

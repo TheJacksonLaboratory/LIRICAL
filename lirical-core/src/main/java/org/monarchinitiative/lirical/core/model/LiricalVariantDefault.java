@@ -34,8 +34,8 @@ class LiricalVariantDefault implements LiricalVariant {
     }
 
     @Override
-    public Optional<AlleleCount> alleleCount(String sample) {
-        return genotypedVariant.alleleCount(sample);
+    public Optional<AlleleCount> alleleCount(String sampleId) {
+        return genotypedVariant.alleleCount(sampleId);
     }
 
     @Override

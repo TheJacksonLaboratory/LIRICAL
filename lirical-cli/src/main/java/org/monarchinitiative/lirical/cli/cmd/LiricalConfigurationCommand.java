@@ -9,7 +9,10 @@ import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseasePro
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbability;
 import org.monarchinitiative.lirical.core.io.VariantParser;
 import org.monarchinitiative.lirical.core.io.VariantParserFactory;
-import org.monarchinitiative.lirical.core.model.*;
+import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
+import org.monarchinitiative.lirical.core.model.GenomeBuild;
+import org.monarchinitiative.lirical.core.model.LiricalVariant;
+import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.sanitize.*;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.background.CustomBackgroundVariantFrequencyServiceFactory;
@@ -304,27 +307,23 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         return builder.build();
     }
 
-    protected static GenesAndGenotypes readVariantsFromVcfFile(String sampleId,
-                                                               Path vcfPath,
-                                                               GenomeBuild genomeBuild,
-                                                               TranscriptDatabase transcriptDatabase,
-                                                               VariantParserFactory parserFactory) throws LiricalParseException {
-        if (parserFactory == null) {
-            LOGGER.warn("Cannot process the provided VCF file {}, resources are not set.", vcfPath.toAbsolutePath());
-            return GenesAndGenotypes.empty();
-        }
-
+    protected static SampleIdAndGenesAndGenotypes readVariantsFromVcfFile(String sampleId,
+                                                                          Path vcfPath,
+                                                                          GenomeBuild genomeBuild,
+                                                                          TranscriptDatabase transcriptDatabase,
+                                                                          VariantParserFactory parserFactory) throws LiricalParseException {
         LOGGER.debug("Getting variant parser to parse a VCF file using {} assembly and {} transcripts", genomeBuild, transcriptDatabase);
         Optional<VariantParser> parser = parserFactory.forPath(vcfPath, genomeBuild, transcriptDatabase);
         if (parser.isEmpty()) {
-            LOGGER.warn("Cannot obtain parser for processing the VCF file {} with {} {} due to missing resources",
-                    vcfPath.toAbsolutePath(), genomeBuild, transcriptDatabase);
-            return GenesAndGenotypes.empty();
+            throw new LiricalParseException(
+                    "Cannot obtain parser for processing the VCF file %s with %s %s due to missing resources"
+                            .formatted(vcfPath.toAbsolutePath(), genomeBuild, transcriptDatabase)
+            );
         }
 
         try (VariantParser variantParser = parser.get()) {
             Collection<String> sampleNames = variantParser.sampleNames();
-            validateSampleId(sampleId, vcfPath, sampleNames);
+            String usedId = validateSampleId(sampleId, vcfPath, sampleNames);
 
             // Read variants
             LOGGER.info("Reading variants from {}", vcfPath.toAbsolutePath());
@@ -334,7 +333,8 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                     .toList();
             progressReporter.summarize();
 
-            return GenesAndGenotypes.fromVariants(sampleNames, variants);
+            GenesAndGenotypes genesAndGenotypes = GenesAndGenotypes.fromVariants(sampleNames, variants);
+            return new SampleIdAndGenesAndGenotypes(usedId, genesAndGenotypes);
         } catch (Exception e) {
             throw new LiricalParseException(e);
         }
@@ -347,7 +347,9 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
      * @throws LiricalParseException if the VCF includes no sample data, the sample is not present,
      * or it is a multi-sample file and the sample ID is unset.
      */
-    private static void validateSampleId(String sampleId, Path vcfPath, Collection<String> sampleNames) throws LiricalParseException {
+    private static String validateSampleId(String sampleId,
+                                           Path vcfPath,
+                                           Collection<String> sampleNames) throws LiricalParseException {
         if (sampleNames.isEmpty())
             throw new LiricalParseException("No samples found in the VCF file at '" + vcfPath.toAbsolutePath() + '\'');
         if (sampleId == null) {
@@ -356,15 +358,21 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 throw new LiricalParseException(("The VCF file includes %d samples but the ID of the index sample " +
                         "is unset. Set the sample ID if VCF reports >1 sample").formatted(sampleNames.size()));
             } else {
-                sampleId = sampleNames.iterator().next();
-                LOGGER.debug("Sample ID is unset. However, the VCF file includes just a single sample, " +
-                        "so we'll proceed with the sample {}", sampleId);
+                String inferredId = sampleNames.iterator().next();
+                LOGGER.info("Sample ID is unset. However, since the VCF file includes just a single sample ("
+                        + inferredId + "), we will proceed with that one");
+                return inferredId;
             }
         } else if (!sampleNames.contains(sampleId)) {
-            throw new LiricalParseException("The sample " + sampleId + " is not present in VCF at '" + vcfPath.toAbsolutePath() + '\'');
+            String included = sampleNames.stream().collect(Collectors.joining(", ", "{", "}"));
+            throw new LiricalParseException(
+                    "The VCF at '%s' includes samples %s but it does not include the index sample %s"
+                            .formatted(vcfPath.toAbsolutePath(), included, sampleId)
+            );
         } else {
-            LOGGER.debug("Found sample {} in the VCF file at {}", sampleId, vcfPath.toAbsolutePath());
+            LOGGER.debug("Found the index sample {} in the VCF file at {}", sampleId, vcfPath.toAbsolutePath());
         }
+        return sampleId;
     }
 
     protected static Optional<String> summarizeSanitationResult(SanitationResult sanitationResult) {
@@ -380,14 +388,14 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             if (!errors.isEmpty()) {
                 lines.add(" Errors \uD83D\uDE31");
                 for (SanityIssue issue : errors) {
-                    lines.add(" - %s. %s.".formatted(issue.message(), issue.solution()));
+                    lines.add(" - %s. %s".formatted(issue.message(), issue.solution()));
                 }
             }
 
             if (!warnings.isEmpty()) {
                 lines.add(" Warnings \uD83D\uDE27");
                 for (SanityIssue issue : warnings) {
-                    lines.add(" - %s. %s.".formatted(issue.message(), issue.solution()));
+                    lines.add(" - %s. %s".formatted(issue.message(), issue.solution()));
                 }
             }
 
@@ -436,6 +444,9 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         String codePath = LiricalConfigurationCommand.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         LOGGER.info("Running LIRICAL from {}", codePath);
         return Path.of(codePath).toAbsolutePath().getParent();
+    }
+
+    protected record SampleIdAndGenesAndGenotypes(String sampleId, GenesAndGenotypes genesAndGenotypes) {
     }
 
 }

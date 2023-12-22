@@ -18,11 +18,13 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * This is a common superclass for {@link YamlCommand}, {@link PhenopacketCommand}, and {@link PrioritizeCommand}.
- * Its purpose is to provide command line parameters and variables that are used
- * in the same way by all the subclasses.
+ * The driver class for an analysis of a single individual.
+ * <p>
+ * This class is the superclass for {@link YamlCommand}, {@link PhenopacketCommand}, and {@link PrioritizeCommand}.
+ * The subclasses must provide the input data and the driver takes care of the rest.
  *
  * @author Peter N Robinson
+ * @author Daniel Danis
  */
 abstract class AbstractPrioritizeCommand extends OutputCommand {
 
@@ -140,19 +142,25 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
                                                     TranscriptDatabase transcriptDb,
                                                     SanitizedInputs inputs) throws LiricalParseException {
         // Read VCF file if present.
+        String sampleId;
         GenesAndGenotypes genes;
         if (inputs.vcf() == null) {
+            // Use placeholder, because the user did not provide sample ID,
+            // and we're running phenotype-only analysis.
+            sampleId = "subject";
             genes = GenesAndGenotypes.empty();
         } else {
-            genes = readVariantsFromVcfFile(inputs.sampleId(),
+            SampleIdAndGenesAndGenotypes sampleAndGenotypes = readVariantsFromVcfFile(inputs.sampleId(),
                     inputs.vcf(),
                     genomeBuild,
                     transcriptDb,
                     lirical.variantParserFactory());
+            sampleId = sampleAndGenotypes.sampleId();
+            genes = sampleAndGenotypes.genesAndGenotypes();
         }
 
         // Put together the analysis data
-        return AnalysisData.of(inputs.sampleId(),
+        return AnalysisData.of(sampleId,
                 inputs.age(),
                 inputs.sex(),
                 inputs.presentHpoTerms(),
