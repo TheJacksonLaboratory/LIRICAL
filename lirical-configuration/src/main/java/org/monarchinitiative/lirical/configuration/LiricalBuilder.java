@@ -312,6 +312,7 @@ public class LiricalBuilder {
                 phenotypeService,
                 backgroundVariantFrequencyServiceFactory,
                 variantMetadataServiceFactory,
+                functionalVariantAnnotatorService,
                 analysisResultWriterFactory,
                 options);
     }

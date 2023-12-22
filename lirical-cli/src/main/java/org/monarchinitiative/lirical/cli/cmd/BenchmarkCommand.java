@@ -120,12 +120,12 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
 
                 for (int i = 0; i < sanitationResults.size(); i++) {
                     DataAndSanitationResultsAndPath result = sanitationResults.get(i);
-                    // 3 - prepare benchmark data per phenopacket
-                    BenchmarkData benchmarkData = prepareBenchmarkData(lirical, genomeBuild, backgroundVariants, result);
-
-                    // 4 - run the analysis.
                     LOGGER.info("Starting the analysis of [{}/{}] {}", i, sanitationResults.size(),
                             result.path().toFile().getName());
+                    // 3 - prepare benchmark data per phenopacket
+                    BenchmarkData benchmarkData = prepareBenchmarkData(lirical, genomeBuild, transcriptDb, backgroundVariants, result);
+
+                    // 4 - run the analysis.
                     AnalysisResults results = analysisRunner.run(benchmarkData.analysisData(), analysisOptions);
 
                     // 5 - summarize the results.
@@ -174,7 +174,8 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
             return List.of();
         }
 
-        Optional<VariantParser> parser = lirical.variantParserFactory().forPath(vcfPath, genomeBuild, transcriptDatabase);
+        Optional<VariantParser> parser = lirical.variantParserFactory()
+                .forPath(vcfPath, genomeBuild, transcriptDatabase);
         if (parser.isEmpty()) {
             LOGGER.warn("Cannot obtain parser for processing the VCF file {} with {} {} due to missing resources",
                     vcfPath.toAbsolutePath(), genomeBuild, transcriptDatabase);
@@ -197,6 +198,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
 
     private BenchmarkData prepareBenchmarkData(Lirical lirical,
                                                GenomeBuild genomeBuild,
+                                               TranscriptDatabase transcriptDatabase,
                                                List<LiricalVariant> backgroundVariants,
                                                DataAndSanitationResultsAndPath resultsAndPath) throws LiricalParseException {
         GenesAndGenotypes genes;
@@ -214,6 +216,9 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                 VariantMetadataService metadataService = lirical.variantMetadataServiceFactory()
                         .getVariantMetadataService(genomeBuild).orElseThrow();
                 List<LiricalVariant> backgroundAndCausal = new ArrayList<>(backgroundVariants.size() + 10);
+
+                backgroundAndCausal.addAll(backgroundVariants);
+
                 for (GenotypedVariant variant : resultsAndPath.phenopacketData().getVariants()) {
                     List<TranscriptAnnotation> annotations = annotator.annotate(variant.variant());
                     List<VariantEffect> effects = annotations.stream()
