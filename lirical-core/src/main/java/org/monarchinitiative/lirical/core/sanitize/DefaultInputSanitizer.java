@@ -172,7 +172,7 @@ class DefaultInputSanitizer implements InputSanitizer {
                 issues.add(SanityIssue.warning(
                         "Term %s is not a descendant of Phenotypic abnormality".formatted(
                                 formatTerm(term)),
-                        "Consider removing %s from the phenotypic features".formatted(term)));
+                        "Consider removing %s from the phenotypic features".formatted(formatTerm(term))));
                 toRemove.add(i);
             }
             i++;

@@ -22,28 +22,18 @@ public interface SanitationResult {
     Collection<SanityIssue> issues();
 
     /**
-     * The analysis inputs are impeccable - not a single issue was found!
-     *
-     * @return {@code true} if the analysis inputs are impeccable and {@code false} otherwise.
+     * @return {@code true} if there is at least one issue in the analysis inputs.
      */
     default boolean hasErrorOrWarnings() {
-        return issues().stream().anyMatch(i -> i.level().equals(SanityLevel.ERROR) || i.level().equals(SanityLevel.WARNING));
+        return !issues().isEmpty();
     }
 
     /**
-     * The analysis is runnable unless we have a {@link SanityLevel#ERROR} issue.
-     *
-     * @return {@code true} if the analysis is runnable.
+     * @return {@code true} if there is at least one serious issue/error in the analysis inputs.
      */
     default boolean hasErrors() {
         return issues().stream()
                 .anyMatch(i -> i.level().equals(SanityLevel.ERROR));
     }
 
-    /**
-     * @return {@code true} if the input has no errors and at least one warning.
-     */
-    default boolean hasWarningsOnly() {
-        return !hasErrors() && issues().stream().anyMatch(i -> i.level().equals(SanityLevel.WARNING));
-    }
 }

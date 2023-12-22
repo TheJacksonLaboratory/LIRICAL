@@ -22,14 +22,14 @@ public class PhenopacketUtil {
     }
 
     public static PhenopacketData readPhenopacketData(Path phenopacket) throws LiricalParseException {
-        LOGGER.debug("Reading phenopacket from {}", phenopacket.toAbsolutePath());
+        LOGGER.trace("Reading phenopacket from {}", phenopacket.toAbsolutePath());
         PhenopacketData data = null;
         try (InputStream is = new BufferedInputStream(Files.newInputStream(phenopacket))) {
             PhenopacketImporter v2 = PhenopacketImporters.v2();
             data = v2.read(is);
-            LOGGER.debug("Success!");
+            LOGGER.trace("Success!");
         } catch (PhenopacketImportException | IOException e) {
-            LOGGER.debug("Unable to parse as v2 phenopacket, trying v1");
+            LOGGER.trace("Unable to parse as v2 phenopacket, trying v1");
         }
 
         if (data == null) {
@@ -37,7 +37,7 @@ public class PhenopacketUtil {
                 PhenopacketImporter v1 = PhenopacketImporters.v1();
                 data = v1.read(is);
             } catch (PhenopacketImportException | IOException e) {
-                LOGGER.debug("Unable to parse as v1 phenopacket");
+                LOGGER.trace("Unable to parse as v1 phenopacket");
                 throw new LiricalParseException("Unable to parse phenopacket from " + phenopacket.toAbsolutePath());
             }
         }

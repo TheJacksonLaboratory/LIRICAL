@@ -9,7 +9,7 @@ public class Util {
     public static boolean phenopacketIsEligibleForAnalysis(SanitationResult result, FailurePolicy failurePolicy) {
         return switch (failurePolicy) {
             case STRICT -> !result.hasErrorOrWarnings();
-            case LENIENT -> result.hasWarningsOnly();
+            case LENIENT -> !result.hasErrors();
             case KAMIKAZE -> true; // Yeeeeaaah..
         };
     }

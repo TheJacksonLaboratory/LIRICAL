@@ -2,6 +2,7 @@
 <configuration>
     <property name="pattern" value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
     <logger name="de.charite.compbio.jannovar" level="WARN"/>
+    <logger name="org.phenopackets.phenopackettools" level="WARN"/>
 
     <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
         <target>System.err</target>

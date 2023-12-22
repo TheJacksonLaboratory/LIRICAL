@@ -99,6 +99,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
             for (DataAndSanitationResultsAndPath result : sanitationResults) {
                 SanitationResult sanitationResult = result.result();
                 if (!Util.phenopacketIsEligibleForAnalysis(sanitationResult, runConfiguration.failurePolicy)) {
+                    LOGGER.info("Found issues in {}", result.path().toAbsolutePath());
                     proceed = false;
                     summarizeSanitationResult(sanitationResult)
                             .ifPresent(summary -> LOGGER.info("Phenopacket {}{}{}{}",
@@ -109,9 +110,11 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                 }
             }
 
-            if (!proceed)
+            if (!proceed) {
                 // Abort unless all phenopackets are eligible for analysis under the failure policy.
+                LOGGER.info("Aborting due to errors in phenopackets");
                 return 1;
+            }
 
             try (LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
                  BufferedWriter writer = openWriter(outputPath);
