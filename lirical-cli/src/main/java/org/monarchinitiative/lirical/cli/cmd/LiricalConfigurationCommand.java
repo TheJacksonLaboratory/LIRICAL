@@ -141,7 +141,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         @CommandLine.Option(names = {"--validation-policy"},
                 paramLabel = "{STRICT, LENIENT, NONE}",
                 description = {"Validation policy for the analysis", "(default: ${DEFAULT-VALUE})."})
-        public ValidationPolicy validationPolicy = ValidationPolicy.LENIENT;
+        public ValidationPolicy validationPolicy = ValidationPolicy.NONE;
 
         @CommandLine.Option(names ={"--dry-run"},
                 description = {
