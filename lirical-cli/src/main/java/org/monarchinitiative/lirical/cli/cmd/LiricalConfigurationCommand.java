@@ -88,8 +88,8 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 description = {
                 "Disregard a disease if no deleterious variants are found in the gene associated with the disease.",
                         "Used only if running with a VCF file.",
-                        "NOTE: the option has been DEPRECATED, use `--dwndv` instead",
-                        "(default: true)"
+                        "NOTE: the option has been DEPRECATED, use `--sdwndv` instead",
+                        "(default: ${DEFAULT-VALUE})"
                 })
         // REMOVE(v2.0.0)
         @Deprecated(forRemoval = true)

@@ -16,8 +16,6 @@ import org.monarchinitiative.lirical.core.sanitize.SanitizedInputs;
 import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
 import org.monarchinitiative.lirical.cli.pp.PhenopacketData;
-import org.monarchinitiative.lirical.cli.pp.PhenopacketImporter;
-import org.monarchinitiative.lirical.cli.pp.PhenopacketImporters;
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -249,35 +247,6 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                 genes);
 
         return new BenchmarkData(resultsAndPath.phenopacketData().getDiseaseIds().get(0), analysisData);
-    }
-
-    private static PhenopacketData readPhenopacketData(Path phenopacketPath) throws LiricalParseException {
-        PhenopacketData data = null;
-        try (InputStream is = new BufferedInputStream(Files.newInputStream(phenopacketPath))) {
-            PhenopacketImporter v2 = PhenopacketImporters.v2();
-            data = v2.read(is);
-            LOGGER.debug("Success!");
-        } catch (Exception e) {
-            LOGGER.debug("Unable to parse as v2 phenopacket, trying v1");
-        }
-
-        if (data == null) {
-            try (InputStream is = new BufferedInputStream(Files.newInputStream(phenopacketPath))) {
-                PhenopacketImporter v1 = PhenopacketImporters.v1();
-                data = v1.read(is);
-                LOGGER.debug("Success!");
-            } catch (IOException e) {
-                LOGGER.debug("Unable to parser as v1 phenopacket");
-                throw new LiricalParseException("Unable to parse phenopacket from " + phenopacketPath.toAbsolutePath());
-            }
-        }
-
-        // Check we have exactly one disease ID.
-        if (data.getDiseaseIds().isEmpty())
-            throw new LiricalParseException("Missing disease ID which is required for the benchmark!");
-        else if (data.getDiseaseIds().size() > 1)
-            throw new LiricalParseException("Saw >1 disease IDs {}, but we need exactly one for the benchmark!");
-        return data;
     }
 
     /**
