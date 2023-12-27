@@ -144,7 +144,7 @@ Sanitation
 
 The actions of the minimal policy are performed, plus:
 
-- Duplicate HPO terms are removed.
+- Duplicate HPO terms are removed such that each term is present at most once.
 - The HPO terms that are not descendants of Phenotypic abnormality are removed.
 - The logical inconsistencies are resolved:
 
