@@ -2,19 +2,16 @@ package org.monarchinitiative.lirical.cli.cmd.experimental;
 
 import org.monarchinitiative.lirical.cli.cmd.OutputCommand;
 import org.monarchinitiative.lirical.cli.cmd.PhenopacketUtil;
+import org.monarchinitiative.lirical.cli.cmd.util.Util;
 import org.monarchinitiative.lirical.core.Lirical;
-import org.monarchinitiative.lirical.core.analysis.AnalysisData;
-import org.monarchinitiative.lirical.core.analysis.AnalysisOptions;
-import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
-import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner;
+import org.monarchinitiative.lirical.core.analysis.*;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.monarchinitiative.lirical.core.model.FilteringStats;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.output.*;
-import org.monarchinitiative.lirical.core.service.HpoTermSanitizer;
-import org.monarchinitiative.lirical.io.analysis.PhenopacketData;
-import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.monarchinitiative.lirical.core.sanitize.*;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -22,6 +19,7 @@ import picocli.CommandLine;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,68 +82,81 @@ public class PhenopacketsCommand extends OutputCommand {
             return 1;
         }
 
-        // Prepare objects required for the overall analysis
-        HpoTermSanitizer sanitizer = new HpoTermSanitizer(lirical.phenotypeService().hpo());
+        // 2 - sanitize the input data
+        LOGGER.info("Reading and sanitizing {} phenopacket(s)", phenopacketPaths.size());
 
-        // 2 - process phenopackets
-        LOGGER.info("Processing {} phenopacket(s)", phenopacketPaths.size());
-        for (Path phenopacketPath : phenopacketPaths) {
-            try {
-                // prepare analysis data
-                LOGGER.info("Preparing analysis data for {}", phenopacketPath.toAbsolutePath());
-                PhenopacketData data = PhenopacketUtil.readPhenopacketData(phenopacketPath);
-
-                List<TermId> presentTerms = data.getHpoTerms().map(sanitizer::replaceIfObsolete).flatMap(Optional::stream).toList();
-                List<TermId> excludedTerms = data.getNegatedHpoTerms().map(sanitizer::replaceIfObsolete).flatMap(Optional::stream).toList();
-                if (presentTerms.isEmpty() && excludedTerms.isEmpty()) {
-                    LOGGER.warn("No phenotype terms were provided. Skipping..");
-                    continue;
-                }
-
-                AnalysisData analysisData = AnalysisData.of(data.getSampleId(),
-                        data.getAge().orElse(null),
-                        data.getSex().orElse(null),
-                        presentTerms,
-                        excludedTerms,
-                        GenesAndGenotypes.empty());
-
-                LOGGER.info("Running the analysis");
-                AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, runConfiguration.transcriptDb);
-                LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
-                AnalysisResults results = analysisRunner.run(analysisData, analysisOptions);
-
-                LOGGER.info("Writing out the results");
-                FilteringStats filteringStats = analysisData.genes().computeFilteringStats();
-                AnalysisResultsMetadata metadata = AnalysisResultsMetadata.builder()
-                        .setLiricalVersion(lirical.version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
-                        .setHpoVersion(lirical.phenotypeService().hpo().version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
-                        .setTranscriptDatabase(runConfiguration.transcriptDb.toString())
-                        .setLiricalPath(dataSection.liricalDataDirectory.toAbsolutePath().toString())
-                        .setExomiserPath(dataSection.exomiserDatabase == null ? "" : dataSection.exomiserDatabase.toAbsolutePath().toString())
-                        .setAnalysisDate(LocalDateTime.now().toString())
-                        .setSampleName(analysisData.sampleId())
-                        .setnPassingVariants(filteringStats.nPassingVariants())
-                        .setnFilteredVariants(filteringStats.nFilteredVariants())
-                        .setGenesWithVar(0) // TODO
-                        .setGlobalMode(runConfiguration.globalAnalysisMode)
-                        .build();
-
-                AnalysisResultWriterFactory factory = lirical.analysisResultsWriterFactory();
-
-                OutputOptions outputOptions = createOutputOptions(data.getSampleId());
-                for (OutputFormat fmt : output.outputFormats) {
-                    Optional<AnalysisResultsWriter> writer = factory.getWriter(fmt);
-                    if (writer.isPresent()) {
-                        writer.get().process(analysisData, results, metadata, outputOptions);
-                    }
-                }
-            } catch (IOException | LiricalException e) {
-                LOGGER.error("Error processing {}: {}", phenopacketPath.toAbsolutePath(), e.getMessage());
-                LOGGER.debug("More info:", e);
-                return 1;
+        MinimalOntology hpo = lirical.phenotypeService().hpo();
+        List<SanitationResultsAndPath> sanitationResults = sanitizePhenopackets(phenopacketPaths, hpo);
+        if (runConfiguration.dryRun) {
+            // summarize and quit
+            for (SanitationResultsAndPath result : sanitationResults) {
+                LOGGER.info("Summary for {}", result.path().toAbsolutePath());
+                LOGGER.info(summarizeSanitationResult(result.result()));
             }
+            return 0;
         }
-        reportElapsedTime(start, System.currentTimeMillis());
+
+        // 3 - process phenopackets
+        LOGGER.info("Processing phenopackets");
+        AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, runConfiguration.transcriptDb);
+
+        try (LiricalAnalysisRunner analysisRunner = lirical.analysisRunner()) {
+            for (SanitationResultsAndPath result : sanitationResults) {
+                SanitationResult sanitationResult = result.result();
+                if (!Util.phenopacketIsEligibleForAnalysis(sanitationResult, runConfiguration.validationPolicy)) {
+                    LOGGER.info(result.path().toAbsolutePath().toString());
+                    LOGGER.info(summarizeSanitationResult(sanitationResult));
+                } else {
+                    LOGGER.info("Processing {}", result.path().toAbsolutePath());
+                }
+                try {
+                    SanitizedInputs sanitized = sanitationResult.sanitizedInputs();
+                    AnalysisData analysisData = AnalysisData.of(sanitized.sampleId(),
+                            sanitized.age(), sanitized.sex(),
+                            sanitized.presentHpoTerms(),
+                            sanitized.excludedHpoTerms(),
+                            GenesAndGenotypes.empty());
+
+                    LOGGER.debug("Running the analysis");
+                    AnalysisResults results = analysisRunner.run(analysisData, analysisOptions);
+
+                    LOGGER.debug("Writing out the results");
+                    FilteringStats filteringStats = analysisData.genes().computeFilteringStats();
+                    AnalysisResultsMetadata metadata = AnalysisResultsMetadata.builder()
+                            .setLiricalVersion(lirical.version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
+                            .setHpoVersion(hpo.version().orElse(UNKNOWN_VERSION_PLACEHOLDER))
+                            .setTranscriptDatabase(runConfiguration.transcriptDb.toString())
+                            .setLiricalPath(dataSection.liricalDataDirectory.toAbsolutePath().toString())
+                            .setExomiserPath(figureOutExomiserPath())
+                            .setAnalysisDate(LocalDateTime.now().toString())
+                            .setSampleName(analysisData.sampleId())
+                            .setnPassingVariants(filteringStats.nPassingVariants())
+                            .setnFilteredVariants(filteringStats.nFilteredVariants())
+                            .setGenesWithVar(filteringStats.genesWithVariants())
+                            .setGlobalMode(runConfiguration.globalAnalysisMode)
+                            .build();
+
+                    AnalysisResultWriterFactory factory = lirical.analysisResultsWriterFactory();
+
+                    OutputOptions outputOptions = createOutputOptions(sanitized.sampleId());
+                    for (OutputFormat fmt : output.outputFormats) {
+                        Optional<AnalysisResultsWriter> writer = factory.getWriter(fmt);
+                        if (writer.isPresent()) {
+                            writer.get().process(analysisData, results, metadata, outputOptions);
+                        }
+                    }
+                } catch (IOException | LiricalException e) {
+                    LOGGER.error("Error processing {}: {}", result.path(), e.getMessage());
+                    LOGGER.debug("More info:", e);
+                    return 1;
+                }
+            }
+            reportElapsedTime(start, System.currentTimeMillis());
+        } catch (IOException e) {
+            LOGGER.error("Error occurred: {}", e.getMessage());
+            LOGGER.debug("More info:", e);
+            return 1;
+        }
 
         return 0;
     }
@@ -157,5 +168,26 @@ public class PhenopacketsCommand extends OutputCommand {
             errors.add("At least one phenopacket path must be provided");
 
         return errors;
+    }
+
+    private List<SanitationResultsAndPath> sanitizePhenopackets(List<Path> phenopackets,
+                                                                MinimalOntology hpo) {
+        InputSanitizerFactory factory = new InputSanitizerFactory(hpo);
+        InputSanitizer sanitizer = selectSanitizer(factory);
+
+        List<SanitationResultsAndPath> sanitationResults = new ArrayList<>(phenopackets.size());
+        for (Path phenopacketPath : phenopackets) {
+            try {
+                SanitationInputs inputs = PhenopacketUtil.readPhenopacketData(phenopacketPath);
+                SanitationResult sanitationResult = sanitizer.sanitize(inputs);
+                sanitationResults.add(new SanitationResultsAndPath(sanitationResult, phenopacketPath));
+            } catch (LiricalException e) {
+                sanitationResults.add(new SanitationResultsAndPath(null, phenopacketPath));
+            }
+        }
+        return sanitationResults;
+    }
+
+    private record SanitationResultsAndPath(SanitationResult result, Path path) {
     }
 }

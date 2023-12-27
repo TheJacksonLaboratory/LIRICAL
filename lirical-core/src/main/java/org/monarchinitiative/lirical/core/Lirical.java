@@ -14,13 +14,14 @@ public class Lirical {
 
     private final VariantParserFactory variantParserFactory;
     private final PhenotypeService phenotypeService;
+    private final FunctionalVariantAnnotatorService functionalVariantAnnotatorService;
     private final VariantMetadataServiceFactory variantMetadataServiceFactory;
     private final LiricalAnalysisRunner analysisRunner;
     private final AnalysisResultWriterFactory analysisResultWriterFactory;
     private final LiricalOptions options;
 
     /**
-     * @deprecated use {@link #of(VariantParserFactory, PhenotypeService, BackgroundVariantFrequencyServiceFactory, VariantMetadataServiceFactory, AnalysisResultWriterFactory, LiricalOptions)} instead.
+     * @deprecated use {@link #of(VariantParserFactory, PhenotypeService, BackgroundVariantFrequencyServiceFactory, VariantMetadataServiceFactory, FunctionalVariantAnnotatorService, AnalysisResultWriterFactory, LiricalOptions)} instead.
      * instead
      */
     // REMOVE(v2.0.0)
@@ -35,7 +36,7 @@ public class Lirical {
     }
 
     /**
-     * @deprecated use {@link #of(VariantParserFactory, PhenotypeService, BackgroundVariantFrequencyServiceFactory, VariantMetadataServiceFactory, AnalysisResultWriterFactory, LiricalOptions)} instead.
+     * @deprecated use {@link #of(VariantParserFactory, PhenotypeService, BackgroundVariantFrequencyServiceFactory, VariantMetadataServiceFactory, FunctionalVariantAnnotatorService, AnalysisResultWriterFactory, LiricalOptions)} instead.
      */
     // REMOVE(v2.0.0)
     @Deprecated(since = "2.0.0-RC2", forRemoval = true)
@@ -43,17 +44,19 @@ public class Lirical {
                              PhenotypeService phenotypeService,
                              BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory,
                              VariantMetadataServiceFactory variantMetadataService,
+                             FunctionalVariantAnnotatorService functionalVariantAnnotatorService,
                              AnalysisResultWriterFactory analysisResultWriterFactory) {
         return of(variantParserFactory,
                 phenotypeService,
                 backgroundVariantFrequencyServiceFactory,
                 variantMetadataService,
+                functionalVariantAnnotatorService,
                 analysisResultWriterFactory,
                 (String) null);
     }
 
     /**
-     * @deprecated use {@link #of(VariantParserFactory, PhenotypeService, BackgroundVariantFrequencyServiceFactory, VariantMetadataServiceFactory, AnalysisResultWriterFactory, LiricalOptions)} instead.
+     * @deprecated use {@link #of(VariantParserFactory, PhenotypeService, BackgroundVariantFrequencyServiceFactory, VariantMetadataServiceFactory, FunctionalVariantAnnotatorService, AnalysisResultWriterFactory, LiricalOptions)} instead.
      */
     // REMOVE(v2.0.0)
     @Deprecated(since = "2.0.0-RC2", forRemoval = true)
@@ -61,12 +64,14 @@ public class Lirical {
                              PhenotypeService phenotypeService,
                              BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory,
                              VariantMetadataServiceFactory variantMetadataService,
+                             FunctionalVariantAnnotatorService functionalVariantAnnotatorService,
                              AnalysisResultWriterFactory analysisResultWriterFactory,
                              String version) {
         return new Lirical(variantParserFactory,
                 phenotypeService,
                 backgroundVariantFrequencyServiceFactory,
                 variantMetadataService,
+                functionalVariantAnnotatorService,
                 analysisResultWriterFactory,
                 new LiricalOptions(version, 2));
     }
@@ -75,12 +80,14 @@ public class Lirical {
                              PhenotypeService phenotypeService,
                              BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory,
                              VariantMetadataServiceFactory variantMetadataService,
+                             FunctionalVariantAnnotatorService functionalVariantAnnotatorService,
                              AnalysisResultWriterFactory analysisResultWriterFactory,
                              LiricalOptions options) {
         return new Lirical(variantParserFactory,
                 phenotypeService,
                 backgroundVariantFrequencyServiceFactory,
                 variantMetadataService,
+                functionalVariantAnnotatorService,
                 analysisResultWriterFactory,
                 options);
     }
@@ -89,11 +96,13 @@ public class Lirical {
                     PhenotypeService phenotypeService,
                     BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory,
                     VariantMetadataServiceFactory variantMetadataServiceFactory,
+                    FunctionalVariantAnnotatorService functionalVariantAnnotatorService,
                     AnalysisResultWriterFactory analysisResultWriterFactory,
                     LiricalOptions options) {
         this.variantParserFactory = Objects.requireNonNull(variantParserFactory);
         this.phenotypeService = Objects.requireNonNull(phenotypeService);
         this.variantMetadataServiceFactory = Objects.requireNonNull(variantMetadataServiceFactory);
+        this.functionalVariantAnnotatorService = Objects.requireNonNull(functionalVariantAnnotatorService);
         this.options = Objects.requireNonNull(options);
         this.analysisRunner = LiricalAnalysisRunnerImpl.of(phenotypeService, backgroundVariantFrequencyServiceFactory, options.parallelism());
         this.analysisResultWriterFactory = Objects.requireNonNull(analysisResultWriterFactory);
@@ -110,10 +119,17 @@ public class Lirical {
         return phenotypeService;
     }
 
+    /**
+     * @deprecated use {@link #functionalVariantAnnotatorService()} instead
+     */
     @Deprecated(since = "2.0.0-RC2", forRemoval = true)
     // REMOVE(v2.0.0)
     public FunctionalVariantAnnotator functionalVariantAnnotator() {
         return null;
+    }
+
+    public FunctionalVariantAnnotatorService functionalVariantAnnotatorService() {
+        return functionalVariantAnnotatorService;
     }
 
     /**

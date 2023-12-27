@@ -5,6 +5,7 @@ import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 
 import java.io.InputStream;
 
+@Deprecated(forRemoval = true)
 public interface AnalysisDataParser {
 
     /**

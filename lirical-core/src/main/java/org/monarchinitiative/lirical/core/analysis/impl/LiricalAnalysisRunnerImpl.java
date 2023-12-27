@@ -184,4 +184,10 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
                 });
     }
 
+    @Override
+    public void close() {
+        LOGGER.debug("Shutting down the analysis runner");
+        // TODO - use close after updating Java to 19+
+        pool.shutdownNow();
+    }
 }

@@ -25,8 +25,8 @@ record LiricalVariantFailingFilters(GenotypedVariant gv, List<TranscriptAnnotati
     }
 
     @Override
-    public Optional<AlleleCount> alleleCount(String sample) {
-        return gv.alleleCount(sample);
+    public Optional<AlleleCount> alleleCount(String sampleId) {
+        return gv.alleleCount(sampleId);
     }
 
     @Override

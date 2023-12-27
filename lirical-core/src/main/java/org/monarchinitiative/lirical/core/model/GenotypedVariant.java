@@ -56,10 +56,10 @@ public interface GenotypedVariant {
     /**
      * Get allele count for given sample.
      *
-     * @param sample String with sample identifier.
+     * @param sampleId String with sample identifier.
      * @return optional with the allele count or an empty optional if data for the sample is missing.
      */
-    Optional<AlleleCount> alleleCount(String sample);
+    Optional<AlleleCount> alleleCount(String sampleId);
 
     /**
      * @return {@code true} if the variant <em>passed</em> the filters, according to the variant source (e.g. VCF file).

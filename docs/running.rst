@@ -87,6 +87,10 @@ The configuration options tweak the analysis.
 * ``--strict``: use strict penalties if the genotype does not match the disease model
   in terms of number of called pathogenic alleles (default: ``false``).
 * ``--pathogenicity-threshold``: Variants with greater pathogenicity score is considered deleterious (default: ``0.8``).
+* ``--validation-policy``: set the level of input sanity check, see :ref:`rst-input-sanitation` for more info.
+  Choose from `MINIMAL`, `LENIENT`, `STRICT` (default ``MINIMAL``).
+* ``--dry-run``: check if the inputs meet the validation policy requirements, report any issues,
+  and exit without running the analysis (default: ``false``).
 
 Output options
 ~~~~~~~~~~~~~~
@@ -124,7 +128,7 @@ The ``prioritize`` command takes the following options:
   that correspond to the phenotype terms negated/excluded in the proband.
 * ``--assembly`` genome build, choose from `hg19` or `hg38`, must be provided if ``--vcf`` is used (default: ``hg38``).
 * ``--vcf``: path to VCF file with exome/genome sequencing results. The file can be compressed.
-* ``--sample-id``: proband's identifier (default: `Sample`).
+* ``--sample-id``: proband's identifier, must be provided if running with a multi-sample VCF file (default: `subject`).
 * ``--age``: proband's age as an ISO8601 duration.
   (e.g. ``P9Y`` for 9 years, ``P2Y3M`` for 2 years and 3 months, or ``P33W`` for the 33th gestational week).
 * ``--sex``: proband's sex, choose from `MALE`, `FEMALE`, `UNKNOWN` (default: `UNKNOWN`).

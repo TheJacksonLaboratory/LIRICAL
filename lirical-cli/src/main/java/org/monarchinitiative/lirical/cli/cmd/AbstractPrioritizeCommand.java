@@ -3,21 +3,28 @@ package org.monarchinitiative.lirical.cli.cmd;
 import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.analysis.*;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
+import org.monarchinitiative.lirical.core.model.FilteringStats;
+import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
+import org.monarchinitiative.lirical.core.model.GenomeBuild;
+import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.output.*;
-import org.monarchinitiative.lirical.core.model.*;
+import org.monarchinitiative.lirical.core.sanitize.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 /**
- * This is a common superclass for {@link YamlCommand}, {@link PhenopacketCommand}, and {@link PrioritizeCommand}.
- * Its purpose is to provide command line parameters and variables that are used
- * in the same way by all the subclasses.
+ * The driver class for an analysis of a single individual.
+ * <p>
+ * This class is the superclass for {@link YamlCommand}, {@link PhenopacketCommand}, and {@link PrioritizeCommand}.
+ * The subclasses must provide the input data and the driver takes care of the rest.
  *
  * @author Peter N Robinson
+ * @author Daniel Danis
  */
 abstract class AbstractPrioritizeCommand extends OutputCommand {
 
@@ -42,27 +49,62 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
             LOGGER.debug("Using {} transcripts", runConfiguration.transcriptDb);
             TranscriptDatabase transcriptDb = runConfiguration.transcriptDb;
 
+            LOGGER.info("Parsing the analysis inputs");
+            SanitationInputs inputs = procureSanitationInputs();
+
             // 1 - bootstrap the app
+            LOGGER.info("Bootstrapping LIRICAL");
             Lirical lirical = bootstrapLirical(genomeBuild);
             LOGGER.info("Configured LIRICAL {}", lirical.version()
                     .map("v%s"::formatted)
                     .orElse(UNKNOWN_VERSION_PLACEHOLDER));
 
-            // 2 - prepare inputs
-            LOGGER.info("Preparing the analysis data");
-            AnalysisData analysisData = prepareAnalysisData(lirical, genomeBuild, transcriptDb);
-            if (analysisData.presentPhenotypeTerms().isEmpty() && analysisData.negatedPhenotypeTerms().isEmpty()) {
-                LOGGER.warn("No phenotype terms were provided. Aborting..");
-                return 1;
+            // 2 - sanitize inputs
+            InputSanitizerFactory sanitizerFactory = new InputSanitizerFactory(lirical.phenotypeService().hpo());
+            InputSanitizer sanitizer = selectSanitizer(sanitizerFactory);
+            SanitationResult result = sanitizer.sanitize(inputs);
+            LOGGER.info(summarizeSanitationResult(result));
+
+            // We abort on dry run or if the issues are above the failure policy tolerance.
+            if (runConfiguration.dryRun) {
+                boolean canBeRun = switch (runConfiguration.validationPolicy) {
+                    case STRICT -> !result.hasErrorOrWarnings();
+                    case LENIENT, MINIMAL -> !result.hasErrors();
+                };
+                LOGGER.info("The analysis can be run under {} validation policy: {}",
+                        runConfiguration.validationPolicy.name(), canBeRun);
+                LOGGER.info("Aborting due to `--dry-run` option");
+                return 0;
+            } else {
+                switch (runConfiguration.validationPolicy) {
+                    case STRICT -> {
+                        if (result.hasErrorOrWarnings()) {
+                            LOGGER.info("Aborting the run. Fix the errors and warnings or use more permissive failure policy");
+                            return 1;
+                        }
+                    }
+                    case LENIENT, MINIMAL -> {
+                        if (result.hasErrors()) {
+                            LOGGER.info("Aborting the run due to errors in the input. Fix the errors before proceeding");
+                            return 1;
+                        }
+                    }
+                    default -> throw new IllegalStateException("Unexpected value: " + runConfiguration.validationPolicy);
+                }
             }
 
-            // 3 - run the analysis
+            // 3 - prepare analysis data
+            AnalysisData analysisData = prepareAnalysisData(lirical, genomeBuild, transcriptDb, result.sanitizedInputs());
+
+            // 4 - run the analysis
             AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, transcriptDb);
             LOGGER.info("Starting the analysis");
-            LiricalAnalysisRunner analysisRunner = lirical.analysisRunner();
-            AnalysisResults results = analysisRunner.run(analysisData, analysisOptions);
+            AnalysisResults results;
+            try (LiricalAnalysisRunner analysisRunner = lirical.analysisRunner()) {
+                results = analysisRunner.run(analysisData, analysisOptions);
+            }
 
-            // 4 - write out the results
+            // 5 - write out the results
             LOGGER.info("Writing out the results");
             FilteringStats filteringStats = analysisData.genes().computeFilteringStats();
             AnalysisResultsMetadata metadata = AnalysisResultsMetadata.builder()
@@ -98,18 +140,36 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
         return 0;
     }
 
-    private String figureOutExomiserPath() {
-        if (dataSection.exomiserHg19Database == null && dataSection.exomiserHg38Database == null) {
-            return "";
+    protected abstract SanitationInputs procureSanitationInputs() throws LiricalParseException;
+
+    private static AnalysisData prepareAnalysisData(Lirical lirical,
+                                                    GenomeBuild genomeBuild,
+                                                    TranscriptDatabase transcriptDb,
+                                                    SanitizedInputs inputs) throws LiricalParseException {
+        // Read VCF file if present.
+        String sampleId;
+        GenesAndGenotypes genes;
+        if (inputs.vcf() == null) {
+            // Use placeholder, because the user did not provide sample ID,
+            // and we're running phenotype-only analysis.
+            sampleId = "subject";
+            genes = GenesAndGenotypes.empty();
         } else {
-            if (dataSection.exomiserHg19Database == null) {
-                return dataSection.exomiserHg38Database.toAbsolutePath().toString();
-            } else {
-                return dataSection.exomiserHg19Database.toAbsolutePath().toString();
-            }
+            SampleIdAndGenesAndGenotypes sampleAndGenotypes = readVariantsFromVcfFile(inputs.sampleId(),
+                    inputs.vcf(),
+                    genomeBuild,
+                    transcriptDb,
+                    lirical.variantParserFactory());
+            sampleId = sampleAndGenotypes.sampleId();
+            genes = sampleAndGenotypes.genesAndGenotypes();
         }
+
+        // Put together the analysis data
+        return AnalysisData.of(sampleId,
+                inputs.age(),
+                inputs.sex(),
+                inputs.presentHpoTerms(),
+                inputs.excludedHpoTerms(),
+                genes);
     }
-
-    protected abstract AnalysisData prepareAnalysisData(Lirical lirical, GenomeBuild genomeBuild, TranscriptDatabase transcriptDb) throws LiricalParseException;
-
 }
