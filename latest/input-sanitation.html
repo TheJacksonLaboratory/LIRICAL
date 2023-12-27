@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analysis input validation &mdash; LIRICAL 2.0.0-RC3-SNAPSHOT documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=4a533813"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Output files" href="output.html" />
+    <link rel="prev" title="Running LIRICAL" href="running.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LIRICAL
+          </a>
+              <div class="version">
+                2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up LIRICAL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="running.html">Running LIRICAL</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Analysis input validation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#analysis-requirements">Analysis requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sample-identifier">Sample identifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#phenotypic-features">Phenotypic features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#age">Age</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sex">Sex</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vcf-file">VCF file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#validation-policy">Validation policy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#minimal-validation-policy"><cite>MINIMAL</cite> validation policy</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sanitation">Sanitation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#lenient-validation-policy"><cite>LENIENT</cite> validation policy</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Requirements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Sanitation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#strict-validation-policy"><cite>STRICT</cite> validation policy</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Requirements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">Sanitation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanations.html">LIRICAL: How does it work?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">LIRICAL Advanced Options</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LIRICAL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Analysis input validation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/input-sanitation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="analysis-input-validation">
+<span id="rst-input-sanitation"></span><h1>Analysis input validation<a class="headerlink" href="#analysis-input-validation" title="Link to this heading"></a></h1>
+<p>LIRICAL performs Q/C checks and sanitation before running the analysis.</p>
+<p>Here we summarize the requirements and checks performed on all sections of the analysis input.</p>
+<section id="analysis-requirements">
+<h2>Analysis requirements<a class="headerlink" href="#analysis-requirements" title="Link to this heading"></a></h2>
+<p>Here we summarize the requirements of inputs that LIRICAL needs for the analysis.</p>
+<section id="sample-identifier">
+<h3>Sample identifier<a class="headerlink" href="#sample-identifier" title="Link to this heading"></a></h3>
+<p>Sample identifier MUST be provided if the analysis is run with a multi-sample VCF file. Otherwise, LIRICAL is unable
+to choose the variant genotypes.
+The identifier is <em>optional</em> if running a phenotype-only analysis or with a single-sample VCF file,
+where LIRICAL uses the identifier found in the VCF file.</p>
+<p>The analysis will stop if run with multi-sample VCF file and the identifier is not available,
+or if the provided identifier is not found in the VCF file (applies to single-sample VCFs as well).</p>
+</section>
+<section id="phenotypic-features">
+<h3>Phenotypic features<a class="headerlink" href="#phenotypic-features" title="Link to this heading"></a></h3>
+<p>LIRICAL uses a set of phenotypic features that were observed or specifically excluded in the subject to prioritize
+the diseases and several checks are applied to mitigate common errors ensure correctness of the analysis.</p>
+<p>The checks focus on the following:</p>
+<ul>
+<li><p>At least one present or excluded HPO term is provided.</p></li>
+<li><p>All phenotypic features are formatted as <em>Compact Uniform Resource Identifiers</em> (CURIEs), such as <code class="docutils literal notranslate"><span class="pre">HP:0001250</span></code>
+for <em>Seizure</em>. A valid CURIE consists of a prefix (e.g. <code class="docutils literal notranslate"><span class="pre">HP</span></code>), delimiter (<code class="docutils literal notranslate"><span class="pre">:</span></code> or <code class="docutils literal notranslate"><span class="pre">_</span></code>), and id (e.g. <code class="docutils literal notranslate"><span class="pre">0001250</span></code>).</p></li>
+<li><p>The CURIEs are <em>unique</em>, i.e. used at most once.</p></li>
+<li><p>The CURIEs correspond to identifiers of <em>current</em> or <em>obsolete</em> HPO terms.</p></li>
+<li><p>The HPO terms are descendants of <a class="reference external" href="https://hpo.jax.org/app/browse/term/HP:0000118">Phenotypic abnormality</a> branch.</p></li>
+<li><p>The HPO terms are logically consistent:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The subject is not annotated with an HPO term in observed and excluded state at the same time.</p></li>
+<li><p>The subject is not annotated with an observed HPO term and its observed or excluded ancestor.</p></li>
+<li><p>The subject is not annotated with an excluded HPO term and its excluded ancestor.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="age">
+<h3>Age<a class="headerlink" href="#age" title="Link to this heading"></a></h3>
+<p>LIRICAL does not use the age of the subject at the moment. However, if set, the age must be formatted
+as ISO8601 duration. For instance <code class="docutils literal notranslate"><span class="pre">P1Y8M</span></code> for 1 year and 8 months of age.</p>
+</section>
+<section id="sex">
+<h3>Sex<a class="headerlink" href="#sex" title="Link to this heading"></a></h3>
+<p>The sex must be provided as one of {<code class="docutils literal notranslate"><span class="pre">MALE</span></code>, <code class="docutils literal notranslate"><span class="pre">FEMALE</span></code>, <code class="docutils literal notranslate"><span class="pre">UNKNOWN</span></code>}. If the input is not parsable,
+<code class="docutils literal notranslate"><span class="pre">UNKNOWN</span></code> is used by default.</p>
+</section>
+<section id="vcf-file">
+<h3>VCF file<a class="headerlink" href="#vcf-file" title="Link to this heading"></a></h3>
+<p>The path to VCF file can be provided via CLI or through phenopacket/YAML file. The path must point to a file
+that is readable by the user running the LIRICAL process.</p>
+</section>
+</section>
+<section id="validation-policy">
+<h2>Validation policy<a class="headerlink" href="#validation-policy" title="Link to this heading"></a></h2>
+<p>LIRICAL enforces the requirements depending on the validation policy. There are three validation policies:</p>
+<ul class="simple">
+<li><p><em>MINIMAL</em></p></li>
+<li><p><em>LENIENT</em></p></li>
+<li><p><em>STRICT</em></p></li>
+</ul>
+<p>with increasing sanity requirements.</p>
+<p>The input validation results are always logged in the output. The log includes the following line if the input is OK:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Input</span> <span class="n">sanitation</span> <span class="n">found</span> <span class="n">no</span> <span class="n">issues</span>
+</pre></div>
+</div>
+<p>Alternatively, the issues are logged to the terminal. For instance:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Found issues 0 errors and 1 warnings
+ Errors 😱
+ - Sample must not be annotated with Clonic seizure [HP:0020221] while its ancestor
+   Seizure [HP:0001250] is excluded. Resolve the logical inconsistency by choosing
+   one of the terms.
+ Warnings 😧
+ - Sample should not be annotated with Patent foramen ovale [HP:0001655] and its ancestor
+   Atrial septal defect [HP:0001631]. Remove Atrial septal defect [HP:0001631]
+   from the phenotype terms.
+</pre></div>
+</div>
+<p>The issues are classified as errors and warnings.
+<em>Error</em> is a serious issue that MUST be fixed and human intervention is required.
+Warning is an issue that SHOULD be fixed. However, unlike an error, warning can be fixed automatically.
+The output includes a suggested resolution, e.g. choosing <em>Clonic seizure</em> or <em>Seizure</em> in the error above.</p>
+<p>The warnings are be fixed depending on the used validation policy.</p>
+<section id="minimal-validation-policy">
+<h3><cite>MINIMAL</cite> validation policy<a class="headerlink" href="#minimal-validation-policy" title="Link to this heading"></a></h3>
+<p>Minimal validation policy enforces the least constraint on the analysis inputs.
+The analysis is run <em>“as is”</em> and the run is aborted only if the most important information is missing.
+Only the most rudimentary sanitation is applied.</p>
+<section id="requirements">
+<h4>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h4>
+<p>The analysis requires the following:</p>
+<ul class="simple">
+<li><p>At least one HPO term is provided.</p></li>
+<li><p>VCF path points to a readable file, if provided.</p></li>
+<li><p>Sample identifier is provided if run with a multi-sample VCF and the sample identifier
+must be present in the VCF file.</p></li>
+</ul>
+</section>
+<section id="sanitation">
+<h4>Sanitation<a class="headerlink" href="#sanitation" title="Link to this heading"></a></h4>
+<p>The following actions are performed on the analysis input:</p>
+<ul class="simple">
+<li><p>Malformed CURIEs are removed.</p></li>
+<li><p>CURIEs that do not correspond to current or obsolete HPO terms are removed.</p></li>
+<li><p>The obsolete HPO term identifiers are replaced with the current identifiers.</p></li>
+</ul>
+</section>
+</section>
+<section id="lenient-validation-policy">
+<h3><cite>LENIENT</cite> validation policy<a class="headerlink" href="#lenient-validation-policy" title="Link to this heading"></a></h3>
+<p>Lenient validation policy attempts to fix as many issues as possible.</p>
+<section id="id1">
+<h4>Requirements<a class="headerlink" href="#id1" title="Link to this heading"></a></h4>
+<p>The policy requires all points of the minimal policy, plus:</p>
+<ul class="simple">
+<li><p>The subject is <em>NOT</em> annotated with an HPO term that is both present and excluded.</p></li>
+<li><p>The subject is <em>NOT</em> annotated with a present HPO term and its excluded ancestor.</p></li>
+</ul>
+</section>
+<section id="id2">
+<h4>Sanitation<a class="headerlink" href="#id2" title="Link to this heading"></a></h4>
+<p>The actions of the minimal policy are performed, plus:</p>
+<ul>
+<li><p>Duplicate HPO terms are removed such that each term is present at most once.</p></li>
+<li><p>The HPO terms that are not descendants of Phenotypic abnormality are removed.</p></li>
+<li><p>The logical inconsistencies are resolved:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>If the subject is annotated with an excluded HPO term (e.g. no Focal seizure) and its excluded ancestor
+(e.g. no Seizure) then the term is removed and the ancestor is kept.</p></li>
+<li><p>If the subject is annotated with a present HPO term (e.g. Focal seizure) and its present ancestor (e.g. Seizure),
+then the ancestor is removed and the term is kept.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</section>
+</section>
+<section id="strict-validation-policy">
+<h3><cite>STRICT</cite> validation policy<a class="headerlink" href="#strict-validation-policy" title="Link to this heading"></a></h3>
+<p>Strict validation policy adds no additional requirements than those of <em>lenient</em> policy. However, the analysis
+is not run unless no errors or warnings are found.</p>
+<section id="id3">
+<h4>Requirements<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>
+<p>On top of the lenient policy, strict policy requires the following:</p>
+<ul class="simple">
+<li><p>HPO terms are unique.</p></li>
+<li><p>HPO terms are descendants of Phenotypic abnormality.</p></li>
+<li><p>There are no logical inconsistencies in HPO terms.</p></li>
+<li><p>Age is well formatted, if provided.</p></li>
+<li><p>Sex is well formatted, if provided.</p></li>
+</ul>
+</section>
+<section id="id4">
+<h4>Sanitation<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
+<p>Strict policy applies no sanitation.</p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">--dry-run</span></code> option to check if the inputs can be run under given validation policy.</p>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="running.html" class="btn btn-neutral float-left" title="Running LIRICAL" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="output.html" class="btn btn-neutral float-right" title="Output files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Peter Robinson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

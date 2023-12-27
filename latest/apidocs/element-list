@@ -5,6 +5,9 @@ org.monarchinitiative.lirical.background.vcf
 org.monarchinitiative.lirical.cli
 org.monarchinitiative.lirical.cli.cmd
 org.monarchinitiative.lirical.cli.cmd.experimental
+org.monarchinitiative.lirical.cli.cmd.util
+org.monarchinitiative.lirical.cli.pp
+org.monarchinitiative.lirical.cli.yaml
 org.monarchinitiative.lirical.configuration
 org.monarchinitiative.lirical.configuration.impl
 org.monarchinitiative.lirical.core
@@ -17,6 +20,7 @@ org.monarchinitiative.lirical.core.likelihoodratio
 org.monarchinitiative.lirical.core.likelihoodratio.poisson
 org.monarchinitiative.lirical.core.model
 org.monarchinitiative.lirical.core.output
+org.monarchinitiative.lirical.core.sanitize
 org.monarchinitiative.lirical.core.service
 org.monarchinitiative.lirical.core.util
 org.monarchinitiative.lirical.exomiser_db_adapter
@@ -25,10 +29,8 @@ org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency
 org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity
 org.monarchinitiative.lirical.exomiser_db_adapter.serializers
 org.monarchinitiative.lirical.io
-org.monarchinitiative.lirical.io.analysis
 org.monarchinitiative.lirical.io.background
 org.monarchinitiative.lirical.io.output
-org.monarchinitiative.lirical.io.output.serialize
 org.monarchinitiative.lirical.io.output.svg
 org.monarchinitiative.lirical.io.service
 org.monarchinitiative.lirical.io.vcf

@@ -22,7 +22,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Output files" href="output.html" />
+    <link rel="next" title="Analysis input validation" href="input-sanitation.html" />
     <link rel="prev" title="Tutorial" href="tutorial.html" /> 
 </head>
 
@@ -68,6 +68,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#choosing-between-yaml-and-phenopacket-input-formats">Choosing between YAML and Phenopacket input formats</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="input-sanitation.html">Analysis input validation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="output.html">Output files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="explanations.html">LIRICAL: How does it work?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="advanced.html">LIRICAL Advanced Options</a></li>
@@ -176,6 +177,10 @@ Only applicable to the HTML report when running with a VCF file (genotype-aware 
 <li><p><code class="docutils literal notranslate"><span class="pre">--strict</span></code>: use strict penalties if the genotype does not match the disease model
 in terms of number of called pathogenic alleles (default: <code class="docutils literal notranslate"><span class="pre">false</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--pathogenicity-threshold</span></code>: Variants with greater pathogenicity score is considered deleterious (default: <code class="docutils literal notranslate"><span class="pre">0.8</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--validation-policy</span></code>: set the level of input sanity check, see <a class="reference internal" href="input-sanitation.html#rst-input-sanitation"><span class="std std-ref">Analysis input validation</span></a> for more info.
+Choose from <cite>MINIMAL</cite>, <cite>LENIENT</cite>, <cite>STRICT</cite> (default <code class="docutils literal notranslate"><span class="pre">MINIMAL</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--dry-run</span></code>: check if the inputs meet the validation policy requirements, report any issues,
+and exit without running the analysis (default: <code class="docutils literal notranslate"><span class="pre">false</span></code>).</p></li>
 </ul>
 </section>
 <section id="output-options">
@@ -210,7 +215,7 @@ that correspond to the phenotype terms observed in the proband.</p></li>
 that correspond to the phenotype terms negated/excluded in the proband.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--assembly</span></code> genome build, choose from <cite>hg19</cite> or <cite>hg38</cite>, must be provided if <code class="docutils literal notranslate"><span class="pre">--vcf</span></code> is used (default: <code class="docutils literal notranslate"><span class="pre">hg38</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--vcf</span></code>: path to VCF file with exome/genome sequencing results. The file can be compressed.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--sample-id</span></code>: proband’s identifier (default: <cite>Sample</cite>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--sample-id</span></code>: proband’s identifier, must be provided if running with a multi-sample VCF file (default: <cite>subject</cite>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--age</span></code>: proband’s age as an ISO8601 duration.
 (e.g. <code class="docutils literal notranslate"><span class="pre">P9Y</span></code> for 9 years, <code class="docutils literal notranslate"><span class="pre">P2Y3M</span></code> for 2 years and 3 months, or <code class="docutils literal notranslate"><span class="pre">P33W</span></code> for the 33th gestational week).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--sex</span></code>: proband’s sex, choose from <cite>MALE</cite>, <cite>FEMALE</cite>, <cite>UNKNOWN</cite> (default: <cite>UNKNOWN</cite>).</p></li>
@@ -322,7 +327,7 @@ of the VCF file on your file system. Then, the analysis is run as:</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="tutorial.html" class="btn btn-neutral float-left" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="output.html" class="btn btn-neutral float-right" title="Output files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="input-sanitation.html" class="btn btn-neutral float-right" title="Analysis input validation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
