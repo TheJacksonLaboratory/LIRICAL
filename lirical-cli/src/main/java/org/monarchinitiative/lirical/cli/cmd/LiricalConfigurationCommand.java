@@ -377,7 +377,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         return sampleId;
     }
 
-    protected static Optional<String> summarizeSanitationResult(SanitationResult sanitationResult) {
+    protected static String summarizeSanitationResult(SanitationResult sanitationResult) {
         if (sanitationResult.hasErrorOrWarnings()) {
             Map<SanityLevel, List<SanityIssue>> byLevel = sanitationResult.issues().stream()
                     .collect(Collectors.groupingBy(SanityIssue::level));
@@ -386,7 +386,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             List<SanityIssue> warnings = byLevel.getOrDefault(SanityLevel.WARNING, List.of());
 
             List<String> lines = new ArrayList<>();
-            lines.add("Found issues %d errors and %d warnings".formatted(errors.size(), warnings.size()));
+            lines.add("Input sanitation found %d errors and %d warnings".formatted(errors.size(), warnings.size()));
             if (!errors.isEmpty()) {
                 lines.add(" Errors \uD83D\uDE31");
                 for (SanityIssue issue : errors) {
@@ -401,9 +401,10 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 }
             }
 
-            return Optional.of(String.join(System.lineSeparator(), lines));
+            return String.join(System.lineSeparator(), lines);
+        } else {
+            return "Input sanitation found no issues";
         }
-        return Optional.empty();
     }
 
     protected String figureOutExomiserPath() {

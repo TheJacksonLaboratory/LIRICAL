@@ -63,7 +63,7 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
             InputSanitizerFactory sanitizerFactory = new InputSanitizerFactory(lirical.phenotypeService().hpo());
             InputSanitizer sanitizer = selectSanitizer(sanitizerFactory);
             SanitationResult result = sanitizer.sanitize(inputs);
-            summarizeSanitationResult(result).ifPresent(LOGGER::info);
+            LOGGER.info(summarizeSanitationResult(result));
 
             // We abort on dry run or if the issues are above the failure policy tolerance.
             if (runConfiguration.dryRun) {

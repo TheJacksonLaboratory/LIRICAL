@@ -91,7 +91,7 @@ public class PhenopacketsCommand extends OutputCommand {
             // summarize and quit
             for (SanitationResultsAndPath result : sanitationResults) {
                 LOGGER.info("Summary for {}", result.path().toAbsolutePath());
-                LOGGER.info(summarizeSanitationResult(result.result()).orElse("OK"));
+                LOGGER.info(summarizeSanitationResult(result.result()));
             }
             return 0;
         }
@@ -104,11 +104,8 @@ public class PhenopacketsCommand extends OutputCommand {
             for (SanitationResultsAndPath result : sanitationResults) {
                 SanitationResult sanitationResult = result.result();
                 if (!Util.phenopacketIsEligibleForAnalysis(sanitationResult, runConfiguration.validationPolicy)) {
-                    summarizeSanitationResult(sanitationResult)
-                            .ifPresent(summary -> LOGGER.info("Skipping phenopacket {}{}{}",
-                                    result.path().toAbsolutePath(),
-                                    System.lineSeparator(),
-                                    summary));
+                    LOGGER.info(result.path().toAbsolutePath().toString());
+                    LOGGER.info(summarizeSanitationResult(sanitationResult));
                 } else {
                     LOGGER.info("Processing {}", result.path().toAbsolutePath());
                 }

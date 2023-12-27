@@ -99,12 +99,8 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                 if (!Util.phenopacketIsEligibleForAnalysis(sanitationResult, runConfiguration.validationPolicy)) {
                     LOGGER.info("Found issues in {}", result.path().toAbsolutePath());
                     proceed = false;
-                    summarizeSanitationResult(sanitationResult)
-                            .ifPresent(summary -> LOGGER.info("Phenopacket {}{}{}{}",
-                                    result.path().toFile().getName(),
-                                    System.lineSeparator(),
-                                    summary,
-                                    System.lineSeparator()));
+                    LOGGER.info(result.path().toFile().getName());
+                    LOGGER.info(summarizeSanitationResult(sanitationResult));
                 }
             }
 
