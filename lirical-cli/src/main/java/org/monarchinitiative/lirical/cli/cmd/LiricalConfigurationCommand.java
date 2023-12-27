@@ -169,6 +169,8 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         if (dataSection.liricalDataDirectory != null)
             LOGGER.info("Using data folder at {}", dataSection.liricalDataDirectory.toAbsolutePath());
 
+        LOGGER.debug("Analysis input validation policy: {}", runConfiguration.validationPolicy.name());
+
         // Obsolete options must/should not be used
         if (dataSection.exomiserDatabase != null) {
             // Check the obsolete `-e | --exomiser` option is not being used.

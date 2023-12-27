@@ -1,10 +1,10 @@
 .. _rst-input-sanitation:
 
-================
-Input sanitation
-================
+=========================
+Analysis input validation
+=========================
 
-LIRICAL performs QC checks and sanitation before running the analysis.
+LIRICAL performs Q/C checks and sanitation before running the analysis.
 
 Here we summarize the requirements and checks performed on all sections of the analysis input.
 
