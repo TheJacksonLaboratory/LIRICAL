@@ -19,7 +19,7 @@ build LIRICAL from source, then the build process described below requires
 
 .. note::
   The v1 of LIRICAL was written in Java 8 but starting from v2 we require Java 17 or better to take advantage
-  of numerous performance improvements and novel language features.
+  of the novel Java features.
 
 Building from sources
 ~~~~~~~~~~~~~~~~~~~~~
