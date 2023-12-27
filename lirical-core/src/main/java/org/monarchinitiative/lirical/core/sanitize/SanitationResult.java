@@ -8,6 +8,8 @@ import java.util.Collection;
  * The result consists of the inputs that were sanitized to the greatest extent possible
  * and of the collection of issues that were found. Note that the sanitized data may be invalid
  * even after the sanitation if further sanitation is impossible without manual intervention.
+ *
+ * @author Daniel Danis
  */
 public interface SanitationResult {
 

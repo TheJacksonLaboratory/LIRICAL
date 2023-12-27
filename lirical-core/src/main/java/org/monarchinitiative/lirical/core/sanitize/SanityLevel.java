@@ -2,6 +2,8 @@ package org.monarchinitiative.lirical.core.sanitize;
 
 /**
  * Represents the severity of an issue found during input data sanitation.
+ *
+ * @author Daniel Danis
  */
 public enum SanityLevel {
 

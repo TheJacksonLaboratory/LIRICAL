@@ -77,13 +77,12 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
                             return 1;
                         }
                     }
-                    case LENIENT -> {
+                    case LENIENT, MINIMAL -> {
                         if (result.hasErrors()) {
-                            LOGGER.info("Aborting the run. Fix the input errors before proceeding");
+                            LOGGER.info("Aborting the run due to errors in the input. Fix the errors before proceeding");
                             return 1;
                         }
                     }
-                    case NONE -> { /* I'm going my merry way... */ }
                     default -> throw new IllegalStateException("Unexpected value: " + runConfiguration.validationPolicy);
                 }
             }

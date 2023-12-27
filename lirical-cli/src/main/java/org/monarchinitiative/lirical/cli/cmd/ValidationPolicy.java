@@ -15,7 +15,7 @@ public enum ValidationPolicy {
     LENIENT,
 
     /**
-     * Get out of my way! I'll run the analysis, or I'll die trying!
+     * Run the bare minimum of checks required to run the analysis but not even a bit more.
      */
-    NONE
+    MINIMAL
 }

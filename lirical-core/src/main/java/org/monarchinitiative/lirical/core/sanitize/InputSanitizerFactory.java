@@ -2,6 +2,9 @@ package org.monarchinitiative.lirical.core.sanitize;
 
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 
+/**
+ * Get the input sanitizer with required level
+ */
 public class InputSanitizerFactory {
 
     private final MinimalOntology hpo;
@@ -12,8 +15,8 @@ public class InputSanitizerFactory {
 
     public InputSanitizer forType(SanitizerType type) {
         return switch (type) {
-            case DEFAULT -> new DefaultInputSanitizer(hpo);
-            case NOOP -> NoOpInputSanitizer.getInstance();
+            case COMPREHENSIVE -> new ComprehensiveInputSanitizer(hpo);
+            case MINIMAL -> new MinimalInputSanitizer(hpo);
         };
     }
 }

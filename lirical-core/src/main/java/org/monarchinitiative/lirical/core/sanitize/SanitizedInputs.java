@@ -9,6 +9,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Result of input sanitation.
+ * <p>
+ * The HPO terms are guaranteed to be valid HPO CURIEs, age and sex are either well-formed or {@code null},
+ * and VCF points to a readable file.
+ *
+ * @author Daniel Danis
+ */
 public final class SanitizedInputs {
     private final String sampleId;
     private final List<TermId> presentHpoTerms = new ArrayList<>();
@@ -21,13 +29,18 @@ public final class SanitizedInputs {
         this.sampleId = sampleId;
     }
 
-    SanitizedInputs(String sampleId, Collection<TermId> present, List<TermId> excluded, Age age, Sex sex, Path vcf) {
+    SanitizedInputs(String sampleId,
+                    Collection<TermId> present,
+                    List<TermId> excluded,
+                    Age age,
+                    Sex sex,
+                    Path vcf) {
         this.sampleId = sampleId;
         this.presentHpoTerms.addAll(present);
         this.excludedHpoTerms.addAll(excluded);
-        this.age = age;
-        this.sex = sex;
-        this.vcf = vcf;
+        this.age = age; // nullable
+        this.sex = sex; // nullable
+        this.vcf = vcf; // nullable
     }
 
     public String sampleId() {

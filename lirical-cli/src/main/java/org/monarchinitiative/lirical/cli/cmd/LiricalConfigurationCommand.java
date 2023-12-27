@@ -139,9 +139,9 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         public float defaultAlleleFrequency = Float.NaN;
 
         @CommandLine.Option(names = {"--validation-policy"},
-                paramLabel = "{STRICT, LENIENT, NONE}",
+                paramLabel = "{STRICT, LENIENT, MINIMAL}",
                 description = {"Validation policy for the analysis", "(default: ${DEFAULT-VALUE})."})
-        public ValidationPolicy validationPolicy = ValidationPolicy.NONE;
+        public ValidationPolicy validationPolicy = ValidationPolicy.MINIMAL;
 
         @CommandLine.Option(names ={"--dry-run"},
                 description = {
@@ -418,8 +418,8 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
 
     protected InputSanitizer selectSanitizer(InputSanitizerFactory factory) {
         return switch (runConfiguration.validationPolicy) {
-            case STRICT, LENIENT -> factory.forType(SanitizerType.DEFAULT);
-            case NONE -> factory.forType(SanitizerType.NOOP);
+            case STRICT, LENIENT -> factory.forType(SanitizerType.COMPREHENSIVE);
+            case MINIMAL -> factory.forType(SanitizerType.MINIMAL);
         };
     }
 

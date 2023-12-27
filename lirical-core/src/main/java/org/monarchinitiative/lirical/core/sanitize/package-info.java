@@ -4,5 +4,7 @@
  * @see org.monarchinitiative.lirical.core.sanitize.InputSanitizerFactory
  * @see org.monarchinitiative.lirical.core.sanitize.InputSanitizer
  * @see org.monarchinitiative.lirical.core.sanitize.SanitationResult
+ *
+ * @author Daniel Danis
  */
 package org.monarchinitiative.lirical.core.sanitize;
