@@ -67,7 +67,13 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
 
             // We abort on dry run or if the issues are above the failure policy tolerance.
             if (runConfiguration.dryRun) {
-                LOGGER.info("Aborting the run due to `--dry-run` option");
+                boolean canBeRun = switch (runConfiguration.validationPolicy) {
+                    case STRICT -> !result.hasErrorOrWarnings();
+                    case LENIENT, MINIMAL -> !result.hasErrors();
+                };
+                LOGGER.info("The analysis can be run under {} validation policy: {}",
+                        runConfiguration.validationPolicy.name(), canBeRun);
+                LOGGER.info("Aborting due to `--dry-run` option");
                 return 0;
             } else {
                 switch (runConfiguration.validationPolicy) {
