@@ -85,7 +85,7 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
                     }
                     case LENIENT, MINIMAL -> {
                         if (result.hasErrors()) {
-                            LOGGER.info("Aborting the run due to errors in the input. Fix the errors before proceeding");
+                            LOGGER.info("Aborting the run due to input errors. Fix the errors and try again");
                             return 1;
                         }
                     }

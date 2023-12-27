@@ -50,7 +50,7 @@ class MinimalInputSanitizer extends BaseInputSanitizer {
     private static Age parseAgeOrNull(String age) {
         try {
             return Age.parse(Period.parse(age));
-        } catch (DateTimeParseException ignored) {
+        } catch (Exception ignored) {
             return null;
         }
     }
@@ -58,7 +58,7 @@ class MinimalInputSanitizer extends BaseInputSanitizer {
     private static Sex parseSexOrNull(String sex) {
         try {
             return Sex.valueOf(sex.toUpperCase());
-        } catch (IllegalArgumentException ignored) {
+        } catch (Exception ignored) {
             return null;
         }
     }
