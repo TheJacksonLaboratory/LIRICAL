@@ -9,18 +9,6 @@ class GenesAndGenotypesDefault {
         return GenesAndGenotypesEmpty.INSTANCE;
     }
 
-    /**
-     * @deprecated use {@link #of(Collection, Collection)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
-    public static GenesAndGenotypes of(Collection<Gene2Genotype> genes) {
-        Set<String> sampleNames = genes.stream()
-                .flatMap(Gene2Genotype::variants)
-                .flatMap(v -> v.sampleNames().stream())
-                .collect(Collectors.toSet());
-        return of(sampleNames, genes);
-    }
-
     public static GenesAndGenotypes of(Collection<String> sampleNames,
                                        Collection<Gene2Genotype> genes) {
         return new GenesAndGenotypesFull(

@@ -15,22 +15,6 @@ import java.util.*;
  */
 public interface GenotypedVariant {
 
-    /**
-     * @deprecated deprecated in {@code v2.0.0} and subject to removal in {@code v3.0.0}.
-     * Use {@link #of(GenomeBuild, GenomicVariant, Collection, boolean)} instead.
-     */
-    // REMOVE(v3.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
-    static GenotypedVariant of(GenomeBuild genomeBuild,
-                               GenomicVariant variant,
-                               Map<String, AlleleCount> genotypes,
-                               boolean passedFilters) {
-        List<SampleAlleleCount> alleleCounts = genotypes.entrySet().stream()
-                .map(e -> SampleAlleleCount.of(e.getKey(), e.getValue()))
-                .toList();
-        return of(genomeBuild, variant, alleleCounts, passedFilters);
-    }
-
     static GenotypedVariant of(GenomeBuild genomeBuild,
                                GenomicVariant variant,
                                Collection<SampleAlleleCount> alleleCounts,

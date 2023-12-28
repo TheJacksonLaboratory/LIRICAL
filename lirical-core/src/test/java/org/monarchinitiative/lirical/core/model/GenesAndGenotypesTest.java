@@ -29,7 +29,8 @@ public class GenesAndGenotypesTest {
     }
 
     private static GenesAndGenotypes prepareToyGenesAndGenotypes() {
-        return GenesAndGenotypes.of(List.of(
+        return GenesAndGenotypes.of(List.of(),
+                List.of(
                 Gene2Genotype.of(
                         GeneIdentifier.of(TermId.of("HGNC:1234"), "FAKE1234"),
                         List.of(

@@ -1,6 +1,6 @@
 package org.monarchinitiative.lirical.background;
 
-import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
+import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

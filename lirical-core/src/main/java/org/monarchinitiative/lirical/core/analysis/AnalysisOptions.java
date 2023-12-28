@@ -3,7 +3,6 @@ package org.monarchinitiative.lirical.core.analysis;
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbability;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
-import org.monarchinitiative.lirical.core.service.VariantMetadataService;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,49 +13,6 @@ import java.util.*;
  * A container for analysis-specific settings, i.e. settings that need to be changed for analysis of each sample.
  */
 public interface AnalysisOptions {
-
-    /**
-     * @deprecated to be removed in <code>2.0.0</code>, use {@link #builder()} instead.
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
-    static AnalysisOptions of(boolean useGlobal, PretestDiseaseProbability pretestDiseaseProbability) {
-        return of(useGlobal, pretestDiseaseProbability, false);
-    }
-
-    /**
-     * @deprecated to be removed in <code>2.0.0</code>, use {@link #builder()} instead.
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
-    static AnalysisOptions of(boolean useGlobal,
-                              PretestDiseaseProbability pretestDiseaseProbability,
-                              boolean disregardDiseaseWithNoDeleteriousVariants) {
-        Objects.requireNonNull(pretestDiseaseProbability);
-        return of(useGlobal, pretestDiseaseProbability, disregardDiseaseWithNoDeleteriousVariants, .8f);
-    }
-
-    /**
-     * @deprecated to be removed in <code>2.0.0</code>, use the {@link #builder()} instead.
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
-    static AnalysisOptions of(boolean useGlobal,
-                              PretestDiseaseProbability pretestDiseaseProbability,
-                              boolean disregardDiseaseWithNoDeleteriousVariants,
-                              float pathogenicityThreshold) {
-        Objects.requireNonNull(pretestDiseaseProbability);
-        Objects.requireNonNull(pretestDiseaseProbability);
-        return new AnalysisOptionsDefault(GenomeBuild.HG38,
-                TranscriptDatabase.REFSEQ,
-                Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER),
-                pathogenicityThreshold,
-                .1,
-                false,
-                useGlobal,
-                pretestDiseaseProbability,
-                disregardDiseaseWithNoDeleteriousVariants);
-    }
 
     static Builder builder() {
         return new Builder();
@@ -76,16 +32,6 @@ public interface AnalysisOptions {
      * @return evaluate the patient wrt. diseases from given source(s).
      */
     Set<DiseaseDatabase> diseaseDatabases();
-
-    /**
-     * @return a variant frequency to assume for the variants with no available frequency data.
-     * @deprecated the parameter has been deprecated in favor of a constant in {@link VariantMetadataService#DEFAULT_FREQUENCY}.
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    default float defaultVariantAlleleFrequency() {
-        return Float.NaN;
-    }
 
     /**
      * @return threshold for determining if the variant is deleterious or not.
@@ -116,37 +62,12 @@ public interface AnalysisOptions {
     PretestDiseaseProbability pretestDiseaseProbability();
 
     /**
-     * Disregard a disease if no known or predicted deleterious variants are found in the gene associated
-     * with the disease. The option is used only if the variants are available for the investigated individual.
-     *
-     * @return <code>true</code> if the candidate disease should be disregarded.
-     * @deprecated use {@link #includeDiseasesWithNoDeleteriousVariants()} instead
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
-    default boolean disregardDiseaseWithNoDeleteriousVariants() {
-        return !includeDiseasesWithNoDeleteriousVariants();
-    }
-
-    /**
      * Include a disease if no known or predicted deleterious variants are found in the gene associated
      * with the disease. The option is used only if the variants are available for the investigated individual.
      *
      * @return <code>true</code> if the candidate disease should be disregarded.
      */
     boolean includeDiseasesWithNoDeleteriousVariants();
-
-    /**
-     * Variant with pathogenicity value greater or equal to this threshold is considered deleterious.
-     *
-     * @return variant pathogenicity threshold value.
-     * @deprecated use {@link #variantDeleteriousnessThreshold()} instead.
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(since = "2.0.0-RC2", forRemoval = true)
-    default float pathogenicityThreshold() {
-        return variantDeleteriousnessThreshold();
-    }
 
     /**
      * A builder for {@link AnalysisOptions}.
@@ -236,16 +157,6 @@ public interface AnalysisOptions {
 
         public Builder pretestProbability(PretestDiseaseProbability pretestDiseaseProbability) {
             this.pretestDiseaseProbability = pretestDiseaseProbability;
-            return this;
-        }
-
-        /**
-         * @deprecated use {@link #includeDiseasesWithNoDeleteriousVariants} instead. Note, that you'll have
-         * to <em>negate</em> the value to obtain the same result
-         */
-        @Deprecated(forRemoval = true)
-        public Builder disregardDiseaseWithNoDeleteriousVariants(boolean disregardDiseaseWithNoDeleteriousVariants) {
-            this.includeDiseasesWithNoDeleteriousVariants = !disregardDiseaseWithNoDeleteriousVariants;
             return this;
         }
 
