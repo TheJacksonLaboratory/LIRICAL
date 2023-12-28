@@ -42,7 +42,7 @@ public final class HpoCase {
         this.excludedAbnormalities = Objects.requireNonNull(excludedTerms);
         this.results = Objects.requireNonNull(results);
         this.sex = Objects.requireNonNull(sex);
-        this.age = Objects.requireNonNull(age);
+        this.age = age;
     }
 
     public String sampleId() {
