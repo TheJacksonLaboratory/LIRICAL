@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LIRICAL TSV Output &mdash; LIRICAL 2.0.0-RC2 documentation</title>
+  <title>LIRICAL TSV Output &mdash; LIRICAL 2.0.0-RC3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=ff08b871"></script>
+        <script src="_static/documentation_options.js?v=5b703c68"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -52,6 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="setup.html">Setting up LIRICAL</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="running.html">Running LIRICAL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input-sanitation.html">Analysis input validation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="output.html">Output files</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lirical-html.html">LIRICAL HTML output</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">LIRICAL TSV output</a></li>
@@ -97,6 +98,13 @@ For example, the following command will run LIRICAL on a Phenopacket and output 
 </pre></div>
 </div>
 <p>By default, LIRICAL outputs the data to a file called <code class="docutils literal notranslate"><span class="pre">lirical.tsv</span></code>. This can be altered with the <code class="docutils literal notranslate"><span class="pre">-x</span> <span class="pre">&lt;prefix&gt;</span></code> option.</p>
+<p>The TSV output consists of the header and the body. The header includes lines that start with an exclamation mark,
+to provide information about the HPO terms used to run the analysis.</p>
+<p>The body section summarizes the matches between the patient data and the diseases, one disease per row, ranked by
+the post-test probability.
+Each row includes the disease credentials, the pre-test and post-test probabilities, the composite likelihood ratio.
+If the analysis was run with a VCF file, the report includes two extra columns with the gene associated with the disease
+and the variants found in the gene.</p>
 <table class="docutils align-default" id="id1">
 <caption><span class="caption-text">LIRICAL’s TSV format</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
 <colgroup>
@@ -104,19 +112,19 @@ For example, the following command will run LIRICAL on a Phenopacket and output 
 <col style="width: 60.0%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>Item</p></th>
+<tr class="row-odd"><th class="head"><p>Column name</p></th>
 <th class="head"><p>Explanation</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>rank</p></td>
-<td><p>placement of the candidate diagnosis by LIRICAL</p></td>
+<td><p>Placement of the candidate diagnosis by LIRICAL</p></td>
 </tr>
 <tr class="row-odd"><td><p>diseaseName</p></td>
 <td><p>Name of the candidate disease</p></td>
 </tr>
 <tr class="row-even"><td><p>diseaseCurie</p></td>
-<td><p>disease ID, e.g., OMIM:154700</p></td>
+<td><p>Disease identifier, e.g., <cite>OMIM:154700</cite></p></td>
 </tr>
 <tr class="row-odd"><td><p>pretestprob</p></td>
 <td><p>Pretest probability of the candidate disease</p></td>
@@ -128,15 +136,13 @@ For example, the following command will run LIRICAL on a Phenopacket and output 
 <td><p>Combined likelihood ratio of the candidate disease (logarithm of the product of all individual LRs)</p></td>
 </tr>
 <tr class="row-even"><td><p>entrezGeneId</p></td>
-<td><p>Identifier of the candidate disease gene (if available)</p></td>
+<td><p>Identifier of the candidate disease gene (if run with a VCF file)</p></td>
 </tr>
 <tr class="row-odd"><td><p>variants</p></td>
-<td><p>variant evaluation (if available)</p></td>
+<td><p>Variant evaluation (if run with a VCF file)</p></td>
 </tr>
 </tbody>
 </table>
-<p>The file begins with comment lines (that start with an exclamation mark) that provide information about the
-HPO terms used to run the analysis.</p>
 </section>
 
 
