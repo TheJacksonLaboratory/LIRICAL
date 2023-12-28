@@ -31,4 +31,21 @@ public enum ClinvarClnSig {
             default -> false;
         };
     }
+
+    /**
+     * @return {@code true} if the significance is one of {@link #BENIGN}, {@link #LIKELY_BENIGN}, or {@link #BENIGN_OR_LIKELY_BENIGN}
+     */
+    public boolean isBenignOrLikelyBenign() {
+        return switch (this) {
+            case BENIGN, LIKELY_BENIGN, BENIGN_OR_LIKELY_BENIGN -> true;
+            default -> false;
+        };
+    }
+
+    /**
+     * @return {@code false} if the significance is one of {@link #BENIGN}, {@link #LIKELY_BENIGN}, or {@link #BENIGN_OR_LIKELY_BENIGN}
+     */
+    public boolean notBenignOrLikelyBenign() {
+        return !isBenignOrLikelyBenign();
+    }
 }

@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.core.service;
 
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,9 +12,9 @@ public class HpoTermSanitizer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HpoTermSanitizer.class);
 
-    private final Ontology hpo;
+    private final MinimalOntology hpo;
 
-    public HpoTermSanitizer(Ontology hpo) {
+    public HpoTermSanitizer(MinimalOntology hpo) {
         this.hpo = hpo;
     }
 
@@ -25,14 +26,15 @@ public class HpoTermSanitizer {
      * </ul>
      */
     public Optional<TermId> replaceIfObsolete(TermId termId) {
-        if (!hpo.getTermMap().containsKey(termId)) {
+        Optional<Term> term = hpo.termForTermId(termId);
+        if (term.isEmpty()) {
             LOGGER.warn("Dropping unknown HPO term id {}", termId.getValue());
             return Optional.empty();
         }
-        if (hpo.getObsoleteTermIds().contains(termId)) {
-            TermId primary = hpo.getPrimaryTermId(termId);
-            LOGGER.info("Replacing obsolete HPO term id {} with current id {}", termId, primary);
-            return Optional.of(primary);
+        Term t = term.get();
+        if (!t.id().equals(termId)) {
+            LOGGER.info("Replacing obsolete HPO term id {} with current id {}", termId, t.id());
+            return Optional.of(t.id());
         }
         return Optional.of(termId);
     }

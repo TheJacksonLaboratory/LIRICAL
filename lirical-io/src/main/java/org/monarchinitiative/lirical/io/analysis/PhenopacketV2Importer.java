@@ -1,6 +1,5 @@
 package org.monarchinitiative.lirical.io.analysis;
 
-import org.monarchinitiative.lirical.core.model.Age;
 import org.monarchinitiative.lirical.core.model.Sex;
 import org.monarchinitiative.lirical.core.model.GenotypedVariant;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -10,8 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.time.Period;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -34,38 +32,39 @@ class PhenopacketV2Importer implements PhenopacketImporter {
         String sampleId = subject.getId();
 
         // Phenotype terms
-        List<TermId> presentTerms = phenopacket.getPhenotypicFeaturesList().stream()
+        List<String> presentTerms = phenopacket.getPhenotypicFeaturesList().stream()
                 .filter(pf -> !pf.getExcluded())
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
-                .map(AnalysisIoUtils::createTermId)
-                .flatMap(Optional::stream)
-                .distinct()
                 .toList();
 
-        List<TermId> negatedHpoTerms = phenopacket.getPhenotypicFeaturesList().stream()
+        List<String> negatedHpoTerms = phenopacket.getPhenotypicFeaturesList().stream()
                 .filter(PhenotypicFeature::getExcluded)
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
-                .map(AnalysisIoUtils::createTermId)
-                .flatMap(Optional::stream)
-                .distinct()
                 .toList();
 
         // Age
-        Age age = parseAge(subject.getTimeAtLastEncounter(), subject.getId());
+        String age = parseAge(subject.getTimeAtLastEncounter(), subject.getId());
 
         // Sex
-        org.monarchinitiative.lirical.core.model.Sex sex = toSex(subject.getSex());
+        String sex = toSex(subject.getSex());
 
         // Disease IDs
-        List<TermId> diseaseIds = phenopacket.getDiseasesList().stream()
-                .map(Disease::getTerm)
-                .map(OntologyClass::getId)
-                .map(AnalysisIoUtils::createTermId)
-                .flatMap(Optional::stream)
-                .distinct()
-                .toList();
+        List<TermId> diseaseIds = new ArrayList<>();
+        for (Interpretation interp : phenopacket.getInterpretationsList()) {
+            AnalysisIoUtils.createTermId(interp.getDiagnosis().getDisease().getId())
+                    .ifPresent(diseaseIds::add);
+        }
+        if (diseaseIds.isEmpty()) {
+            diseaseIds = phenopacket.getDiseasesList().stream()
+                    .map(Disease::getTerm)
+                    .map(OntologyClass::getId)
+                    .map(AnalysisIoUtils::createTermId)
+                    .flatMap(Optional::stream)
+                    .distinct()
+                    .toList();
+        }
 
         // Variants
         List<GenotypedVariant> variants = List.of(); // TODO - implement real variant parsing.
@@ -81,8 +80,7 @@ class PhenopacketV2Importer implements PhenopacketImporter {
         Optional<File> firstVcf = phenopacket.getFilesList().stream()
                 .filter(file -> "vcf".equalsIgnoreCase(file.getFileAttributesOrDefault("fileFormat", "")))
                 .findFirst();
-        Path firstVcfPath = firstVcf.flatMap(file -> SanitizingAnalysisDataParser.toUri(file.getUri()))
-                .map(Path::of)
+        String firstVcfPath = firstVcf.map(File::getUri)
                 .orElse(null);
         String genomeAssembly = firstVcf.map(f -> f.getFileAttributesOrDefault("genomeAssembly", null))
                 .orElse(null);
@@ -98,33 +96,33 @@ class PhenopacketV2Importer implements PhenopacketImporter {
                 firstVcfPath);
     }
 
-    private static Sex toSex(org.phenopackets.schema.v2.core.Sex sex) {
+    private static String toSex(org.phenopackets.schema.v2.core.Sex sex) {
         return switch (sex) {
-            case FEMALE -> Sex.FEMALE;
-            case MALE -> Sex.MALE;
-            case UNKNOWN_SEX, OTHER_SEX, UNRECOGNIZED -> Sex.UNKNOWN;
+            case FEMALE -> Sex.FEMALE.name();
+            case MALE -> Sex.MALE.name();
+            case UNKNOWN_SEX, OTHER_SEX, UNRECOGNIZED -> Sex.UNKNOWN.name();
         };
     }
 
-    private static Age parseAge(TimeElement timeAtLastEncounter, String subjectId) {
+    private static String parseAge(TimeElement timeAtLastEncounter, String subjectId) {
         return switch (timeAtLastEncounter.getElementCase()) {
             case GESTATIONAL_AGE -> {
                 GestationalAge ga = timeAtLastEncounter.getGestationalAge();
                 LOGGER.debug("Parsing gestational age {}w {}d of subject {}", ga.getWeeks(), ga.getDays(), subjectId);
-                yield Age.gestationalAge(ga.getWeeks(), ga.getDays());
+                yield "P%dW%dD".formatted(ga.getWeeks(), ga.getDays());
             }
             case AGE -> {
                 org.phenopackets.schema.v2.core.Age a = timeAtLastEncounter.getAge();
                 LOGGER.debug("Parsing age {} of subject {}", a.getIso8601Duration(), subjectId);
-                yield Age.parse(Period.parse(a.getIso8601Duration()));
+                yield a.getIso8601Duration();
             }
             case AGE_RANGE, ONTOLOGY_CLASS, TIMESTAMP, INTERVAL -> {
                 LOGGER.warn("Ignoring unsupported age format {} for subject {}", timeAtLastEncounter.getElementCase(), subjectId);
-                yield Age.ageNotKnown();
+                yield null;
             }
             case ELEMENT_NOT_SET -> {
                 LOGGER.warn("Time at last encounter was not set for subject {}", subjectId);
-                yield Age.ageNotKnown();
+                yield null;
             }
         };
     }

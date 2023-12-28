@@ -5,7 +5,7 @@ import java.util.Optional;
 
 class VariantMetadataDefault implements VariantMetadata {
 
-    private static final VariantMetadataDefault EMPTY = new VariantMetadataDefault(Float.NaN, Float.NaN, ClinvarClnSig.NOT_PROVIDED);
+    private static final VariantMetadataDefault EMPTY = new VariantMetadataDefault(Float.NaN, Float.NaN, null);
 
     static VariantMetadataDefault empty() {
         return EMPTY;
@@ -13,14 +13,14 @@ class VariantMetadataDefault implements VariantMetadata {
 
     private final float frequency;
     private final float pathogenicity;
-    private final ClinvarClnSig clinvarClnSig;
+    private final ClinVarAlleleData clinVarAlleleData;
 
     VariantMetadataDefault(float frequency,
                            float pathogenicity,
-                           ClinvarClnSig clinvarClnSig) {
+                           ClinVarAlleleData clinVarAlleleData) {
         this.frequency = frequency;
         this.pathogenicity = pathogenicity;
-        this.clinvarClnSig = Objects.requireNonNull(clinvarClnSig);
+        this.clinVarAlleleData = clinVarAlleleData; // nullable
     }
 
     @Override
@@ -36,8 +36,8 @@ class VariantMetadataDefault implements VariantMetadata {
     }
 
     @Override
-    public ClinvarClnSig clinvarClnSig() {
-        return clinvarClnSig;
+    public Optional<ClinVarAlleleData> clinVarAlleleData() {
+        return Optional.ofNullable(clinVarAlleleData);
     }
 
     @Override
@@ -45,7 +45,7 @@ class VariantMetadataDefault implements VariantMetadata {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         VariantMetadataDefault that = (VariantMetadataDefault) o;
-        return Float.compare(that.frequency, frequency) == 0 && Float.compare(that.pathogenicity, pathogenicity) == 0 && Objects.equals(clinvarClnSig, that.clinvarClnSig);
+        return Float.compare(that.frequency, frequency) == 0 && Float.compare(that.pathogenicity, pathogenicity) == 0 && Objects.equals(clinVarAlleleData, that.clinVarAlleleData);
     }
 
     @Override
@@ -58,7 +58,7 @@ class VariantMetadataDefault implements VariantMetadata {
         return "VariantMetadataDefault{" +
                 "frequency=" + frequency +
                 ", pathogenicity=" + pathogenicity +
-                ", clinvarClnSig=" + clinvarClnSig +
+                ", clinvarClnSig=" + clinVarAlleleData +
                 '}';
     }
 }

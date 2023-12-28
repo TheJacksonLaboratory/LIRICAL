@@ -9,6 +9,7 @@ import de.charite.compbio.jannovar.data.ReferenceDictionary;
 import de.charite.compbio.jannovar.reference.PositionType;
 import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
 import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
+import org.monarchinitiative.lirical.core.util.BinarySearch;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifiers;
 import org.monarchinitiative.svart.CoordinateSystem;
@@ -19,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class JannovarFunctionalVariantAnnotator implements FunctionalVariantAnnotator {
 
@@ -28,7 +28,7 @@ public class JannovarFunctionalVariantAnnotator implements FunctionalVariantAnno
     private static final AnnotationBuilderOptions OPTIONS = new AnnotationBuilderOptions();
     private final ReferenceDictionary rd;
     private final VariantAnnotator annotator;
-    private final Map<String, GeneIdentifier> symbolToGeneId;
+    private final GeneIdentifier[] identifiers;
 
     /**
      * @deprecated to be removed in v2.0.0, use {@link #of(JannovarData, GeneIdentifiers)} instead.
@@ -46,8 +46,9 @@ public class JannovarFunctionalVariantAnnotator implements FunctionalVariantAnno
     private JannovarFunctionalVariantAnnotator(JannovarData jannovarData, GeneIdentifiers geneIdentifiers) {
         this.rd = Objects.requireNonNull(jannovarData).getRefDict();
         this.annotator = new VariantAnnotator(rd, jannovarData.getChromosomes(), OPTIONS);
-        this.symbolToGeneId = Objects.requireNonNull(geneIdentifiers).stream()
-                .collect(Collectors.toMap(GeneIdentifier::symbol, Function.identity()));
+        this.identifiers = geneIdentifiers.stream()
+                .sorted(Comparator.comparing(GeneIdentifier::symbol))
+                .toArray(GeneIdentifier[]::new);
     }
 
     @Override
@@ -88,13 +89,19 @@ public class JannovarFunctionalVariantAnnotator implements FunctionalVariantAnno
 
     private Function<Annotation, Optional<TranscriptAnnotation>> toTranscriptAnnotation() {
         return ann -> {
-            GeneIdentifier id = symbolToGeneId.get(ann.getGeneSymbol());
-            if (id == null) {
+            Optional<GeneIdentifier> id = BinarySearch.binarySearch(identifiers, GeneIdentifier::symbol, ann.getGeneSymbol());
+
+            if (id.isEmpty()) {
                 LOGGER.trace("Unknown gene symbol {}", ann.getGeneSymbol());
                 return Optional.empty();
             }
 
-            return Optional.of(new JannovarTranscriptAnnotation(id, ann));
+            return Optional.of(
+                    new SimpleTxAnnotation(id.get(),
+                            ann.getTranscript().getAccession(),
+                            List.copyOf(ann.getEffects()),
+                            ann.getCDSNTChangeStr(),
+                            ann.getProteinChangeStr()));
         };
     }
 }

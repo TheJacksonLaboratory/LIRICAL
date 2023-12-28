@@ -1,7 +1,10 @@
 package org.monarchinitiative.lirical.core.likelihoodratio;
 
-import org.apache.commons.lang.StringUtils;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.StringUtils;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 /**
@@ -36,22 +39,27 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
         this.explanation = explanation;
     }
 
+    @JsonGetter(value = "query")
     public TermId queryTerm() {
         return queryTerm;
     }
 
+    @JsonGetter(value = "match")
     public TermId matchingTerm() {
         return matchingTerm;
     }
 
+    @JsonGetter
     public LrMatchType matchType() {
         return matchType;
     }
 
+    @JsonGetter
     public double lr() {
         return lr;
     }
 
+    @JsonGetter
     public String explanation() {
         return explanation;
     }
@@ -59,6 +67,7 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
     /**
      * @return explanation text suitable for including in HTML documents
      */
+    @JsonIgnore
     public String escapedExplanation() {
         return StringUtils.replaceEach(explanation, EXPLANATION_SEARCH_LIST, EXPLANATION_REPLACEMENT_LIST);
     }
@@ -68,9 +77,9 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
      */
     // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
-    public String getExplanation(Ontology ontology) {
-        String qtermlabel = String.format("%s[%s]", ontology.getTermMap().get(this.queryTerm).getName(), queryTerm.getValue());
-        String mtermlabel = String.format("%s[%s]", ontology.getTermMap().get(this.matchingTerm).getName(), matchingTerm.getValue());
+    public String getExplanation(MinimalOntology ontology) {
+        String qtermlabel = String.format("%s[%s]", ontology.termForTermId(queryTerm).map(Term::getName).orElse("UNKNOWN"), queryTerm.getValue());
+        String mtermlabel = String.format("%s[%s]", ontology.termForTermId(matchingTerm).map(Term::getName).orElse("UNKNOWN"), matchingTerm.getValue());
         double log10LR = Math.log10(lr);
         switch (this.matchType) {
             case EXACT_MATCH:
@@ -105,9 +114,9 @@ public class LrWithExplanation implements Comparable<LrWithExplanation> {
      */
     // REMOVE(v2.0.0)
     @Deprecated(forRemoval = true)
-    String getEscapedExplanation(Ontology ontology) {
-        String qtermlabel = String.format("%s[%s]", ontology.getTermMap().get(this.queryTerm).getName(), queryTerm.getValue());
-        String mtermlabel = String.format("%s[%s]", ontology.getTermMap().get(this.matchingTerm).getName(), matchingTerm.getValue());
+    String getEscapedExplanation(MinimalOntology ontology) {
+        String qtermlabel = String.format("%s[%s]", ontology.termForTermId(queryTerm).map(Term::getName).orElse("UNKNOWN"), queryTerm.getValue());
+        String mtermlabel = String.format("%s[%s]", ontology.termForTermId(matchingTerm).map(Term::getName).orElse("UNKNOWN"), matchingTerm.getValue());
         double log10LR = Math.log10(lr);
         switch (this.matchType) {
             case EXACT_MATCH:

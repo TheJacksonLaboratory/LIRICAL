@@ -120,8 +120,21 @@ public interface AnalysisOptions {
      * with the disease. The option is used only if the variants are available for the investigated individual.
      *
      * @return <code>true</code> if the candidate disease should be disregarded.
+     * @deprecated use {@link #includeDiseasesWithNoDeleteriousVariants()} instead
      */
-    boolean disregardDiseaseWithNoDeleteriousVariants();
+    // REMOVE(v2.0.0)
+    @Deprecated(forRemoval = true)
+    default boolean disregardDiseaseWithNoDeleteriousVariants() {
+        return !includeDiseasesWithNoDeleteriousVariants();
+    }
+
+    /**
+     * Include a disease if no known or predicted deleterious variants are found in the gene associated
+     * with the disease. The option is used only if the variants are available for the investigated individual.
+     *
+     * @return <code>true</code> if the candidate disease should be disregarded.
+     */
+    boolean includeDiseasesWithNoDeleteriousVariants();
 
     /**
      * Variant with pathogenicity value greater or equal to this threshold is considered deleterious.
@@ -150,7 +163,7 @@ public interface AnalysisOptions {
         private boolean useStrictPenalties = false;
         private boolean useGlobal = false;
         private PretestDiseaseProbability pretestDiseaseProbability = null;
-        private boolean disregardDiseaseWithNoDeleteriousVariants = true;
+        private boolean includeDiseasesWithNoDeleteriousVariants = false;
 
         private Builder() {
         }
@@ -226,9 +239,18 @@ public interface AnalysisOptions {
             return this;
         }
 
-
+        /**
+         * @deprecated use {@link #includeDiseasesWithNoDeleteriousVariants} instead. Note, that you'll have
+         * to <em>negate</em> the value to obtain the same result
+         */
+        @Deprecated(forRemoval = true)
         public Builder disregardDiseaseWithNoDeleteriousVariants(boolean disregardDiseaseWithNoDeleteriousVariants) {
-            this.disregardDiseaseWithNoDeleteriousVariants = disregardDiseaseWithNoDeleteriousVariants;
+            this.includeDiseasesWithNoDeleteriousVariants = !disregardDiseaseWithNoDeleteriousVariants;
+            return this;
+        }
+
+        public Builder includeDiseasesWithNoDeleteriousVariants(boolean includeDiseasesWithNoDeleteriousVariants) {
+            this.includeDiseasesWithNoDeleteriousVariants = includeDiseasesWithNoDeleteriousVariants;
             return this;
         }
 
@@ -241,7 +263,7 @@ public interface AnalysisOptions {
                     useStrictPenalties,
                     useGlobal,
                     pretestDiseaseProbability,
-                    disregardDiseaseWithNoDeleteriousVariants);
+                    includeDiseasesWithNoDeleteriousVariants);
         }
     }
 

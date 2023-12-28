@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.cli;
 
 import org.monarchinitiative.lirical.cli.cmd.*;
+import org.monarchinitiative.lirical.cli.cmd.experimental.ExperimentalCommand;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
@@ -15,7 +16,7 @@ import static picocli.CommandLine.Help.Ansi.Style.*;
         footer = Main.FOOTER)
 public class Main implements Callable<Integer> {
 
-    public static final String VERSION = "lirical v2.0.0-RC2";
+    public static final String VERSION = "lirical v2.0.0-RC3";
     public static final int WIDTH = 120;
     public static final String FOOTER = "\nSee the full documentation at https://thejacksonlaboratory.github.io/LIRICAL/stable";
 
@@ -38,6 +39,8 @@ public class Main implements Callable<Integer> {
                 .addSubcommand("prioritize", new PrioritizeCommand())
                 .addSubcommand("phenopacket", new PhenopacketCommand())
                 .addSubcommand("yaml", new YamlCommand())
+                // hidden commands
+                .addSubcommand("experimental", new ExperimentalCommand())
                 .addSubcommand("benchmark", new BenchmarkCommand());
         cline.setToggleBooleanFlags(false);
         System.exit(cline.execute(args));

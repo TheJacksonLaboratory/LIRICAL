@@ -6,8 +6,8 @@ import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoader;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
-import org.monarchinitiative.phenol.io.OntologyLoader;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.io.MinimalOntologyLoader;
+import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,17 +22,17 @@ class LoadUtils {
 
     }
 
-    static Ontology loadOntology(Path ontologyPath) throws LiricalDataException {
+    static MinimalOntology loadOntology(Path ontologyPath) throws LiricalDataException {
         try {
             LOGGER.debug("Loading HPO from {}", ontologyPath.toAbsolutePath());
-            return OntologyLoader.loadOntology(ontologyPath.toFile());
+            return MinimalOntologyLoader.loadOntology(ontologyPath.toFile());
         } catch (PhenolRuntimeException e) {
             throw new LiricalDataException(e);
         }
     }
 
     static HpoDiseases loadHpoDiseases(Path annotationPath,
-                                       Ontology hpo,
+                                       MinimalOntology hpo,
                                        HpoDiseaseLoaderOptions options) throws LiricalDataException {
         try {
             LOGGER.debug("Loading HPO annotations from {}", annotationPath.toAbsolutePath());

@@ -9,10 +9,13 @@ import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseasePro
 import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbability;
 import org.monarchinitiative.lirical.core.io.VariantParser;
 import org.monarchinitiative.lirical.core.io.VariantParserFactory;
-import org.monarchinitiative.lirical.core.model.*;
+import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
+import org.monarchinitiative.lirical.core.model.GenomeBuild;
+import org.monarchinitiative.lirical.core.model.LiricalVariant;
+import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
+import org.monarchinitiative.lirical.core.sanitize.*;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.background.CustomBackgroundVariantFrequencyServiceFactory;
-import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.monarchinitiative.phenol.ontology.data.Identified;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 abstract class LiricalConfigurationCommand extends BaseCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiricalConfigurationCommand.class);
+    protected static final String UNKNOWN_VERSION_PLACEHOLDER = "UNKNOWN VERSION";
 
     // ---------------------------------------------- RESOURCES --------------------------------------------------------
     @CommandLine.ArgGroup(validate = false, heading = "Resource paths:%n")
@@ -57,6 +61,13 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         @CommandLine.Option(names = {"-b", "--background"},
                 description = "Path to non-default background frequency file.")
         public Path backgroundFrequencyFile = null;
+
+        @CommandLine.Option(names = "--parallelism",
+        description = {
+                "The number of workers/threads to use.",
+                "The value must be a positive integer.",
+                "Default: ${DEFAULT-VALUE}"})
+        public int parallelism = 1;
     }
 
 
@@ -74,9 +85,23 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         public boolean globalAnalysisMode = false;
 
         @CommandLine.Option(names = {"--ddndv"},
-                description = "Disregard a disease if no deleterious variants are found in the gene associated with the disease. "
-                        + "Used only if running with a VCF file. (default: ${DEFAULT-VALUE})")
-        public boolean disregardDiseaseWithNoDeleteriousVariants = true;
+                description = {
+                "Disregard a disease if no deleterious variants are found in the gene associated with the disease.",
+                        "Used only if running with a VCF file.",
+                        "NOTE: the option has been DEPRECATED, use `--sdwndv` instead",
+                        "(default: ${DEFAULT-VALUE})"
+                })
+        // REMOVE(v2.0.0)
+        @Deprecated(forRemoval = true)
+        public Boolean disregardDiseaseWithNoDeleteriousVariants = null;
+
+        @CommandLine.Option(names = {"--sdwndv"},
+                description = {
+                "Include diseases even if no deleterious variants are found in the gene associated with the disease.",
+                        "Only applicable to the HTML report when running with a VCF file (genotype-aware mode).",
+                        "(default: ${DEFAULT-VALUE})"
+                })
+        public boolean showDiseasesWithNoDeleteriousVariants = false;
 
         @CommandLine.Option(names = {"--transcript-db"},
                 paramLabel = "{REFSEQ,UCSC}",
@@ -112,6 +137,18 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                         "NOTE: the option has been DEPRECATED"
         })
         public float defaultAlleleFrequency = Float.NaN;
+
+        @CommandLine.Option(names = {"--validation-policy"},
+                paramLabel = "{STRICT, LENIENT, MINIMAL}",
+                description = {"Validation policy for the analysis", "(default: ${DEFAULT-VALUE})."})
+        public ValidationPolicy validationPolicy = ValidationPolicy.MINIMAL;
+
+        @CommandLine.Option(names ={"--dry-run"},
+                description = {
+                        "Validate the input, report potential issues, and exit without running the analysis.",
+                        "(default ${DEFAULT-VALUE})"
+                })
+        public boolean dryRun = false;
     }
 
     protected List<String> checkInput() {
@@ -126,30 +163,36 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 dataSection.liricalDataDirectory = codeHomeDataDir;
             } else {
                 String msg = "Path to LIRICAL data directory must be provided via `-d | --data` option";
-                LOGGER.error(msg);
                 errors.add(msg);
             }
         }
-        LOGGER.info("Using data folder at {}", dataSection.liricalDataDirectory.toAbsolutePath());
+        if (dataSection.liricalDataDirectory != null)
+            LOGGER.info("Using data folder at {}", dataSection.liricalDataDirectory.toAbsolutePath());
+
+        LOGGER.debug("Analysis input validation policy: {}", runConfiguration.validationPolicy.name());
 
         // Obsolete options must/should not be used
         if (dataSection.exomiserDatabase != null) {
             // Check the obsolete `-e | --exomiser` option is not being used.
             String msg = "`-e | --exomiser` option has been deprecated. Use `-e19 or -e38` to set paths to Exomiser variant databases for hg19 and hg38, respectively";
-            LOGGER.error(msg);
             errors.add(msg);
         }
 
         if (!Float.isNaN(runConfiguration.defaultAlleleFrequency)) {
             String msg = "`--default-allele-frequency` option has been deprecated.";
-            LOGGER.error(msg);
+            LOGGER.warn(msg);
+        }
+
+        if (runConfiguration.disregardDiseaseWithNoDeleteriousVariants != null) {
+            String msg = "`--ddndv` option has been deprecated and must not be used. Use `--sdwndv` if you want to show all diseases in the HTML report.";
+            LOGGER.warn(msg);
+            errors.add(msg);
         }
 
         Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
         if (genomeBuild.isEmpty()) {
             // We must have genome build!
             String msg = "Genome build must be set";
-            LOGGER.error(msg);
             errors.add(msg);
         } else {
             // Check Exomiser db seem to match the genome build.
@@ -157,18 +200,21 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 case HG19 -> {
                     if (dataSection.exomiserHg19Database == null && dataSection.exomiserHg38Database != null) {
                         String msg = "Genome build set to %s but Exomiser variant database is set for %s: %s".formatted(GenomeBuild.HG19, GenomeBuild.HG38, dataSection.exomiserHg38Database.toAbsolutePath());
-                        LOGGER.error(msg);
                         errors.add(msg);
                     }
                 }
                 case HG38 -> {
                     if (dataSection.exomiserHg38Database == null && dataSection.exomiserHg19Database != null) {
                         String msg = "Genome build set to %s but Exomiser variant database is set for %s: %s".formatted(GenomeBuild.HG38, GenomeBuild.HG19, dataSection.exomiserHg19Database.toAbsolutePath());
-                        LOGGER.error(msg);
                         errors.add(msg);
                     }
                 }
             }
+        }
+
+        if (dataSection.parallelism <= 0) {
+            String msg = "Parallelism must be a positive integer but was %d".formatted(dataSection.parallelism);
+            errors.add(msg);
         }
 
         return errors;
@@ -200,7 +246,8 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             builder.backgroundVariantFrequencyServiceFactory(backgroundFreqFactory);
         }
 
-        return builder.build();
+        return builder.parallelism(dataSection.parallelism)
+                .build();
     }
 
     protected abstract String getGenomeBuild();
@@ -256,65 +303,127 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         PretestDiseaseProbability pretestDiseaseProbability = PretestDiseaseProbabilities.uniform(diseaseIds);
         builder.pretestProbability(pretestDiseaseProbability);
 
-        LOGGER.debug("Disregarding diseases with no deleterious variants? {}", runConfiguration.disregardDiseaseWithNoDeleteriousVariants);
-        builder.disregardDiseaseWithNoDeleteriousVariants(runConfiguration.disregardDiseaseWithNoDeleteriousVariants);
+        LOGGER.debug("Showing diseases with no deleterious variants in the gene associated with the disease? {}", runConfiguration.showDiseasesWithNoDeleteriousVariants);
+        builder.includeDiseasesWithNoDeleteriousVariants(!runConfiguration.showDiseasesWithNoDeleteriousVariants);
 
         return builder.build();
     }
 
-    protected static GenesAndGenotypes readVariantsFromVcfFile(String sampleId,
-                                                               Path vcfPath,
-                                                               GenomeBuild genomeBuild,
-                                                               TranscriptDatabase transcriptDatabase,
-                                                               VariantParserFactory parserFactory) throws LiricalParseException {
-        if (parserFactory == null) {
-            LOGGER.warn("Cannot process the provided VCF file {}, resources are not set.", vcfPath.toAbsolutePath());
-            return GenesAndGenotypes.empty();
-        }
-
+    protected static SampleIdAndGenesAndGenotypes readVariantsFromVcfFile(String sampleId,
+                                                                          Path vcfPath,
+                                                                          GenomeBuild genomeBuild,
+                                                                          TranscriptDatabase transcriptDatabase,
+                                                                          VariantParserFactory parserFactory) throws LiricalParseException {
+        LOGGER.debug("Getting variant parser to parse a VCF file using {} assembly and {} transcripts", genomeBuild, transcriptDatabase);
         Optional<VariantParser> parser = parserFactory.forPath(vcfPath, genomeBuild, transcriptDatabase);
         if (parser.isEmpty()) {
-            LOGGER.warn("Cannot obtain parser for processing the VCF file {} with {} {} due to missing resources",
-                    vcfPath.toAbsolutePath(), genomeBuild, transcriptDatabase);
-            return GenesAndGenotypes.empty();
+            throw new LiricalParseException(
+                    "Cannot obtain parser for processing the VCF file %s with %s %s due to missing resources"
+                            .formatted(vcfPath.toAbsolutePath(), genomeBuild, transcriptDatabase)
+            );
         }
-        List<LiricalVariant> variants;
+
         try (VariantParser variantParser = parser.get()) {
-            // Ensure the VCF file contains the sample
-            if (!variantParser.sampleNames().contains(sampleId))
-                throw new LiricalParseException("The sample " + sampleId + " is not present in VCF at '" + vcfPath.toAbsolutePath() + '\'');
-            LOGGER.debug("Found sample {} in the VCF file at {}", sampleId, vcfPath.toAbsolutePath());
+            Collection<String> sampleNames = variantParser.sampleNames();
+            String usedId = validateSampleId(sampleId, vcfPath, sampleNames);
 
             // Read variants
             LOGGER.info("Reading variants from {}", vcfPath.toAbsolutePath());
             ProgressReporter progressReporter = new ProgressReporter();
-            variants = variantParser.variantStream()
+            List<LiricalVariant> variants = variantParser.variantStream()
                     .peek(v -> progressReporter.log())
                     .toList();
             progressReporter.summarize();
+
+            GenesAndGenotypes genesAndGenotypes = GenesAndGenotypes.fromVariants(sampleNames, variants);
+            return new SampleIdAndGenesAndGenotypes(usedId, genesAndGenotypes);
         } catch (Exception e) {
             throw new LiricalParseException(e);
         }
-
-        return prepareGenesAndGenotypes(variants);
     }
 
-    protected static GenesAndGenotypes prepareGenesAndGenotypes(List<LiricalVariant> variants) {
-        // Group variants by Entrez ID.
-        Map<GeneIdentifier, List<LiricalVariant>> gene2Genotype = new HashMap<>();
-        for (LiricalVariant variant : variants) {
-            variant.annotations().stream()
-                    .map(TranscriptAnnotation::getGeneId)
-                    .distinct()
-                    .forEach(geneId -> gene2Genotype.computeIfAbsent(geneId, e -> new LinkedList<>()).add(variant));
+    /**
+     * Check if the VCF file is a single-sample or multi-sample VCF file with the given sample ID. If `sampleId` is
+     * {@code null}, we can only accept a single-sample VCF, mainly as a convenience.
+     *
+     * @throws LiricalParseException if the VCF includes no sample data, the sample is not present,
+     * or it is a multi-sample file and the sample ID is unset.
+     */
+    private static String validateSampleId(String sampleId,
+                                           Path vcfPath,
+                                           Collection<String> sampleNames) throws LiricalParseException {
+        if (sampleNames.isEmpty())
+            throw new LiricalParseException("No samples found in the VCF file at '" + vcfPath.toAbsolutePath() + '\'');
+        if (sampleId == null) {
+            if (sampleNames.size() != 1) {
+                // The user did not provide the sample ID. We can proceed if the variant source contains 1 subject only.
+                throw new LiricalParseException(("The VCF file includes %d samples but the ID of the index sample " +
+                        "is unset. Set the sample ID if VCF reports >1 sample").formatted(sampleNames.size()));
+            } else {
+                String inferredId = sampleNames.iterator().next();
+                LOGGER.info("Sample ID is unset. However, since the VCF file includes just a single sample ("
+                        + inferredId + "), we will proceed with that one");
+                return inferredId;
+            }
+        } else if (!sampleNames.contains(sampleId)) {
+            String included = sampleNames.stream().collect(Collectors.joining(", ", "{", "}"));
+            throw new LiricalParseException(
+                    "The VCF at '%s' includes samples %s but it does not include the index sample %s"
+                            .formatted(vcfPath.toAbsolutePath(), included, sampleId)
+            );
+        } else {
+            LOGGER.debug("Found the index sample {} in the VCF file at {}", sampleId, vcfPath.toAbsolutePath());
         }
+        return sampleId;
+    }
 
-        // Collect the variants into Gene2Genotype container
-        List<Gene2Genotype> g2g = gene2Genotype.entrySet().stream()
-                .map(e -> Gene2Genotype.of(e.getKey(), e.getValue()))
-                .toList();
+    protected static String summarizeSanitationResult(SanitationResult sanitationResult) {
+        if (sanitationResult.hasErrorOrWarnings()) {
+            Map<SanityLevel, List<SanityIssue>> byLevel = sanitationResult.issues().stream()
+                    .collect(Collectors.groupingBy(SanityIssue::level));
 
-        return GenesAndGenotypes.of(g2g);
+            List<SanityIssue> errors = byLevel.getOrDefault(SanityLevel.ERROR, List.of());
+            List<SanityIssue> warnings = byLevel.getOrDefault(SanityLevel.WARNING, List.of());
+
+            List<String> lines = new ArrayList<>();
+            lines.add("Input sanitation found %d errors and %d warnings".formatted(errors.size(), warnings.size()));
+            if (!errors.isEmpty()) {
+                lines.add(" Errors \uD83D\uDE31");
+                for (SanityIssue issue : errors) {
+                    lines.add(" - %s. %s".formatted(issue.message(), issue.solution()));
+                }
+            }
+
+            if (!warnings.isEmpty()) {
+                lines.add(" Warnings \uD83D\uDE27");
+                for (SanityIssue issue : warnings) {
+                    lines.add(" - %s. %s".formatted(issue.message(), issue.solution()));
+                }
+            }
+
+            return String.join(System.lineSeparator(), lines);
+        } else {
+            return "Input sanitation found no issues";
+        }
+    }
+
+    protected String figureOutExomiserPath() {
+        if (dataSection.exomiserHg19Database == null && dataSection.exomiserHg38Database == null) {
+            return "";
+        } else {
+            if (dataSection.exomiserHg19Database == null) {
+                return dataSection.exomiserHg38Database.toAbsolutePath().toString();
+            } else {
+                return dataSection.exomiserHg19Database.toAbsolutePath().toString();
+            }
+        }
+    }
+
+    protected InputSanitizer selectSanitizer(InputSanitizerFactory factory) {
+        return switch (runConfiguration.validationPolicy) {
+            case STRICT, LENIENT -> factory.forType(SanitizerType.COMPREHENSIVE);
+            case MINIMAL -> factory.forType(SanitizerType.MINIMAL);
+        };
     }
 
     protected static void reportElapsedTime(long startTime, long stopTime) {
@@ -338,6 +447,9 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         String codePath = LiricalConfigurationCommand.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         LOGGER.info("Running LIRICAL from {}", codePath);
         return Path.of(codePath).toAbsolutePath().getParent();
+    }
+
+    protected record SampleIdAndGenesAndGenotypes(String sampleId, GenesAndGenotypes genesAndGenotypes) {
     }
 
 }

@@ -16,7 +16,9 @@ public interface LiricalVariant extends GenotypedVariant, VariantMetadata, Funct
      * @return number of pathogenic alleles that are registered in ClinVar
      */
     default int pathogenicClinVarAlleleCount(String sampleId) {
-        if (!clinvarClnSig().isPathogenicOrLikelyPathogenic()) {
+        if (sampleId == null)
+            return 0;
+        if (!clinVarAlleleData().map(cv -> cv.getClinvarClnSig().isPathogenicOrLikelyPathogenic()).orElse(false)) {
             return 0;
         } else {
             return alleleCount(sampleId)

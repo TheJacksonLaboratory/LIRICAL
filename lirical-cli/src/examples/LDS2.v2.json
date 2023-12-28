@@ -35,18 +35,6 @@
     }]
   }, {
     "type": {
-      "id": "HP:0001631",
-      "label": "Atrial septal defect"
-    },
-    "excluded": false,
-    "evidence": [{
-      "evidenceCode": {
-        "id": "ECO:0000302",
-        "label": "author statement used in manual assertion"
-      }
-    }]
-  }, {
-    "type": {
       "id": "HP:0000193",
       "label": "Bifid uvula"
     },

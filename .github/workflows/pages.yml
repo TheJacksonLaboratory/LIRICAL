@@ -1,0 +1,84 @@
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy docs to GitHub pages
+
+on:
+  # Runs on pushes targeting the master and develop branches
+  push:
+    branches: [ master, develop ]
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
+        ref: develop
+    
+    - name: Set up Python 3
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+
+    - name: Install Python dependencies
+      run: |
+        pip install sphinx
+        pip install sphinx-rtd-theme
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'adopt'
+
+    - name: Build documentation
+      run: |
+        ## Init the target folder. 
+        # We will put all site documentation there.
+        mkdir -p gh-pages
+        touch gh-pages/.nojekyll
+        
+        function build_docs {
+          # The function will checkout a branch and build the Javadoc & documentation 
+          # into provided documentation directory.
+          BRANCH=${1}
+          DOCDIR=${2}
+          
+          git checkout ${BRANCH}
+          git fetch
+          git pull
+          ## Init the target folder.
+          # We will put all site documentation there.
+          mkdir -p gh-pages/${DOCDIR}
+          
+          ## Javadoc
+          # Build the aggregated Javadoc
+          ./mvnw --quiet -Ddoclint=none -Dinherited=false clean javadoc:aggregate
+          # Copy aggregated Javadoc into `apidocs` folder.
+          APIDOCS=$(pwd)/gh-pages/${DOCDIR}/apidocs
+          printf "Copying Javadocs from %s to %s\n" $(pwd)/target/site/apidocs ${APIDOCS}
+          cp -r target/site/apidocs ${APIDOCS}
+          
+          ## Build the docs
+          # Generate the HTML pages and move the generated content into the target folder.
+          printf "Building the %s documentation\n" ${DOCDIR}
+          cd docs/
+          make html
+          cd ..
+          mv docs/_build/html/* gh-pages/${DOCDIR}
+        }
+        
+        # We store the docs for `master` in `stable` dir
+        build_docs master stable
+        # We store the docs for `develop` in `latest` dir
+        build_docs develop latest
+
+
+    - name: Deploy documentation
+      if: ${{ github.event_name == 'push' }}
+      uses: JamesIves/github-pages-deploy-action@v4.4.1
+      with:
+        folder: gh-pages
+        force: false

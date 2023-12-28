@@ -1,37 +1,41 @@
 package org.monarchinitiative.lirical.io.analysis;
 
 import org.monarchinitiative.lirical.core.model.Age;
-import org.monarchinitiative.lirical.core.model.GenotypedVariant;
 import org.monarchinitiative.lirical.core.model.Sex;
+import org.monarchinitiative.lirical.core.model.GenotypedVariant;
+import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
-import java.nio.file.Path;
+import java.time.Period;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public class PhenopacketData {
+/**
+ * Phenopacket attributes that are relevant for LIRICAL.
+ */
+public class PhenopacketData implements SanitationInputs {
 
     private final String genomeAssembly;
     private final String sampleId;
-    private final List<TermId> hpoTerms;
-    private final List<TermId> negatedHpoTerms;
+    private final List<String> hpoTerms;
+    private final List<String> negatedHpoTerms;
     private final List<GenotypedVariant> variants;
-    private final Age age;
-    private final Sex sex;
+    private final String age;
+    private final String sex;
     private final List<TermId> diseaseIds;
-    private final Path vcfPath;
+    private final String vcfPath;
 
     PhenopacketData(String genomeAssembly,
                     String sampleId,
-                    List<TermId> hpoTerms,
-                    List<TermId> negatedHpoTerms,
-                    Age age,
-                    Sex sex,
+                    List<String> hpoTerms,
+                    List<String> negatedHpoTerms,
+                    String age,
+                    String sex,
                     List<TermId> diseaseIds,
                     List<GenotypedVariant> variants,
-                    Path vcfPath) {
+                    String vcfPath) {
         this.genomeAssembly = genomeAssembly;
         this.sampleId = Objects.requireNonNull(sampleId);
         this.hpoTerms = Objects.requireNonNull(hpoTerms);
@@ -43,39 +47,103 @@ public class PhenopacketData {
         this.vcfPath = vcfPath;
     }
 
-    public Optional<String> getGenomeAssembly() {
-        return Optional.ofNullable(genomeAssembly);
-    }
-
-    public String getSampleId() {
+    @Override
+    public String sampleId() {
         return sampleId;
     }
 
-    public Stream<TermId> getHpoTerms() {
-        return hpoTerms.stream();
+    @Override
+    public List<String> presentHpoTerms() {
+        return hpoTerms;
     }
 
-    public Stream<TermId> getNegatedHpoTerms() {
-        return negatedHpoTerms.stream();
+    public Stream<TermId> presentHpoTermIds() {
+        return hpoTerms.stream().map(TermId::of);
     }
 
-    public Iterable<GenotypedVariant> getVariants() {
+    @Override
+    public List<String> excludedHpoTerms() {
+        return negatedHpoTerms;
+    }
+
+    public Stream<TermId> excludedHpoTermIds() {
+        return negatedHpoTerms.stream().map(TermId::of);
+    }
+
+    @Override
+    public String age() {
+        return age;
+    }
+
+    /**
+     * Try to parse the age and return an empty optional if the parsing fails.
+     */
+    public Optional<Age> parseAge() {
+        try {
+            return Optional.of(Age.parse(Period.parse(age)));
+        } catch (IllegalArgumentException | NullPointerException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public String sex() {
+        return sex;
+    }
+
+    /**
+     * Try to parse the sex and return an empty optional if the parsing fails.
+     */
+    public Optional<Sex> parseSex() {
+        try {
+            return Optional.of(Sex.valueOf(sex.toUpperCase()));
+        } catch (IllegalArgumentException | NullPointerException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public String vcf() {
+        return vcfPath;
+    }
+
+    public Optional<String> genomeAssembly() {
+        return Optional.ofNullable(genomeAssembly);
+    }
+
+    public Iterable<GenotypedVariant> variants() {
         return variants;
     }
 
-    public Optional<Age> getAge() {
-        return Optional.ofNullable(age);
-    }
-
-    public Optional<Sex> getSex() {
-        return Optional.ofNullable(sex);
-    }
-
-    public List<TermId> getDiseaseIds() {
+    public List<TermId> diseaseIds() {
         return diseaseIds;
     }
 
-    public Optional<Path> getVcfPath() {
-        return Optional.ofNullable(vcfPath);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PhenopacketData that = (PhenopacketData) o;
+        return Objects.equals(genomeAssembly, that.genomeAssembly) && Objects.equals(sampleId, that.sampleId) && Objects.equals(hpoTerms, that.hpoTerms) && Objects.equals(negatedHpoTerms, that.negatedHpoTerms) && Objects.equals(variants, that.variants) && Objects.equals(age, that.age) && Objects.equals(sex, that.sex) && Objects.equals(diseaseIds, that.diseaseIds) && Objects.equals(vcfPath, that.vcfPath);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(genomeAssembly, sampleId, hpoTerms, negatedHpoTerms, variants, age, sex, diseaseIds, vcfPath);
+    }
+
+    @Override
+    public String toString() {
+        return "PhenopacketData{" +
+                "genomeAssembly='" + genomeAssembly + '\'' +
+                ", sampleId='" + sampleId + '\'' +
+                ", hpoTerms=" + hpoTerms +
+                ", negatedHpoTerms=" + negatedHpoTerms +
+                ", variants=" + variants +
+                ", age='" + age + '\'' +
+                ", sex='" + sex + '\'' +
+                ", diseaseIds=" + diseaseIds +
+                ", vcfPath='" + vcfPath + '\'' +
+                '}';
     }
 }

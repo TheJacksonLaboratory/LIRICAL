@@ -8,12 +8,21 @@ public interface VariantMetadata {
         return VariantMetadataDefault.empty();
     }
 
+    /**
+     * @deprecated from {@code 2.0.0-RC3}. Use {@link #of(float, float, ClinVarAlleleData)} instead.
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
     static VariantMetadata of(float frequency,
                               float pathogenicity,
                               ClinvarClnSig clinvarClnSig) {
-        return new VariantMetadataDefault(frequency,
-                pathogenicity,
-                clinvarClnSig);
+        ClinVarAlleleData data = ClinVarAlleleData.of(clinvarClnSig, null);
+        return of(frequency, pathogenicity, data);
+    }
+
+    static VariantMetadata of(float frequency,
+                              float pathogenicity,
+                              ClinVarAlleleData clinVarAlleleData) {
+        return new VariantMetadataDefault(frequency, pathogenicity, clinVarAlleleData);
     }
 
     /**
@@ -50,15 +59,29 @@ public interface VariantMetadata {
     default Optional<Float> pathogenicityScore() {
         // Heuristic -- Count ClinVar pathogenic or likely pathogenic as 1.0 (maximum pathogenicity score)
         // regardless of the Exomiser pathogenicity score
-        return clinvarClnSig().isPathogenicOrLikelyPathogenic()
+        return clinVarAlleleData()
+                .map(a -> a.getClinvarClnSig().isPathogenicOrLikelyPathogenic())
+                .orElse(false) // go to the frequencyScore branch
                 ? Optional.of(1f)
                 : frequencyScore().map(fs -> fs * pathogenicity());
     }
 
     /**
+     * @deprecated since <code>2.0.0-RC3</code> and will be removed in <code>v3.0.0</code>. Use {@link #clinVarAlleleData()} instead.
      * @return Clinvar clinical significance category.
      */
-    ClinvarClnSig clinvarClnSig();
+    // REMOVE(v3.0.0)
+    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
+    default ClinvarClnSig clinvarClnSig() {
+        return clinVarAlleleData()
+                .map(ClinVarAlleleData::getClinvarClnSig)
+                .orElse(ClinvarClnSig.NOT_PROVIDED);
+    }
+
+    /**
+     * @return <code>ClinvarData</code> for the variant, if available.
+     */
+    Optional<ClinVarAlleleData> clinVarAlleleData();
 
     /**
      * This is the frequency factor used for the Exomiser like pathogenicity score. It penalizes variants that have a higher
@@ -77,8 +100,12 @@ public interface VariantMetadata {
         });
     }
 
-
+    /**
+     * @deprecated the function has been deprecated without replacement and will be removed in <code>v3.0.0</code>.
+     */
+    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
     static int compareByPathogenicity(VariantMetadata left, VariantMetadata right) {
+        // REMOVE(v3.0.0)
         return Float.compare(left.pathogenicity(), right.pathogenicity());
     }
 

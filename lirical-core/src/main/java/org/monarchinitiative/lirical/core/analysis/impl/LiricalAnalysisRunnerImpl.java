@@ -29,18 +29,20 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
     private final ForkJoinPool pool;
 
     public static LiricalAnalysisRunnerImpl of(PhenotypeService phenotypeService,
-                                        BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory) {
-        return new LiricalAnalysisRunnerImpl(phenotypeService, backgroundVariantFrequencyServiceFactory);
+                                               BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory,
+                                               int parallelism) {
+        return new LiricalAnalysisRunnerImpl(phenotypeService,
+                backgroundVariantFrequencyServiceFactory,
+                parallelism);
     }
 
     private LiricalAnalysisRunnerImpl(PhenotypeService phenotypeService,
-                                      BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory) {
+                                      BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory,
+                                      int parallelism) {
         this.phenotypeService = Objects.requireNonNull(phenotypeService);
         this.phenotypeLrEvaluator = new PhenotypeLikelihoodRatio(phenotypeService.hpo(), phenotypeService.diseases());
         this.bgFreqFactory = backgroundVariantFrequencyServiceFactory;
-        // TODO - set parallelism
-        int parallelism = Runtime.getRuntime().availableProcessors();
-        LOGGER.debug("Creating LIRICAL pool with {} workers.", parallelism);
+        LOGGER.debug("Creating LIRICAL pool with {} worker(s).", parallelism);
         this.pool = new ForkJoinPool(parallelism, LiricalWorkerThread::new, null, false);
     }
 
@@ -118,16 +120,16 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
                 GenotypeLrWithExplanation candidate = genotypeLikelihoodRatio.evaluateGenotype(analysisData.sampleId(), g2g, disease.modesOfInheritance());
                 bestGenotypeLr = takeNonNullOrGreaterLr(bestGenotypeLr, candidate);
 
-                if (options.disregardDiseaseWithNoDeleteriousVariants()) {
+                if (!options.includeDiseasesWithNoDeleteriousVariants()) {
                     // has at least one pathogenic clinvar variant or predicted pathogenic variant?
                     if (g2g.pathogenicClinVarCount(analysisData.sampleId()) > 0
-                            || g2g.pathogenicAlleleCount(analysisData.sampleId(), options.variantDeleteriousnessThreshold()) > 0) {
+                            || g2g.deleteriousAlleleCount(analysisData.sampleId(), options.variantDeleteriousnessThreshold()) > 0) {
                         noPredictedDeleteriousVariantsWereFound = false;
                     }
                 }
             }
 
-            if (options.disregardDiseaseWithNoDeleteriousVariants() && noPredictedDeleteriousVariantsWereFound)
+            if (!options.includeDiseasesWithNoDeleteriousVariants() && noPredictedDeleteriousVariantsWereFound)
                 return Optional.empty();
 
             /*
@@ -182,4 +184,10 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
                 });
     }
 
+    @Override
+    public void close() {
+        LOGGER.debug("Shutting down the analysis runner");
+        // TODO - use close after updating Java to 19+
+        pool.shutdownNow();
+    }
 }

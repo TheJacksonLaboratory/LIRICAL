@@ -3,7 +3,6 @@ package org.monarchinitiative.lirical.io.analysis;
 
 import com.google.protobuf.util.JsonFormat;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v1.Phenopacket;
@@ -14,12 +13,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PhenopacketV1ImporterTest {
     private static byte[] DATA;
@@ -114,39 +112,35 @@ public class PhenopacketV1ImporterTest {
 
     @Test
     public void testNumberOfObservedTerms() {
-        Assertions.assertEquals(4, data.getHpoTerms().count());
+        assertEquals(4, data.presentHpoTermIds().count());
     }
 
     @Test
     public void testNumberOfNegatedTerms() {
-        Assertions.assertEquals(1, data.getNegatedHpoTerms().count());
+        assertEquals(1, data.excludedHpoTermIds().count());
     }
 
     @Test
     public void testIdentifyOfNegatedTerm() {
         TermId tid = TermId.of("HP:0031508");
-        Assertions.assertTrue(data.getNegatedHpoTerms().anyMatch(t -> t.equals(tid)));
+        assertTrue(data.excludedHpoTermIds().anyMatch(t -> t.equals(tid)));
     }
 
     @Test
     public void testIdentifyObservedTerm() {
         TermId tid = TermId.of("HP:0031508");
-        assertFalse(data.getHpoTerms().toList().contains(tid)); // should not include negated term
+        assertFalse(data.presentHpoTermIds().toList().contains(tid)); // should not include negated term
         TermId tid2 = TermId.of("HP:0001510"); // this os one of the observed terms
-        Assertions.assertTrue(data.getHpoTerms().toList().contains(tid2));
+        assertTrue(data.presentHpoTermIds().toList().contains(tid2));
     }
 
     @Test
     public void testGetVcfFile() {
-        Assertions.assertTrue(data.getVcfPath().isPresent());
+        assertEquals("file:/home/user/example.vcf", data.vcf());
 
-        Optional<Path> vcfPath = data.getVcfPath();
-        assertThat(vcfPath.isPresent(), equalTo(true));
-        Assertions.assertEquals(Path.of("/home/user/example.vcf"), vcfPath.get());
-
-        Optional<String> assembly = data.getGenomeAssembly();
+        Optional<String> assembly = data.genomeAssembly();
         assertThat(assembly.isPresent(), equalTo(true));
-        Assertions.assertEquals(fakeGenomeAssembly, assembly.get());
+        assertEquals(fakeGenomeAssembly, assembly.get());
     }
 
 }

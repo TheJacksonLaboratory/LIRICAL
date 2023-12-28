@@ -1,105 +1,130 @@
 package org.monarchinitiative.lirical.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.time.Period;
 import java.util.Objects;
 
 /**
- * Convenience class to represent the age of a proband. Note that if (@link #initialized} is false,
- * then we are representing the fact that we do not know the age we will disregard the feature
- * in our calculations. We will represent prenatal age as number of completed gestational weeks and days,
- * and {@link #isGestational()} flag will be set.
+ * Convenience class to represent the age of a subject.
+ * <p>
+ * We represent both <em>postnatal</em> and <em>gestational</em> age. Use {@link #isGestational()}
+ * or {@link #isPostnatal()} to tell them apart.
+ * <p>
+ * The postnatal age has {@link #getYears()}, {@link #getMonths()}, and {@link #getDays()} fields set
+ * and {@link #getWeeks()} should be ignored.
+ * <p>
+ * The gestational age uses {@link #getWeeks()} and {@link #getDays()} fields.
+ *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
+@JsonSerialize(using = AgeSerializer.class)
 public class Age {
-    private final boolean isUnknown;
     private final boolean isGestational;
     private final int years;
     private final int months;
     private final int weeks;
     private final int days;
-    /** Used as a constant if we do not have information about the age of a proband. */
-    private final static Age NOT_KNOWN = new Age();
 
-    private Age(int years, int months, int weeks, int days) {
-        this.years=years;
-        this.months=months;
-        this.weeks=weeks;
-        this.days=days;
-        this.isUnknown = false;
-        this.isGestational = weeks != 0;
+    private Age(int years, int months, int weeks, int days, boolean isGestational) {
+        this.years=requireNonNegativeInt(years, "Years must not be negative");
+        this.months=requireNonNegativeInt(months, "Months must not be negative");
+        this.weeks=requireNonNegativeInt(weeks, "Weeks must not be negative");
+        this.days=requireNonNegativeInt(days, "Days must not be negative");
+        this.isGestational = isGestational;
     }
 
-    private Age() {
-        this.years=0;
-        this.months=0;
-        this.weeks=0;
-        this.days=0;
-        this.isUnknown = true;
-        this.isGestational = false;
-    }
-
-    public static Age ageNotKnown() {
-        return NOT_KNOWN;
-    }
-
+    @JsonIgnore
     public int getYears() {
         return years;
     }
 
+    @JsonIgnore
     public int getMonths() {
         return months;
     }
 
+    @JsonIgnore
     public int getWeeks() {
         return weeks;
     }
 
+    @JsonIgnore
     public int getDays() {
         return days;
     }
 
-    public boolean isUnknown() {
-        return isUnknown;
-    }
-
+    @JsonIgnore
     public boolean isGestational() {
         return isGestational;
     }
 
+    @JsonIgnore
     public boolean isPostnatal() {
         return !isGestational;
     }
 
+    /**
+     * Create a postnatal age to represent {@code y} years of age.
+     *
+     * @param y a non-negative number of years.
+     */
     public static Age ageInYears(int y) {
         return of(y,0,0);
     }
 
+    /**
+     * Create a postnatal age to represent {@code m} months of age.
+     *
+     * @param m a non-negative number of months.
+     */
     public static Age ageInMonths(int m) {
         return of(0,m,0);
     }
 
+    /**
+     * Create a postnatal age to represent {@code d} days of age.
+     *
+     * @param d a non-negative number of days.
+     */
     public static Age ageInDays(int d) {
         return of(0,0,d);
     }
 
     /**
      * @param period representing <em>postnatal</em> (<em>not</em> gestational) age.
-     * @return age object
      */
     public static Age parse(Period period) {
         Period normalized = period.normalized();
         return of(normalized.getYears(), normalized.getMonths(), normalized.getDays());
     }
 
+    /**
+     * Create a gestational age to represent {@code weeks} and {@code days}.
+     * <p>
+     * {@code weeks} should generally be not be greater than 42, and it must not be negative.
+     * {@code days} must be in range {@code [0,6]}.
+     *
+     * @param weeks a non-negative number of completed gestational weeks.
+     * @param days the number of completed gestational days.
+     */
     public static Age gestationalAge(int weeks, int days) {
-        return new Age(0, 0, weeks, days);
+        return new Age(0, 0, weeks, days, true);
     }
 
     /**
      * Create a <em>postnatal</em> age from given inputs.
      */
     public static Age of(int years, int months, int days) {
-        return new Age(years, months, 0, days);
+        return new Age(years, months, 0, days, false);
+    }
+
+    private static int requireNonNegativeInt(int value, String msg) {
+        if (value < 0) {
+            throw new IllegalArgumentException(msg);
+        } else
+            return value;
     }
 
     @Override
@@ -107,8 +132,7 @@ public class Age {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Age age = (Age) o;
-        return isUnknown == age.isUnknown &&
-                years == age.years &&
+        return years == age.years &&
                 months == age.months &&
                 weeks == age.weeks &&
                 days == age.days;
@@ -116,14 +140,13 @@ public class Age {
 
     @Override
     public int hashCode() {
-        return Objects.hash(isUnknown, years, months, weeks, days);
+        return Objects.hash(years, months, weeks, days);
     }
 
     @Override
     public String toString() {
         return "Age{" +
-                "isUnknown=" + isUnknown +
-                ", years=" + years +
+                "years=" + years +
                 ", months=" + months +
                 ", weeks=" + weeks +
                 ", days=" + days +

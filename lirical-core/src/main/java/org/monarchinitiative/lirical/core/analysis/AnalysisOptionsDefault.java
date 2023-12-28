@@ -16,6 +16,6 @@ record AnalysisOptionsDefault(
         boolean useStrictPenalties,
         boolean useGlobal,
         PretestDiseaseProbability pretestDiseaseProbability,
-        boolean disregardDiseaseWithNoDeleteriousVariants
+        boolean includeDiseasesWithNoDeleteriousVariants
 ) implements AnalysisOptions {
 }

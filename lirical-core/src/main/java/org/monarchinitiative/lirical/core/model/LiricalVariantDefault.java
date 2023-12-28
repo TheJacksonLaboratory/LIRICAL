@@ -34,8 +34,8 @@ class LiricalVariantDefault implements LiricalVariant {
     }
 
     @Override
-    public Optional<AlleleCount> alleleCount(String sample) {
-        return genotypedVariant.alleleCount(sample);
+    public Optional<AlleleCount> alleleCount(String sampleId) {
+        return genotypedVariant.alleleCount(sampleId);
     }
 
     @Override
@@ -54,8 +54,8 @@ class LiricalVariantDefault implements LiricalVariant {
     }
 
     @Override
-    public ClinvarClnSig clinvarClnSig() {
-        return variantMetadata.clinvarClnSig();
+    public Optional<ClinVarAlleleData> clinVarAlleleData() {
+        return variantMetadata.clinVarAlleleData();
     }
 
     @Override

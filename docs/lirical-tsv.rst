@@ -12,19 +12,27 @@ For example, the following command will run LIRICAL on a Phenopacket and output 
 
 By default, LIRICAL outputs the data to a file called ``lirical.tsv``. This can be altered with the ``-x <prefix>`` option.
 
+The TSV output consists of the header and the body. The header includes lines that start with an exclamation mark,
+to provide information about the HPO terms used to run the analysis.
+
+The body section summarizes the matches between the patient data and the diseases, one disease per row, ranked by
+the post-test probability.
+Each row includes the disease credentials, the pre-test and post-test probabilities, the composite likelihood ratio.
+If the analysis was run with a VCF file, the report includes two extra columns with the gene associated with the disease
+and the variants found in the gene.
 
 .. list-table:: LIRICAL's TSV format
    :header-rows: 1
    :widths: 40 60
 
-   *  -  Item
+   *  -  Column name
       -  Explanation
    *  -  rank
-      -  placement of the candidate diagnosis by LIRICAL
+      -  Placement of the candidate diagnosis by LIRICAL
    *  -  diseaseName
       -  Name of the candidate disease
    *  -  diseaseCurie
-      -  disease ID, e.g., OMIM:154700
+      -  Disease identifier, e.g., `OMIM:154700`
    *  -  pretestprob
       -  Pretest probability of the candidate disease
    *  -  postestprob
@@ -32,11 +40,7 @@ By default, LIRICAL outputs the data to a file called ``lirical.tsv``. This can 
    *  -  compositeLR
       -  Combined likelihood ratio of the candidate disease (logarithm of the product of all individual LRs)
    *  -  entrezGeneId
-      -  Identifier of the candidate disease gene (if available)
+      -  Identifier of the candidate disease gene (if run with a VCF file)
    *  -  variants
-      -  variant evaluation (if available)
-
-
-The file begins with comment lines (that start with an exclamation mark) that provide information about the
-HPO terms used to run the analysis.
+      -  Variant evaluation (if run with a VCF file)
 

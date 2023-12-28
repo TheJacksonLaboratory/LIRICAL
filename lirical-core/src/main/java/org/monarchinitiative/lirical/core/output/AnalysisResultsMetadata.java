@@ -1,5 +1,8 @@
 package org.monarchinitiative.lirical.core.output;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class AnalysisResultsMetadata {
     private String liricalVersion;
     private String hpoVersion;
@@ -8,9 +11,9 @@ public class AnalysisResultsMetadata {
     private String exomiserPath;
     private String analysisDate;
     private String sampleName;
-    private long nGoodQualityVariants;
+    private long nPassingVariants;
     private long nFilteredVariants;
-    private int genesWithVar;
+    private long genesWithVar;
     private boolean globalMode;
 
     private AnalysisResultsMetadata(String liricalVersion,
@@ -20,9 +23,9 @@ public class AnalysisResultsMetadata {
                                     String exomiserPath,
                                     String analysisDate,
                                     String sampleName,
-                                    long nGoodQualityVariants,
+                                    long nPassingVariants,
                                     long nFilteredVariants,
-                                    int genesWithVar,
+                                    long genesWithVar,
                                     boolean globalMode) {
         this.liricalVersion = liricalVersion;
         this.hpoVersion = hpoVersion;
@@ -31,7 +34,7 @@ public class AnalysisResultsMetadata {
         this.exomiserPath = exomiserPath;
         this.analysisDate = analysisDate;
         this.sampleName = sampleName;
-        this.nGoodQualityVariants = nGoodQualityVariants;
+        this.nPassingVariants = nPassingVariants;
         this.nFilteredVariants = nFilteredVariants;
         this.genesWithVar = genesWithVar;
         this.globalMode = globalMode;
@@ -57,6 +60,7 @@ public class AnalysisResultsMetadata {
         this.transcriptDatabase = transcriptDatabase;
     }
 
+    @JsonIgnore
     public String getLiricalPath() {
         return liricalPath;
     }
@@ -65,6 +69,7 @@ public class AnalysisResultsMetadata {
         this.liricalPath = liricalPath;
     }
 
+    @JsonIgnore
     public String getExomiserPath() {
         return exomiserPath;
     }
@@ -89,14 +94,16 @@ public class AnalysisResultsMetadata {
         this.sampleName = sampleName;
     }
 
-    public long getnGoodQualityVariants() {
-        return nGoodQualityVariants;
+    @JsonIgnore
+    public long getnPassingVariants() {
+        return nPassingVariants;
     }
 
-    public void setnGoodQualityVariants(long nGoodQualityVariants) {
-        this.nGoodQualityVariants = nGoodQualityVariants;
+    public void setnPassingVariants(long nPassingVariants) {
+        this.nPassingVariants = nPassingVariants;
     }
 
+    @JsonIgnore
     public long getnFilteredVariants() {
         return nFilteredVariants;
     }
@@ -105,14 +112,16 @@ public class AnalysisResultsMetadata {
         this.nFilteredVariants = nFilteredVariants;
     }
 
-    public int getGenesWithVar() {
+    @JsonIgnore
+    public long getGenesWithVar() {
         return genesWithVar;
     }
 
-    public void setGenesWithVar(int genesWithVar) {
+    public void setGenesWithVar(long genesWithVar) {
         this.genesWithVar = genesWithVar;
     }
 
+    @JsonGetter(value = "isGlobalAnalysisMode")
     public boolean getGlobalMode() {
         return globalMode;
     }
@@ -135,7 +144,7 @@ public class AnalysisResultsMetadata {
                 ", exomiserPath='" + exomiserPath + '\'' +
                 ", analysisDate='" + analysisDate + '\'' +
                 ", sampleName='" + sampleName + '\'' +
-                ", nGoodQualityVariants=" + nGoodQualityVariants +
+                ", nPassingVariants=" + nPassingVariants +
                 ", nFilteredVariants=" + nFilteredVariants +
                 ", genesWithVar=" + genesWithVar +
                 ", globalMode=" + globalMode +
@@ -150,9 +159,9 @@ public class AnalysisResultsMetadata {
         private String exomiserPath;
         private String analysisDate;
         private String sampleName = "SAMPLE_ID";
-        private long nGoodQualityVariants;
+        private long nPassingVariants;
         private long nFilteredVariants;
-        private int genesWithVar;
+        private long genesWithVar;
         private boolean globalMode;
 
         private Builder() {
@@ -193,8 +202,8 @@ public class AnalysisResultsMetadata {
             return this;
         }
 
-        public Builder setnGoodQualityVariants(long nGoodQualityVariants) {
-            this.nGoodQualityVariants = nGoodQualityVariants;
+        public Builder setnPassingVariants(long nPassingVariants) {
+            this.nPassingVariants = nPassingVariants;
             return this;
         }
 
@@ -203,7 +212,7 @@ public class AnalysisResultsMetadata {
             return this;
         }
 
-        public Builder setGenesWithVar(int genesWithVar) {
+        public Builder setGenesWithVar(long genesWithVar) {
             this.genesWithVar = genesWithVar;
             return this;
         }
@@ -221,7 +230,7 @@ public class AnalysisResultsMetadata {
                     exomiserPath,
                     analysisDate,
                     sampleName,
-                    nGoodQualityVariants,
+                    nPassingVariants,
                     nFilteredVariants,
                     genesWithVar,
                     globalMode);

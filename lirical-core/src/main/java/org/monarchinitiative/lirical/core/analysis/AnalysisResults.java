@@ -1,5 +1,6 @@
 package org.monarchinitiative.lirical.core.analysis;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.Comparator;
@@ -26,18 +27,23 @@ public interface AnalysisResults extends Iterable<TestResult> {
     /**
      * @return test result count
      */
+    @JsonIgnore
     int size();
 
+    @JsonIgnore
     default boolean isEmpty() {
         return size() == 0;
     }
 
+    @JsonIgnore
     Optional<TestResult> resultByDiseaseId(TermId diseaseId);
 
+    @JsonIgnore
     default Stream<TestResult> results() {
         return StreamSupport.stream(spliterator(), false);
     }
 
+    @JsonIgnore
     default Stream<TestResult> resultsWithDescendingPostTestProbability() {
         return results().sorted(Comparator.comparingDouble(TestResult::posttestProbability).reversed());
     }

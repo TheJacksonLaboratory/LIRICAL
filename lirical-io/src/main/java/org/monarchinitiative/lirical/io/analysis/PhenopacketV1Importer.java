@@ -1,11 +1,6 @@
 package org.monarchinitiative.lirical.io.analysis;
 
-import com.google.protobuf.util.JsonFormat;
-
-import org.monarchinitiative.lirical.core.model.Age;
-import org.monarchinitiative.lirical.core.model.AlleleCount;
-import org.monarchinitiative.lirical.core.model.GenomeBuild;
-import org.monarchinitiative.lirical.core.model.GenotypedVariant;
+import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import org.monarchinitiative.svart.Contig;
@@ -16,13 +11,11 @@ import org.monarchinitiative.svart.util.VariantTrimmer;
 import org.monarchinitiative.svart.util.VcfConverter;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
+import org.phenopackets.schema.v1.core.Sex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.time.Period;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -58,30 +51,24 @@ class PhenopacketV1Importer implements PhenopacketImporter {
 
         Individual subject = phenopacket.getSubject();
         String sampleId = subject.getId();
-        List<TermId> observedTerms = phenopacket.getPhenotypicFeaturesList().stream()
+        List<String> observedTerms = phenopacket.getPhenotypicFeaturesList().stream()
                 .filter(pf -> !pf.getNegated())
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
-                .map(AnalysisIoUtils::createTermId)
-                .flatMap(Optional::stream)
-                .distinct()
                 .toList();
 
-        List<TermId> negatedTerms = phenopacket.getPhenotypicFeaturesList().stream()
+        List<String> negatedTerms = phenopacket.getPhenotypicFeaturesList().stream()
                 .filter(PhenotypicFeature::getNegated)
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
-                .map(AnalysisIoUtils::createTermId)
-                .flatMap(Optional::stream)
-                .distinct()
                 .toList();
 
 
-        org.monarchinitiative.lirical.core.model.Age age = subject.getAgeCase().equals(Individual.AgeCase.AGE_AT_COLLECTION)
+        String age = subject.getAgeCase().equals(Individual.AgeCase.AGE_AT_COLLECTION)
                 ? mapToAge(subject.getAgeAtCollection())
                 : null;
 
-        org.monarchinitiative.lirical.core.model.Sex sex = toSex(subject.getSex());
+        String sex = toSex(subject.getSex());
 
 
         Optional<HtsFile> firstVcf = phenopacket.getHtsFilesList().stream()
@@ -104,8 +91,7 @@ class PhenopacketV1Importer implements PhenopacketImporter {
                 .flatMap(Optional::stream)
                 .toList();
 
-        Path vcfPath = firstVcf.flatMap(hts -> SanitizingAnalysisDataParser.toUri(hts.getUri()))
-                .map(Path::of)
+        String vcfPath = firstVcf.map(HtsFile::getUri)
                 .orElse(null);
 
         return new PhenopacketData(genomeBuild,
@@ -168,7 +154,7 @@ class PhenopacketV1Importer implements PhenopacketImporter {
                         return Optional.empty();
                     }
                 }
-                Map<String, AlleleCount> alleles = Map.of(sampleId, alleleCount);
+                List<SampleAlleleCount> alleles = List.of(SampleAlleleCount.of(sampleId, alleleCount));
 
                 // 3 - assemble the final variant. Uff..
                 return Optional.of(GenotypedVariant.of(genomeBuild,
@@ -192,21 +178,15 @@ class PhenopacketV1Importer implements PhenopacketImporter {
         }
     }
 
-    private static Age mapToAge(org.phenopackets.schema.v1.core.Age age) {
-        try {
-            Period iso8601 = Period.parse(age.getAge());
-            return Age.of(iso8601.getYears(), iso8601.getMonths(), iso8601.getDays());
-        } catch (DateTimeParseException e) {
-            LOGGER.warn("Ignoring unparasble age {}", age.getAge());
-            return null;
-        }
+    private static String mapToAge(org.phenopackets.schema.v1.core.Age age) {
+        return age.getAge();
     }
 
-    private static org.monarchinitiative.lirical.core.model.Sex toSex(Sex sex) {
+    private static String toSex(Sex sex) {
         return switch (sex) {
-            case FEMALE -> org.monarchinitiative.lirical.core.model.Sex.FEMALE;
-            case MALE -> org.monarchinitiative.lirical.core.model.Sex.MALE;
-            case UNKNOWN_SEX, OTHER_SEX, UNRECOGNIZED -> org.monarchinitiative.lirical.core.model.Sex.UNKNOWN;
+            case FEMALE -> org.monarchinitiative.lirical.core.model.Sex.FEMALE.name();
+            case MALE -> org.monarchinitiative.lirical.core.model.Sex.MALE.name();
+            case UNKNOWN_SEX, OTHER_SEX, UNRECOGNIZED -> org.monarchinitiative.lirical.core.model.Sex.UNKNOWN.name();
         };
     }
 

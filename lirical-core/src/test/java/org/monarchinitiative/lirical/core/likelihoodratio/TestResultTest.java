@@ -58,7 +58,7 @@ public class TestResultTest {
         List<LrWithExplanation> list1 = createTestList(some, 2.0, 3.0, 4.0);
         List<LrWithExplanation> excluded = List.of();
         double prevalence = 0.025;
-        GenotypeLrWithExplanation genotypeLr = GenotypeLrWithExplanation.of(MADE_UP_GENE, 2.0, "Explanation");
+        GenotypeLrWithExplanation genotypeLr = GenotypeLrWithExplanation.of(MADE_UP_GENE,  GenotypeLrMatchType.LIRICAL_GT_MODEL, 2.0, "Explanation");
         tresultWithGenotype = TestResult.of(d1.id(), prevalence, list1,excluded, genotypeLr);
         tresultNoGenotype = TestResult.of(d1.id(), prevalence, list1,excluded, null);
     }
@@ -183,7 +183,7 @@ public class TestResultTest {
         // The ranks of the objects get set in the evaluate method of HpoCase so cannot be tested here.
         // now add another test result, same as result3 but with additional genotype evidence
         // result4 should now be the top hit
-        GenotypeLrWithExplanation genotypeLr = GenotypeLrWithExplanation.of(MADE_UP_GENE, 2.0, "Explanation");
+        GenotypeLrWithExplanation genotypeLr = GenotypeLrWithExplanation.of(MADE_UP_GENE, GenotypeLrMatchType.LIRICAL_GT_MODEL, 2.0, "Explanation");
         TestResult result4= TestResult.of(d3.id(), prevalence, list3,excluded, genotypeLr);
         lst.add(result4);
         assertEquals(lst.get(3),result4);

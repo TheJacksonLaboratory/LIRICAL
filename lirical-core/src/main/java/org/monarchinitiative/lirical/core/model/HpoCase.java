@@ -42,7 +42,7 @@ public final class HpoCase {
         this.excludedAbnormalities = Objects.requireNonNull(excludedTerms);
         this.results = Objects.requireNonNull(results);
         this.sex = Objects.requireNonNull(sex);
-        this.age = Objects.requireNonNull(age);
+        this.age = age;
     }
 
     public String sampleId() {
@@ -106,7 +106,7 @@ public final class HpoCase {
             this.observedAbnormalities = List.copyOf(Objects.requireNonNull(abnormalPhenotypes));
             excludedAbnormalities=List.of(); // default empty list
             sex=Sex.UNKNOWN;
-            age=Age.ageNotKnown();
+            age=null;
         }
 
         public Builder excluded(List<TermId> excludedPhenotypes) {

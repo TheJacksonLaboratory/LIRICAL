@@ -1,29 +1,39 @@
 package org.monarchinitiative.lirical.core.model;
 
+import org.monarchinitiative.lirical.core.util.BinarySearch;
 import org.monarchinitiative.svart.GenomicVariant;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * Implementation of {@link GenotypedVariant} with genotypes are stored in a {@link Map}.
+ * Implementation of {@link GenotypedVariant} with genotypes stored in an array.
  */
 class GenotypedVariantDefault implements GenotypedVariant {
 
     private final GenomeBuild genomeBuild;
     private final GenomicVariant variant;
-    private final Map<String, AlleleCount> genotypes;
+    private final SampleAlleleCount[] alleleCounts;
     private final boolean passedFilters;
+
+    static GenotypedVariantDefault of(GenomeBuild genomeBuild,
+                                      GenomicVariant variant,
+                                      Collection<SampleAlleleCount> alleleCounts,
+                                      boolean passedFilters) {
+        // We sort the counts by sample id to take advantage of the binary search.
+        SampleAlleleCount[] counts = alleleCounts.stream()
+                .sorted(Comparator.comparing(SampleAlleleCount::getSampleId))
+                .toArray(SampleAlleleCount[]::new);
+        return new GenotypedVariantDefault(genomeBuild, variant, counts, passedFilters);
+    }
 
     GenotypedVariantDefault(GenomeBuild genomeBuild,
                             GenomicVariant variant,
-                            Map<String, AlleleCount> genotypes,
+                            SampleAlleleCount[] alleleCounts,
                             boolean passedFilters) {
         this.genomeBuild = Objects.requireNonNull(genomeBuild);
         this.variant = Objects.requireNonNull(variant);
-        this.genotypes = Objects.requireNonNull(genotypes);
+        this.alleleCounts = Objects.requireNonNull(alleleCounts);
         this.passedFilters = passedFilters;
     }
 
@@ -40,12 +50,17 @@ class GenotypedVariantDefault implements GenotypedVariant {
 
     @Override
     public Set<String> sampleNames() {
-        return genotypes.keySet();
+        return Arrays.stream(alleleCounts)
+                .map(SampleAlleleCount::getSampleId)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
-    public Optional<AlleleCount> alleleCount(String sample) {
-        return Optional.ofNullable(genotypes.get(sample));
+    public Optional<AlleleCount> alleleCount(String sampleId) {
+        if (sampleId == null)
+            return Optional.empty();
+        return BinarySearch.binarySearch(alleleCounts, SampleAlleleCount::getSampleId, sampleId)
+                .map(SampleAlleleCount::getAlleleCount);
     }
 
     @Override
@@ -58,12 +73,12 @@ class GenotypedVariantDefault implements GenotypedVariant {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GenotypedVariantDefault that = (GenotypedVariantDefault) o;
-        return genomeBuild == that.genomeBuild && Objects.equals(variant, that.variant) && Objects.equals(genotypes, that.genotypes) && passedFilters == that.passedFilters;
+        return genomeBuild == that.genomeBuild && Objects.equals(variant, that.variant) && Arrays.equals(alleleCounts, that.alleleCounts) && passedFilters == that.passedFilters;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(genomeBuild, variant, genotypes, passedFilters);
+        return Objects.hash(genomeBuild, variant, Arrays.hashCode(alleleCounts), passedFilters);
     }
 
     @Override
@@ -71,7 +86,7 @@ class GenotypedVariantDefault implements GenotypedVariant {
         return "GenotypedVariantDefault{" +
                 "genomeBuild=" + genomeBuild +
                 ", variant=" + variant +
-                ", genotypes=" + genotypes +
+                ", alleleCounts=" + Arrays.toString(alleleCounts) +
                 ", passedFilters=" + passedFilters +
                 '}';
     }

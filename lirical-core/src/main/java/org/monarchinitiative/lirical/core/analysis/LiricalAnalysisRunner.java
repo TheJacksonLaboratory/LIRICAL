@@ -2,12 +2,14 @@ package org.monarchinitiative.lirical.core.analysis;
 
 import org.monarchinitiative.lirical.core.exception.LiricalAnalysisException;
 
+import java.io.Closeable;
+
 /**
  * The analysis runner runs LIRICAL analysis on provided analysis subject ({@link AnalysisData}). The analysis
  * is parametrized by {@link AnalysisOptions}. The runner throws {@link LiricalAnalysisException} if the analysis
  * cannot be run as dictated by the options.
  */
-public interface LiricalAnalysisRunner {
+public interface LiricalAnalysisRunner extends Closeable {
 
     /**
      * Run analysis parametrized by {@code analysisOptions} on {@code analysisData}.
