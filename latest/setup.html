@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setting up LIRICAL &mdash; LIRICAL 2.0.0-RC3-SNAPSHOT documentation</title>
+  <title>Setting up LIRICAL &mdash; LIRICAL 2.0.0-RC3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=4a533813"></script>
+        <script src="_static/documentation_options.js?v=5b703c68"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -121,23 +121,23 @@ Build the executable from source with Maven:</p>
 <p>We use the amazing <a class="reference external" href="https://maven.apache.org/wrapper/">Maven Wrapper</a> for building the sources, so installation
 of Maven prior build is <em>not</em> required.</p>
 <p>Verify that the building process went well by running:</p>
-<pre class="literal-block">java -jar lirical-cli/target/lirical-cli-2.0.0-RC3-SNAPSHOT.jar --help</pre>
+<pre class="literal-block">java -jar lirical-cli/target/lirical-cli-2.0.0-RC3.jar --help</pre>
 <section id="prebuilt-lirical-executable">
 <h3>Prebuilt LIRICAL executable<a class="headerlink" href="#prebuilt-lirical-executable" title="Link to this heading"></a></h3>
 <p>Alternatively, go to the <a class="reference external" href="https://github.com/TheJacksonLaboratory/LIRICAL/releases">Releases section</a> on the
 LIRICAL GitHub page and download the distribution ZIP file with an executable JAR file with the latest LIRICAL version.</p>
-<p>Assuming the distribution file was downloaded to lirical-cli-2.0.0-RC3-SNAPSHOT-distribution.zip,
+<p>Assuming the distribution file was downloaded to lirical-cli-2.0.0-RC3-distribution.zip,
 the following will print the help message:</p>
-<pre class="literal-block">unzip lirical-cli-2.0.0-RC3-SNAPSHOT-distribution.zip
-java -jar lirical-cli-2.0.0-RC3-SNAPSHOT/lirical-cli-2.0.0-RC3-SNAPSHOT.jar --help</pre>
+<pre class="literal-block">unzip lirical-cli-2.0.0-RC3-distribution.zip
+java -jar lirical-cli-2.0.0-RC3/lirical-cli-2.0.0-RC3.jar --help</pre>
 </section>
 <section id="set-up-alias">
 <span id="rstsetupalias"></span><h3>Set up alias<a class="headerlink" href="#set-up-alias" title="Link to this heading"></a></h3>
 <p>In general, Java command line applications are invoked as <code class="docutils literal notranslate"><span class="pre">java</span> <span class="pre">-jar</span> <span class="pre">executable.jar</span></code>. However, such incantation is
 a bit too verbose and we can shorten it a bit by defining an alias.</p>
 <p>Let’s define a command alias for LIRICAL. Assuming the distribution ZIP was unpacked into
-phenopacket-tools-cli-2.0.0-RC3-SNAPSHOT directory, run the following to set up and check the command alias:</p>
-<pre class="literal-block">alias lirical=&quot;java -jar $(pwd)/lirical-cli-2.0.0-RC3-SNAPSHOT/lirical-cli-2.0.0-RC3-SNAPSHOT.jar&quot;
+phenopacket-tools-cli-2.0.0-RC3 directory, run the following to set up and check the command alias:</p>
+<pre class="literal-block">alias lirical=&quot;java -jar $(pwd)/lirical-cli-2.0.0-RC3/lirical-cli-2.0.0-RC3.jar&quot;
 lirical --help</pre>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -206,7 +206,7 @@ in the current working directory. You can change this default with the <code cla
 (If you change this, then you will need to pass the location of your directory to all other LIRICAL commands
 using the <code class="docutils literal notranslate"><span class="pre">-d</span></code> flag).</p>
 <p>Download the files into the <code class="docutils literal notranslate"><span class="pre">data</span></code> folder located next to the LIRICAL JAR file by running:</p>
-<pre class="literal-block">cd lirical-cli-2.0.0-RC3-SNAPSHOT
+<pre class="literal-block">cd lirical-cli-2.0.0-RC3
 lirical download</pre>
 <p>This will ensure LIRICAL finds the data folder automatically (see below).</p>
 <div class="admonition note">
