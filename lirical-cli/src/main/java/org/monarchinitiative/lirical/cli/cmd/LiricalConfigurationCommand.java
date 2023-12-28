@@ -84,17 +84,6 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 description = "Global analysis (default: ${DEFAULT-VALUE}).")
         public boolean globalAnalysisMode = false;
 
-        @CommandLine.Option(names = {"--ddndv"},
-                description = {
-                "Disregard a disease if no deleterious variants are found in the gene associated with the disease.",
-                        "Used only if running with a VCF file.",
-                        "NOTE: the option has been DEPRECATED, use `--sdwndv` instead",
-                        "(default: ${DEFAULT-VALUE})"
-                })
-        // REMOVE(v2.0.0)
-        @Deprecated(forRemoval = true)
-        public Boolean disregardDiseaseWithNoDeleteriousVariants = null;
-
         @CommandLine.Option(names = {"--sdwndv"},
                 description = {
                 "Include diseases even if no deleterious variants are found in the gene associated with the disease.",
@@ -128,15 +117,6 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         @CommandLine.Option(names = {"--pathogenicity-threshold"},
                 description = "Variant with greater pathogenicity score is considered deleterious (default: ${DEFAULT-VALUE}).")
         public float pathogenicityThreshold = .8f;
-
-        // REMOVE(v2.0.0)
-        @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-        @CommandLine.Option(names = {"--default-allele-frequency"},
-                description = {
-                "Variant with greater allele frequency in at least one population is considered common.",
-                        "NOTE: the option has been DEPRECATED"
-        })
-        public float defaultAlleleFrequency = Float.NaN;
 
         @CommandLine.Option(names = {"--validation-policy"},
                 paramLabel = "{STRICT, LENIENT, MINIMAL}",
@@ -175,17 +155,6 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         if (dataSection.exomiserDatabase != null) {
             // Check the obsolete `-e | --exomiser` option is not being used.
             String msg = "`-e | --exomiser` option has been deprecated. Use `-e19 or -e38` to set paths to Exomiser variant databases for hg19 and hg38, respectively";
-            errors.add(msg);
-        }
-
-        if (!Float.isNaN(runConfiguration.defaultAlleleFrequency)) {
-            String msg = "`--default-allele-frequency` option has been deprecated.";
-            LOGGER.warn(msg);
-        }
-
-        if (runConfiguration.disregardDiseaseWithNoDeleteriousVariants != null) {
-            String msg = "`--ddndv` option has been deprecated and must not be used. Use `--sdwndv` if you want to show all diseases in the HTML report.";
-            LOGGER.warn(msg);
             errors.add(msg);
         }
 

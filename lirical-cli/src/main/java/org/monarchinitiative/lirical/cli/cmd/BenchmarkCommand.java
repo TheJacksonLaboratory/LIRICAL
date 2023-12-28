@@ -195,7 +195,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                                                GenomeBuild genomeBuild,
                                                TranscriptDatabase transcriptDatabase,
                                                List<LiricalVariant> backgroundVariants,
-                                               DataAndSanitationResultsAndPath resultsAndPath) throws LiricalParseException {
+                                               DataAndSanitationResultsAndPath resultsAndPath) {
         GenesAndGenotypes genes;
         if (phenotypeOnly) {
             // We omit the VCF even if provided.
