@@ -9,8 +9,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -74,7 +73,7 @@ public class HpoCaseTest {
     @Test
     public void testAge() {
         // we did not specify the age, so it should return not known
-        assertEquals(Age.ageNotKnown(),hpocase.getAge());
+        assertNull(hpocase.getAge());
     }
 
     @Test

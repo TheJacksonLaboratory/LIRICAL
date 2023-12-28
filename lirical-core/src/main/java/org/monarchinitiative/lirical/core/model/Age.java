@@ -7,46 +7,27 @@ import java.time.Period;
 import java.util.Objects;
 
 /**
- * Convenience class to represent the age of a proband. Note that if (@link #initialized} is false,
- * then we are representing the fact that we do not know the age we will disregard the feature
- * in our calculations. We will represent prenatal age as number of completed gestational weeks and days,
+ * Convenience class to represent the age of a subject.
+ * <p>
+ * We will represent prenatal age as number of completed gestational weeks and days,
  * and {@link #isGestational()} flag will be set.
+ *
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 @JsonSerialize(using = AgeSerializer.class)
 public class Age {
-    // TODO - make the unknown age unambiguous.
-    //  If we use the Age#ageNotKnown() to represent the absence of age, then the AnalysisData#age() should be non-null (Optional?)
-    //  Otherwise, we should allow AnalysisData#age() to be null and drop Age#ageNotKnown().
-    private final boolean isUnknown;
     private final boolean isGestational;
     private final int years;
     private final int months;
     private final int weeks;
     private final int days;
-    /** Used as a constant if we do not have information about the age of a proband. */
-    private final static Age NOT_KNOWN = new Age();
 
     private Age(int years, int months, int weeks, int days) {
         this.years=years;
         this.months=months;
         this.weeks=weeks;
         this.days=days;
-        this.isUnknown = false;
         this.isGestational = weeks != 0;
-    }
-
-    private Age() {
-        this.years=0;
-        this.months=0;
-        this.weeks=0;
-        this.days=0;
-        this.isUnknown = true;
-        this.isGestational = false;
-    }
-
-    public static Age ageNotKnown() {
-        return NOT_KNOWN;
     }
 
     @JsonIgnore
@@ -67,11 +48,6 @@ public class Age {
     @JsonIgnore
     public int getDays() {
         return days;
-    }
-
-    @JsonIgnore
-    public boolean isUnknown() {
-        return isUnknown;
     }
 
     @JsonIgnore
@@ -121,8 +97,7 @@ public class Age {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Age age = (Age) o;
-        return isUnknown == age.isUnknown &&
-                years == age.years &&
+        return years == age.years &&
                 months == age.months &&
                 weeks == age.weeks &&
                 days == age.days;
@@ -130,14 +105,13 @@ public class Age {
 
     @Override
     public int hashCode() {
-        return Objects.hash(isUnknown, years, months, weeks, days);
+        return Objects.hash(years, months, weeks, days);
     }
 
     @Override
     public String toString() {
         return "Age{" +
-                "isUnknown=" + isUnknown +
-                ", years=" + years +
+                "years=" + years +
                 ", months=" + months +
                 ", weeks=" + weeks +
                 ", days=" + days +

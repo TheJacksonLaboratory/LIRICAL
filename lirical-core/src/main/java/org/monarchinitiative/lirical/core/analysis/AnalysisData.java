@@ -9,24 +9,34 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
 /**
- * An interface for representing proband data.
+ * Representation of subject data required by LIRICAL analysis.
  */
 public interface AnalysisData {
 
+    /**
+     * Construct analysis data from the inputs.
+     *
+     * @param sampleId non-null sample identifier.
+     * @param age subject's age or {@code null} if not available.
+     * @param sex non-null sex.
+     * @param presentPhenotypeTerms a collection of observed HPO terms.
+     * @param negatedPhenotypeTerms a collection of excluded HPO terms.
+     * @param genes non-null container of genes and genotypes.
+     */
     static AnalysisData of(String sampleId,
                            Age age,
                            Sex sex,
                            Collection<TermId> presentPhenotypeTerms,
                            Collection<TermId> negatedPhenotypeTerms,
                            GenesAndGenotypes genes) {
-        return new AnalysisDataDefault(Objects.requireNonNull(sampleId),
+        return new AnalysisDataDefault(sampleId,
                 age,
-                Objects.requireNonNull(sex),
-                List.copyOf(Objects.requireNonNull(presentPhenotypeTerms)),
-                List.copyOf(Objects.requireNonNull(negatedPhenotypeTerms)),
+                sex,
+                presentPhenotypeTerms,
+                negatedPhenotypeTerms,
                 genes);
     }
 
@@ -35,17 +45,31 @@ public interface AnalysisData {
      */
     String sampleId();
 
-    // TODO - make non-null or wrap into Optional. See the TODO in Age for more info.
-    Age age();
+    /**
+     * @return an optional with age or empty optional if age is not available.
+     */
+    Optional<Age> age();
 
+    /**
+     * @return a non-null sex of the subject.
+     */
     Sex sex();
 
+    /**
+     * @return a list of the HPO terms that were observed in the subject.
+     */
     @JsonGetter(value = "observedPhenotypicFeatures")
     List<TermId> presentPhenotypeTerms();
 
+    /**
+     * @return a list of the HPO terms whose presence was explicitly excluded in the subject.
+     */
     @JsonGetter(value = "excludedPhenotypicFeatures")
     List<TermId> negatedPhenotypeTerms();
 
+    /**
+     * @return container with genes and genotypes observed in the subject.
+     */
     @JsonIgnore
     GenesAndGenotypes genes();
 
