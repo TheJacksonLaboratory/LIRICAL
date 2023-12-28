@@ -43,16 +43,19 @@ public interface AnalysisData {
     /**
      * @return a non-null sample ID.
      */
+    @JsonGetter
     String sampleId();
 
     /**
      * @return an optional with age or empty optional if age is not available.
      */
+    @JsonGetter
     Optional<Age> age();
 
     /**
      * @return a non-null sex of the subject.
      */
+    @JsonGetter(value = "sex")
     Sex sex();
 
     /**
