@@ -44,27 +44,8 @@ public class LiricalDataResolver {
         return dataDirectory;
     }
 
-    /**
-     * @deprecated use {@link #hpoJson()}
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
-    public Path hpoObo() {
-        return dataDirectory.resolve("hp.obo");
-    }
-
     public Path hpoJson() {
         return dataDirectory.resolve("hp.json");
-    }
-
-    /**
-     *
-     * @deprecated to be removed in v2.0.0, use {@link #hgncCompleteSet()} as a source of gene identifiers.
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
-    public Path homoSapiensGeneInfo() {
-        return dataDirectory.resolve("Homo_sapiens.gene_info.gz");
     }
 
     public Path hgncCompleteSet() {
