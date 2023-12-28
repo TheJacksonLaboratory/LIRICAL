@@ -6,7 +6,6 @@ org.monarchinitiative.lirical.cli
 org.monarchinitiative.lirical.cli.cmd
 org.monarchinitiative.lirical.cli.cmd.experimental
 org.monarchinitiative.lirical.cli.cmd.util
-org.monarchinitiative.lirical.cli.pp
 org.monarchinitiative.lirical.cli.yaml
 org.monarchinitiative.lirical.configuration
 org.monarchinitiative.lirical.configuration.impl
@@ -29,6 +28,7 @@ org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency
 org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity
 org.monarchinitiative.lirical.exomiser_db_adapter.serializers
 org.monarchinitiative.lirical.io
+org.monarchinitiative.lirical.io.analysis
 org.monarchinitiative.lirical.io.background
 org.monarchinitiative.lirical.io.output
 org.monarchinitiative.lirical.io.output.svg
