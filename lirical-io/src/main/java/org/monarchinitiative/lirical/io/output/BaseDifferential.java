@@ -1,9 +1,6 @@
 package org.monarchinitiative.lirical.io.output;
 
-import org.monarchinitiative.lirical.core.analysis.TestResult;
-import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
-import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,24 +25,6 @@ abstract class BaseDifferential {
     private final int rank;
     protected final List<VisualizableVariant> variants;
 
-    @Deprecated // use the other constructor
-    protected BaseDifferential(String sampleId,
-                               TermId diseaseId,
-                               String diseaseName,
-                               TestResult result,
-                               int rank,
-                               List<VisualizableVariant> variants) {
-        this.sampleId = Objects.requireNonNull(sampleId);
-        this.diseaseCurie = diseaseId.getValue();
-        this.diseaseName = prettifyDiseaseName(diseaseName);
-        this.posttestProbability = formatPostTestProbability(result.posttestProbability());
-        this.pretestProbability = formatPreTestProbability(result.pretestProbability());
-        this.compositeLR = Math.log10(result.getCompositeLR());
-        this.geneId = result.genotypeLr().map(GenotypeLrWithExplanation::geneId).orElse(null);
-        this.rank = rank;
-        this.variants = Objects.requireNonNull(variants);
-    }
-
     protected BaseDifferential(String sampleId,
                                String diseaseName,
                                String diseaseCurie,
@@ -60,15 +39,11 @@ abstract class BaseDifferential {
         this.diseaseCurie = Objects.requireNonNull(diseaseCurie);
         this.pretestProbability = Objects.requireNonNull(pretestProbability);
         this.posttestProbability = Objects.requireNonNull(posttestProbability);
-        this.compositeLR = compositeLR;
+        this.compositeLR = Math.log10(compositeLR);
         this.geneId = geneId; // nullable
         this.rank = rank;
         this.variants = Objects.requireNonNull(variants);
     }
-
-    protected abstract String formatPostTestProbability(double postTestProbability);
-
-    protected abstract String formatPreTestProbability(double preTestProbability);
 
     public String sampleId() {
         return sampleId;

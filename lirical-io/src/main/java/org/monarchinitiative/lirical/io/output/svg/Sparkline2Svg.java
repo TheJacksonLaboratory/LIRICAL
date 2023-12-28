@@ -6,8 +6,6 @@ import org.monarchinitiative.lirical.core.analysis.TestResult;
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -22,7 +20,7 @@ import java.util.*;
  * @author <a href="mailto:peter.robinson@jax.org">Peter Robinson</a>
  */
 public class Sparkline2Svg extends Lirical2Svg {
-    private static final Logger logger = LoggerFactory.getLogger(Sparkline2Svg.class);
+
     /** width required to write the percentage to the left of the bars. */
     private final static int PERCENTAGE_WIDTH = 30;
     /** Amount of whitespace to put between the percentage and the bars. */
@@ -31,23 +29,17 @@ public class Sparkline2Svg extends Lirical2Svg {
     private final static int BAR_WIDTH = 10;
     /** Amount of space between two successive bars. */
     private final static int INTERBAR_WIDTH = 6;
-
     private final static int MAXIMUM_BAR_HEIGHT = 20;
+    private static final int POSTTEST_WIDTH = 150;
+    private static final int POSTTEST_HEIGHT = 50;
 
 
-    private final List<TermId> termIdList;
-    private final List<TermId> excludedTermIdList;
     private final List<String> observedTermToolTipLabels;
     private final List<String> excludedTermToolTipLabels;
-
-    private final int POSTTEST_WIDTH = 150;
-    private final int POSTTEST_HEIGHT = 50;
 
     private final int total_width;
 
     private final int total_height;
-
-    private final boolean hasGenotype;
 
     private final int n_hpo_terms;
     /** The indices of the original terms according to ordered terms. */
@@ -61,10 +53,10 @@ public class Sparkline2Svg extends Lirical2Svg {
      *
      */
     public Sparkline2Svg(TestResult result, boolean useGenotype, MinimalOntology ontology) {
-        this.termIdList = result.observedTerms();
-        this.excludedTermIdList = result.excludedTerms();
+        List<TermId> termIdList = result.observedTerms();
+        List<TermId> excludedTermIdList = result.excludedTerms();
         observedTermToolTipLabels = new ArrayList<>();
-        for (TermId t : this.termIdList) {
+        for (TermId t : termIdList) {
             String label = ontology.termForTermId(t)
                     .map(Term::getName)
                     .orElse("UNKNOWN");
@@ -72,20 +64,19 @@ public class Sparkline2Svg extends Lirical2Svg {
             this.observedTermToolTipLabels.add(tooltip);
         }
         excludedTermToolTipLabels = new ArrayList<>();
-        for (TermId t : this.excludedTermIdList) {
+        for (TermId t : excludedTermIdList) {
             String label = ontology.termForTermId(t)
                     .map(Term::getName)
                     .orElse("UNKNOWN");
             String tooltip = String.format("%s [%s]", label, t.getValue());
             this.excludedTermToolTipLabels.add(tooltip);
         }
-        this.hasGenotype = useGenotype;
         // Sort the HPO findings according to lieklihood ratio.
         // use the internal valss Value2Index to keep track of the original index
         // after sorting, put the sorted original indices (i.e., as a sorted permutation) into
         // the list "indicesObserved"
         List<Value2Index> observedIndexList = new ArrayList<>();
-        for (int i=0;i<termIdList.size();i++) {
+        for (int i = 0; i< termIdList.size(); i++) {
             double ratio = result.getObservedPhenotypeRatio(i);
             observedIndexList.add(new Value2Index(i,ratio));
         }
@@ -96,7 +87,7 @@ public class Sparkline2Svg extends Lirical2Svg {
         }
         // Now do the same for the excluded HPO terms
         List<Value2Index> excludedIndexList = new ArrayList<>();
-        for (int i=0;i<excludedTermIdList.size();i++) {
+        for (int i = 0; i< excludedTermIdList.size(); i++) {
             double ratio = result.getExcludedPhenotypeRatio(i);
             excludedIndexList.add(new Value2Index(i, ratio));
         }

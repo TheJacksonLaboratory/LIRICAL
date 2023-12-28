@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.io;
 
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
-import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
+import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,25 +95,7 @@ public class LiricalDataResolver {
         return dataDirectory.resolve("hg38_ucsc.ser");
     }
 
-    /**
-     * @deprecated use {@link #transcriptCacheFor(GenomeBuild, org.monarchinitiative.lirical.core.model.TranscriptDatabase)} instead
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
     public Path transcriptCacheFor(GenomeBuild genomeBuild, TranscriptDatabase txDb) {
-        return switch (genomeBuild) {
-            case HG19 -> switch (txDb) {
-                case UCSC -> hg19UcscTxDatabase();
-                case REFSEQ -> hg19RefseqTxDatabase();
-            };
-            case HG38 -> switch (txDb) {
-                case UCSC -> hg38UcscTxDatabase();
-                case REFSEQ -> hg38RefseqTxDatabase();
-            };
-        };
-    }
-
-    public Path transcriptCacheFor(GenomeBuild genomeBuild, org.monarchinitiative.lirical.core.model.TranscriptDatabase txDb) {
         return switch (genomeBuild) {
             case HG19 -> switch (txDb) {
                 case UCSC -> hg19UcscTxDatabase();

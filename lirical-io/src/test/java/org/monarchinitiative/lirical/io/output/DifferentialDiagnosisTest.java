@@ -14,7 +14,6 @@ import org.monarchinitiative.svart.assembly.AssignedMoleculeType;
 import org.monarchinitiative.svart.assembly.SequenceRole;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,7 +28,7 @@ public class DifferentialDiagnosisTest {
     public static void beforeAll() {
         Contig contig = Contig.of(1, "ctg1", SequenceRole.ASSEMBLED_MOLECULE, "ctg1", AssignedMoleculeType.CHROMOSOME, 1000, "", "", "");
         GenomicVariant gv = GenomicVariant.of(contig, "id", Strand.POSITIVE, Coordinates.of(CoordinateSystem.oneBased(), 1, 1), "C", "G");
-        GenotypedVariant gtv = GenotypedVariant.of(GenomeBuild.HG38, gv, Map.of(), true);
+        GenotypedVariant gtv = GenotypedVariant.of(GenomeBuild.HG38, gv, List.of(), true);
         LiricalVariant variant = LiricalVariant.of(gtv, List.of(), VariantMetadata.empty());
     }
 

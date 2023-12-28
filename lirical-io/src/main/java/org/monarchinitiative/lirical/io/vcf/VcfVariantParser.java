@@ -26,7 +26,7 @@ class VcfVariantParser implements VariantParser {
                      GenomeBuild genomeBuild,
                      FunctionalVariantAnnotator variantAnnotator,
                      VariantMetadataService metadataService) {
-        this.reader = new VCFFileReader(Objects.requireNonNull(path), false);;
+        this.reader = new VCFFileReader(Objects.requireNonNull(path), false);
         this.parser = new VcfGenotypedVariantParser(genomicAssembly, genomeBuild, reader);
         this.variantAnnotator = Objects.requireNonNull(variantAnnotator, "Variant annotator must not be null!");
         this.metadataService = Objects.requireNonNull(metadataService, "Variant metadata service must not be null!");

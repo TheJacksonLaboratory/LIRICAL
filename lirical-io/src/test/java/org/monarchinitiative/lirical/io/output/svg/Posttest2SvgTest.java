@@ -70,7 +70,7 @@ public class Posttest2SvgTest {
     public void testConstructor() {
         double threshold = 0.02;
         int numtoshow = 3;
-        HpoDiseases diseases = HpoDiseases.of(List.of());
+        HpoDiseases diseases = HpoDiseases.of("VERSION", List.of());
         Posttest2Svg p2svg = new Posttest2Svg(RESULTS, diseases, threshold,numtoshow);
         assertNotNull(p2svg);
     }
@@ -79,7 +79,7 @@ public class Posttest2SvgTest {
     public void testNumberOfDiffsToShow() {
         double threshold = 0.02;
         int numtoshow = 3;
-        HpoDiseases diseases = HpoDiseases.of(DISEASES);
+        HpoDiseases diseases = HpoDiseases.of("VERSION", DISEASES);
         Posttest2Svg p2svg = new Posttest2Svg(RESULTS, diseases, threshold,numtoshow);
         assertEquals(3, p2svg.getNumDifferentialsToShowSVG());
        String svg = p2svg.getSvgString();
