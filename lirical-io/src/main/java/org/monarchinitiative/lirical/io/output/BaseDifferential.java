@@ -35,7 +35,7 @@ abstract class BaseDifferential {
                                int rank,
                                List<VisualizableVariant> variants) {
         this.sampleId = Objects.requireNonNull(sampleId);
-        this.diseaseName = Objects.requireNonNull(diseaseName);
+        this.diseaseName = prettifyDiseaseName(Objects.requireNonNull(diseaseName));
         this.diseaseCurie = Objects.requireNonNull(diseaseCurie);
         this.pretestProbability = Objects.requireNonNull(pretestProbability);
         this.posttestProbability = Objects.requireNonNull(posttestProbability);
