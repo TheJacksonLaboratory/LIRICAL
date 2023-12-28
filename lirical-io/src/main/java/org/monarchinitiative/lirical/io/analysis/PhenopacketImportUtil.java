@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.cli.pp;
+package org.monarchinitiative.lirical.io.analysis;
 
 import com.google.protobuf.Message;
 import org.phenopackets.phenopackettools.core.PhenopacketElement;
