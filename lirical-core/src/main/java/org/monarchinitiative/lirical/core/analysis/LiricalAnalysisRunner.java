@@ -1,7 +1,5 @@
 package org.monarchinitiative.lirical.core.analysis;
 
-import org.monarchinitiative.lirical.core.exception.LiricalAnalysisException;
-
 import java.io.Closeable;
 
 /**
