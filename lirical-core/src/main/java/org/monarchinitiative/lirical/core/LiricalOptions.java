@@ -3,7 +3,9 @@ package org.monarchinitiative.lirical.core;
 import java.util.Optional;
 
 /**
- * Options of the LIRICAL process that live independent of the analyses.
+ * Global options to parameterize LIRICAL execution.
+ * <p>
+ * Note, these options do <em>not</em> parameterize the analyses.
  */
 public class LiricalOptions {
 
