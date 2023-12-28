@@ -46,10 +46,6 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 description = "Path to Lirical data directory.")
         public Path liricalDataDirectory = null;
 
-            @CommandLine.Option(names = {"-e", "--exomiser"},
-                description = {"Path to the Exomiser variant database.", "DEPRECATED - use -e19 or -e38 instead"})
-        public Path exomiserDatabase = null;
-
         @CommandLine.Option(names = {"-e19", "--exomiser-hg19"},
                 description = "Path to the Exomiser variant database for hg19.")
         public Path exomiserHg19Database = null;
@@ -150,13 +146,6 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             LOGGER.info("Using data folder at {}", dataSection.liricalDataDirectory.toAbsolutePath());
 
         LOGGER.debug("Analysis input validation policy: {}", runConfiguration.validationPolicy.name());
-
-        // Obsolete options must/should not be used
-        if (dataSection.exomiserDatabase != null) {
-            // Check the obsolete `-e | --exomiser` option is not being used.
-            String msg = "`-e | --exomiser` option has been deprecated. Use `-e19 or -e38` to set paths to Exomiser variant databases for hg19 and hg38, respectively";
-            errors.add(msg);
-        }
 
         Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
         if (genomeBuild.isEmpty()) {
