@@ -1,10 +1,10 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
 import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
-import org.monarchinitiative.lirical.cli.pp.PhenopacketData;
-import org.monarchinitiative.lirical.cli.pp.PhenopacketImportException;
-import org.monarchinitiative.lirical.cli.pp.PhenopacketImporter;
-import org.monarchinitiative.lirical.cli.pp.PhenopacketImporters;
+import org.monarchinitiative.lirical.io.analysis.PhenopacketData;
+import org.monarchinitiative.lirical.io.analysis.PhenopacketImportException;
+import org.monarchinitiative.lirical.io.analysis.PhenopacketImporter;
+import org.monarchinitiative.lirical.io.analysis.PhenopacketImporters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

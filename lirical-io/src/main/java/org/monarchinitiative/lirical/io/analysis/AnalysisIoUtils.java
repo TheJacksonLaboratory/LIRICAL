@@ -1,4 +1,4 @@
-package org.monarchinitiative.lirical.cli.pp;
+package org.monarchinitiative.lirical.io.analysis;
 
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.ontology.data.TermId;

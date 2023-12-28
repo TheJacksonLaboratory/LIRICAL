@@ -15,7 +15,7 @@ import org.monarchinitiative.lirical.core.sanitize.SanitationResult;
 import org.monarchinitiative.lirical.core.sanitize.SanitizedInputs;
 import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotator;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
-import org.monarchinitiative.lirical.cli.pp.PhenopacketData;
+import org.monarchinitiative.lirical.io.analysis.PhenopacketData;
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
@@ -215,7 +215,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
 
                 backgroundAndCausal.addAll(backgroundVariants);
 
-                for (GenotypedVariant variant : resultsAndPath.phenopacketData().getVariants()) {
+                for (GenotypedVariant variant : resultsAndPath.phenopacketData().variants()) {
                     List<TranscriptAnnotation> annotations = annotator.annotate(variant.variant());
                     List<VariantEffect> effects = annotations.stream()
                             .map(TranscriptAnnotation::getVariantEffects)
@@ -242,7 +242,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                 sanitized.excludedHpoTerms(),
                 genes);
 
-        return new BenchmarkData(resultsAndPath.phenopacketData().getDiseaseIds().get(0), analysisData);
+        return new BenchmarkData(resultsAndPath.phenopacketData().diseaseIds().get(0), analysisData);
     }
 
     /**
