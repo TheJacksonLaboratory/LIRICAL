@@ -8,17 +8,6 @@ public interface VariantMetadata {
         return VariantMetadataDefault.empty();
     }
 
-    /**
-     * @deprecated from {@code 2.0.0-RC3}. Use {@link #of(float, float, ClinVarAlleleData)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
-    static VariantMetadata of(float frequency,
-                              float pathogenicity,
-                              ClinvarClnSig clinvarClnSig) {
-        ClinVarAlleleData data = ClinVarAlleleData.of(clinvarClnSig, null);
-        return of(frequency, pathogenicity, data);
-    }
-
     static VariantMetadata of(float frequency,
                               float pathogenicity,
                               ClinVarAlleleData clinVarAlleleData) {

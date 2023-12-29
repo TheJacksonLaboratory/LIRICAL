@@ -11,15 +11,6 @@ public interface BackgroundVariantFrequencyService {
         return new BackgroundVariantFrequencyServiceImpl(frequencyMap, defaultVariantBackgroundFrequency);
     }
 
-    /**
-     * @deprecated use {@link #defaultVariantBackgroundFrequency()} instead
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
-    default double defaultVariantFrequency() {
-        return defaultVariantBackgroundFrequency();
-    }
-
     double defaultVariantBackgroundFrequency();
 
     Optional<Double> frequencyForGene(TermId geneId);

@@ -1,12 +1,11 @@
-package org.monarchinitiative.lirical.core.exception;
+package org.monarchinitiative.lirical.core.analysis;
+
+import org.monarchinitiative.lirical.core.exception.LiricalException;
 
 /**
  * An exception thrown by {@link org.monarchinitiative.lirical.core.analysis.LiricalAnalysisRunner} if the analysis
  * cannot be run.
- * @deprecated will be moved into {@link org.monarchinitiative.lirical.core.analysis} package.
  */
-// TODO - move to analysis package.
-@Deprecated(forRemoval = true)
 public class LiricalAnalysisException extends LiricalException {
     public LiricalAnalysisException() {
         super();

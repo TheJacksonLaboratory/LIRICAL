@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.io;
 
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
-import org.monarchinitiative.lirical.core.service.TranscriptDatabase;
+import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,27 +44,8 @@ public class LiricalDataResolver {
         return dataDirectory;
     }
 
-    /**
-     * @deprecated use {@link #hpoJson()}
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
-    public Path hpoObo() {
-        return dataDirectory.resolve("hp.obo");
-    }
-
     public Path hpoJson() {
         return dataDirectory.resolve("hp.json");
-    }
-
-    /**
-     *
-     * @deprecated to be removed in v2.0.0, use {@link #hgncCompleteSet()} as a source of gene identifiers.
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
-    public Path homoSapiensGeneInfo() {
-        return dataDirectory.resolve("Homo_sapiens.gene_info.gz");
     }
 
     public Path hgncCompleteSet() {
@@ -95,25 +76,7 @@ public class LiricalDataResolver {
         return dataDirectory.resolve("hg38_ucsc.ser");
     }
 
-    /**
-     * @deprecated use {@link #transcriptCacheFor(GenomeBuild, org.monarchinitiative.lirical.core.model.TranscriptDatabase)} instead
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
     public Path transcriptCacheFor(GenomeBuild genomeBuild, TranscriptDatabase txDb) {
-        return switch (genomeBuild) {
-            case HG19 -> switch (txDb) {
-                case UCSC -> hg19UcscTxDatabase();
-                case REFSEQ -> hg19RefseqTxDatabase();
-            };
-            case HG38 -> switch (txDb) {
-                case UCSC -> hg38UcscTxDatabase();
-                case REFSEQ -> hg38RefseqTxDatabase();
-            };
-        };
-    }
-
-    public Path transcriptCacheFor(GenomeBuild genomeBuild, org.monarchinitiative.lirical.core.model.TranscriptDatabase txDb) {
         return switch (genomeBuild) {
             case HG19 -> switch (txDb) {
                 case UCSC -> hg19UcscTxDatabase();

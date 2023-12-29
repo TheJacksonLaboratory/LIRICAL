@@ -40,7 +40,7 @@ public class BackgroundVariantFrequencyParser {
                     continue;
                 }
                 String entrezNumber=a[1]; // e.g., 2200 for FBN1
-                if (entrezNumber==null || entrezNumber.length()==0) {
+                if (entrezNumber==null || entrezNumber.isEmpty()) {
                     continue; // no EntrezId available -- this happens with many genes
                 }
                 TermId entrezId=TermId.of(ENTREZ_GENE_PREFIX,entrezNumber);

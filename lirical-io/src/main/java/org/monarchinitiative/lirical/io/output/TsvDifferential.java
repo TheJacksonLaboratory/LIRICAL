@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.io.output;
 
 import org.monarchinitiative.lirical.core.analysis.TestResult;
+import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.core.model.TranscriptAnnotation;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
@@ -16,11 +17,19 @@ public class TsvDifferential extends BaseDifferential {
                            TestResult result,
                            int rank,
                            List<VisualizableVariant> variants) {
-        super(sampleId, diseaseId, diseaseName, result, rank, variants);
+        super(sampleId,
+                diseaseName,
+                diseaseId.getValue(),
+                formatPreTestProbability(result.pretestProbability()),
+                formatPostTestProbability(result.posttestProbability()),
+                result.getCompositeLR(),
+                result.genotypeLr().map(GenotypeLrWithExplanation::geneId).orElse(null),
+                rank,
+                variants);
+
     }
 
-    @Override
-    protected String formatPostTestProbability(double postTestProbability) {
+    private static String formatPostTestProbability(double postTestProbability) {
         if (postTestProbability >0.9999) {
             return String.format("%.5f%%",100* postTestProbability);
         } else if (postTestProbability >0.999) {
@@ -32,8 +41,7 @@ public class TsvDifferential extends BaseDifferential {
         }
     }
 
-    @Override
-    protected String formatPreTestProbability(double preTestProbability) {
+    private static String formatPreTestProbability(double preTestProbability) {
         if (preTestProbability < 0.001) {
             return String.format("1/%d",Math.round(1.0/ preTestProbability));
         } else {

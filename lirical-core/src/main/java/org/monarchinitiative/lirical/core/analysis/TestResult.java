@@ -201,38 +201,9 @@ public class TestResult implements Comparable<TestResult> {
         return diseaseId;
     }
 
-    /**
-     * @return true if a genotype likelihood ratio was assigned to this test result.
-     */
-    @Deprecated(forRemoval = true)
-    // REMOVE(v2.0.0)
-    public boolean hasGenotypeLR() {
-        return false;
-    }
-
     @JsonGetter(value = "genotypeLR")
     public Optional<GenotypeLrWithExplanation> genotypeLr() {
         return Optional.ofNullable(genotypeLr);
-    }
-
-    @JsonIgnore
-    @Deprecated(forRemoval = true) // get explanations from results
-    // REMOVE(v2.0.0)
-    public List<String> getObservedPhenotypeExplanation() {
-        // TODO - this may need to be provided in reverse order
-        return observedResults.stream()
-                .map(LrWithExplanation::escapedExplanation)
-                .toList();
-    }
-
-    @JsonIgnore
-    @Deprecated(forRemoval = true) // get explanations from excludedResults
-    // REMOVE(v2.0.0)
-    public List<String> getExcludedPhenotypeExplanation() {
-        // TODO - this may need to be provided in reverse order
-        return excludedResults.stream()
-                .map(LrWithExplanation::escapedExplanation)
-                .toList();
     }
 
     /**

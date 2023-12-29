@@ -8,7 +8,6 @@ import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * For some calculations of the phenotype likelihood ratio, we need to traverse the graph induced by the HPO terms to
@@ -51,7 +50,7 @@ public class InducedDiseaseGraph {
             stack.push(cmatch);
             while (!stack.empty()) {
                 CandidateMatch cm = stack.pop();
-                for (TermId parentTermId : ontology.graph().getParents(cm.termId, false)) {
+                for (TermId parentTermId : ontology.graph().getParents(cm.termId)) {
                     if (parentTermId.equals(HpoSubOntologyRootTermIds.PHENOTYPIC_ABNORMALITY)) {
                         continue;
                     }
@@ -67,11 +66,9 @@ public class InducedDiseaseGraph {
             }
         }
 
-        Set<TermId> negativeInducedGraph = disease.absentAnnotationsStream()
-                .map(HpoDiseaseAnnotation::id)
-                .distinct()
-                .flatMap(absent -> ontology.graph().getAncestorsStream(absent, true))
-                .collect(Collectors.toSet());
+        Set<TermId> negativeInducedGraph = new HashSet<>();
+        for (HpoDiseaseAnnotation absentAnnotation : disease.absentAnnotations())
+            ontology.graph().extendWithAncestors(absentAnnotation.id(), true, negativeInducedGraph);
 
         return new InducedDiseaseGraph(disease, termFrequencies, negativeInducedGraph);
     }
@@ -79,7 +76,7 @@ public class InducedDiseaseGraph {
     /**
      * Create the induced graph of the HPO terms used to annotate the disease. We weight the frequency downwards
      * according to the number of links (path length). That is, if the path length from a direct annotation to
-     * an ancestor is k, then we multiple the frequency of the annotation by (1/k).
+     * an ancestor is k, then we multiply the frequency of the annotation by (1/k).
      *
      * @param hpoDisease        The disease we are currently investigating.
      * @param term2frequencyMap
@@ -126,8 +123,7 @@ public class InducedDiseaseGraph {
             if (term2frequencyMap.containsKey(t)) {
                 return new Term2Freq(t, term2frequencyMap.get(t));
             } else {
-                ontology.graph().getParents(t, false)
-                        .forEach(queue::add);
+                queue.addAll(ontology.graph().getParents(t));
             }
         }
 

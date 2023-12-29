@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.core.analysis.impl;
 
 import org.monarchinitiative.lirical.core.analysis.*;
-import org.monarchinitiative.lirical.core.exception.LiricalAnalysisException;
+import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisException;
 import org.monarchinitiative.lirical.core.likelihoodratio.*;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;

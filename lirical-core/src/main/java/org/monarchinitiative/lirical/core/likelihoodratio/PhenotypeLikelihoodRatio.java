@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This class is designed to calculate the background and foreground frequencies of any HPO term in any disease
@@ -78,9 +77,7 @@ public class PhenotypeLikelihoodRatio {
      */
     public LrWithExplanation lrForObservedTerm(TermId queryTid, InducedDiseaseGraph idg) {
         HpoDisease disease = idg.getDisease();
-        Set<TermId> queryAncestors = ontology.graph()
-                .getAncestorsStream(queryTid, true)
-                .collect(Collectors.toSet());
+        Set<TermId> queryAncestors = ontology.graph().extendWithAncestors(queryTid, true, HashSet::new);
         if (disease.absentAnnotationsStream().anyMatch(a -> queryAncestors.contains(a.id()))) {
             // i.e., the query term is explicitly EXCLUDED in the disease definition
             return explanationFactory.create(queryTid,
@@ -224,11 +221,24 @@ public class PhenotypeLikelihoodRatio {
     private static double getFrequencyOfTermInDiseaseWithAnnotationPropagation(TermId query, HpoDisease disease, MinimalOntology ontology) {
         double maxFrequency = 0.0;
         for (HpoDiseaseAnnotation annotation : disease.annotations()) {
-            Set<TermId> ancestors = ontology.graph()
-                    .getAncestorsStream(annotation.id(), true)
-                    .collect(Collectors.toSet());
-            if (ancestors.contains(query))
-                maxFrequency = Math.max(maxFrequency, disease.getFrequencyOfTermInDisease(annotation.id()).map(Ratio::frequency).orElse(DEFAULT_TERM_FREQUENCY));
+            boolean shouldUpdate = false;
+            if (annotation.id().equals(query)) {
+                shouldUpdate = true;
+            } else {
+                for (TermId ancestor : ontology.graph().getAncestors(annotation.id())) {
+                    if (ancestor.equals(query)) {
+                        shouldUpdate = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldUpdate)
+                maxFrequency = Math.max(
+                        maxFrequency,
+                        disease.getFrequencyOfTermInDisease(annotation.id())
+                                .map(Ratio::frequency)
+                                .orElse(DEFAULT_TERM_FREQUENCY)
+                );
         }
         return maxFrequency;
     }
@@ -268,9 +278,7 @@ public class PhenotypeLikelihoodRatio {
         if (queryTid.getId().equals(diseaseTid.getId())) {
             return 1.0;
         }
-        List<TermId> children = ontology.graph()
-                .getChildrenStream(diseaseTid, false)
-                .toList();
+        Set<TermId> children = ontology.graph().getChildren(diseaseTid);
         if (children.isEmpty())
             return 0.0;
 
@@ -317,34 +325,28 @@ public class PhenotypeLikelihoodRatio {
             Map<TermId, Double> updateMap=new HashMap<>();
 
             for (HpoDiseaseAnnotation annotation : dis.annotations()) {
-                TermId tid = annotation.id();
-                double termFrequency = annotation.frequency();
-                Optional<Term> term = ontology.termForTermId(tid);
+                Optional<Term> term = ontology.termForTermId(annotation.id());
                 if (term.isEmpty()) {
-                    logger.warn("Primary term ID for {} was not found!", tid.getValue());
+                    logger.warn("Primary term ID for {} was not found!", annotation.id().getValue());
                     continue;
                 }
 
-                // All of the ancestor terms are implicitly annotated to tid
+                // All the ancestor terms are implicitly annotated to tid
                 // therefore, add this to their background frequencies.
-                // Note we also include the original term here (third arg: true)
-                // Regarding the unchecked `get()` below, we check that `term` is not empty above.
-                //noinspection OptionalGetWithoutIsPresent
-                for (TermId at : ontology.graph().getAncestors(term.map(Term::id).get(), true)) {
-                    updateMap.putIfAbsent(at,termFrequency);
-                    // put the maximum frequency for this term given it is
-                    // an ancestor of one or more of the HPO terms that annotate
-                    // the disease.
-                    if (termFrequency > updateMap.get(at)) {
-                        updateMap.put(at,termFrequency);
-                    }
-                }
+                // Note we also include the original term here (the 1st compute).
+                // We keep the maximum frequency of each term.
+                TermId termId = term.get().id();
+                double freq = annotation.frequency();
+                updateMap.compute(termId, (k, previous) -> previous == null ? freq : Math.max(freq, previous));
+                for (TermId at : ontology.graph().getAncestors(termId))
+                    updateMap.compute(at, (k, previous) -> previous == null ? freq : Math.max(freq, previous));
             }
             for (TermId tid : updateMap.keySet()) {
-                double delta = updateMap.get(tid);
-                mp.putIfAbsent(tid,0.0);
-                double cumulative = delta + mp.get(tid);
-                mp.put(tid,cumulative);
+                mp.compute(
+                        tid,
+                        (k, previous) -> previous == null
+                                ? 0.
+                                : previous + updateMap.get(tid)); // cumulative
             }
         }
         // Now we need to normalize by the number of diseases.

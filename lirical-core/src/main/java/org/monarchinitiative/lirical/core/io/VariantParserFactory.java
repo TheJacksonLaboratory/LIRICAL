@@ -19,10 +19,4 @@ public interface VariantParserFactory {
 
     Optional<VariantParser> forPath(Path variantResource, GenomeBuild genomeBuild, TranscriptDatabase transcriptDatabase);
 
-    @Deprecated(forRemoval = true)
-    // REMOVE(v2.0.0)
-    default VariantParser forPath(Path variantResource) {
-        return forPath(variantResource, GenomeBuild.HG38, TranscriptDatabase.REFSEQ).orElse(null);
-    }
-
 }
