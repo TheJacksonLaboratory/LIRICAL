@@ -3,9 +3,6 @@ package org.monarchinitiative.lirical.configuration;
 import org.monarchinitiative.lirical.configuration.impl.BundledBackgroundVariantFrequencyServiceFactory;
 import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.LiricalOptions;
-import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseaseProbability;
-import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLikelihoodRatio;
-import org.monarchinitiative.lirical.core.likelihoodratio.PhenotypeLikelihoodRatio;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.output.AnalysisResultWriterFactory;
 import org.monarchinitiative.lirical.core.service.*;
@@ -56,16 +53,6 @@ public class LiricalBuilder {
     }
 
     /**
-     * @deprecated use {@link #exomiserVariantDbPath(GenomeBuild, Path)} instead.
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(since = "2.0.0-RC2", forRemoval = true)
-    public LiricalBuilder exomiserVariantDatabase(Path exomiserVariantDatabase) {
-        LOGGER.warn("Setting path to Exomiser database has been deprecated. Use `exomiserVariantDbPath(GenomeBuild genomeBuild, Path exomiserVariantDatabase)` to set path to database for a genome build!");
-        return this;
-    }
-
-    /**
      * Set path to exomiser variant database for given {@link GenomeBuild}.
      * @return the builder
      */
@@ -87,154 +74,13 @@ public class LiricalBuilder {
         return this;
     }
 
-    /**
-     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
-     * @return the builder
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public LiricalBuilder genomeBuild(GenomeBuild genomeBuild) {
-        LOGGER.warn("Setting genome build has been deprecated. Set the desired genome build via AnalysisOptions!");
-        return this;
-    }
-
-    /**
-     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
-     * @return the builder
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public LiricalBuilder backgroundVariantFrequency(Path backgroundVariantFrequency) {
-        LOGGER.warn("Setting path to background variant frequency has been deprecated! Set backgroundVariantFrequencyServiceFactory instead!");
-        return this;
-    }
-
     public LiricalBuilder backgroundVariantFrequencyServiceFactory(BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory) {
         this.backgroundVariantFrequencyServiceFactory = backgroundVariantFrequencyServiceFactory;
         return this;
     }
 
-    /**
-     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
-     * @return the builder
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public LiricalBuilder transcriptDatabase(TranscriptDatabase transcriptDatabase) {
-        LOGGER.warn("Setting transcript database has been deprecated. Set the desired database build via AnalysisOptions!");
-        return this;
-    }
-
-    /**
-     * @param defaultVariantAlleleFrequency default variant allele frequency to set.
-     *                                      The frequency is only used if
-     *                                      {@link #variantMetadataService(VariantMetadataService)} is unset.
-     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
-     * @return the builder
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public LiricalBuilder defaultVariantAlleleFrequency(float defaultVariantAlleleFrequency) {
-        LOGGER.warn("Setting default variant allele frequency has been deprecated. Set the desired value via AnalysisOptions!");
-        return this;
-    }
-
-    /**
-     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
-     * @return the builder
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public LiricalBuilder genotypeLrProperties(GenotypeLrProperties genotypeLrProperties) {
-        LOGGER.warn("Setting genotype LR properties has been deprecated. Set the desired value via AnalysisOptions!");
-        return this;
-    }
-
     public LiricalBuilder phenotypeService(PhenotypeService phenotypeService) {
         this.phenotypeService = phenotypeService;
-        return this;
-    }
-
-    /**
-     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
-     * @return the builder
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public LiricalBuilder clearDiseaseDatabases() {
-        LOGGER.warn("Setting disease databases has been deprecated. Set the desired disease databases via AnalysisOptions");
-        return this;
-    }
-
-    /**
-     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
-     * @return the builder
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public LiricalBuilder addDiseaseDatabases(DiseaseDatabase... diseaseDatabases) {
-        return addDiseaseDatabases(Arrays.asList(diseaseDatabases));
-    }
-
-    /**
-     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
-     * @return the builder
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public LiricalBuilder addDiseaseDatabases(Collection<DiseaseDatabase> diseaseDatabases) {
-        LOGGER.warn("Setting disease databases has been deprecated. Set the desired disease databases via AnalysisOptions");
-        return this;
-    }
-
-    /**
-     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
-     * @return the builder
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public LiricalBuilder setDiseaseDatabases(Collection<DiseaseDatabase> diseaseDatabases) {
-        LOGGER.warn("Setting disease databases has been deprecated. Set the desired disease databases via AnalysisOptions");
-        return this;
-    }
-
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public LiricalBuilder phenotypeLikelihoodRatio(PhenotypeLikelihoodRatio phenotypeLikelihoodRatio) {
-        LOGGER.warn("Setting phenotype LR has been deprecated. Set the desired value via AnalysisOptions!");
-        return this;
-    }
-
-    /**
-     * @deprecated the option does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
-     * @return the builder
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public LiricalBuilder genotypeLikelihoodRatio(GenotypeLikelihoodRatio genotypeLikelihoodRatio) {
-        LOGGER.warn("Setting genotype LR has been deprecated. Set the desired value via AnalysisOptions!");
-        return this;
-    }
-
-    /**
-     * @deprecated pretest probability does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
-     * @return the builder
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-SNAPSHOT")
-    public LiricalBuilder pretestDiseaseProbability(PretestDiseaseProbability pretestDiseaseProbability) {
-        LOGGER.warn("Setting pretest disease probability has been deprecated. Set the desired value via AnalysisOptions!");
-        return this;
-    }
-
-    /**
-     * @deprecated setting variant metadata service has been deprecated.
-     * Use {@link #variantMetadataServiceFactory(VariantMetadataServiceFactory)} instead.
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public LiricalBuilder variantMetadataService(VariantMetadataService variantMetadataService) {
-        LOGGER.warn("Setting variant metadata service has been deprecated.");
         return this;
     }
 
@@ -244,21 +90,10 @@ public class LiricalBuilder {
     }
 
     /**
-     * @deprecated functional variant annotation configuration does not belong to the global configuration but to per-sample config (to be removed in v2.0.0).
-     * @return the builder
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-SNAPSHOT")
-    public LiricalBuilder functionalVariantAnnotator(FunctionalVariantAnnotator functionalVariantAnnotator) {
-        LOGGER.warn("Setting functional variant annotator has been deprecated.");
-        return this;
-    }
-
-    /**
      * Set the number threads/workers in the LIRICAL worker pool.
      */
     public LiricalBuilder parallelism(int parallelism) {
-        if (parallelism <=0)
+        if (parallelism <= 0)
             throw new IllegalArgumentException("Parallelism %d must be greater than 0".formatted(parallelism));
         this.parallelism = parallelism;
         return this;

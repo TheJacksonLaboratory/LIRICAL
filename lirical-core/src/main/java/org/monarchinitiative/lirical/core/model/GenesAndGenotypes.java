@@ -16,25 +16,18 @@ public interface GenesAndGenotypes extends Iterable<Gene2Genotype> {
         return GenesAndGenotypesDefault.empty();
     }
 
-    /**
-     * @deprecated use {@link #fromVariants(Collection, Iterable)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
-    static GenesAndGenotypes fromVariants(Iterable<LiricalVariant> variants) {
-        return fromVariants(null, variants);
+    static GenesAndGenotypes of(Collection<String> sampleNames, Collection<Gene2Genotype> genes) {
+        return genes.isEmpty()
+                ? empty()
+                : GenesAndGenotypesDefault.of(sampleNames, genes);
     }
 
     static GenesAndGenotypes fromVariants(Collection<String> sampleNames, Iterable<LiricalVariant> variants) {
-        List<Gene2Genotype> g2g = groupVariantsByGenId(variants);
-        if (sampleNames == null) {
-            // TODO - remove after removal of the deprecated method above.
-            return of(g2g);
-        } else {
-            return of(sampleNames, g2g);
-        }
+        List<Gene2Genotype> g2g = groupVariantsByGeneId(variants);
+        return of(sampleNames, g2g);
     }
 
-    private static List<Gene2Genotype> groupVariantsByGenId(Iterable<LiricalVariant> variants) {
+    private static List<Gene2Genotype> groupVariantsByGeneId(Iterable<LiricalVariant> variants) {
         // Group variants by gene id.
         Map<GeneIdentifier, List<LiricalVariant>> gene2Genotype = new HashMap<>();
         Map<GeneIdentifier, Integer> failedVariantCount = new HashMap<>();
@@ -53,22 +46,6 @@ public interface GenesAndGenotypes extends Iterable<Gene2Genotype> {
                 // We have 0 failed variants by default
                 .map(e -> Gene2Genotype.of(e.getKey(), e.getValue(), failedVariantCount.getOrDefault(e.getKey(), 0)))
                 .toList();
-    }
-
-    /**
-     * @deprecated use {@link #of(Collection, Collection)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
-    static GenesAndGenotypes of(List<Gene2Genotype> genes) {
-        return genes.isEmpty()
-                ? empty()
-                : GenesAndGenotypesDefault.of(genes);
-    }
-
-    static GenesAndGenotypes of(Collection<String> sampleNames, Collection<Gene2Genotype> genes) {
-        return genes.isEmpty()
-                ? empty()
-                : GenesAndGenotypesDefault.of(sampleNames, genes);
     }
 
     /**

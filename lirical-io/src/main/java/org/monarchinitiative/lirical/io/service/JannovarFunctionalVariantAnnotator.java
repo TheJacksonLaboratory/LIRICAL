@@ -30,15 +30,6 @@ public class JannovarFunctionalVariantAnnotator implements FunctionalVariantAnno
     private final VariantAnnotator annotator;
     private final GeneIdentifier[] identifiers;
 
-    /**
-     * @deprecated to be removed in v2.0.0, use {@link #of(JannovarData, GeneIdentifiers)} instead.
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
-    public static JannovarFunctionalVariantAnnotator of(JannovarData jannovarData, List<GeneIdentifier> geneIdentifiers) {
-        return of(jannovarData, GeneIdentifiers.of(geneIdentifiers));
-    }
-
     public static JannovarFunctionalVariantAnnotator of(JannovarData jannovarData, GeneIdentifiers geneIdentifiers) {
         return new JannovarFunctionalVariantAnnotator(jannovarData, geneIdentifiers);
     }

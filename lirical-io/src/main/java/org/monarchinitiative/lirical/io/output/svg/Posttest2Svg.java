@@ -20,9 +20,17 @@ public class Posttest2Svg extends Lirical2Svg {
 
     private final HpoDiseases diseases;
 
-    private final int MINIMUM_DIFFERENTIALS_TO_SHOW = 3;
+    private static final int MINIMUM_DIFFERENTIALS_TO_SHOW = 3;
 
-    private final int MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW = 10;
+    private static final int MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW = 10;
+    /** Proportion of SVG to fill with scale/bars */
+    private static final double SCALING = 0.9;
+    /** Coordinate of leftmost part of the 0-100% scale. */
+    private static final int XSTART = 10;
+    /** Height of the 'posttest probability title*/
+    private static final int TITLE_HEIGHT = 20;
+    /** Estimated height of a line of text */
+    private static final int TEXT_HEIGHT = 15;
     /**
      * Number of diseases whose posterior probability we will show in the top of the page.
      */
@@ -31,10 +39,7 @@ public class Posttest2Svg extends Lirical2Svg {
     private final int n_belowThresholdDifferentials;
 
     private final int width;
-    /** Coordinate of leftmost part of the 0-100% scale. */
-    private final int XSTART = 10;
-    /** Height of the 'posttest probability title*/
-    private final int TITLE_HEIGHT = 20;
+
     /** Starting x position for the bars representing post-test probability. */
     private final int minX;
     /**rightmost location of scale/bars representing post-test probability. */
@@ -43,14 +48,10 @@ public class Posttest2Svg extends Lirical2Svg {
     private int probability_scale_Y_location;
     /** Width of the graphic we will show (scaling*width) */
     private final int scaledWidth;
-    /** Proportion of SVG to fill with scale/bars */
-    private final double scaling = 0.9;
     /** Height of the SVG, calculated dynamically based on number of bars to show */
     private final int height;
     /** Location on Y axis where we start writing (note: higher y is lower in final image).*/
     private final int Ybaseline = 20;
-    /** Estimated height of a line of text */
-    private final int TEXTHEIGHT = 15;
     /** Used to keep track of current Y position while we are constructing the SVG. */
     private int currentY;
     /** THis is the number of differential diagnoses that will have a detailed "box" in the
@@ -73,7 +74,7 @@ public class Posttest2Svg extends Lirical2Svg {
         n = Math.min(n, MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW);
         this.numDifferentialsToShowSVG = n;
         width = 1000;
-        scaledWidth = (int) (width * scaling);
+        scaledWidth = (int) (width * SCALING);
         this.totalDetailedToShowText = totalDetailedToShowText;
         height = calculateHeight();
         this.minX = XSTART;
@@ -88,9 +89,9 @@ public class Posttest2Svg extends Lirical2Svg {
         int y = Ybaseline + TITLE_HEIGHT + 15;
         y += 2 * MIN_VERTICAL_OFFSET;
         y += this.numDifferentialsToShowSVG * MIN_VERTICAL_OFFSET;
-        y += this.numDifferentialsToShowSVG * (TEXTHEIGHT + BOX_HEIGHT + BOX_OFFSET);
+        y += this.numDifferentialsToShowSVG * (TEXT_HEIGHT + BOX_HEIGHT + BOX_OFFSET);
         if (totalDetailedToShowText > numDifferentialsToShowSVG) {
-            y += MIN_VERTICAL_OFFSET + TEXTHEIGHT + BOX_HEIGHT + BOX_OFFSET;
+            y += MIN_VERTICAL_OFFSET + TEXT_HEIGHT + BOX_HEIGHT + BOX_OFFSET;
         }
         y += 20;
         return y;
@@ -213,12 +214,12 @@ public class Posttest2Svg extends Lirical2Svg {
                                 label));
                         writer.write("</a>\n");
                         lastY.set(currentY);
-                        currentY += TEXTHEIGHT + BOX_HEIGHT + BOX_OFFSET;
+                        currentY += TEXT_HEIGHT + BOX_HEIGHT + BOX_OFFSET;
                     } catch (IOException e) {
                         logger.warn("Error: {}", e.getMessage(), e);
                     }
                 });
-        if (this.n_belowThresholdDifferentials > this.MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW) {
+        if (this.n_belowThresholdDifferentials > MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW) {
             String message = String.format("An additional %d diseases were found to have a post-test probability above %.2f",
                     n_belowThresholdDifferentials - MAXIMUM_NUMBER_OF_DIFFERENTIAL_DX_TO_SHOW,
                     thresholdPostTestProb);

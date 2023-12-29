@@ -21,15 +21,4 @@ public interface AnalysisResultsWriter {
                  AnalysisResultsMetadata metadata,
                  OutputOptions outputOptions) throws IOException;
 
-    /**
-     * Since deprecation, the method always throws a {@link RuntimeException}.
-     *
-     * @deprecated use {@link #process(AnalysisData, AnalysisResults, AnalysisResultsMetadata, OutputOptions)} instead.
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    default void process(OutputOptions outputOptions) {
-        throw new RuntimeException("The method has been deprecated.");
-    }
-
 }

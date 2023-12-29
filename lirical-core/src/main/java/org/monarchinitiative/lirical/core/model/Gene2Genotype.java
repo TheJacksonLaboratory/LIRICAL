@@ -1,8 +1,6 @@
 package org.monarchinitiative.lirical.core.model;
 
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
-import org.monarchinitiative.phenol.ontology.data.Identified;
-import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -14,31 +12,7 @@ import java.util.stream.Stream;
  * <p>
  * Note, we only need the variants that passed the filtering for the analysis.
  */
-public interface Gene2Genotype extends Identified {
-
-    /**
-     * Create {@linkplain Gene2Genotype} from a collection of variants that can include the variants
-     * that failed the initial filtering.
-     * <p>
-     * The failing variants will not be retained.
-     *
-     * @deprecated the method has been deprecated and will be removed in {@code v2.0.0}.
-     * Use {@link #of(GeneIdentifier, Collection, int)} instead.
-     * @param id the gene credentials.
-     * @param variants a collection of variants that passed/failed the initial filtering.
-     */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
-    static Gene2Genotype of(GeneIdentifier id, Collection<LiricalVariant> variants) {
-        int filteredOutVariantCount = 0;
-        List<LiricalVariant> passingVariants = new ArrayList<>(variants.size());
-        for (LiricalVariant variant : variants) {
-            if (variant.passedFilters())
-                passingVariants.add(variant);
-            else
-                filteredOutVariantCount++;
-        }
-        return of(id, passingVariants, filteredOutVariantCount);
-    }
+public interface Gene2Genotype {
 
     /**
      * Create {@linkplain Gene2Genotype} from provided data.
@@ -59,26 +33,10 @@ public interface Gene2Genotype extends Identified {
         }
     }
 
-    // REMOVE(v2.0.0)
-    @Override
-    @Deprecated(forRemoval = true)
-    default TermId id() {
-        return geneId().id();
-    }
-
     /**
      * Get the credentials of the gene.
      */
     GeneIdentifier geneId();
-
-    /**
-     * @return HGVS gene symbol, e.g. <code>FBN2</code>
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true)
-    default String symbol() {
-        return geneId().symbol();
-    }
 
     /**
      * Get a {@linkplain Stream} of variants annotated to this gene.
@@ -122,17 +80,6 @@ public interface Gene2Genotype extends Identified {
                         .orElse(false))
                 .mapToInt(var -> var.pathogenicClinVarAlleleCount(sampleId))
                 .sum();
-    }
-
-    /**
-     * @deprecated the method was deprecated and will be removed in <code>v3.0.0</code>.
-     * Use {@link #deleteriousAlleleCount(String, float)} instead.
-     * @see #deleteriousAlleleCount(String, float)
-     */
-    @Deprecated(forRemoval = true, since = "2.0.0-RC3")
-    default int pathogenicAlleleCount(String sampleId, float pathogenicityThreshold) {
-        // REMOVE(v3.0.0)
-        return deleteriousAlleleCount(sampleId, pathogenicityThreshold);
     }
 
     /**

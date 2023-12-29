@@ -25,26 +25,6 @@ public final class OutputOptions {
         this.prefix = prefix;
     }
 
-    /**
-     * @deprecated use the {@link #OutputOptions(LrThreshold, MinDiagnosisCount, float, boolean, Path, String)} instead.
-     */
-    // REMOVE(v2.0.0)
-    @Deprecated(forRemoval = true, since = "2.0.0-RC2")
-    public OutputOptions(LrThreshold lrThreshold,
-                         MinDiagnosisCount minDiagnosisCount,
-                         float pathogenicityThreshold,
-                         boolean displayAllVariants,
-                         Path outputDirectory,
-                         String prefix,
-                         Iterable<OutputFormat> outputFormats) {
-        this.lrThreshold = lrThreshold;
-        this.minDiagnosisCount = minDiagnosisCount;
-        this.pathogenicityThreshold = pathogenicityThreshold;
-        this.displayAllVariants = displayAllVariants;
-        this.outputDirectory = outputDirectory;
-        this.prefix = prefix;
-    }
-
     public LrThreshold lrThreshold() {
         return lrThreshold;
     }

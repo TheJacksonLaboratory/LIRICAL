@@ -22,12 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.util.List;
 
-/**
- * @deprecated the class will be removed from the public API in v2.0.0. Use {@link ExomiserMvStoreMetadataServiceFactory} instead.
- */
-// REMOVE(v2.0.0) - make package private
-@Deprecated
-public class ExomiserMvStoreMetadataService implements VariantMetadataService {
+class ExomiserMvStoreMetadataService implements VariantMetadataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExomiserMvStoreMetadataService.class);
 

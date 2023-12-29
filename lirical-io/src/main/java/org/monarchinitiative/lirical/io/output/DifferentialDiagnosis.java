@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.io.output;
 
 import org.monarchinitiative.lirical.core.analysis.TestResult;
+import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.List;
@@ -30,19 +31,25 @@ public class DifferentialDiagnosis extends BaseDifferential {
                           List<VisualizableVariant> variants,
                           String genotypeExplanation,
                           String svg) {
-        super(sampleId, diseaseId, diseaseName, result, rank, variants);
+        super(sampleId,
+              diseaseName,
+              diseaseId.getValue(),
+              formatPreTestProbability(result.pretestProbability()),
+              formatPostTestProbability(result.posttestProbability()),
+              result.getCompositeLR(),
+              result.genotypeLr().map(GenotypeLrWithExplanation::geneId).orElse(null),
+              rank,
+              variants);
         url=String.format("https://hpo.jax.org/app/browse/disease/%s",result.diseaseId().getValue());
         this.genotypeExplanation = genotypeExplanation; // nullable
         this.svg = Objects.requireNonNull(svg);
     }
 
-    @Override
-    protected String formatPostTestProbability(double postTestProbability) {
+    private static String formatPostTestProbability(double postTestProbability) {
         return String.format("%.1f%%", 100 * postTestProbability);
     }
 
-    @Override
-    protected String formatPreTestProbability(double preTestProbability) {
+    private static String formatPreTestProbability(double preTestProbability) {
         if (preTestProbability < 0.001) {
             return String.format("1/%d",Math.round(1.0/preTestProbability));
         } else {
