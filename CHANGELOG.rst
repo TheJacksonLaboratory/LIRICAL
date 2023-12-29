@@ -3,14 +3,15 @@ Changelog
 =========
 
 -------------------
-v2.0.0 (TBD)
+v2.0.0 (2023-12-29)
 -------------------
-- Require Java 17
-- Prune and split codebase into several Maven modules
-- Enhance HTML report, add `JSON` output format
+
 - Add ``prioritize`` command for running LIRICAL entirely from CLI
-- Change the YAML input format
-- Add support for phenopacket schema ``v2``
+- Support running analysis starting from both ``v1`` and ``v2`` phenopacket versions
+- Simplify the YAML input format
+- Enhance HTML report, add `JSON` output format
+- Split the codebase into several modules
+- Require Java 17 or better
 - Host documentation and API docs on github.io
 
 -------------------
