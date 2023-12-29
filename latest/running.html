@@ -163,11 +163,6 @@ The background variant frequencies are bundled with the LIRICAL code. See <a cla
 <p>The configuration options tweak the analysis.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">-g</span> <span class="pre">|</span> <span class="pre">--global</span></code>: global analysis, see <a class="reference internal" href="genotype-score.html#rstglobal-mode"><span class="std std-ref">Global mode</span></a> for more info (default: <code class="docutils literal notranslate"><span class="pre">false</span></code>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--ddndv</span></code>: disregard a disease if no deleterious variants are found in the gene associated with the disease.
-Used only if running with a VCF file (default: <code class="docutils literal notranslate"><span class="pre">true</span></code>).
-<strong>Deprecation note</strong>: the option has been deprecated and will be removed since <cite>v2.0.0</cite> because
-it was not possible to be unset. Using the option <strong>will stop the analysis</strong>.
-Use <code class="docutils literal notranslate"><span class="pre">--sdwndv</span></code> as a replacement.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--sdwndv</span></code>: show diseases even if no deleterious variants are found in the gene associated with the disease.
 The option is a flag (takes no value) and its presence will lead to showing <em>all</em> diseases,
 even those with no deleterious variants.

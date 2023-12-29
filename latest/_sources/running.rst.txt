@@ -73,11 +73,6 @@ Configuration options
 The configuration options tweak the analysis.
 
 * ``-g | --global``: global analysis, see :ref:`rstglobal-mode` for more info (default: ``false``).
-* ``--ddndv``: disregard a disease if no deleterious variants are found in the gene associated with the disease.
-  Used only if running with a VCF file (default: ``true``).
-  **Deprecation note**: the option has been deprecated and will be removed since `v2.0.0` because
-  it was not possible to be unset. Using the option **will stop the analysis**.
-  Use ``--sdwndv`` as a replacement.
 * ``--sdwndv``: show diseases even if no deleterious variants are found in the gene associated with the disease.
   The option is a flag (takes no value) and its presence will lead to showing *all* diseases,
   even those with no deleterious variants.
