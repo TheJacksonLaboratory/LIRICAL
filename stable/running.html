@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Running LIRICAL &mdash; LIRICAL 2.0.0-RC3 documentation</title>
+  <title>Running LIRICAL &mdash; LIRICAL 2.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5b703c68"></script>
+        <script src="_static/documentation_options.js?v=51b770b3"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -163,11 +163,6 @@ The background variant frequencies are bundled with the LIRICAL code. See <a cla
 <p>The configuration options tweak the analysis.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">-g</span> <span class="pre">|</span> <span class="pre">--global</span></code>: global analysis, see <a class="reference internal" href="genotype-score.html#rstglobal-mode"><span class="std std-ref">Global mode</span></a> for more info (default: <code class="docutils literal notranslate"><span class="pre">false</span></code>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--ddndv</span></code>: disregard a disease if no deleterious variants are found in the gene associated with the disease.
-Used only if running with a VCF file (default: <code class="docutils literal notranslate"><span class="pre">true</span></code>).
-<strong>Deprecation note</strong>: the option has been deprecated and will be removed since <cite>v2.0.0</cite> because
-it was not possible to be unset. Using the option <strong>will stop the analysis</strong>.
-Use <code class="docutils literal notranslate"><span class="pre">--sdwndv</span></code> as a replacement.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--sdwndv</span></code>: show diseases even if no deleterious variants are found in the gene associated with the disease.
 The option is a flag (takes no value) and its presence will lead to showing <em>all</em> diseases,
 even those with no deleterious variants.

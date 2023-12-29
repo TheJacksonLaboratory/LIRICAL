@@ -1,7 +1,6 @@
 org.monarchinitiative.exomiser.core.proto
 org.monarchinitiative.lirical.background
 org.monarchinitiative.lirical.background.backgroundfrequency
-org.monarchinitiative.lirical.background.vcf
 org.monarchinitiative.lirical.cli
 org.monarchinitiative.lirical.cli.cmd
 org.monarchinitiative.lirical.cli.cmd.experimental
