@@ -51,11 +51,10 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Setting up LIRICAL</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#building-from-sources">Building from sources</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#prebuilt-lirical-executable">Prebuilt LIRICAL executable</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#set-up-alias">Set up alias</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#prebuilt-lirical-executable">Prebuilt LIRICAL executable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-from-sources">Building from sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-to-use-as-a-library">Building to use as a library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#set-up-alias">Set up alias</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#exomiser-database-files">Exomiser database files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#lirical-data-files">LIRICAL data files</a></li>
 </ul>
@@ -109,30 +108,58 @@ build LIRICAL from source, then the build process described below requires
 of the novel Java features.</p>
 </div>
 </section>
-<section id="building-from-sources">
-<h2>Building from sources<a class="headerlink" href="#building-from-sources" title="Link to this heading"></a></h2>
-<p>Go the GitHub page of <a class="reference external" href="https://github.com/TheJacksonLaboratory/LIRICAL">LIRICAL</a>, and clone or download the project.
-Build the executable from source with Maven:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">TheJacksonLaboratory</span><span class="o">/</span><span class="n">LIRICAL</span><span class="o">.</span><span class="n">git</span>
-<span class="n">cd</span> <span class="n">LIRICAL</span>
-<span class="o">./</span><span class="n">mvnw</span> <span class="o">-</span><span class="n">Prelease</span> <span class="n">package</span>
-</pre></div>
-</div>
-<p>We use the amazing <a class="reference external" href="https://maven.apache.org/wrapper/">Maven Wrapper</a> for building the sources, so installation
-of Maven prior build is <em>not</em> required.</p>
-<p>Verify that the building process went well by running:</p>
-<pre class="literal-block">java -jar lirical-cli/target/lirical-cli-2.0.1-SNAPSHOT.jar --help</pre>
 <section id="prebuilt-lirical-executable">
-<h3>Prebuilt LIRICAL executable<a class="headerlink" href="#prebuilt-lirical-executable" title="Link to this heading"></a></h3>
-<p>Alternatively, go to the <a class="reference external" href="https://github.com/TheJacksonLaboratory/LIRICAL/releases">Releases section</a> on the
-LIRICAL GitHub page and download the distribution ZIP file with an executable JAR file with the latest LIRICAL version.</p>
+<span id="id1"></span><h2>Prebuilt LIRICAL executable<a class="headerlink" href="#prebuilt-lirical-executable" title="Link to this heading"></a></h2>
+<p>Most users should use the prebuilt LIRICAL executable.
+LIRICAL is distributed as a ZIP archive that contains the executable JAR file, the libraries,
+and a few files for running the examples. The archive is available from the
+<a class="reference external" href="https://github.com/TheJacksonLaboratory/LIRICAL/releases">Releases section</a>
+on the GitHub repository.</p>
 <p>Assuming the distribution file was downloaded to lirical-cli-2.0.1-SNAPSHOT-distribution.zip,
 the following will print the help message:</p>
 <pre class="literal-block">unzip lirical-cli-2.0.1-SNAPSHOT-distribution.zip
 java -jar lirical-cli-2.0.1-SNAPSHOT/lirical-cli-2.0.1-SNAPSHOT.jar --help</pre>
 </section>
+<section id="building-from-sources">
+<span id="build-from-sources"></span><h2>Building from sources<a class="headerlink" href="#building-from-sources" title="Link to this heading"></a></h2>
+<p>Alternatively, LIRICAL can also be built from sources. Assuming JDK 17 or better is available in the environment,
+the build is as simple as running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">TheJacksonLaboratory</span><span class="o">/</span><span class="n">LIRICAL</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">LIRICAL</span>
+<span class="o">./</span><span class="n">mvnw</span> <span class="o">-</span><span class="n">Prelease</span> <span class="n">package</span>
+</pre></div>
+</div>
+<p>The code first clones LIRICAL repository and then runs the amazing <a class="reference external" href="https://maven.apache.org/wrapper/">Maven Wrapper</a>
+for building the application, so prior installation of Maven is <em>not</em> required.</p>
+<p>During the build, Maven compiles the LIRICAL code into an executable Java archive (JAR) file and assembles the entire
+application into the distribution ZIP archive. The archive is stored at <cite>lirical-cli/target</cite> subdirectory and it is the
+same archive that you can obtain from Github releases.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Building from sources is not necessary for a typical LIRICAL use. Use the <a class="reference internal" href="#prebuilt-lirical-executable"><span class="std std-ref">Prebuilt LIRICAL executable</span></a>
+unless you really really need to build the app yourself.</p>
+</div>
+</section>
+<section id="building-to-use-as-a-library">
+<span id="build-as-library"></span><h2>Building to use as a library<a class="headerlink" href="#building-to-use-as-a-library" title="Link to this heading"></a></h2>
+<p>In some rare cases, LIRICAL code needs to be available as a library to another applications. To make LIRICAL ready
+for use as a library, we need to run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">TheJacksonLaboratory</span><span class="o">/</span><span class="n">LIRICAL</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">LIRICAL</span>
+<span class="o">./</span><span class="n">mvnw</span> <span class="o">-</span><span class="n">Prelease</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>This is almost the same as building from sources done in the previous section. However, running <cite>install</cite>
+instead of <cite>package</cite> will copy the LIRICAL JARs into the local Maven repository, making it available
+for other applications.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Building to use as a library is not necessary for a typical LIRICAL use. Use the <a class="reference internal" href="#prebuilt-lirical-executable"><span class="std std-ref">Prebuilt LIRICAL executable</span></a>
+unless you really, really, really need to use LIRICAL as a library.</p>
+</div>
+</section>
 <section id="set-up-alias">
-<span id="rstsetupalias"></span><h3>Set up alias<a class="headerlink" href="#set-up-alias" title="Link to this heading"></a></h3>
+<span id="rstsetupalias"></span><h2>Set up alias<a class="headerlink" href="#set-up-alias" title="Link to this heading"></a></h2>
 <p>In general, Java command line applications are invoked as <code class="docutils literal notranslate"><span class="pre">java</span> <span class="pre">-jar</span> <span class="pre">executable.jar</span></code>. However, such incantation is
 a bit too verbose and we can shorten it a bit by defining an alias.</p>
 <p>Let’s define a command alias for LIRICAL. Assuming the distribution ZIP was unpacked into
@@ -144,7 +171,6 @@ lirical --help</pre>
 <p>From now on, we will use the <code class="docutils literal notranslate"><span class="pre">lirical</span></code> alias instead of the longer form.</p>
 </div>
 </section>
-</section>
 <section id="exomiser-database-files">
 <span id="rstexomiserdatadir"></span><h2>Exomiser database files<a class="headerlink" href="#exomiser-database-files" title="Link to this heading"></a></h2>
 <p>LIRICAL uses data files from the <a class="reference external" href="https://github.com/exomiser/Exomiser">Exomiser</a>
@@ -153,7 +179,7 @@ We recommend that always the latest version of these files be used.
 The Exomiser data files can be obtained from the
 <a class="reference external" href="https://exomiser.monarchinitiative.org/exomiser/download">Exomiser download site</a>.
 You may need to scroll (right hand side) to see the subdirectory <code class="docutils literal notranslate"><span class="pre">latest</span></code>, which includes the current version of
-these files. Download either <code class="docutils literal notranslate"><span class="pre">2302_hg19.zip</span></code> (for the hg19/GRCh37 genome assembly)  or <a href="#id1"><span class="problematic" id="id2">``</span></a>2302_hg38.zip `` for the
+these files. Download either <code class="docutils literal notranslate"><span class="pre">2302_hg19.zip</span></code> (for the hg19/GRCh37 genome assembly)  or <code class="docutils literal notranslate"><span class="pre">2302_hg38.zip</span></code> for the
 hg38/GRCh38 assembly). Of course, the datafile you use should match the assembly used to align and call
 the exome/genome data you want to analyze with LIRICAL.</p>
 <div class="admonition note">
