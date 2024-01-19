@@ -21,30 +21,17 @@ build LIRICAL from source, then the build process described below requires
   The v1 of LIRICAL was written in Java 8 but starting from v2 we require Java 17 or better to take advantage
   of the novel Java features.
 
-Building from sources
-~~~~~~~~~~~~~~~~~~~~~
 
-Go the GitHub page of `LIRICAL <https://github.com/TheJacksonLaboratory/LIRICAL>`_, and clone or download the project.
-Build the executable from source with Maven::
-
-  git clone https://github.com/TheJacksonLaboratory/LIRICAL.git
-  cd LIRICAL
-  ./mvnw -Prelease package
-
-We use the amazing `Maven Wrapper <https://maven.apache.org/wrapper/>`_ for building the sources, so installation
-of Maven prior build is *not* required.
-
-Verify that the building process went well by running:
-
-.. parsed-literal::
-  java -jar lirical-cli/target/lirical-cli-|release|.jar --help
-
+.. _prebuilt-lirical-executable:
 
 Prebuilt LIRICAL executable
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Alternatively, go to the `Releases section <https://github.com/TheJacksonLaboratory/LIRICAL/releases>`_ on the
-LIRICAL GitHub page and download the distribution ZIP file with an executable JAR file with the latest LIRICAL version.
+Most users should use the prebuilt LIRICAL executable.
+LIRICAL is distributed as a ZIP archive that contains the executable JAR file, the libraries,
+and a few files for running the examples. The archive is available from the
+`Releases section <https://github.com/TheJacksonLaboratory/LIRICAL/releases>`_
+on the GitHub repository.
 
 Assuming the distribution file was downloaded to lirical-cli-|release|-distribution.zip,
 the following will print the help message:
@@ -53,10 +40,58 @@ the following will print the help message:
   unzip lirical-cli-|release|-distribution.zip
   java -jar lirical-cli-|release|/lirical-cli-|release|.jar --help
 
+
+.. _build-from-sources:
+
+Building from sources
+~~~~~~~~~~~~~~~~~~~~~
+
+Alternatively, LIRICAL can also be built from sources. Assuming JDK 17 or better is available in the environment,
+the build is as simple as running::
+
+  git clone https://github.com/TheJacksonLaboratory/LIRICAL.git
+  cd LIRICAL
+  ./mvnw -Prelease package
+
+The code first clones LIRICAL repository and then runs the amazing `Maven Wrapper <https://maven.apache.org/wrapper/>`_
+for building the application, so prior installation of Maven is *not* required.
+
+During the build, Maven compiles the LIRICAL code into an executable Java archive (JAR) file and assembles the entire
+application into the distribution ZIP archive. The archive is stored at `lirical-cli/target` subdirectory and it is the
+same archive that you can obtain from Github releases.
+
+.. note::
+
+  Building from sources is not necessary for a typical LIRICAL use. Use the :ref:`prebuilt-lirical-executable`
+  unless you really really need to build the app yourself.
+
+
+.. _build-as-library:
+
+Building to use as a library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In some rare cases, LIRICAL code needs to be available as a library to another applications. To make LIRICAL ready
+for use as a library, we need to run::
+
+  git clone https://github.com/TheJacksonLaboratory/LIRICAL.git
+  cd LIRICAL
+  ./mvnw -Prelease install
+
+This is almost the same as building from sources done in the previous section. However, running `install`
+instead of `package` will copy the LIRICAL JARs into the local Maven repository, making it available
+for other applications.
+
+.. note::
+
+  Building to use as a library is not necessary for a typical LIRICAL use. Use the :ref:`prebuilt-lirical-executable`
+  unless you really, really, really need to use LIRICAL as a library.
+
+
 .. _rstsetupalias:
 
 Set up alias
-^^^^^^^^^^^^
+~~~~~~~~~~~~
 
 In general, Java command line applications are invoked as ``java -jar executable.jar``. However, such incantation is
 a bit too verbose and we can shorten it a bit by defining an alias.
@@ -83,7 +118,7 @@ We recommend that always the latest version of these files be used.
 The Exomiser data files can be obtained from the
 `Exomiser download site <https://exomiser.monarchinitiative.org/exomiser/download>`_.
 You may need to scroll (right hand side) to see the subdirectory ``latest``, which includes the current version of
-these files. Download either ``2302_hg19.zip`` (for the hg19/GRCh37 genome assembly)  or ``2302_hg38.zip `` for the
+these files. Download either ``2302_hg19.zip`` (for the hg19/GRCh37 genome assembly)  or ``2302_hg38.zip`` for the
 hg38/GRCh38 assembly). Of course, the datafile you use should match the assembly used to align and call
 the exome/genome data you want to analyze with LIRICAL.
 
