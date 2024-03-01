@@ -43,6 +43,7 @@ public class TsvTemplate extends LiricalTemplate {
         Map<TermId, HpoDisease> diseaseById = diseases.diseaseById();
         List<TsvDifferential> diff = new ArrayList<>();
         analysisResults.resultsWithDescendingPostTestProbability().sequential()
+                .filter(handleCasesWithNoDeleteriousVariants(outputOptions.showDiseasesWithNoDeleteriousVariants()))
                 .forEachOrdered(result -> {
                     int current = rank.incrementAndGet();
                     List<VisualizableVariant> variants = result.genotypeLr()

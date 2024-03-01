@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.io.output;
 import freemarker.template.Configuration;
 import freemarker.template.Version;
 import org.monarchinitiative.lirical.core.analysis.AnalysisData;
+import org.monarchinitiative.lirical.core.analysis.TestResult;
 import org.monarchinitiative.lirical.core.exception.LiricalRuntimeException;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
 import org.monarchinitiative.lirical.core.model.LiricalVariant;
@@ -17,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -124,6 +126,23 @@ public abstract class LiricalTemplate {
 
     private boolean isPassingPathogenicThreshold(LiricalVariant lv) {
         return lv.pathogenicityScore().orElse(0f) >= pathogenicityThreshold;
+    }
+
+    /**
+     * Include the result from the differential diagnoses
+     * IF we are interested the diseases with no deleterious variants
+     * OR if the genotype LR represents a situation where some pathogenic variants were found in the associated gene
+     * OR if genotype LR is missing (phenotype only mode).
+     *
+     * @param showDiseasesWithNoDeleteriousVariants set to {@code true} if you wish to see the differential diagnoses
+     *                                              with no deleterious variants regardless of anything.
+     */
+    static Predicate<TestResult> handleCasesWithNoDeleteriousVariants(boolean showDiseasesWithNoDeleteriousVariants) {
+        return r ->
+                showDiseasesWithNoDeleteriousVariants
+                        || r.genotypeLr()
+                        .map(g -> g.matchType().hasDeleteriousVariants())
+                        .orElse(true);
     }
 
 }
