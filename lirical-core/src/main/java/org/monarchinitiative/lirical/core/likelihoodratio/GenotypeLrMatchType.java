@@ -82,8 +82,8 @@ public enum GenotypeLrMatchType {
 
     /**
      * Returns {@code true} if the genotype LR match indicates that the enclosing {@link GenotypeLrWithExplanation}
-     * was created for a gene with some deleterious variants in the gene were observed or if the LR was produced using
-     * the LIRICAL genotype model, etc...
+     * was created for a gene that contains deleterious variants. This includes the genotype LRs generated
+     * for ClinVar variants, using the LIRICAL genotype model, etc...
      * <p>
      * Returns {@code false} if the genotype LR represents state with no deleterious variants in a gene.
      */
