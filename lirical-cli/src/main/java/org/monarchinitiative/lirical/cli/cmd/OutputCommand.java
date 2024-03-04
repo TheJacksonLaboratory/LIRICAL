@@ -72,6 +72,7 @@ public abstract class OutputCommand extends LiricalConfigurationCommand {
         LrThreshold lrThreshold = output.lrThreshold == null ? LrThreshold.notInitialized() : LrThreshold.setToUserDefinedThreshold(output.lrThreshold);
         MinDiagnosisCount minDiagnosisCount = output.minDifferentialsToShow == null ? MinDiagnosisCount.notInitialized() : MinDiagnosisCount.setToUserDefinedMinCount(output.minDifferentialsToShow);
         return new OutputOptions(lrThreshold, minDiagnosisCount, runConfiguration.pathogenicityThreshold,
-                output.displayAllVariants, output.outdir, prefix);
+                output.displayAllVariants, runConfiguration.showDiseasesWithNoDeleteriousVariants,
+                output.outdir, prefix);
     }
 }

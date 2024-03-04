@@ -41,6 +41,7 @@ public class SparklinePacket {
     public static List<SparklinePacket> sparklineFactory(AnalysisResults results,
                                                          HpoDiseases diseases,
                                                          MinimalOntology ontology,
+                                                         boolean showDiseasesWithNoDeleteriousVariants,
                                                          int N) {
         if (results.isEmpty())
             return List.of();
@@ -53,6 +54,7 @@ public class SparklinePacket {
         Map<TermId, HpoDisease> diseaseById = diseases.diseaseById();
         Sparkline2Svg sparkline2Svg = new Sparkline2Svg(topResult, true, ontology);
         results.resultsWithDescendingPostTestProbability()
+                .filter(LiricalTemplate.handleCasesWithNoDeleteriousVariants(showDiseasesWithNoDeleteriousVariants))
                 .limit(N)
                 .forEachOrdered(result -> {
                     double posttestProb = result.posttestProbability();
