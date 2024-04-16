@@ -78,5 +78,22 @@ public enum GenotypeLrMatchType {
      */
     @Deprecated(forRemoval = true)
     // REMOVE(v3.0.0)
-    UNKNOWN
+            UNKNOWN;
+
+    /**
+     * Returns {@code true} if the genotype LR match indicates that the enclosing {@link GenotypeLrWithExplanation}
+     * was created for a gene that contains deleterious variants. This includes the genotype LRs generated
+     * for ClinVar variants, using the LIRICAL genotype model, etc...
+     * <p>
+     * Returns {@code false} if the genotype LR represents state with no deleterious variants in a gene.
+     */
+    public boolean hasDeleteriousVariants() {
+        return switch (this) {
+            case NO_VARIANTS_DETECTED_AD, NO_VARIANTS_DETECTED_AR, UNKNOWN -> false;
+            case ONE_P_OR_LP_CLINVAR_ALLELE_IN_AD, LIRICAL_GT_MODEL,
+                    ONE_DELETERIOUS_CLINVAR_VARIANT_IN_AD, TWO_DELETERIOUS_CLINVAR_VARIANTS_IN_AR,
+                    TWO_P_OR_LP_CLINVAR_ALLELES_IN_AR, ONE_DELETERIOUS_VARIANT_IN_AR,
+                    HIGH_NUMBER_OF_OBSERVED_PREDICTED_PATHOGENIC_VARIANTS -> true;
+        };
+    }
 }

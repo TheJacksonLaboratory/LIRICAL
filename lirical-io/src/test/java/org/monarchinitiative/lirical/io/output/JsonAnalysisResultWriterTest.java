@@ -63,7 +63,7 @@ public class JsonAnalysisResultWriterTest {
         AnalysisResults results = createTestAnalysisResults();
         AnalysisResultsMetadata metadata = createTestMetadata();
         Path current = Path.of(".");
-        OutputOptions oo = new OutputOptions(LrThreshold.notInitialized(), MinDiagnosisCount.setToUserDefinedMinCount(2), 1.f, true, current, "test");
+        OutputOptions oo = new OutputOptions(LrThreshold.notInitialized(), MinDiagnosisCount.setToUserDefinedMinCount(2), 1.f, true, false, current, "test");
         writer.process(analysisData, results, metadata, oo);
 
         String output = readFileIntoString(TEST_OUTPUT);

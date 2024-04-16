@@ -76,7 +76,8 @@ The configuration options tweak the analysis.
 * ``--sdwndv``: show diseases even if no deleterious variants are found in the gene associated with the disease.
   The option is a flag (takes no value) and its presence will lead to showing *all* diseases,
   even those with no deleterious variants.
-  Only applicable to the HTML report when running with a VCF file (genotype-aware mode).
+  Only applicable to the HTML and TSV reports when running with a VCF file (genotype-aware mode).
+  The JSON report will include *all* diseases all the time.
 * ``--transcript-db``: transcript database (default: ``RefSeq``), see :ref:`rsttx-dbs` for more info.
 * ``--use-orphanet``: use `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>`_ annotations (default: ``false``).
 * ``--strict``: use strict penalties if the genotype does not match the disease model

@@ -6,7 +6,10 @@ import org.monarchinitiative.lirical.core.analysis.AnalysisData;
 import org.monarchinitiative.lirical.core.analysis.AnalysisResults;
 import org.monarchinitiative.lirical.core.likelihoodratio.GenotypeLrWithExplanation;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
-import org.monarchinitiative.lirical.core.output.*;
+import org.monarchinitiative.lirical.core.output.AnalysisResultsMetadata;
+import org.monarchinitiative.lirical.core.output.LrThreshold;
+import org.monarchinitiative.lirical.core.output.MinDiagnosisCount;
+import org.monarchinitiative.lirical.core.output.OutputOptions;
 import org.monarchinitiative.lirical.io.output.svg.Lr2Svg;
 import org.monarchinitiative.phenol.annotations.formats.GeneIdentifier;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
@@ -70,7 +73,8 @@ public class HtmlTemplate extends LiricalTemplate {
         cfg.setClassForTemplateLoading(HtmlTemplate.class, "");
         templateData.put("postprobthreshold", String.format("%.1f%%", 100 * this.lrThreshold.getThreshold()));
         int N = totalDetailedDiagnosesToShow(analysisResults);
-        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(analysisResults, diseases, hpo, N);
+        List<SparklinePacket> sparklinePackets = SparklinePacket.sparklineFactory(analysisResults, diseases, hpo,
+                outputOptions.showDiseasesWithNoDeleteriousVariants(), N);
         this.templateData.put("sparkline", sparklinePackets);
         if (symbolsWithoutGeneIds != null && !symbolsWithoutGeneIds.isEmpty()) {
             this.templateData.put("geneSymbolsWithoutIds", symbolsWithoutGeneIds);
@@ -81,6 +85,7 @@ public class HtmlTemplate extends LiricalTemplate {
         List<ImprobableDifferential> improbableDifferentials = new ArrayList<>();
         AtomicInteger rank = new AtomicInteger();
         analysisResults.resultsWithDescendingPostTestProbability().sequential()
+                .filter(handleCasesWithNoDeleteriousVariants(outputOptions.showDiseasesWithNoDeleteriousVariants()))
                 .forEachOrdered(result -> {
                     int current = rank.incrementAndGet();
 
