@@ -6,6 +6,13 @@ Changelog
 latest
 -------------------
 
+-------------------
+v2.0.1 (2024-04-16)
+-------------------
+
+- Bug fix - When running with a VCF file, the TSV report will only include the diseases with a mutation
+  in the associated gene, *unless* the ``--sdwndv`` is provided via CLI. Previously, the TSV reports included
+  the diseases with no mutation regardless of the ``--sdwndv`` option.
 
 -------------------
 v2.0.0 (2023-12-29)
