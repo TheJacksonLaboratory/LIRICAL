@@ -19,7 +19,7 @@ rank${tab}diseaseName${tab}diseaseCurie${tab}pretestprob${tab}posttestprob${tab}
 ${dd.rank}${tab}${dd.diseaseName}${tab}${dd.diseaseCurie}${tab}${dd.pretestprob}${tab}${dd.posttestprob}${tab}${dd.compositeLR}
 </#list>
 <#else>
-rank${tab}diseaseName${tab}diseaseCurie${tab}pretestprob${tab}posttestprob${tab}compositeLR${tab}${tab}entrezGeneId${tab}variants
+rank${tab}diseaseName${tab}diseaseCurie${tab}pretestprob${tab}posttestprob${tab}compositeLR${tab}entrezGeneId${tab}variants
 <#list diff as dd>
 ${dd.rank}${tab}${dd.diseaseName}${tab}${dd.diseaseCurie}${tab}${dd.pretestprob}${tab}${dd.posttestprob}${tab}${dd.compositeLR}${tab}${dd.entrezGeneId}${tab}${dd.varString}
 </#list>
