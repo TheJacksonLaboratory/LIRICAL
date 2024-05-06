@@ -16,7 +16,7 @@ import static picocli.CommandLine.Help.Ansi.Style.*;
         footer = Main.FOOTER)
 public class Main implements Callable<Integer> {
 
-    public static final String VERSION = "lirical v2.0.2";
+    public static final String VERSION = "lirical v2.0.3-SNAPSHOT";
     public static final int WIDTH = 120;
     public static final String FOOTER = "\nSee the full documentation at https://thejacksonlaboratory.github.io/LIRICAL/stable";
 
