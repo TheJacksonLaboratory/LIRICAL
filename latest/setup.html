@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setting up LIRICAL &mdash; LIRICAL 2.0.2-SNAPSHOT documentation</title>
+  <title>Setting up LIRICAL &mdash; LIRICAL 2.0.3-SNAPSHOT documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=c552d10b"></script>
+        <script src="_static/documentation_options.js?v=4f4a63b5"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -115,10 +115,10 @@ LIRICAL is distributed as a ZIP archive that contains the executable JAR file, t
 and a few files for running the examples. The archive is available from the
 <a class="reference external" href="https://github.com/TheJacksonLaboratory/LIRICAL/releases">Releases section</a>
 on the GitHub repository.</p>
-<p>Assuming the distribution file was downloaded to lirical-cli-2.0.2-SNAPSHOT-distribution.zip,
+<p>Assuming the distribution file was downloaded to lirical-cli-2.0.3-SNAPSHOT-distribution.zip,
 the following will print the help message:</p>
-<pre class="literal-block">unzip lirical-cli-2.0.2-SNAPSHOT-distribution.zip
-java -jar lirical-cli-2.0.2-SNAPSHOT/lirical-cli-2.0.2-SNAPSHOT.jar --help</pre>
+<pre class="literal-block">unzip lirical-cli-2.0.3-SNAPSHOT-distribution.zip
+java -jar lirical-cli-2.0.3-SNAPSHOT/lirical-cli-2.0.3-SNAPSHOT.jar --help</pre>
 </section>
 <section id="building-from-sources">
 <span id="build-from-sources"></span><h2>Building from sources<a class="headerlink" href="#building-from-sources" title="Link to this heading"></a></h2>
@@ -163,8 +163,8 @@ unless you really, really, really need to use LIRICAL as a library.</p>
 <p>In general, Java command line applications are invoked as <code class="docutils literal notranslate"><span class="pre">java</span> <span class="pre">-jar</span> <span class="pre">executable.jar</span></code>. However, such incantation is
 a bit too verbose and we can shorten it a bit by defining an alias.</p>
 <p>Let’s define a command alias for LIRICAL. Assuming the distribution ZIP was unpacked into
-phenopacket-tools-cli-2.0.2-SNAPSHOT directory, run the following to set up and check the command alias:</p>
-<pre class="literal-block">alias lirical=&quot;java -jar $(pwd)/lirical-cli-2.0.2-SNAPSHOT/lirical-cli-2.0.2-SNAPSHOT.jar&quot;
+phenopacket-tools-cli-2.0.3-SNAPSHOT directory, run the following to set up and check the command alias:</p>
+<pre class="literal-block">alias lirical=&quot;java -jar $(pwd)/lirical-cli-2.0.3-SNAPSHOT/lirical-cli-2.0.3-SNAPSHOT.jar&quot;
 lirical --help</pre>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -232,7 +232,7 @@ in the current working directory. You can change this default with the <code cla
 (If you change this, then you will need to pass the location of your directory to all other LIRICAL commands
 using the <code class="docutils literal notranslate"><span class="pre">-d</span></code> flag).</p>
 <p>Download the files into the <code class="docutils literal notranslate"><span class="pre">data</span></code> folder located next to the LIRICAL JAR file by running:</p>
-<pre class="literal-block">cd lirical-cli-2.0.2-SNAPSHOT
+<pre class="literal-block">cd lirical-cli-2.0.3-SNAPSHOT
 lirical download</pre>
 <p>This will ensure LIRICAL finds the data folder automatically (see below).</p>
 <div class="admonition note">
