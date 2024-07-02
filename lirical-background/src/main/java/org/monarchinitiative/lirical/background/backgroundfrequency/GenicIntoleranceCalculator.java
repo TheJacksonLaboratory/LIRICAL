@@ -179,7 +179,7 @@ public class GenicIntoleranceCalculator {
                         continue; // should almost never happen
                     }
                     float pathogenicity = calculatePathogenicity(variantEffect, pathogenicityData);
-                    ClinVarData clinVarData = pathogenicityData.getClinVarData();
+                    ClinVarData clinVarData = pathogenicityData.clinVarData();
                     // ClinVar have three 'pathogenic' significance values - pathogenic, pathogenic_or_likely_pathogenic and likely_pathogenic
                     // they also have a review status which will tell you how much confidence you might want to assign a given interpretation.
                     // see https://www.ncbi.nlm.nih.gov/clinvar/docs/clinsig/
@@ -250,60 +250,60 @@ public class GenicIntoleranceCalculator {
                         .map(TermId::getValue)
                         .orElse("UNKNOWN");
 
-                Frequency afr = frequencyData.getFrequencyForSource(GNOMAD_E_AFR);
+                Frequency afr = frequencyData.frequency(GNOMAD_E_AFR);
                 if (afr==null) {
-                    afr = frequencyData.getFrequencyForSource(GNOMAD_G_AFR);
+                    afr = frequencyData.frequency(GNOMAD_G_AFR);
                 }
                 if (afr!=null) {
-                    float frequencyAsPercentage = afr.getFrequency();
+                    float frequencyAsPercentage = afr.frequency();
                     addToBin(genesymbol, id, frequencyAsPercentage, pathogenicity, GNOMAD_E_AFR);
                 }
-                Frequency amr = frequencyData.getFrequencyForSource(GNOMAD_E_AMR);
+                Frequency amr = frequencyData.frequency(GNOMAD_E_AMR);
                 if (amr==null) {
-                    amr=frequencyData.getFrequencyForSource(GNOMAD_G_AMR);
+                    amr=frequencyData.frequency(GNOMAD_G_AMR);
                 }
                 if (amr!=null) {
-                    float frequencyAsPercentage = amr.getFrequency();
+                    float frequencyAsPercentage = amr.frequency();
                     addToBin(genesymbol, id, frequencyAsPercentage, pathogenicity, GNOMAD_E_AMR);
                 }
-                Frequency asj = frequencyData.getFrequencyForSource(GNOMAD_E_ASJ);
+                Frequency asj = frequencyData.frequency(GNOMAD_E_ASJ);
                 if (asj==null) {
-                    asj=frequencyData.getFrequencyForSource(GNOMAD_G_ASJ);
+                    asj=frequencyData.frequency(GNOMAD_G_ASJ);
                 }
                 if (asj!=null) {
-                    float frequencyAsPercentage = asj.getFrequency();
+                    float frequencyAsPercentage = asj.frequency();
                     addToBin(genesymbol, id, frequencyAsPercentage, pathogenicity, GNOMAD_E_ASJ);
                 }
-                Frequency eas = frequencyData.getFrequencyForSource(GNOMAD_E_EAS);
+                Frequency eas = frequencyData.frequency(GNOMAD_E_EAS);
                 if (eas==null) {
-                    eas=frequencyData.getFrequencyForSource(GNOMAD_G_EAS);
+                    eas=frequencyData.frequency(GNOMAD_G_EAS);
                 }
                 if (eas!=null) {
-                    float frequencyAsPercentage = eas.getFrequency();
+                    float frequencyAsPercentage = eas.frequency();
                     addToBin(genesymbol, id, frequencyAsPercentage, pathogenicity, GNOMAD_E_EAS);
                 }
-                Frequency fin = frequencyData.getFrequencyForSource(GNOMAD_E_FIN);
+                Frequency fin = frequencyData.frequency(GNOMAD_E_FIN);
                 if (fin==null) {
-                    fin= frequencyData.getFrequencyForSource(GNOMAD_G_FIN);
+                    fin= frequencyData.frequency(GNOMAD_G_FIN);
                 }
                 if (fin!=null) {
-                    float frequencyAsPercentage = fin.getFrequency();
+                    float frequencyAsPercentage = fin.frequency();
                     addToBin(genesymbol, id, frequencyAsPercentage, pathogenicity, GNOMAD_E_FIN);
                 }
-                Frequency nfe = frequencyData.getFrequencyForSource(GNOMAD_E_NFE);
+                Frequency nfe = frequencyData.frequency(GNOMAD_E_NFE);
                 if (nfe==null) {
-                    nfe = frequencyData.getFrequencyForSource(GNOMAD_G_NFE);
+                    nfe = frequencyData.frequency(GNOMAD_G_NFE);
                 }
                 if (nfe!=null) {
-                    float frequencyAsPercentage = nfe.getFrequency();
+                    float frequencyAsPercentage = nfe.frequency();
                     addToBin(genesymbol, id, frequencyAsPercentage, pathogenicity, GNOMAD_E_NFE);
                 }
-                Frequency sas = frequencyData.getFrequencyForSource(GNOMAD_E_SAS);
+                Frequency sas = frequencyData.frequency(GNOMAD_E_SAS);
                 if (sas==null) {
-                    sas= frequencyData.getFrequencyForSource(GNOMAD_G_SAS);
+                    sas= frequencyData.frequency(GNOMAD_G_SAS);
                 }
                 if (sas!=null) {
-                    float frequencyAsPercentage = sas.getFrequency();
+                    float frequencyAsPercentage = sas.frequency();
                     addToBin(genesymbol, id, frequencyAsPercentage, pathogenicity, GNOMAD_E_SAS);
                 }
                 if (c++%100_000==0) {
@@ -330,8 +330,8 @@ public class GenicIntoleranceCalculator {
      * @return the predicted pathogenicity score.
      */
     private float calculatePathogenicity(VariantEffect variantEffect, PathogenicityData pathogenicityData) {
-        float predictedScore = pathogenicityData.getScore();
-        float variantEffectScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(variantEffect);
+        float predictedScore = pathogenicityData.pathogenicityScore();
+        float variantEffectScore = VariantEffectPathogenicityScore.pathogenicityScoreOf(variantEffect);
         switch (variantEffect) {
             case MISSENSE_VARIANT:
                 return pathogenicityData.hasPredictedScore() ? predictedScore : variantEffectScore;

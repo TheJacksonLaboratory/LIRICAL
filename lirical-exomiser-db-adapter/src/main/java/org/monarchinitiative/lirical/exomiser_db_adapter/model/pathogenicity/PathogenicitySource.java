@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
 
 /**
@@ -28,11 +29,13 @@ package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
  * using REVEL either in isolation of with other pathogenicity predictors as the REVEL scores tend to be overwhelmed by
  * the other scores. USE AT YOUR OWN RISK!!!
  *
- * @author Jules Jacobsen
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public enum PathogenicitySource {
     // variant type is from Jannovar
     VARIANT_TYPE,
+    // An unspecified source for use in testing new pathogenicity scores
+    TEST,
     // these guys are calculated from other sources
     // http://genetics.bwh.harvard.edu/pph2/
     POLYPHEN,
@@ -47,12 +50,10 @@ public enum PathogenicitySource {
     // “REVEL: An ensemble method for predicting the pathogenicity of rare missense variants.”  American Journal of Human Genetics 2016; 99(4):877-885
     // http://dx.doi.org/10.1016/j.ajhg.2016.08.016
     REVEL,
-    M_CAP,
-    MPC,
     MVP,
-    PRIMATE_AI,
-    // An unspecified source for use in testing new pathogenicity scores
-    TEST,
+    SPLICE_AI,
+    ALPHA_MISSENSE,
+    EVE,
 
     // SV data sources
     DBVAR,
