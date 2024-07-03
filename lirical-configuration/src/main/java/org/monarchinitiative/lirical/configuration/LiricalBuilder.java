@@ -55,6 +55,8 @@ public class LiricalBuilder {
 
     /**
      * Set path to exomiser variant database for given {@link GenomeBuild}.
+     *
+     * @deprecated use {@link #exomiserResources(GenomeBuild, ExomiserResources)} instead
      * @return the builder
      */
     @Deprecated(forRemoval = true, since = "2.0.3")
@@ -76,6 +78,9 @@ public class LiricalBuilder {
         return this;
     }
 
+    /**
+     * Add paths for Exomiser resources required to support the {@code genomeBuild}.
+     */
     public LiricalBuilder exomiserResources(GenomeBuild genomeBuild, ExomiserResources resources) {
         if (genomeBuild == null) {
             LOGGER.warn("Genome build must not be null: {}", resources);
