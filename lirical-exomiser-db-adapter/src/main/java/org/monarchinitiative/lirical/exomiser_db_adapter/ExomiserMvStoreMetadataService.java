@@ -10,12 +10,9 @@ import org.monarchinitiative.lirical.core.model.VariantMetadata;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
 import org.monarchinitiative.lirical.exomiser_db_adapter.model.AlleleProtoAdaptor;
 import org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency.FrequencyData;
-import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.VariantEffectPathogenicityScore;
-import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicVariant;
-import org.monarchinitiative.svart.Strand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,16 +25,15 @@ class ExomiserMvStoreMetadataService implements VariantMetadataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExomiserMvStoreMetadataService.class);
 
-    /**
-     * A map with data from the Exomiser database.
-     */
+    /** A map with pathogenicity scores and population frequencies for alleles sourced from the Exomiser database. */
     private final Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap;
+    /** A map with Clinvar data for alleles sourced from the Exomiser database. */
     private final Map<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinvarMap;
 
     /**
      * @deprecated {@link MVStore} should be closed, but we cannot reasonably close it
      * if we construct the metadata service by this method.
-     * Use either {@link #of(MVStore, MVStore)} or {@link ExomiserMvStoreMetadataServiceFactory} instead.
+     * Use either {@link #of(Map, Map)} or {@link ExomiserMvStoreMetadataServiceFactory} instead.
      */
     @Deprecated(forRemoval = true, since = "2.0.3")
     public static ExomiserMvStoreMetadataService of(Path mvStore) {
@@ -52,10 +48,11 @@ class ExomiserMvStoreMetadataService implements VariantMetadataService {
         return new ExomiserMvStoreMetadataService(alleleMap, clinvarMap);
     }
 
-    public static ExomiserMvStoreMetadataService of(MVStore alleleMvStore, MVStore clinvarMvStore) {
-        MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMVMap = MvStoreUtil.openAlleleMVMap(alleleMvStore);
-        MVMap<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinvarMVMap = MvStoreUtil.openClinVarMVMap(clinvarMvStore);
-        return new ExomiserMvStoreMetadataService(alleleMVMap, clinvarMVMap);
+    static ExomiserMvStoreMetadataService of(
+            Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap,
+            Map<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinvarMap
+    ) {
+        return new ExomiserMvStoreMetadataService(alleleMap, clinvarMap);
     }
 
     private ExomiserMvStoreMetadataService(
@@ -68,43 +65,43 @@ class ExomiserMvStoreMetadataService implements VariantMetadataService {
 
     @Override
     public VariantMetadata metadata(GenomicVariant variant, List<VariantEffect> effects) {
-        AlleleProto.AlleleKey alleleKey = createAlleleKey(variant);
+        AlleleProto.AlleleKey alleleKey = AlleleUtil.createAlleleKey(variant);
         AlleleProto.AlleleProperties alleleProp = alleleMap.get(alleleKey);
-        // TODO: use clinvar data
-        AlleleProto.ClinVar clinVar = clinvarMap.get(alleleKey);
 
+        // Pathogenicity and frequency
         float frequency;
         float pathogenicity;
-        ClinVarAlleleData clinVarAlleleData;
-
         if (alleleProp == null) {
             frequency = DEFAULT_FREQUENCY;
             pathogenicity = effects.stream()
                     .map(VariantEffectPathogenicityScore::pathogenicityScoreOf)
                     .max(Float::compareTo)
                     .orElse(0f);
-            clinVarAlleleData = null;
         } else {
             FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
             frequency = frequencyData.maxFreq();
 
             PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);
             pathogenicity = calculatePathogenicity(effects, pathogenicityData);
-
-            clinVarAlleleData = processClinicalSignificance(pathogenicityData);
         }
 
-        
-        return VariantMetadata.of(frequency, pathogenicity, clinVarAlleleData);
+        // Clinvar data
+        AlleleProto.ClinVar clinVar = clinvarMap.get(alleleKey);
+        ClinVarAlleleData clinVarAlleleData;
+        if (clinVar == null) {
+            clinVarAlleleData = null;
+        } else {
+            clinVarAlleleData = processClinicalSignificance(clinVar);
+        }
 
+        return VariantMetadata.of(frequency, pathogenicity, clinVarAlleleData);
     }
 
-    private static ClinVarAlleleData processClinicalSignificance(PathogenicityData pathogenicityData) {
-        ClinvarClnSig clinvarClnSig;
-        ClinVarData cVarData = pathogenicityData.clinVarData();
+    private static ClinVarAlleleData processClinicalSignificance(AlleleProto.ClinVar cVarData) {
         String alleleId = cVarData.getVariationId();
 
-        if (cVarData.getReviewStatus().equals(ClinVarData.ReviewStatus.NO_ASSERTION_PROVIDED)) {
+        ClinvarClnSig clinvarClnSig;
+        if (cVarData.getReviewStatus().equals(AlleleProto.ClinVar.ReviewStatus.NO_ASSERTION_PROVIDED)) {
             clinvarClnSig = ClinvarClnSig.NOT_PROVIDED;
         } else {
             clinvarClnSig = mapToClinvarClnSig(cVarData.getPrimaryInterpretation());
@@ -122,7 +119,7 @@ class ExomiserMvStoreMetadataService implements VariantMetadataService {
         }
     }
 
-    private static ClinvarClnSig mapToClinvarClnSig(ClinVarData.ClinSig primaryInterpretation) {
+    private static ClinvarClnSig mapToClinvarClnSig(AlleleProto.ClinVar.ClinSig primaryInterpretation) {
         return switch (primaryInterpretation) {
             case LIKELY_PATHOGENIC -> ClinvarClnSig.LIKELY_PATHOGENIC;
             case PATHOGENIC_OR_LIKELY_PATHOGENIC -> ClinvarClnSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
@@ -141,18 +138,9 @@ class ExomiserMvStoreMetadataService implements VariantMetadataService {
             case PROTECTIVE -> ClinvarClnSig.PROTECTIVE;
             case RISK_FACTOR -> ClinvarClnSig.RISK_FACTOR;
 
-            case OTHER -> ClinvarClnSig.OTHER;
+            case OTHER, UNRECOGNIZED -> ClinvarClnSig.OTHER;
             case NOT_PROVIDED -> ClinvarClnSig.NOT_PROVIDED;
         };
-    }
-
-    private static AlleleProto.AlleleKey createAlleleKey(GenomicVariant variant) {
-        return AlleleProto.AlleleKey.newBuilder()
-                .setChr(variant.contigId())
-                .setPosition(variant.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.oneBased()))
-                .setRef(variant.ref())
-                .setAlt(variant.alt())
-                .build();
     }
 
     /**

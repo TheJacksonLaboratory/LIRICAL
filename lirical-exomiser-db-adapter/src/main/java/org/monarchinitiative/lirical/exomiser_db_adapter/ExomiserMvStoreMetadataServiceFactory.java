@@ -1,6 +1,7 @@
 package org.monarchinitiative.lirical.exomiser_db_adapter;
 
 import org.h2.mvstore.MVStore;
+import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
 import org.monarchinitiative.lirical.core.service.VariantMetadataServiceFactory;
@@ -41,8 +42,8 @@ public class ExomiserMvStoreMetadataServiceFactory implements VariantMetadataSer
             Map<GenomeBuild, Path> alleleStorePaths,
             Map<GenomeBuild, Path> clinvarStorePaths
     ) {
-        this.alleleStorePaths = alleleStorePaths;
-        this.clinvarStorePaths = clinvarStorePaths;
+        this.alleleStorePaths = Map.copyOf(alleleStorePaths);
+        this.clinvarStorePaths = Map.copyOf(clinvarStorePaths);
     }
 
     /**
@@ -75,18 +76,29 @@ public class ExomiserMvStoreMetadataServiceFactory implements VariantMetadataSer
 
     @Override
     public Optional<VariantMetadataService> getVariantMetadataService(GenomeBuild genomeBuild) {
-        Optional<MVStore> alleleStore = openMvStore(genomeBuild, Resource.ALLELES, alleleStores, alleleStorePaths);
-        Optional<MVStore> clinvarStore = openMvStore(genomeBuild, Resource.CLINVAR, clinvarStores, clinvarStorePaths);
+        Optional<MVStore> alleleStore = retrieveMVStore(genomeBuild, Resource.ALLELES, alleleStores, alleleStorePaths);
+        Optional<MVStore> clinvarStore = retrieveMVStore(genomeBuild, Resource.CLINVAR, clinvarStores, clinvarStorePaths);
 
-        if (alleleStore.isPresent() && clinvarStore.isPresent()) {
-            // TODO: is it acceptable to only have allele store and no clinvar store?
-            return Optional.of(ExomiserMvStoreMetadataService.of(alleleStore.get(), clinvarStore.get()));
+        if (alleleStore.isPresent() || clinvarStore.isPresent()) {
+            // We need at least one resource to return some service.
+            // Note, the map will be empty if the resource is not configured.
+            Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap = alleleStore
+                    .map(mvStore -> (Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties>) MvStoreUtil.openAlleleMVMap(mvStore))
+                    .orElseGet(Map::of);
+            LOGGER.debug("Using allele map with {} entries", alleleMap.size());
+
+            Map<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinvarMap = clinvarStore
+                    .map(mvStore -> (Map<AlleleProto.AlleleKey, AlleleProto.ClinVar>) MvStoreUtil.openClinVarMVMap(mvStore))
+                    .orElseGet(Map::of);
+            LOGGER.debug("Using clinvar map with {} entries", clinvarMap.size());
+
+            return Optional.of(ExomiserMvStoreMetadataService.of(alleleMap, clinvarMap));
         } else {
             return Optional.empty();
         }
     }
 
-    private static synchronized Optional<MVStore> openMvStore(
+    private static synchronized Optional<MVStore> retrieveMVStore(
             GenomeBuild genomeBuild,
             Resource resource,
             Map<GenomeBuild, MVStore> stores,
