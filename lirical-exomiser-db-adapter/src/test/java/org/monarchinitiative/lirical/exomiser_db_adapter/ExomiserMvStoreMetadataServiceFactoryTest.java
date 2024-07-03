@@ -26,13 +26,14 @@ public class ExomiserMvStoreMetadataServiceFactoryTest {
 
     @BeforeEach
     public void setUp() {
-        Map<GenomeBuild, Path> alleleDbPaths = Map.of(
-                GenomeBuild.HG38, TESTDATA_DIR.resolve("9999_hg38_variants.mv.db")
+        Map<GenomeBuild, ExomiserResources> resources = Map.of(
+                GenomeBuild.HG38, new ExomiserResources(
+                        TESTDATA_DIR.resolve("9999_hg38_variants.mv.db"),
+                        TESTDATA_DIR.resolve("9999_hg38_clinvar.mv.db")
+                )
         );
-        Map<GenomeBuild, Path> clinvarDbPaths = Map.of(
-                GenomeBuild.HG38, TESTDATA_DIR.resolve("9999_hg38_clinvar.mv.db")
-        );
-        factory = ExomiserMvStoreMetadataServiceFactory.of(alleleDbPaths, clinvarDbPaths);
+
+        factory = ExomiserMvStoreMetadataServiceFactory.fromResources(resources);
     }
 
     @AfterEach

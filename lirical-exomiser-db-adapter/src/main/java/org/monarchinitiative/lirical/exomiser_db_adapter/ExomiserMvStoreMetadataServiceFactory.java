@@ -28,8 +28,9 @@ public class ExomiserMvStoreMetadataServiceFactory implements VariantMetadataSer
      * @param exomiserDbPaths map with {@link Path} to variant database for a {@link GenomeBuild}.
      *                        Usually, this file is called <code>2309_hg38_variants.mv.db</code> or similar.
      * @deprecated Since Exomiser <code>14.0.0</code>, the pathogenicity scores, allele frequencies data and clinvar
-     * are distributed in separate MV stores. Use {@link #of(Map, Map)} instead and provide paths
-     * to variant database files and clinvar database files for each {@link GenomeBuild}.
+     * are distributed in separate MV stores. Use {@link #fromResources(Map)} instead
+     * and provide {@link ExomiserResources} with paths to variant and clinvar database files
+     * for each {@link GenomeBuild}.
      * To be removed in <em>3.0.0</em>.
      */
     // TODO: remove in 3.0.0
@@ -48,8 +49,9 @@ public class ExomiserMvStoreMetadataServiceFactory implements VariantMetadataSer
 
     /**
      * @deprecated Since Exomiser <code>14.0.0</code>, the pathogenicity scores, allele frequencies data and clinvar
-     * are distributed in separate MV stores. Use {@link #of(Map, Map)} instead and provide paths
-     * to variant database files and clinvar database files for each {@link GenomeBuild}.
+     * are distributed in separate MV stores. Use {@link #fromResources(Map)} instead
+     * and provide {@link ExomiserResources} with paths to variant and clinvar database files
+     * for each {@link GenomeBuild}.
      * To be removed in <em>3.0.0</em>.
      */
     // TODO: remove in 3.0.0
@@ -59,19 +61,28 @@ public class ExomiserMvStoreMetadataServiceFactory implements VariantMetadataSer
     }
 
     /**
-     * Create {@link ExomiserMvStoreMetadataServiceFactory} from mappings from genome build to the corresponding database file path.
+     * Create {@link ExomiserMvStoreMetadataServiceFactory} from mappings
+     * from {@link ExomiserResources} for a {@link GenomeBuild}.
      *
-     * @param alleleDbPaths  map with {@link Path} to variant database for a {@link GenomeBuild}.
-     *                       Usually, this file is called <code>2309_hg38_variants.mv.db</code> or similar.
-     * @param clinvarDbPaths map with {@link Path} to clinvar data database for a {@link GenomeBuild}.
-     *                       Usually, this file is called <code>2309_hg38_clinvar.mv.db</code> or similar.
+     * @param resources  map with {@link ExomiserResources} for a {@link GenomeBuild}.
      * @return the newly created factory.
      */
-    public static ExomiserMvStoreMetadataServiceFactory of(
-            Map<GenomeBuild, Path> alleleDbPaths,
-            Map<GenomeBuild, Path> clinvarDbPaths
+    public static ExomiserMvStoreMetadataServiceFactory fromResources(
+            Map<GenomeBuild, ExomiserResources> resources
     ) {
-        return new ExomiserMvStoreMetadataServiceFactory(alleleDbPaths, clinvarDbPaths);
+        Map<GenomeBuild, Path> allelePaths = new HashMap<>();
+        Map<GenomeBuild, Path> clinvarPaths = new HashMap<>();
+        resources.forEach((gb, er) -> {
+            Path alleleDbPath = er.exomiserAlleleDb();
+            if (alleleDbPath != null)
+                allelePaths.put(gb, alleleDbPath);
+
+            Path clinvarDbPath = er.exomiserClinvarDb();
+            if (clinvarDbPath != null)
+                clinvarPaths.put(gb, clinvarDbPath);
+        });
+
+        return new ExomiserMvStoreMetadataServiceFactory(allelePaths, clinvarPaths);
     }
 
     @Override
