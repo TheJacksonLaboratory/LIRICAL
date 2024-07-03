@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Stream;
 
@@ -26,7 +27,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
     private final PhenotypeService phenotypeService;
     private final BackgroundVariantFrequencyServiceFactory bgFreqFactory;
     private final PhenotypeLikelihoodRatio phenotypeLrEvaluator;
-    private final ForkJoinPool pool;
+    private final ExecutorService pool;
 
     public static LiricalAnalysisRunnerImpl of(PhenotypeService phenotypeService,
                                                BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory,

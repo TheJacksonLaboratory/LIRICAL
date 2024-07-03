@@ -28,13 +28,14 @@
         <phenol.version>[2.0.5,3.0.0)</phenol.version>
         <svart.version>2.0.0-RC3</svart.version>
         <jannovar.version>0.35</jannovar.version>
-<!--        <h2.version>1.4.197</h2.version> &lt;!&ndash; This is what Exomiser uses currently &ndash;&gt;-->
-        <h2.version>1.4.200</h2.version>
+        <!-- Exomiser >=14 uses `h2==2.2.224` -->
+        <h2.version>2.2.224</h2.version>
         <htsjdk.version>3.0.5</htsjdk.version>
         <jackson.version>2.15.0</jackson.version>
         <phenopacket-schema.version>2.0.2</phenopacket-schema.version>
         <phenopacket-tools.version>1.0.0-RC3</phenopacket-tools.version>
-        <protobuf.version>3.21.7</protobuf.version>
+        <!-- Exomiser 14.0.0 uses `protobuf==3.21.12` -->
+        <protobuf.version>[3.21.12, 4)</protobuf.version>
         <snakeyaml.version>[2.0,3.0)</snakeyaml.version>
 
         <junit-jupiter.version>5.9.2</junit-jupiter.version>

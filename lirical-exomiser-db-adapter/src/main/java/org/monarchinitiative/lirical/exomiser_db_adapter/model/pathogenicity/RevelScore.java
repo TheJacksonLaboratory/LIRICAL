@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
 
 /**
@@ -30,7 +31,7 @@ package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
  * “REVEL: An ensemble method for predicting the pathogenicity of rare missense variants.”  American Journal of Human Genetics 2016; 99(4):877-885.
  * http://dx.doi.org/10.1016/j.ajhg.2016.08.016
  * https://sites.google.com/site/revelgenomics/
- * @author Jules Jacobsen
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 class RevelScore extends BasePathogenicityScore {
 

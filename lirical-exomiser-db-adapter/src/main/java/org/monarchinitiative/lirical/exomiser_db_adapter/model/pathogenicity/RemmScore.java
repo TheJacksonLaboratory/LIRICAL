@@ -17,12 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
 
 /**
- * REMM info.
+ * REMM info - see {@link ...}
  * 
- * @author Jules Jacobsen
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class RemmScore extends BasePathogenicityScore {
 

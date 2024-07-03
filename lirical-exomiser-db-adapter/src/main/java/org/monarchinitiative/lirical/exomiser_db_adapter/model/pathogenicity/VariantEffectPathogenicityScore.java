@@ -1,3 +1,4 @@
+
 /*
  * The Exomiser - A tool to annotate and prioritize genomic variants
  *
@@ -17,6 +18,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
 
 import de.charite.compbio.jannovar.annotation.PutativeImpact;
@@ -25,8 +27,8 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 /**
  * Set of constants for use as default pathogenicity scores for a given {@link VariantEffect}.
  *
- * @author Jules Jacobsen
- * @author Manuel Holtgrewe
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
+ * @author Manuel Holtgrewe <manuel.holtgrewe@charite.de>
  */
 public final class VariantEffectPathogenicityScore {
 
@@ -82,7 +84,7 @@ public final class VariantEffectPathogenicityScore {
         //Uninstantiable.  This class should be an enum, but then it doesn't code nicely :(
     }
 
-    public static float getPathogenicityScoreOf(VariantEffect variantEffect) {
+    public static float pathogenicityScoreOf(VariantEffect variantEffect) {
         switch (variantEffect) {
             case SEQUENCE_VARIANT:
                 return NON_PATHOGENIC_SCORE;

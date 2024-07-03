@@ -17,14 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.monarchinitiative.lirical.exomiser_db_adapter.serializers;
 
-import org.monarchinitiative.lirical.exomiser_db_adapter.ExomiserResourceRuntimeException;
-
 /**
- * @author Jules Jacobsen
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class InvalidAlleleProtoException extends ExomiserResourceRuntimeException {
+public class InvalidAlleleProtoException extends RuntimeException {
 
     public InvalidAlleleProtoException(Exception e) {
         super(e);

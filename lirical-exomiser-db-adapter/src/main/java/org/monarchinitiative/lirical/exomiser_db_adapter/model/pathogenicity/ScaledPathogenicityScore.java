@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
 
 import java.util.Objects;
@@ -26,7 +27,7 @@ import java.util.Objects;
  * pathogenic and 1 to be highly pathogenic. Examples of this are CADD, SIFT and MPC.
  *
  * @since 12.0.0
- * @author Jules Jacobsen
+ * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 class ScaledPathogenicityScore extends BasePathogenicityScore {
 

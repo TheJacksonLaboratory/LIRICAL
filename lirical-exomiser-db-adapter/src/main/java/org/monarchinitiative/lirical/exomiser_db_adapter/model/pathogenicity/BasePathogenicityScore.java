@@ -17,13 +17,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
 
 import java.util.Objects;
 
 /**
  * @since 7.0.0
- * @author Jules Jacobsen
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 class BasePathogenicityScore implements PathogenicityScore {
 

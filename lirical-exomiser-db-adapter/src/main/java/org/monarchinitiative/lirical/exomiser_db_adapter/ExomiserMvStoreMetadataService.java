@@ -10,88 +10,98 @@ import org.monarchinitiative.lirical.core.model.VariantMetadata;
 import org.monarchinitiative.lirical.core.service.VariantMetadataService;
 import org.monarchinitiative.lirical.exomiser_db_adapter.model.AlleleProtoAdaptor;
 import org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency.FrequencyData;
-import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity.VariantEffectPathogenicityScore;
-import org.monarchinitiative.svart.CoordinateSystem;
 import org.monarchinitiative.svart.GenomicVariant;
-import org.monarchinitiative.svart.Strand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 class ExomiserMvStoreMetadataService implements VariantMetadataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExomiserMvStoreMetadataService.class);
 
-    // Note: Repeated retrieval of AlleleProperties from MVMap will hopefully not pose a huge performance issue
-    // since MVMap uses caching (16MB, 16 segments) by default.
-    /**
-     * Cache size in MB.
-     */
-    private static final int CACHE_SIZE = 16;
-
-    private static MVStore store;
+    /** A map with pathogenicity scores and population frequencies for alleles sourced from the Exomiser database. */
+    private final Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap;
+    /** A map with Clinvar data for alleles sourced from the Exomiser database. */
+    private final Map<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinvarMap;
 
     /**
-     * A map with data from the Exomiser database.
+     * @deprecated {@link MVStore} should be closed, but we cannot reasonably close it
+     * if we construct the metadata service by this method.
+     * Use either {@link #of(Map, Map)} or {@link ExomiserMvStoreMetadataServiceFactory} instead.
      */
-    private final MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap;
-
+    @Deprecated(forRemoval = true, since = "2.0.3")
     public static ExomiserMvStoreMetadataService of(Path mvStore) {
-        if (store == null) {
-            store = new MVStore.Builder()
-                    .fileName(mvStore.toAbsolutePath().toString())
-                    .readOnly()
-                    .open();
-            store.setCacheSize(CACHE_SIZE);
-        }
+        MVStore alleleMvStore = new MVStore.Builder()
+            .fileName(mvStore.toAbsolutePath().toString())
+            .readOnly()
+            .open();
+        alleleMvStore.setCacheSize(ExomiserMvStoreMetadataServiceFactory.CACHE_SIZE);
 
-        return new ExomiserMvStoreMetadataService(store);
+        MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap = MvStoreUtil.openAlleleMVMap(alleleMvStore);
+        Map<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinvarMap = Map.of();
+        return new ExomiserMvStoreMetadataService(alleleMap, clinvarMap);
     }
 
-    private ExomiserMvStoreMetadataService(MVStore mvStore) {
-        this.alleleMap = MvStoreUtil.openAlleleMVMap(mvStore);
+    static ExomiserMvStoreMetadataService of(
+            Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap,
+            Map<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinvarMap
+    ) {
+        return new ExomiserMvStoreMetadataService(alleleMap, clinvarMap);
+    }
+
+    private ExomiserMvStoreMetadataService(
+            Map<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMap,
+            Map<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinvarMap
+    ) {
+        this.alleleMap = Objects.requireNonNull(alleleMap);
+        this.clinvarMap = Objects.requireNonNull(clinvarMap);
     }
 
     @Override
     public VariantMetadata metadata(GenomicVariant variant, List<VariantEffect> effects) {
-        AlleleProto.AlleleProperties alleleProp = getAlleleProperties(variant);
+        AlleleProto.AlleleKey alleleKey = AlleleUtil.createAlleleKey(variant);
+        AlleleProto.AlleleProperties alleleProp = alleleMap.get(alleleKey);
 
+        // Pathogenicity and frequency
         float frequency;
         float pathogenicity;
-        ClinVarAlleleData clinVarAlleleData;
-
         if (alleleProp == null) {
             frequency = DEFAULT_FREQUENCY;
             pathogenicity = effects.stream()
-                    .map(VariantEffectPathogenicityScore::getPathogenicityScoreOf)
+                    .map(VariantEffectPathogenicityScore::pathogenicityScoreOf)
                     .max(Float::compareTo)
                     .orElse(0f);
-            clinVarAlleleData = null;
         } else {
             FrequencyData frequencyData = AlleleProtoAdaptor.toFrequencyData(alleleProp);
-            frequency = frequencyData.getMaxFreq();
+            frequency = frequencyData.maxFreq();
 
             PathogenicityData pathogenicityData = AlleleProtoAdaptor.toPathogenicityData(alleleProp);
             pathogenicity = calculatePathogenicity(effects, pathogenicityData);
-
-            clinVarAlleleData = processClinicalSignificance(pathogenicityData);
         }
 
-        
-        return VariantMetadata.of(frequency, pathogenicity, clinVarAlleleData);
+        // Clinvar data
+        AlleleProto.ClinVar clinVar = clinvarMap.get(alleleKey);
+        ClinVarAlleleData clinVarAlleleData;
+        if (clinVar == null) {
+            clinVarAlleleData = null;
+        } else {
+            clinVarAlleleData = processClinicalSignificance(clinVar);
+        }
 
+        return VariantMetadata.of(frequency, pathogenicity, clinVarAlleleData);
     }
 
-    private static ClinVarAlleleData processClinicalSignificance(PathogenicityData pathogenicityData) {
-        ClinvarClnSig clinvarClnSig;
-        ClinVarData cVarData = pathogenicityData.getClinVarData();
-        String alleleId = cVarData.getAlleleId();
+    private static ClinVarAlleleData processClinicalSignificance(AlleleProto.ClinVar cVarData) {
+        String alleleId = cVarData.getVariationId();
 
-        if (cVarData.getReviewStatus().startsWith("no_assertion")) {
+        ClinvarClnSig clinvarClnSig;
+        if (cVarData.getReviewStatus().equals(AlleleProto.ClinVar.ReviewStatus.NO_ASSERTION_PROVIDED)) {
             clinvarClnSig = ClinvarClnSig.NOT_PROVIDED;
         } else {
             clinvarClnSig = mapToClinvarClnSig(cVarData.getPrimaryInterpretation());
@@ -109,7 +119,7 @@ class ExomiserMvStoreMetadataService implements VariantMetadataService {
         }
     }
 
-    private static ClinvarClnSig mapToClinvarClnSig(ClinVarData.ClinSig primaryInterpretation) {
+    private static ClinvarClnSig mapToClinvarClnSig(AlleleProto.ClinVar.ClinSig primaryInterpretation) {
         return switch (primaryInterpretation) {
             case LIKELY_PATHOGENIC -> ClinvarClnSig.LIKELY_PATHOGENIC;
             case PATHOGENIC_OR_LIKELY_PATHOGENIC -> ClinvarClnSig.PATHOGENIC_OR_LIKELY_PATHOGENIC;
@@ -128,23 +138,9 @@ class ExomiserMvStoreMetadataService implements VariantMetadataService {
             case PROTECTIVE -> ClinvarClnSig.PROTECTIVE;
             case RISK_FACTOR -> ClinvarClnSig.RISK_FACTOR;
 
-            case OTHER -> ClinvarClnSig.OTHER;
+            case OTHER, UNRECOGNIZED -> ClinvarClnSig.OTHER;
             case NOT_PROVIDED -> ClinvarClnSig.NOT_PROVIDED;
         };
-    }
-
-    private AlleleProto.AlleleProperties getAlleleProperties(GenomicVariant variant) {
-        AlleleProto.AlleleKey alleleKey = createAlleleKey(variant);
-        return alleleMap.get(alleleKey);
-    }
-
-    private static AlleleProto.AlleleKey createAlleleKey(GenomicVariant variant) {
-        return AlleleProto.AlleleKey.newBuilder()
-                .setChr(variant.contigId())
-                .setPosition(variant.startOnStrandWithCoordinateSystem(Strand.POSITIVE, CoordinateSystem.oneBased()))
-                .setRef(variant.ref())
-                .setAlt(variant.alt())
-                .build();
     }
 
     /**
@@ -159,12 +155,12 @@ class ExomiserMvStoreMetadataService implements VariantMetadataService {
         float finalScore = 0f;
 
         for (VariantEffect effect : effects) {
-            float variantEffectPathogenicityScore = VariantEffectPathogenicityScore.getPathogenicityScoreOf(effect);
+            float variantEffectPathogenicityScore = VariantEffectPathogenicityScore.pathogenicityScoreOf(effect);
             float current;
             if (pathogenicityData.isEmpty())
                 current = variantEffectPathogenicityScore;
             else {
-                float predictedScore = pathogenicityData.getScore();
+                float predictedScore = pathogenicityData.pathogenicityScore();
                 current = switch (effect) {
                     case MISSENSE_VARIANT -> pathogenicityData.hasPredictedScore()
                             ? predictedScore
