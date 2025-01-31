@@ -26,6 +26,8 @@ import picocli.CommandLine;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +37,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiricalConfigurationCommand.class);
     protected static final String UNKNOWN_VERSION_PLACEHOLDER = "UNKNOWN VERSION";
+    private static final Pattern DISEASE_ID = Pattern.compile("^\\w+:\\w+$");
 
     // ---------------------------------------------- RESOURCES --------------------------------------------------------
     @CommandLine.ArgGroup(validate = false, heading = "Resource paths:%n")
@@ -96,6 +99,16 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         @CommandLine.Option(names = {"--use-orphanet"},
                 description = "Use Orphanet annotation data (default: ${DEFAULT-VALUE}).")
         public boolean useOrphanet = false;
+
+        @CommandLine.Option(names = {"--target-diseases"},
+                split = ",",
+                paramLabel = "disease",
+                description = {
+                    "Limit the analysis to the provided disease IDs. ",
+                    "(default: analyze all diseases)."
+                }
+        )
+        public List<String> targetDiseases= null;
 
         @CommandLine.Option(names = {"--strict"},
                 description = "Use strict penalties if the genotype does not match the disease model in terms " +
@@ -175,6 +188,16 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             errors.add(msg);
         }
 
+        if (runConfiguration.targetDiseases != null
+                && !runConfiguration.targetDiseases.stream()
+                .allMatch(DISEASE_ID.asMatchPredicate())) {
+            String failures = runConfiguration.targetDiseases.stream()
+                    .filter(Predicate.not(DISEASE_ID.asMatchPredicate()))
+                    .collect(Collectors.joining(","));
+            String msg = "One or more target disease IDs do not look like a compact URI: %s".formatted(failures);
+            errors.add(msg);
+        }
+
         return errors;
     }
 
@@ -233,6 +256,15 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         String usedDatabasesSummary = diseaseDatabases.stream().map(DiseaseDatabase::name).collect(Collectors.joining(", ", "[", "]"));
         LOGGER.debug("Using disease databases {}", usedDatabasesSummary);
         builder.setDiseaseDatabases(diseaseDatabases);
+
+        if (runConfiguration.targetDiseases != null) {
+            String usedDiseaseIds = runConfiguration.targetDiseases.stream().collect(Collectors.joining(", ", "[", "]"));
+            LOGGER.debug("Limiting the analysis to the following diseases: {}", usedDiseaseIds);
+            List<TermId> targetDiseases = runConfiguration.targetDiseases.stream()
+                    .map(TermId::of)
+                    .toList();
+            builder.setTargetDiseases(targetDiseases);
+        }
 
         // The rest..
         LOGGER.debug("Variants with pathogenicity score >{} are considered deleterious", runConfiguration.pathogenicityThreshold);
