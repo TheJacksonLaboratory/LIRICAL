@@ -4,6 +4,7 @@ import org.monarchinitiative.lirical.core.analysis.probability.PretestDiseasePro
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,14 @@ public interface AnalysisOptions {
      * @return evaluate the patient wrt. diseases from given source(s).
      */
     Set<DiseaseDatabase> diseaseDatabases();
+
+    /**
+     * Limit the analysis to specific diseases.
+     *
+     * @return a collection of disease IDs of the diseases of interest or {@code null}
+     * if <em>all</em> diseases should be tested.
+     */
+    Collection<TermId> targetDiseases();
 
     /**
      * @return threshold for determining if the variant is deleterious or not.
@@ -71,14 +80,16 @@ public interface AnalysisOptions {
 
     /**
      * A builder for {@link AnalysisOptions}.
+     * <p>
+     * The builder is <em>NOT</em> thread safe!
      */
     class Builder {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(Builder.class);
-
         private GenomeBuild genomeBuild = GenomeBuild.HG38;
         private TranscriptDatabase transcriptDatabase = TranscriptDatabase.REFSEQ;
         private final Set<DiseaseDatabase> diseaseDatabases = new HashSet<>(List.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER));
+        private Set<TermId> targetDiseases = null;  // null = test all diseases
         private float variantDeleteriousnessThreshold = .8f;
         private double defaultVariantBackgroundFrequency = .1;
         private boolean useStrictPenalties = false;
@@ -135,6 +146,42 @@ public interface AnalysisOptions {
             return this;
         }
 
+        public Builder clearTargetDiseases() {
+            if (this.targetDiseases != null)
+                this.targetDiseases.clear();
+            return this;
+        }
+
+        public Builder addTargetDiseases(TermId... diseaseIds) {
+            return addTargetDiseases(Arrays.asList(diseaseIds));
+        }
+
+        public Builder addTargetDiseases(Collection<TermId> diseaseIds) {
+            if (diseaseIds == null) {
+                LOGGER.warn("Target disease IDs must not be `null`!");
+                return this;
+            }
+
+            if (this.targetDiseases == null) this.targetDiseases = new HashSet<>();
+
+            this.targetDiseases.addAll(diseaseIds);
+
+            return this;
+        }
+
+        public Builder setTargetDiseases(Collection<TermId> diseaseIds) {
+            if (diseaseIds == null) {
+                LOGGER.warn("Target disease IDs must not be `null`!");
+                return this;
+            }
+
+            if (this.targetDiseases == null) this.targetDiseases = new HashSet<>();
+
+            this.targetDiseases.clear();
+            this.targetDiseases.addAll(diseaseIds);
+            return this;
+        }
+
         public Builder variantDeleteriousnessThreshold(float variantDeleteriousnessThreshold) {
             this.variantDeleteriousnessThreshold = variantDeleteriousnessThreshold;
             return this;
@@ -169,6 +216,7 @@ public interface AnalysisOptions {
             return new AnalysisOptionsDefault(genomeBuild,
                     transcriptDatabase,
                     diseaseDatabases,
+                    targetDiseases,
                     variantDeleteriousnessThreshold,
                     defaultVariantBackgroundFrequency,
                     useStrictPenalties,
