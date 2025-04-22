@@ -14,6 +14,7 @@ import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.model.LiricalVariant;
 import org.monarchinitiative.lirical.core.model.TranscriptDatabase;
 import org.monarchinitiative.lirical.core.sanitize.*;
+import org.monarchinitiative.lirical.exomiser_db_adapter.ExomiserResources;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.background.CustomBackgroundVariantFrequencyServiceFactory;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
@@ -27,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,8 @@ import java.util.stream.Collectors;
 abstract class LiricalConfigurationCommand extends BaseCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiricalConfigurationCommand.class);
+    private static final Pattern EXOMISER_VARIANT_DB = Pattern.compile("(?<date>\\d{4})_(?<build>(hg19|hg38))_variants\\.mv\\.db", Pattern.CASE_INSENSITIVE);
+    private static final Pattern EXOMISER_CLINVAR_DB = Pattern.compile("(?<date>\\d{4})_(?<build>(hg19|hg38))_clinvar\\.mv\\.db", Pattern.CASE_INSENSITIVE);
     protected static final String UNKNOWN_VERSION_PLACEHOLDER = "UNKNOWN VERSION";
     private static final Pattern DISEASE_ID = Pattern.compile("^\\w+:\\w+$");
 
@@ -49,23 +53,39 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 description = "Path to Lirical data directory.")
         public Path liricalDataDirectory = null;
 
-        @CommandLine.Option(names = {"-e19", "--exomiser-hg19"},
+        @CommandLine.Option(names = {"-ed19", "--exomiser-hg19-dir"},
+                description = "Path to the Exomiser data directory for hg19.")
+        public Path exomiserHg19DataDirectory = null;
+
+        @CommandLine.Option(names = {"-e19", "--exomiser-hg19", "--exomiser-hg19-variants"},
                 description = "Path to the Exomiser variant database for hg19.")
         public Path exomiserHg19Database = null;
 
-        @CommandLine.Option(names = {"-e38", "--exomiser-hg38"},
+        @CommandLine.Option(names = {"-c19", "--exomiser-hg19-clinvar"},
+                description = "Path to the Exomiser ClinVar database for hg19.")
+        public Path exomiserHg19ClinVarDatabase = null;
+
+        @CommandLine.Option(names = {"-ed38", "--exomiser-hg38-dir"},
+                description = "Path to the Exomiser data directory for hg38.")
+        public Path exomiserHg38DataDirectory = null;
+
+        @CommandLine.Option(names = {"-e38", "--exomiser-hg38", "--exomiser-hg38-variants"},
                 description = "Path to the Exomiser variant database for hg38.")
         public Path exomiserHg38Database = null;
+
+        @CommandLine.Option(names = {"-c38", "--exomiser-hg38-clinvar"},
+                description = "Path to the Exomiser ClinVar database for hg38.")
+        public Path exomiserHg38ClinVarDatabase = null;
 
         @CommandLine.Option(names = {"-b", "--background"},
                 description = "Path to non-default background frequency file.")
         public Path backgroundFrequencyFile = null;
 
         @CommandLine.Option(names = "--parallelism",
-        description = {
-                "The number of workers/threads to use.",
-                "The value must be a positive integer.",
-                "Default: ${DEFAULT-VALUE}"})
+                description = {
+                        "The number of workers/threads to use.",
+                        "The value must be a positive integer.",
+                        "Default: ${DEFAULT-VALUE}"})
         public int parallelism = 1;
     }
 
@@ -85,7 +105,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
 
         @CommandLine.Option(names = {"--sdwndv"},
                 description = {
-                "Include diseases even if no deleterious variants are found in the gene associated with the disease.",
+                        "Include diseases even if no deleterious variants are found in the gene associated with the disease.",
                         "Only applicable to the HTML report when running with a VCF file (genotype-aware mode).",
                         "(default: ${DEFAULT-VALUE})"
                 })
@@ -117,7 +137,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
 
         @CommandLine.Option(names = {"--variant-background-frequency"},
                 description = {
-                "Default frequency of called-pathogenic variants in the general population (gnomAD).",
+                        "Default frequency of called-pathogenic variants in the general population (gnomAD).",
                         "In the vast majority of cases, we can derive this information from gnomAD.",
                         "This constant is used if for whatever reason, data was not available for a gene.",
                         "(default: ${DEFAULT-VALUE})."})
@@ -132,7 +152,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 description = {"Validation policy for the analysis", "(default: ${DEFAULT-VALUE})."})
         public ValidationPolicy validationPolicy = ValidationPolicy.MINIMAL;
 
-        @CommandLine.Option(names ={"--dry-run"},
+        @CommandLine.Option(names = {"--dry-run"},
                 description = {
                         "Validate the input, report potential issues, and exit without running the analysis.",
                         "(default ${DEFAULT-VALUE})"
@@ -141,7 +161,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
     }
 
     protected List<String> checkInput() {
-        List<String> errors = new LinkedList<>();
+        List<String> errors = new ArrayList<>();
 
         Path codeHomeParent = codeHomeDir();
         // resources
@@ -166,18 +186,20 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             String msg = "Genome build must be set";
             errors.add(msg);
         } else {
-            // Check Exomiser db seem to match the genome build.
+            // Check Exomiser resources match the genome build.
             switch (genomeBuild.get()) {
                 case HG19 -> {
-                    if (dataSection.exomiserHg19Database == null && dataSection.exomiserHg38Database != null) {
-                        String msg = "Genome build set to %s but Exomiser variant database is set for %s: %s".formatted(GenomeBuild.HG19, GenomeBuild.HG38, dataSection.exomiserHg38Database.toAbsolutePath());
-                        errors.add(msg);
+                    if (dataSection.exomiserHg19DataDirectory == null
+                            && (dataSection.exomiserHg19Database == null || dataSection.exomiserHg19ClinVarDatabase == null)
+                    ) {
+                        errors.add("Genome build set to HG19 but Exomiser resources are unset");
                     }
                 }
                 case HG38 -> {
-                    if (dataSection.exomiserHg38Database == null && dataSection.exomiserHg19Database != null) {
-                        String msg = "Genome build set to %s but Exomiser variant database is set for %s: %s".formatted(GenomeBuild.HG38, GenomeBuild.HG19, dataSection.exomiserHg19Database.toAbsolutePath());
-                        errors.add(msg);
+                    if (dataSection.exomiserHg38DataDirectory == null
+                            && (dataSection.exomiserHg38Database == null || dataSection.exomiserHg38ClinVarDatabase == null)
+                    ) {
+                        errors.add("Genome build set to HG38 but Exomiser resources are unset");
                     }
                 }
             }
@@ -207,17 +229,24 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
     protected Lirical bootstrapLirical(GenomeBuild genomeBuild) throws LiricalDataException {
         LiricalBuilder builder = LiricalBuilder.builder(dataSection.liricalDataDirectory);
 
-        switch (genomeBuild) {
-            case HG19 -> {
-                if (dataSection.exomiserHg19Database != null)
-                    builder.exomiserVariantDbPath(GenomeBuild.HG19, dataSection.exomiserHg19Database);
-            }
-            case HG38 -> {
-                if (dataSection.exomiserHg38Database != null)
-                    builder.exomiserVariantDbPath(GenomeBuild.HG38, dataSection.exomiserHg38Database);
-            }
-        }
+        // Deal with Exomiser resources.
+        ExomiserResources resources = switch (genomeBuild) {
+            case HG19 -> loadExomiserResources(
+                    GenomeBuild.HG19,
+                    dataSection.exomiserHg19DataDirectory,
+                    dataSection.exomiserHg19Database,
+                    dataSection.exomiserHg19ClinVarDatabase
+            );
+            case HG38 -> loadExomiserResources(
+                    GenomeBuild.HG38,
+                    dataSection.exomiserHg38DataDirectory,
+                    dataSection.exomiserHg38Database,
+                    dataSection.exomiserHg38ClinVarDatabase
+            );
+        };
+        builder.exomiserResources(genomeBuild, resources);
 
+        // Background variant frequencies
         if (dataSection.backgroundFrequencyFile != null) {
             LOGGER.debug("Using custom deleterious variant background frequency file at {} for {}",
                     dataSection.backgroundFrequencyFile.toAbsolutePath(),
@@ -230,6 +259,114 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         return builder.shouldLoadOrpha2Gene(runConfiguration.useOrphanet)
                 .parallelism(dataSection.parallelism)
                 .build();
+    }
+
+    /**
+     * Parse paths to Exomiser data directory, Exomiser allele database, and Exomiser ClinVar database into
+     * {@link ExomiserResources} for a provided {@code genomeBuild}.
+     *
+     * @param genomeBuild                 a desired genome build.
+     * @param exomiserDataDirectory       path to directory with Exomiser allele and ClinVar database files.
+     * @param exomiserAlleleDatabasePath  path to Exomiser allele database file.
+     * @param exomiserClinVarDatabasePath path to Exomiser ClinVar database file.
+     * @throws LiricalDataException if one or both database paths are <code>null</code> or do not point to readable file.
+     */
+    private static ExomiserResources loadExomiserResources(
+            GenomeBuild genomeBuild,
+            Path exomiserDataDirectory,
+            Path exomiserAlleleDatabasePath,
+            Path exomiserClinVarDatabasePath
+    ) throws LiricalDataException {
+        // At the end of the function, we need to possess path to allele DB and ClinVar DB files.
+        //
+        Path exomiserAlleleDb = null;
+        Path exomiserClinVarDb = null;
+        if (exomiserDataDirectory != null) {
+            if (Files.isDirectory(exomiserDataDirectory)) {
+                LOGGER.debug("Using exomiser data directory at {}", exomiserDataDirectory.toAbsolutePath());
+
+                // We check that the path is a directory, hence no inspection.
+                // This can still fail in case of an IO error.
+                //noinspection DataFlowIssue
+                for (String file : exomiserDataDirectory.toFile().list()) {
+                    Matcher alleleMatcher = EXOMISER_VARIANT_DB.matcher(file);
+                    if (alleleMatcher.matches()) {
+                        Path path = exomiserDataDirectory.resolve(file);
+
+                        String build = alleleMatcher.group("build");
+                        if (!genomeBuild.name().equalsIgnoreCase(build)) {
+                            LOGGER.warn(
+                                    "Genome build {} is in use but Exomiser variant database seems to be for {}: {}",
+                                    genomeBuild, build, path.toAbsolutePath()
+                            );
+                        }
+                        LOGGER.debug("Using Exomiser variant database at {}", path.toAbsolutePath());
+                        exomiserAlleleDb = path;
+                        continue;
+                    }
+
+                    Matcher clinvarMatcher = EXOMISER_CLINVAR_DB.matcher(file);
+                    if (clinvarMatcher.matches()) {
+                        Path path = exomiserDataDirectory.resolve(file);
+                        String build = clinvarMatcher.group("build");
+                        if (!genomeBuild.name().equalsIgnoreCase(build)) {
+                            LOGGER.warn(
+                                    "Genome build {} is in use but Exomiser ClinVar database seems to be for {}: {}",
+                                    genomeBuild, build, path.toAbsolutePath()
+                            );
+                        }
+                        LOGGER.debug("Using Exomiser ClinVar database at {}", path.toAbsolutePath());
+                        exomiserClinVarDb = path;
+                    }
+
+                    if (exomiserAlleleDb != null && exomiserClinVarDb != null)
+                        // We found both allele and ClinVar database files
+                        break;
+                }
+            }
+        }
+
+        // Providing explicit database paths overrides paths from the Exomiser data directory
+        if (exomiserAlleleDatabasePath != null) {
+            if (exomiserAlleleDb != null) {
+                LOGGER.debug("Using {} instead of {} due to CLI option override",
+                        exomiserAlleleDatabasePath.toAbsolutePath(), exomiserAlleleDb);
+            } else {
+                LOGGER.debug("Using Exomiser variant database at {}", exomiserAlleleDatabasePath.toAbsolutePath());
+            }
+            exomiserAlleleDb = exomiserAlleleDatabasePath;
+        }
+        if (exomiserClinVarDatabasePath != null) {
+            if (exomiserClinVarDb != null) {
+                LOGGER.debug("Using {} instead of {} due to CLI option override",
+                        exomiserClinVarDatabasePath.toAbsolutePath(), exomiserAlleleDb);
+            } else {
+                LOGGER.debug("Using exomiser ClinVar database at {}", exomiserClinVarDatabasePath.toAbsolutePath());
+            }
+            exomiserClinVarDb = exomiserClinVarDatabasePath;
+        }
+
+        // Ensure paths point to readable files or complain otherwise.
+        if ((exomiserAlleleDb != null && Files.isReadable(exomiserAlleleDb)) && (exomiserClinVarDb != null && Files.isReadable(exomiserClinVarDb))) {
+            return new ExomiserResources(exomiserAlleleDb, exomiserClinVarDb);
+        } else {
+            StringBuilder builder = new StringBuilder("Exomiser database files for ")
+                    .append(genomeBuild)
+                    .append(" are misconfigured.");
+            if (exomiserAlleleDb == null)
+                builder.append(" Allele database was not provided.");
+            else {
+                if (!Files.isReadable(exomiserAlleleDb))
+                    builder.append(" Allele database at ").append(exomiserAlleleDb).append(" is not readable.");
+            }
+            if (exomiserClinVarDb == null)
+                builder.append("ClinVar database was not provided. ");
+            else {
+                if (!Files.isReadable(exomiserClinVarDb))
+                    builder.append(" ClinVar database at ").append(exomiserClinVarDb).append(" is not readable.");
+            }
+            throw new LiricalDataException(builder.toString());
+        }
     }
 
     protected abstract String getGenomeBuild();
@@ -341,7 +478,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
      * {@code null}, we can only accept a single-sample VCF, mainly as a convenience.
      *
      * @throws LiricalParseException if the VCF includes no sample data, the sample is not present,
-     * or it is a multi-sample file and the sample ID is unset.
+     *                               or it is a multi-sample file and the sample ID is unset.
      */
     private static String validateSampleId(String sampleId,
                                            Path vcfPath,

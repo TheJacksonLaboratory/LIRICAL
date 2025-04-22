@@ -17,15 +17,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
 
 /**
  * PolyPhen (polymorphism phenotyping) score.
- *
- * <a href="http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2855889/?report=classic">Manuscript</a>,
- * <a href="http://genetics.bwh.harvard.edu/pph2/">resource</a>.
  * 
- * @author Jules Jacobsen
+ * @link http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2855889/?report=classic
+ * @link http://genetics.bwh.harvard.edu/pph2/
+ * 
+ * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public class PolyPhenScore extends BasePathogenicityScore {
     
