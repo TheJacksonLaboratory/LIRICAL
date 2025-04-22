@@ -62,8 +62,8 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         public Path exomiserHg19Database = null;
 
         @CommandLine.Option(names = {"-c19", "--exomiser-hg19-clinvar"},
-                description = "Path to the Exomiser clinvar database for hg19.")
-        public Path exomiserHg19ClinvarDatabase = null;
+                description = "Path to the Exomiser ClinVar database for hg19.")
+        public Path exomiserHg19ClinVarDatabase = null;
 
         @CommandLine.Option(names = {"-ed38", "--exomiser-hg38-dir"},
                 description = "Path to the Exomiser data directory for hg38.")
@@ -74,8 +74,8 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         public Path exomiserHg38Database = null;
 
         @CommandLine.Option(names = {"-c38", "--exomiser-hg38-clinvar"},
-                description = "Path to the Exomiser clinvar database for hg38.")
-        public Path exomiserHg38ClinvarDatabase = null;
+                description = "Path to the Exomiser ClinVar database for hg38.")
+        public Path exomiserHg38ClinVarDatabase = null;
 
         @CommandLine.Option(names = {"-b", "--background"},
                 description = "Path to non-default background frequency file.")
@@ -190,14 +190,14 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             switch (genomeBuild.get()) {
                 case HG19 -> {
                     if (dataSection.exomiserHg19DataDirectory == null
-                            && (dataSection.exomiserHg19Database == null || dataSection.exomiserHg19ClinvarDatabase == null)
+                            && (dataSection.exomiserHg19Database == null || dataSection.exomiserHg19ClinVarDatabase == null)
                     ) {
                         errors.add("Genome build set to HG19 but Exomiser resources are unset");
                     }
                 }
                 case HG38 -> {
                     if (dataSection.exomiserHg38DataDirectory == null
-                            && (dataSection.exomiserHg38Database == null || dataSection.exomiserHg38ClinvarDatabase == null)
+                            && (dataSection.exomiserHg38Database == null || dataSection.exomiserHg38ClinVarDatabase == null)
                     ) {
                         errors.add("Genome build set to HG38 but Exomiser resources are unset");
                     }
@@ -229,13 +229,21 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
     protected Lirical bootstrapLirical(GenomeBuild genomeBuild) throws LiricalDataException {
         LiricalBuilder builder = LiricalBuilder.builder(dataSection.liricalDataDirectory);
 
-        // Deal with Exomiser resources
-        ExomiserResources resources = loadExomiserResources(
-                genomeBuild,
-                dataSection.exomiserHg19DataDirectory,
-                dataSection.exomiserHg19Database,
-                dataSection.exomiserHg19ClinvarDatabase
-        );
+        // Deal with Exomiser resources.
+        ExomiserResources resources = switch (genomeBuild) {
+            case HG19 -> loadExomiserResources(
+                    GenomeBuild.HG19,
+                    dataSection.exomiserHg19DataDirectory,
+                    dataSection.exomiserHg19Database,
+                    dataSection.exomiserHg19ClinVarDatabase
+            );
+            case HG38 -> loadExomiserResources(
+                    GenomeBuild.HG38,
+                    dataSection.exomiserHg38DataDirectory,
+                    dataSection.exomiserHg38Database,
+                    dataSection.exomiserHg38ClinVarDatabase
+            );
+        };
         builder.exomiserResources(genomeBuild, resources);
 
         // Background variant frequencies
@@ -252,16 +260,26 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 .build();
     }
 
+    /**
+     * Parse paths to Exomiser data directory, Exomiser allele database, and Exomiser ClinVar database into
+     * {@link ExomiserResources} for a provided {@code genomeBuild}.
+     *
+     * @param genomeBuild                 a desired genome build.
+     * @param exomiserDataDirectory       path to directory with Exomiser allele and ClinVar database files.
+     * @param exomiserAlleleDatabasePath  path to Exomiser allele database file.
+     * @param exomiserClinVarDatabasePath path to Exomiser ClinVar database file.
+     * @throws LiricalDataException if one or both database paths are <code>null</code> or do not point to readable file.
+     */
     private static ExomiserResources loadExomiserResources(
             GenomeBuild genomeBuild,
             Path exomiserDataDirectory,
-            Path exoimserAlleleDatabasePath,
-            Path exomiserClinvarDatabasePath
-    ) {
-        // At the end of the function, we need to possess path to allele DB and Clinvar DB files.
+            Path exomiserAlleleDatabasePath,
+            Path exomiserClinVarDatabasePath
+    ) throws LiricalDataException {
+        // At the end of the function, we need to possess path to allele DB and ClinVar DB files.
         //
         Path exomiserAlleleDb = null;
-        Path exomiserClinvarDb = null;
+        Path exomiserClinVarDb = null;
         if (exomiserDataDirectory != null) {
             if (Files.isDirectory(exomiserDataDirectory)) {
                 LOGGER.debug("Using exomiser data directory at {}", exomiserDataDirectory.toAbsolutePath());
@@ -281,7 +299,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                                     genomeBuild, build, path.toAbsolutePath()
                             );
                         }
-                        LOGGER.debug("Using exomiser variant database at {}", path.toAbsolutePath());
+                        LOGGER.debug("Using Exomiser variant database at {}", path.toAbsolutePath());
                         exomiserAlleleDb = path;
                         continue;
                     }
@@ -292,42 +310,62 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                         String build = clinvarMatcher.group("build");
                         if (!genomeBuild.name().equalsIgnoreCase(build)) {
                             LOGGER.warn(
-                                    "Genome build {} is in use but Exomiser clinvar database seems to be for {}: {}",
+                                    "Genome build {} is in use but Exomiser ClinVar database seems to be for {}: {}",
                                     genomeBuild, build, path.toAbsolutePath()
                             );
                         }
-                        LOGGER.debug("Using exomiser clinvar database at {}", path.toAbsolutePath());
-                        exomiserClinvarDb = path;
+                        LOGGER.debug("Using Exomiser ClinVar database at {}", path.toAbsolutePath());
+                        exomiserClinVarDb = path;
                     }
 
-                    if (exomiserAlleleDb != null && exomiserClinvarDb != null)
-                        // We found both allele and clinvar database files
+                    if (exomiserAlleleDb != null && exomiserClinVarDb != null)
+                        // We found both allele and ClinVar database files
                         break;
                 }
             }
         }
 
         // Providing explicit database paths overrides paths from the Exomiser data directory
-        if (exoimserAlleleDatabasePath != null) {
+        if (exomiserAlleleDatabasePath != null) {
             if (exomiserAlleleDb != null) {
                 LOGGER.debug("Using {} instead of {} due to CLI option override",
-                        exoimserAlleleDatabasePath.toAbsolutePath(), exomiserAlleleDb);
+                        exomiserAlleleDatabasePath.toAbsolutePath(), exomiserAlleleDb);
             } else {
-                LOGGER.debug("Using exomiser variant database at {}", exoimserAlleleDatabasePath.toAbsolutePath());
+                LOGGER.debug("Using Exomiser variant database at {}", exomiserAlleleDatabasePath.toAbsolutePath());
             }
-            exomiserAlleleDb = exoimserAlleleDatabasePath;
+            exomiserAlleleDb = exomiserAlleleDatabasePath;
         }
-        if (exomiserClinvarDatabasePath != null) {
-            if (exomiserClinvarDb != null) {
+        if (exomiserClinVarDatabasePath != null) {
+            if (exomiserClinVarDb != null) {
                 LOGGER.debug("Using {} instead of {} due to CLI option override",
-                        exomiserClinvarDatabasePath.toAbsolutePath(), exomiserAlleleDb);
+                        exomiserClinVarDatabasePath.toAbsolutePath(), exomiserAlleleDb);
             } else {
-                LOGGER.debug("Using exomiser clinvar database at {}", exomiserClinvarDatabasePath.toAbsolutePath());
+                LOGGER.debug("Using exomiser ClinVar database at {}", exomiserClinVarDatabasePath.toAbsolutePath());
             }
-            exomiserClinvarDb = exomiserClinvarDatabasePath;
+            exomiserClinVarDb = exomiserClinVarDatabasePath;
         }
 
-        return new ExomiserResources(exomiserAlleleDb, exomiserClinvarDb);
+        // Ensure paths point to readable files or complain otherwise.
+        if ((exomiserAlleleDb != null && Files.isReadable(exomiserAlleleDb)) && (exomiserClinVarDb != null && Files.isReadable(exomiserClinVarDb))) {
+            return new ExomiserResources(exomiserAlleleDb, exomiserClinVarDb);
+        } else {
+            StringBuilder builder = new StringBuilder("Exomiser database files for ")
+                    .append(genomeBuild)
+                    .append(" are misconfigured.");
+            if (exomiserAlleleDb == null)
+                builder.append(" Allele database was not provided.");
+            else {
+                if (!Files.isReadable(exomiserAlleleDb))
+                    builder.append(" Allele database at ").append(exomiserAlleleDb).append(" is not readable.");
+            }
+            if (exomiserClinVarDb == null)
+                builder.append("ClinVar database was not provided. ");
+            else {
+                if (!Files.isReadable(exomiserClinVarDb))
+                    builder.append(" ClinVar database at ").append(exomiserClinVarDb).append(" is not readable.");
+            }
+            throw new LiricalDataException(builder.toString());
+        }
     }
 
     protected abstract String getGenomeBuild();
