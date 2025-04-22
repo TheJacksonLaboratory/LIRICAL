@@ -44,6 +44,7 @@ public class DownloadCommand extends BaseCommand {
                     .overwrite(overwrite)
                     .hpoJson()
                     .hpDiseaseAnnotations()
+                    .orphaToGene()
                     .hgnc()
                     .medgene2MIM()
                     // Jannovar v0.35 transcript databases

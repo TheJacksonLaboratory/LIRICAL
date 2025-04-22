@@ -3,17 +3,21 @@ package org.monarchinitiative.lirical.configuration;
 import org.monarchinitiative.lirical.configuration.impl.BundledBackgroundVariantFrequencyServiceFactory;
 import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.LiricalOptions;
+import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.output.AnalysisResultWriterFactory;
-import org.monarchinitiative.lirical.core.service.*;
+import org.monarchinitiative.lirical.core.service.BackgroundVariantFrequencyServiceFactory;
+import org.monarchinitiative.lirical.core.service.FunctionalVariantAnnotatorService;
+import org.monarchinitiative.lirical.core.service.PhenotypeService;
+import org.monarchinitiative.lirical.core.service.VariantMetadataServiceFactory;
 import org.monarchinitiative.lirical.exomiser_db_adapter.ExomiserMvStoreMetadataServiceFactory;
 import org.monarchinitiative.lirical.exomiser_db_adapter.ExomiserResources;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.LiricalDataResolver;
-import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.lirical.io.service.JannovarFunctionalVariantAnnotatorService;
 import org.monarchinitiative.lirical.io.vcf.VcfVariantParserFactory;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationData;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoAssociationDataBuilder;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
@@ -23,21 +27,33 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Build {@link Lirical} from provided resources.
+ * <p>
+ * The builder needs path to LIRICAL data directory (see {@link LiricalDataResolver} for more info)
+ * and that is enough for building {@link Lirical} with default settings.
+ * <p>
+ * Alternatively, a high-level LIRICAL's components can be provided via builder methods.
+ * <p>
+ * If {@link #shouldLoadOrpha2Gene(boolean)} is set, the builder will throw an exception
+ * if the Orpha 2 gene mapping file is missing in the data directory.
+ */
 public class LiricalBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiricalBuilder.class);
     private static final Properties PROPERTIES = readProperties();
     private static final String LIRICAL_VERSION = PROPERTIES.getProperty("lirical.version", "UNKNOWN VERSION");
 
-    private final Path dataDirectory;
     private final LiricalDataResolver liricalDataResolver;
     private final Map<GenomeBuild, ExomiserResources> exomiserResources = new HashMap<>(2);
     private PhenotypeService phenotypeService = null;
     private BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory = null;
+    private boolean shouldLoadOrpha2Gene = false;
 
     private VariantMetadataServiceFactory variantMetadataServiceFactory = null;
     private FunctionalVariantAnnotatorService functionalVariantAnnotatorService = null;
@@ -49,8 +65,7 @@ public class LiricalBuilder {
     }
 
     private LiricalBuilder(Path dataDirectory) throws LiricalDataException {
-        this.dataDirectory = Objects.requireNonNull(dataDirectory);
-        this.liricalDataResolver = LiricalDataResolver.of(dataDirectory);
+        this.liricalDataResolver = LiricalDataResolver.of(Objects.requireNonNull(dataDirectory));
     }
 
     /**
@@ -105,6 +120,11 @@ public class LiricalBuilder {
         return this;
     }
 
+    public LiricalBuilder shouldLoadOrpha2Gene(boolean value) {
+        this.shouldLoadOrpha2Gene = value;
+        return this;
+    }
+
     /**
      * Set the number threads/workers in the LIRICAL worker pool.
      */
@@ -116,10 +136,16 @@ public class LiricalBuilder {
     }
 
     public Lirical build() throws LiricalDataException {
-        // First, services
         if (phenotypeService == null) {
-            HpoDiseaseLoaderOptions diseaseLoaderOptions = HpoDiseaseLoaderOptions.of(DiseaseDatabase.allKnownDiseaseDatabases(), true, HpoDiseaseLoaderOptions.DEFAULT_COHORT_SIZE);
-            phenotypeService = configurePhenotypeService(dataDirectory, diseaseLoaderOptions);
+            Set<DiseaseDatabase> databases;
+            if (shouldLoadOrpha2Gene) {
+                databases = Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER, DiseaseDatabase.ORPHANET);
+            } else {
+                databases = Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER);
+            }
+
+            HpoDiseaseLoaderOptions diseaseLoaderOptions = HpoDiseaseLoaderOptions.of(databases, true, HpoDiseaseLoaderOptions.DEFAULT_COHORT_SIZE);
+            phenotypeService = configurePhenotypeService(diseaseLoaderOptions);
         }
 
         if (backgroundVariantFrequencyServiceFactory == null) {
@@ -168,13 +194,21 @@ public class LiricalBuilder {
                 options);
     }
 
-    private static PhenotypeService configurePhenotypeService(Path dataDirectory, HpoDiseaseLoaderOptions options) throws LiricalDataException {
-        LiricalDataResolver liricalDataResolver = LiricalDataResolver.of(dataDirectory);
+    private PhenotypeService configurePhenotypeService(HpoDiseaseLoaderOptions options) throws LiricalDataException {
         MinimalOntology hpo = LoadUtils.loadOntology(liricalDataResolver.hpoJson());
         HpoDiseases diseases = LoadUtils.loadHpoDiseases(liricalDataResolver.phenotypeAnnotations(), hpo, options);
-        HpoAssociationData associationData = HpoAssociationData.builder(hpo)
+        HpoAssociationDataBuilder builder = HpoAssociationData.builder(hpo)
                 .hgncCompleteSetArchive(liricalDataResolver.hgncCompleteSet())
-                .mim2GeneMedgen(liricalDataResolver.mim2geneMedgen())
+                .mim2GeneMedgen(liricalDataResolver.mim2geneMedgen());
+        if (shouldLoadOrpha2Gene) {
+            // Ensure we have Orpha2gene file if we need it.
+            if (!Files.isReadable(liricalDataResolver.orpha2gene())) {
+                throw new LiricalDataException("Missing Orpha to gene mapping file");
+            } else {
+                builder.orphaToGenePath(liricalDataResolver.orpha2gene());
+            }
+        }
+        HpoAssociationData associationData = builder
                 .hpoDiseases(diseases)
                 .build();
         return PhenotypeService.of(hpo, diseases, associationData);
