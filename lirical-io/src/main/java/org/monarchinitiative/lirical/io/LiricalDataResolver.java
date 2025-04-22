@@ -29,6 +29,7 @@ public class LiricalDataResolver {
         boolean error = false;
         List<Path> requiredFiles = List.of(hpoJson(), hgncCompleteSet(), mim2geneMedgen(), phenotypeAnnotations(),
                 hg19RefseqTxDatabase(), hg19UcscTxDatabase(), hg38RefseqTxDatabase(), hg38UcscTxDatabase());
+        // Note: we do not require `orpha2gene` in all analyses, hence it is not required!
         for (Path file : requiredFiles) {
             if (!Files.isRegularFile(file)) {
                 LOGGER.error("Missing required file `{}` in `{}`.", file.toFile().getName(), dataDirectory.toAbsolutePath());
@@ -46,6 +47,10 @@ public class LiricalDataResolver {
 
     public Path hpoJson() {
         return dataDirectory.resolve("hp.json");
+    }
+
+    public Path orpha2gene() {
+        return dataDirectory.resolve("en_product6.xml");
     }
 
     public Path hgncCompleteSet() {

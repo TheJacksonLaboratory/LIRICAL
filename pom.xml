@@ -147,7 +147,7 @@
             <dependency>
                 <groupId>org.monarchinitiative.biodownload</groupId>
                 <artifactId>biodownload</artifactId>
-                <version>[1.1.1,2.0.0)</version>
+                <version>[1.1.2,2.0.0)</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
