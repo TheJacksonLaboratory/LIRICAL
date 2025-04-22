@@ -10,6 +10,21 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * A convenience class for accessing resources from LIRICAL data directory.
+ * <p>
+ * The resource files include:
+ * <ul>
+ *     <li>HPO in JSON format (<em>hp.json</em>)</li>
+ *     <li>HPO annotations (<em>phenotype.hpoa</em>)</li>
+ *     <li>HGNC complete set - a table with gene identifiers, symbols, and other metadata (<em>hgnc_complete_set.txt</em>)</li>
+ *     <li>MIM to medgene mapping file (<em>mim2gene_medgen</em>)</li>
+ *     <li>Orpha to gene mapping file (<em>en_product6.xml</em>). Optional</li>
+ *     <li>Jannovar caches (<em>hg(19|38)_(ucsc|refseq).ser</em>)</li>
+ * </ul>
+ * <p>
+ * The resolver checks if all non-optional files are present and will raise an exception otherwise.
+ */
 public class LiricalDataResolver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiricalDataResolver.class);

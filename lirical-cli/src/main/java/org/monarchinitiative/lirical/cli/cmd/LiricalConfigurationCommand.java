@@ -227,7 +227,8 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
             builder.backgroundVariantFrequencyServiceFactory(backgroundFreqFactory);
         }
 
-        return builder.parallelism(dataSection.parallelism)
+        return builder.shouldLoadOrpha2Gene(runConfiguration.useOrphanet)
+                .parallelism(dataSection.parallelism)
                 .build();
     }
 
