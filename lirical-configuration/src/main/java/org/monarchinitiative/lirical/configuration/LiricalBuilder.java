@@ -7,6 +7,7 @@ import org.monarchinitiative.lirical.core.model.GenomeBuild;
 import org.monarchinitiative.lirical.core.output.AnalysisResultWriterFactory;
 import org.monarchinitiative.lirical.core.service.*;
 import org.monarchinitiative.lirical.exomiser_db_adapter.ExomiserMvStoreMetadataServiceFactory;
+import org.monarchinitiative.lirical.exomiser_db_adapter.ExomiserResources;
 import org.monarchinitiative.lirical.io.LiricalDataException;
 import org.monarchinitiative.lirical.io.LiricalDataResolver;
 import org.monarchinitiative.lirical.core.io.VariantParserFactory;
@@ -34,7 +35,7 @@ public class LiricalBuilder {
 
     private final Path dataDirectory;
     private final LiricalDataResolver liricalDataResolver;
-    private final Map<GenomeBuild, Path> exomiserVariantDatabasePaths = new HashMap<>(2);
+    private final Map<GenomeBuild, ExomiserResources> exomiserResources = new HashMap<>(2);
     private PhenotypeService phenotypeService = null;
     private BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory = null;
 
@@ -54,14 +55,17 @@ public class LiricalBuilder {
 
     /**
      * Set path to exomiser variant database for given {@link GenomeBuild}.
+     *
+     * @deprecated use {@link #exomiserResources(GenomeBuild, ExomiserResources)} instead
      * @return the builder
      */
+    @Deprecated(forRemoval = true, since = "2.0.3")
     public LiricalBuilder exomiserVariantDbPath(GenomeBuild genomeBuild, Path exomiserVariantDatabase) {
         if (genomeBuild == null) {
             LOGGER.warn("Genome build must not be null: {}", exomiserVariantDatabase);
             return this;
         }
-        this.exomiserVariantDatabasePaths.put(genomeBuild, exomiserVariantDatabase);
+        this.exomiserResources.put(genomeBuild, new ExomiserResources(exomiserVariantDatabase, null));
         return this;
     }
 
@@ -70,7 +74,19 @@ public class LiricalBuilder {
             LOGGER.warn("Cannot clear database for null genome build!");
             return this;
         }
-        this.exomiserVariantDatabasePaths.remove(genomeBuild);
+        this.exomiserResources.remove(genomeBuild);
+        return this;
+    }
+
+    /**
+     * Add paths for Exomiser resources required to support the {@code genomeBuild}.
+     */
+    public LiricalBuilder exomiserResources(GenomeBuild genomeBuild, ExomiserResources resources) {
+        if (genomeBuild == null) {
+            LOGGER.warn("Genome build must not be null: {}", resources);
+            return this;
+        }
+        this.exomiserResources.put(genomeBuild, resources);
         return this;
     }
 
@@ -120,16 +136,16 @@ public class LiricalBuilder {
         VariantParserFactory variantParserFactory;
         if (this.variantMetadataServiceFactory == null) {
             LOGGER.debug("Variant metadata service is unset.");
-            if (exomiserVariantDatabasePaths.isEmpty()) {
-                LOGGER.debug("Path to Exomiser database is unset. Variants will not be annotated.");
+            if (exomiserResources.isEmpty()) {
+                LOGGER.debug("Exomiser resources are unset. Variants will not be annotated.");
                 this.variantMetadataServiceFactory = VariantMetadataServiceFactory.noOpFactory();
                 variantParserFactory = VariantParserFactory.noOpFactory();
             } else {
-                String summary = exomiserVariantDatabasePaths.entrySet().stream()
-                        .map(e -> "%s -> %s".formatted(e.getKey(), e.getValue().toAbsolutePath()))
+                String summary = exomiserResources.entrySet().stream()
+                        .map(e -> "%s -> alleles=%s, clinvar=%s".formatted(e.getKey(), e.getValue().exomiserAlleleDb(), e.getValue().exomiserClinvarDb()))
                         .collect(Collectors.joining(", ", "{", "}"));
                 LOGGER.debug("Using Exomiser variant databases: {}", summary);
-                this.variantMetadataServiceFactory = ExomiserMvStoreMetadataServiceFactory.of(exomiserVariantDatabasePaths);
+                this.variantMetadataServiceFactory = ExomiserMvStoreMetadataServiceFactory.fromResources(exomiserResources);
                 variantParserFactory = VcfVariantParserFactory.of(functionalVariantAnnotatorService, variantMetadataServiceFactory);
             }
         } else {
