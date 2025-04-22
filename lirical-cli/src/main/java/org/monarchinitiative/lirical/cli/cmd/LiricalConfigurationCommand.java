@@ -250,12 +250,15 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         builder.transcriptDatabase(transcriptDb);
 
         // Disease databases
-        Set<DiseaseDatabase> diseaseDatabases = runConfiguration.useOrphanet
-                ? DiseaseDatabase.allKnownDiseaseDatabases()
-                : Set.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER);
-        String usedDatabasesSummary = diseaseDatabases.stream().map(DiseaseDatabase::name).collect(Collectors.joining(", ", "[", "]"));
-        LOGGER.debug("Using disease databases {}", usedDatabasesSummary);
-        builder.setDiseaseDatabases(diseaseDatabases);
+        List<DiseaseDatabase> diseaseDatabases;
+        if (runConfiguration.useOrphanet) {
+            diseaseDatabases = List.of(DiseaseDatabase.OMIM, DiseaseDatabase.ORPHANET, DiseaseDatabase.DECIPHER);
+            LOGGER.debug("Using disease databases [{}, {}, {}]", DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER, DiseaseDatabase.ORPHANET);
+        } else {
+            diseaseDatabases = List.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER);
+            LOGGER.debug("Using disease databases [{}, {}]", DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER);
+        }
+        builder.addDiseaseDatabases(diseaseDatabases);
 
         if (runConfiguration.targetDiseases != null) {
             String usedDiseaseIds = runConfiguration.targetDiseases.stream().collect(Collectors.joining(", ", "[", "]"));
