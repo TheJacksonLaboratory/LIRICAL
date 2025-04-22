@@ -80,6 +80,10 @@ The configuration options tweak the analysis.
   The JSON report will include *all* diseases all the time.
 * ``--transcript-db``: transcript database (default: ``RefSeq``), see :ref:`rsttx-dbs` for more info.
 * ``--use-orphanet``: use `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>`_ annotations (default: ``false``).
+* ``--target-diseases``: limit the analysis to the provided disease IDs.
+  Expecting a comma-separated list of diseaes IDs, such as `OMIM:614102,OMIM:619340`.
+  The ``--use-orphanet`` option is ignored if at least one disease ID is provided.
+  All diseases are analyzed by default.
 * ``--strict``: use strict penalties if the genotype does not match the disease model
   in terms of number of called pathogenic alleles (default: ``false``).
 * ``--pathogenicity-threshold``: Variants with greater pathogenicity score is considered deleterious (default: ``0.8``).

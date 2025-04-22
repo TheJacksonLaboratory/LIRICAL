@@ -16,7 +16,7 @@ import java.util.*;
 
 /**
  * This class is designed to calculate the background and foreground frequencies of any HPO term in any disease
- * (This is calculated by {@link #initializeFrequencyMap()} and stored in {@link #hpoTerm2OverallFrequency}).
+ * (This is calculated by {@link #initializeFrequencyMap(MinimalOntology, HpoDiseases)} and stored in {@link #hpoTerm2OverallFrequency}).
  * The main entry point into this class is the function {@link #lrForObservedTerm}, which is called by
  * {@link LiricalAnalysisRunner} once for each HPO term
  * to which the case is annotation; it calls it once for each disease in our
@@ -39,11 +39,9 @@ public class PhenotypeLikelihoodRatio {
     public static final float DEFAULT_TERM_FREQUENCY = 1.f; // TODO - is this the right thing to do?
     /** The HPO ontology with all of its subontologies. */
     private final MinimalOntology ontology;
-    /** This map has one entry for each disease in our database. Key--the disease ID, e.g., OMIM:600200.*/
-    private final Map<TermId, HpoDisease> diseaseMap;
     private final LrWithExplanationFactory explanationFactory;
     /** Overall, i.e., background frequency of each HPO term. */
-    private Map<TermId, Double> hpoTerm2OverallFrequency = null;
+    private final Map<TermId, Double> hpoTerm2OverallFrequency;
     /**
      * This is the probability of a finding if the disease is not annotated to it and there
      * is no common ancestor except the root. There are many possible causes of findings called
@@ -62,9 +60,8 @@ public class PhenotypeLikelihoodRatio {
      */
     public PhenotypeLikelihoodRatio(MinimalOntology ontology, HpoDiseases diseases) {
         this.ontology = ontology;
-        this.diseaseMap = diseases.diseaseById();
         this.explanationFactory = new LrWithExplanationFactory(ontology); // TODO - DI?
-        initializeFrequencyMap();
+        this.hpoTerm2OverallFrequency = initializeFrequencyMap(ontology, diseases);
     }
 
     /**
@@ -153,7 +150,7 @@ public class PhenotypeLikelihoodRatio {
             }
             // If we get here, queryId is not directly annotated in the disease, and it is not a child
             // of a disease term, nor is a disease term a subclass of queryTid. The next bit of code
-            // checks whether they have a common ancestor that is more specfic that Phenotypic_Abnormality
+            // checks whether they have a common ancestor that is more specific that Phenotypic_Abnormality
             Term2Freq t2f = idg.getClosestAncestor(queryTid, ontology);
             if (t2f.nonRootCommonAncestor()) {
                 double numerator = t2f.frequency();
@@ -312,14 +309,25 @@ public class PhenotypeLikelihoodRatio {
 
     /**
      * Initialize the {@link #hpoTerm2OverallFrequency} object that has the background frequencies of each of the
-     * HPO terms in the ontology. */
-    private void initializeFrequencyMap() {
+     * HPO terms in the ontology.
+     *
+     * @return the frequency map
+     */
+    private static Map<TermId, Double> initializeFrequencyMap(
+            MinimalOntology ontology,
+            HpoDiseases diseases
+    ) {
         Map<TermId, Double> mp = new HashMap<>();
         for (TermId tid : ontology.nonObsoleteTermIds()) {
             mp.put(tid, 0.0D);
         }
-        Map<TermId, Double> mapbuilder = new HashMap<>();
-        for (HpoDisease dis : this.diseaseMap.values()) {
+
+        Set<TermId> seenDiseases = new HashSet<>(); // Make sure we only see each disease once.
+        for (HpoDisease dis : diseases) {
+            if (!seenDiseases.add(dis.id()))
+                // `add` returns true if the ID was added (was new).
+                // Therefore, we continue if the ID was NOT added.
+                continue;
             // We construct a map in order to get the maximum frequencies for any
             // given ancestor term, also in order to avoid double counting.
             Map<TermId, Double> updateMap=new HashMap<>();
@@ -349,19 +357,14 @@ public class PhenotypeLikelihoodRatio {
                                 : previous + updateMap.get(tid)); // cumulative
             }
         }
+        Map<TermId, Double> builder = new HashMap<>();
         // Now we need to normalize by the number of diseases.
-        double N = getNumberOfDiseases();
         for (Map.Entry<TermId, Double> me : mp.entrySet()) {
-            double f = me.getValue() / N;
-            mapbuilder.put(me.getKey(), f);
+            double f = me.getValue() / diseases.size();
+            builder.put(me.getKey(), f);
         }
-        hpoTerm2OverallFrequency = Map.copyOf(mapbuilder);
-        logger.trace("Got data on background frequency for " + hpoTerm2OverallFrequency.size() + " terms");
-    }
-
-    /** @return the number of diseases we are using for the calculations. */
-    private int getNumberOfDiseases() {
-        return diseaseMap.size();
+        logger.trace("Got data on background frequency for {} terms", builder.size());
+        return Map.copyOf(builder);
     }
 
 }

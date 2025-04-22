@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
@@ -49,22 +50,20 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
 
     @Override
     public AnalysisResults run(AnalysisData data, AnalysisOptions options) throws LiricalAnalysisException {
-        Collection<String> diseaseDatabasePrefixes = options.diseaseDatabases().stream()
-                .map(DiseaseDatabase::prefix)
-                .toList();
         Map<TermId, List<Gene2Genotype>> diseaseToGenotype = groupDiseasesByGene(data.genes());
 
         Optional<GenotypeLikelihoodRatio> genotypeLikelihoodRatio = configureGenotypeLikelihoodRatio(options.genomeBuild(),
                 options.variantDeleteriousnessThreshold(),
                 options.defaultVariantBackgroundFrequency(),
                 options.useStrictPenalties());
-        if (genotypeLikelihoodRatio.isEmpty())
+        if (genotypeLikelihoodRatio.isEmpty()) {
             throw new LiricalAnalysisException("Cannot configure genotype LR for %s".formatted(options.genomeBuild()));
+        }
 
         ProgressReporter progressReporter = new ProgressReporter(1_000, "diseases");
         Stream<TestResult> testResultStream = phenotypeService.diseases().hpoDiseases()
                 .parallel() // why not?
-                .filter(disease -> diseaseDatabasePrefixes.contains(disease.id().getPrefix()))
+                .filter(prepareDiseaseFilter(options.diseaseDatabases(), options.targetDiseases()))
                 .peek(d -> progressReporter.log())
                 .map(disease -> analyzeDisease(genotypeLikelihoodRatio.get(), disease, data, options, diseaseToGenotype))
                 .flatMap(Optional::stream);
@@ -76,6 +75,22 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         } catch (InterruptedException | ExecutionException e) {
             LOGGER.error(e.getMessage(), e);
             return AnalysisResults.empty();
+        }
+    }
+
+    private static Predicate<HpoDisease> prepareDiseaseFilter(
+            Set<DiseaseDatabase> diseaseDatabasePrefixes,
+            Collection<TermId> targetDiseases
+    ) {
+        if (targetDiseases == null) {
+            // Restrict the analysis to the disease with the chosen prefixes.
+            List<String> prefixes = diseaseDatabasePrefixes.stream()
+                    .map(DiseaseDatabase::prefix)
+                    .toList();
+            return disease -> prefixes.contains(disease.id().getPrefix());
+        } else {
+            // Restrict the analysis to the selected diseases.
+            return disease -> targetDiseases.contains(disease.id());
         }
     }
 
