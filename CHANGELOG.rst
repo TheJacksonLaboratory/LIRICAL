@@ -6,6 +6,11 @@ Changelog
 latest
 -------------------
 
+- Support the most recent Exomiser database format (``2406`` or newer)
+- Fix bug with Orpha disease to gene association parsing
+- Allow to select target diseases
+
+
 -------------------
 v2.0.2 (2024-05-01)
 -------------------
