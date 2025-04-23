@@ -6,12 +6,11 @@ on:
   push:
     branches: [ master, develop ]
 
-permissions:
-  pages: write
-
 jobs:
   build-docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout
