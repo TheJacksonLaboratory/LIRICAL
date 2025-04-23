@@ -11,6 +11,8 @@ latest
 - Allow to select target diseases
 - Add `ENSEMBL` and `REFSEQ_CURATED` transcript databases
 - Download Jannovar databases from Zenodo (except of UCSC transcripts)
+- Update dependencies
+  - Jannovar `[0.35,0.41]`
 
 -------------------
 v2.0.2 (2024-05-01)
