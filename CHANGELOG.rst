@@ -9,7 +9,8 @@ latest
 - Support the most recent Exomiser database format (``2406`` or newer)
 - Fix bug with Orpha disease to gene association parsing
 - Allow to select target diseases
-
+- Add `ENSEMBL` and `REFSEQ_CURATED` transcript databases
+- Download Jannovar databases from Zenodo (except of UCSC transcripts)
 
 -------------------
 v2.0.2 (2024-05-01)
