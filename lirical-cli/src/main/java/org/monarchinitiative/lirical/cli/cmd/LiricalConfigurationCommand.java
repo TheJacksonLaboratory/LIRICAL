@@ -163,10 +163,10 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
     protected List<String> checkInput() {
         List<String> errors = new ArrayList<>();
 
-        Path codeHomeParent = codeHomeDir();
         // resources
         if (dataSection.liricalDataDirectory == null) {
             LOGGER.debug("Data directory is unset, searching next to the LIRICAL file");
+            Path codeHomeParent = codeHomeDir();
             Path codeHomeDataDir = codeHomeParent.resolve("data");
             if (Files.isDirectory(codeHomeDataDir)) {
                 dataSection.liricalDataDirectory = codeHomeDataDir;
