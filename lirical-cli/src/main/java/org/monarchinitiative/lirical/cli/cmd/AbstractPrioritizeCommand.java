@@ -142,10 +142,12 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
 
     protected abstract SanitationInputs procureSanitationInputs() throws LiricalParseException;
 
-    private static AnalysisData prepareAnalysisData(Lirical lirical,
-                                                    GenomeBuild genomeBuild,
-                                                    TranscriptDatabase transcriptDb,
-                                                    SanitizedInputs inputs) throws LiricalParseException {
+    private static AnalysisData prepareAnalysisData(
+            Lirical lirical,
+            GenomeBuild genomeBuild,
+            TranscriptDatabase transcriptDb,
+            SanitizedInputs inputs
+    ) throws LiricalParseException {
         // Read VCF file if present.
         String sampleId;
         GenesAndGenotypes genes;
