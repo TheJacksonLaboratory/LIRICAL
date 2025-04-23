@@ -25,8 +25,7 @@ import org.h2.mvstore.MVStore;
 import org.monarchinitiative.exomiser.core.proto.AlleleProto;
 import org.monarchinitiative.lirical.exomiser_db_adapter.serializers.AlleleKeyDataType;
 import org.monarchinitiative.lirical.exomiser_db_adapter.serializers.AllelePropertiesDataType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.monarchinitiative.lirical.exomiser_db_adapter.serializers.ClinVarDataType;
 
 import java.util.Objects;
 
@@ -38,9 +37,8 @@ import java.util.Objects;
  */
 public class MvStoreUtil {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MvStoreUtil.class);
     private static final String ALLELE_MAP_NAME = "alleles";
-
+    private static final String CLINVAR_MAP_NAME = "clinvar";
 
     private MvStoreUtil() {
     }
@@ -54,22 +52,35 @@ public class MvStoreUtil {
      * @since 10.1.0
      */
     public static MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> openAlleleMVMap(MVStore mvStore) {
-        Objects.requireNonNull(mvStore);
-        if (!mvStore.hasMap(ALLELE_MAP_NAME)) {
-            LOGGER.warn("MVStore does not contain map '{}' - creating new map instance.", ALLELE_MAP_NAME);
-        }
-
-        MVMap<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> map = mvStore.openMap(ALLELE_MAP_NAME, alleleMapBuilder());
-        if (!map.isEmpty()) {
-            LOGGER.debug("MVMap '{}' opened with {} entries", ALLELE_MAP_NAME, map.size());
-        }
-
-        return map;
+        return openMap(mvStore, ALLELE_MAP_NAME, alleleMapBuilder());
     }
 
     private static MVMap.Builder<AlleleProto.AlleleKey, AlleleProto.AlleleProperties> alleleMapBuilder() {
         return new MVMap.Builder<AlleleProto.AlleleKey, AlleleProto.AlleleProperties>()
                 .keyType(AlleleKeyDataType.INSTANCE)
                 .valueType(AllelePropertiesDataType.INSTANCE);
+    }
+
+    /**
+     * Opens the 'clinvar' map from the {@link MVStore}. If the store does not already contain this map, a new one will
+     * be created and returned.
+     *
+     * @param mvStore The {@code MVStore} to be used for the 'clinvar' {@link MVMap}
+     * @return an instance of the {@link MVMap}. This map may be empty.
+     * @since 14.0.0
+     */
+    public static MVMap<AlleleProto.AlleleKey, AlleleProto.ClinVar> openClinVarMVMap(MVStore mvStore) {
+        return openMap(mvStore, CLINVAR_MAP_NAME, clinVarMapBuilder());
+    }
+
+    private static MVMap.Builder<AlleleProto.AlleleKey, AlleleProto.ClinVar> clinVarMapBuilder() {
+        return new MVMap.Builder<AlleleProto.AlleleKey, AlleleProto.ClinVar>()
+                .keyType(AlleleKeyDataType.INSTANCE)
+                .valueType(ClinVarDataType.INSTANCE);
+    }
+
+    private static <K, V> MVMap<K, V> openMap(MVStore mvStore, String mapName, MVMap.Builder<K, V> mapBuilder) {
+        return Objects.requireNonNull(mvStore)
+                .openMap(mapName, mapBuilder);
     }
 }

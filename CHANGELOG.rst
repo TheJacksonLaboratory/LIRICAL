@@ -7,6 +7,26 @@ latest
 -------------------
 
 -------------------
+v2.1.0 (2025-04-23)
+-------------------
+
+- Support the most recent Exomiser database format (``2406`` or newer)
+- Fix bug with Orpha disease to gene association parsing
+- Allow to select target diseases with the ``--target-diseases`` CLI option
+- Add `ENSEMBL` and `REFSEQ_CURATED` transcript databases
+- Download Jannovar databases from Zenodo (except of UCSC transcripts)
+- Update dependencies
+  - Jannovar `>=0.35`
+  - HTSJDK `>=4.0`
+  - Jackson libs `2.18.3`
+  - Freemarker `>=2.3.32`
+  - commons-io `>=2.14.0`
+  - commons-compress `>=1.26.0`
+  - commons-csv `>=1.10.0`
+  - commons-lang3 `>=3.12.0`
+  - logback-classic `>=1.4.14`
+
+-------------------
 v2.0.2 (2024-05-01)
 -------------------
 

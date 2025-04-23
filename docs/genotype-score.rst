@@ -29,9 +29,16 @@ The following genotype configuration options can be set on top of the phenotype-
 Transcript databases
 ~~~~~~~~~~~~~~~~~~~~
 
-LIRICAL can use transcript data from UCSC or RefSeq.
-The default is `RefSeq <https://www.ncbi.nlm.nih.gov/refseq/>`_,
-but transcript definitions from `UCSC <http://genome.ucsc.edu/>`_ can also be used.
+LIRICAL can use transcript data from four transcript databases:
+
+* `RefSeq <https://www.ncbi.nlm.nih.gov/refseq/>`_ - including curated transcripts (``NM_``)
+  as well as the transcripts that are based on gene predictions (``XM_``)
+* RefSeq curated - including curated transcripts (``NM_``) only,
+  and *NOT* the transcripts that are based on gene predictions (``XM_``)
+* `UCSC <http://genome.ucsc.edu/>`_
+* `Ensembl <https://www.ensembl.org/info/data>`_
+
+RefSeq transcripts are used by default.
 
 
 .. _rstbg-var-freqs:

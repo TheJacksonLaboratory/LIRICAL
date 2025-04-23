@@ -19,6 +19,16 @@ public class LiricalDataResolverTest {
         assertThat(resolver.hpoJson(), equalTo(dataDirectory.resolve("hp.json")));
         assertThat(resolver.mim2geneMedgen(), equalTo(dataDirectory.resolve("mim2gene_medgen")));
         assertThat(resolver.phenotypeAnnotations(), equalTo(dataDirectory.resolve("phenotype.hpoa")));
+
+        assertThat(resolver.hg19UcscTxDatabase(), equalTo(dataDirectory.resolve("hg19_ucsc.ser")));
+        assertThat(resolver.hg19EnsemblTxDatabase(), equalTo(dataDirectory.resolve("hg19_ensembl.ser")));
+        assertThat(resolver.hg19RefseqTxDatabase(), equalTo(dataDirectory.resolve("hg19_refseq.ser")));
+        assertThat(resolver.hg19RefseqCuratedTxDatabase(), equalTo(dataDirectory.resolve("hg19_refseq_curated.ser")));
+
+        assertThat(resolver.hg38UcscTxDatabase(), equalTo(dataDirectory.resolve("hg38_ucsc.ser")));
+        assertThat(resolver.hg38EnsemblTxDatabase(), equalTo(dataDirectory.resolve("hg38_ensembl.ser")));
+        assertThat(resolver.hg38RefseqTxDatabase(), equalTo(dataDirectory.resolve("hg38_refseq.ser")));
+        assertThat(resolver.hg38RefseqCuratedTxDatabase(), equalTo(dataDirectory.resolve("hg38_refseq_curated.ser")));
     }
 
     @Test

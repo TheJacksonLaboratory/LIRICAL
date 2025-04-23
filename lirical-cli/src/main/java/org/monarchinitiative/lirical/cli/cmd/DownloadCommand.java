@@ -44,15 +44,20 @@ public class DownloadCommand extends BaseCommand {
                     .overwrite(overwrite)
                     .hpoJson()
                     .hpDiseaseAnnotations()
+                    .orphaToGene()
                     .hgnc()
                     .medgene2MIM()
                     // Jannovar v0.35 transcript databases
-//                    .custom("hg19_ensembl.ser", createUrlOrExplode("https://storage.googleapis.com/ielis/jannovar/v0.35/hg19_ensembl.ser"))
+                    .custom("hg19_ensembl.ser", createUrlOrExplode("https://zenodo.org/record/5410367/files/ensembl_87_hg19.ser"))
                     .custom("hg19_ucsc.ser", createUrlOrExplode("https://storage.googleapis.com/ielis/jannovar/v0.35/hg19_ucsc.ser"))
-                    .custom("hg19_refseq.ser", createUrlOrExplode("https://storage.googleapis.com/ielis/jannovar/v0.35/hg19_refseq.ser"))
-//                    .custom("hg38_ensembl.ser", createUrlOrExplode("https://storage.googleapis.com/ielis/jannovar/v0.35/hg38_ensembl.ser"))
+                    .custom("hg19_refseq.ser", createUrlOrExplode("https://zenodo.org/record/5410367/files/refseq_105_hg19.ser"))
+                    .custom("hg19_refseq_curated.ser", createUrlOrExplode("https://zenodo.org/record/5410367/files/refseq_curated_105_hg19.ser"))
+
+                    .custom("hg38_ensembl.ser", createUrlOrExplode("https://zenodo.org/record/5410367/files/ensembl_91_hg38.ser"))
                     .custom("hg38_ucsc.ser", createUrlOrExplode("https://storage.googleapis.com/ielis/jannovar/v0.35/hg38_ucsc.ser"))
-                    .custom("hg38_refseq.ser", createUrlOrExplode("https://storage.googleapis.com/ielis/jannovar/v0.35/hg38_refseq.ser"))
+                    .custom("hg38_refseq.ser", createUrlOrExplode("https://zenodo.org/record/5410367/files/refseq_109_hg38.ser"))
+                    .custom("hg38_refseq_curated.ser", createUrlOrExplode("https://zenodo.org/record/5410367/files/refseq_curated_109_hg38.ser"))
+
                     .build();
             downloader.download();
             logger.info("Done!");

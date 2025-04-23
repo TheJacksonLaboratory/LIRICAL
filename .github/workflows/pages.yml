@@ -58,8 +58,8 @@ jobs:
           ./mvnw --quiet -Ddoclint=none -Dinherited=false clean javadoc:aggregate
           # Copy aggregated Javadoc into `apidocs` folder.
           APIDOCS=$(pwd)/gh-pages/${DOCDIR}/apidocs
-          printf "Copying Javadocs from %s to %s\n" $(pwd)/target/site/apidocs ${APIDOCS}
-          cp -r target/site/apidocs ${APIDOCS}
+          printf "Copying Javadocs from %s to %s\n" $(pwd)/target/reports/apidocs ${APIDOCS}
+          cp -r target/reports/apidocs ${APIDOCS}
           
           ## Build the docs
           # Generate the HTML pages and move the generated content into the target folder.
