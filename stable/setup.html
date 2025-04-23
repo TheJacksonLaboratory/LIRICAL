@@ -1,23 +1,21 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setting up LIRICAL &mdash; LIRICAL 2.0.2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+  <title>Setting up LIRICAL &mdash; LIRICAL 2.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=c2377ec0"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=20623aea"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -36,9 +34,6 @@
           <a href="index.html" class="icon icon-home">
             LIRICAL
           </a>
-              <div class="version">
-                2.0
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -115,10 +110,10 @@ LIRICAL is distributed as a ZIP archive that contains the executable JAR file, t
 and a few files for running the examples. The archive is available from the
 <a class="reference external" href="https://github.com/TheJacksonLaboratory/LIRICAL/releases">Releases section</a>
 on the GitHub repository.</p>
-<p>Assuming the distribution file was downloaded to lirical-cli-2.0.2-distribution.zip,
+<p>Assuming the distribution file was downloaded to lirical-cli-2.1.0-distribution.zip,
 the following will print the help message:</p>
-<pre class="literal-block">unzip lirical-cli-2.0.2-distribution.zip
-java -jar lirical-cli-2.0.2/lirical-cli-2.0.2.jar --help</pre>
+<pre class="literal-block">unzip lirical-cli-2.1.0-distribution.zip
+java -jar lirical-cli-2.1.0/lirical-cli-2.1.0.jar --help</pre>
 </section>
 <section id="building-from-sources">
 <span id="build-from-sources"></span><h2>Building from sources<a class="headerlink" href="#building-from-sources" title="Link to this heading"></a></h2>
@@ -163,8 +158,8 @@ unless you really, really, really need to use LIRICAL as a library.</p>
 <p>In general, Java command line applications are invoked as <code class="docutils literal notranslate"><span class="pre">java</span> <span class="pre">-jar</span> <span class="pre">executable.jar</span></code>. However, such incantation is
 a bit too verbose and we can shorten it a bit by defining an alias.</p>
 <p>Let’s define a command alias for LIRICAL. Assuming the distribution ZIP was unpacked into
-phenopacket-tools-cli-2.0.2 directory, run the following to set up and check the command alias:</p>
-<pre class="literal-block">alias lirical=&quot;java -jar $(pwd)/lirical-cli-2.0.2/lirical-cli-2.0.2.jar&quot;
+phenopacket-tools-cli-2.1.0 directory, run the following to set up and check the command alias:</p>
+<pre class="literal-block">alias lirical=&quot;java -jar $(pwd)/lirical-cli-2.1.0/lirical-cli-2.1.0.jar&quot;
 lirical --help</pre>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -174,39 +169,20 @@ lirical --help</pre>
 <section id="exomiser-database-files">
 <span id="rstexomiserdatadir"></span><h2>Exomiser database files<a class="headerlink" href="#exomiser-database-files" title="Link to this heading"></a></h2>
 <p>LIRICAL uses data files from the <a class="reference external" href="https://github.com/exomiser/Exomiser">Exomiser</a>
-to annotate the VCF file and support variant interpretation.
-We recommend that always the latest version of these files be used.
-The Exomiser data files can be obtained from the
-<a class="reference external" href="https://exomiser.monarchinitiative.org/exomiser/download">Exomiser download site</a>.
-You may need to scroll (right hand side) to see the subdirectory <code class="docutils literal notranslate"><span class="pre">latest</span></code>, which includes the current version of
-these files. Download either <code class="docutils literal notranslate"><span class="pre">2302_hg19.zip</span></code> (for the hg19/GRCh37 genome assembly)  or <code class="docutils literal notranslate"><span class="pre">2302_hg38.zip</span></code> for the
-hg38/GRCh38 assembly). Of course, the datafile you use should match the assembly used to align and call
-the exome/genome data you want to analyze with LIRICAL.</p>
+to annotate the VCF file and support variant interpretation.</p>
+<p>The Exomiser data files can be obtained from the
+<a class="reference external" href="https://github.com/exomiser/Exomiser/discussions/categories/data-release">Data release</a> section of Exomiser discussions.
+We recommend that always the latest version of these files be used.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>LIRICAL was tested for compatibility with <cite>2302</cite> Exomiser data version.</p>
+<p>Starting from LIRICAL <cite>v2.1.0</cite>, only the database files compatible with Exomiser <cite>14.0.0</cite> (or newer) are supported.
+These include the <a class="reference external" href="https://github.com/exomiser/Exomiser/discussions/562">2406 data release</a>
+or newer.</p>
 </div>
-<p>Unpack the ZIP file, e.g.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">unzip</span> <span class="mi">2302</span><span class="n">_hg19</span><span class="o">.</span><span class="n">zip</span>
-</pre></div>
-</div>
-<p>LIRICAL uses the variant database file that is present in the data folder. The database file is named as
-<code class="docutils literal notranslate"><span class="pre">&lt;release&gt;_&lt;genome-build&gt;_variants.mv.db</span></code>, where</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">release</span></code> is the release identifier (e.g. <cite>2302</cite>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">genome-build</span></code> is the identifier of the genome build (e.g. <cite>hg38</cite>)</p></li>
-</ul>
-<p>Remember the path, since it will be needed to run LIRICAL with exome/genome data. We will use the CLI options:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">-e19</span> <span class="pre">|</span> <span class="pre">--exomiser-hg19</span></code> <cite>/some/path/2302_hg19_variants.mv.db</cite>, or</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">-e38</span> <span class="pre">|</span> <span class="pre">--exomiser-hg38</span></code> <cite>/some/path/2302_hg19_variants.mv.db</cite></p></li>
-</ul>
-<p>to set path to the Exomiser variant database.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">-e</span></code> option that used to point to Exomiser data directory in the previous LIRICAL has been deprecated
-and will <em>not</em> work in v2.</p>
-</div>
+<p>Download either <code class="docutils literal notranslate"><span class="pre">2406_hg19.zip</span></code> (for the hg19/GRCh37 genome assembly)  or <code class="docutils literal notranslate"><span class="pre">2406_hg38.zip</span></code> for the
+hg38/GRCh38 assembly) and unpack the archive(s).</p>
+<p>LIRICAL needs the <code class="docutils literal notranslate"><span class="pre">2406_hg38_variants.mv.db</span></code> and <code class="docutils literal notranslate"><span class="pre">2406_hg38_clinvar.mv.db</span></code> database files to extract
+allele frequencies, in silico pathogenicity predictions, and ClinVar pathogenicity metadata for variants.</p>
 </section>
 <section id="lirical-data-files">
 <span id="rstdownload"></span><h2>LIRICAL data files<a class="headerlink" href="#lirical-data-files" title="Link to this heading"></a></h2>
@@ -216,23 +192,27 @@ and will <em>not</em> work in v2.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">phenotype.hpoa</span></code> The main annotation file with all HPO disease models</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">hgnc_complete_set.txt</span></code> A text file from HUGO Gene Nomenclature Committee (HGNC) with information about human genes</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">mim2gene_medgen</span></code> A file from the NCBI medgen project with OMIM-derived links between genes and diseases</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">en_product6.xml</span></code> A file with links between Orpha disease IDs and the genes</p></li>
 <li><p>Jannovar transcript annotation files with definitions of transcripts and genes:</p></li>
 </ol>
 <blockquote>
 <div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">hg19_ensembl.ser</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">hg19_refseq.ser</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hg19_refseq_curated.ser</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">hg19_ucsc.ser</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hg38_ensembl.ser</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">hg38_refseq.ser</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hg38_refseq_curated.ser</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">hg38_ucsc.ser</span></code></p></li>
 </ul>
 </div></blockquote>
 <p>LIRICAL offers a convenience function to download all files to a local directory.
 By default, LIRICAL will download all files into a newly created subdirectory called <code class="docutils literal notranslate"><span class="pre">data</span></code>
-in the current working directory. You can change this default with the <code class="docutils literal notranslate"><span class="pre">-d</span></code> or <code class="docutils literal notranslate"><span class="pre">--data</span></code> options
-(If you change this, then you will need to pass the location of your directory to all other LIRICAL commands
-using the <code class="docutils literal notranslate"><span class="pre">-d</span></code> flag).</p>
+in the current working directory. You can change this default with the <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">|</span> <span class="pre">--data</span></code> CLI option
+(If you change this, then you will need to pass the location of your directory to all other LIRICAL commands).</p>
 <p>Download the files into the <code class="docutils literal notranslate"><span class="pre">data</span></code> folder located next to the LIRICAL JAR file by running:</p>
-<pre class="literal-block">cd lirical-cli-2.0.2
+<pre class="literal-block">cd lirical-cli-2.1.0
 lirical download</pre>
 <p>This will ensure LIRICAL finds the data folder automatically (see below).</p>
 <div class="admonition note">
@@ -240,7 +220,7 @@ lirical download</pre>
 <p>We assume the LIRICAL alias was set as described in the <a class="reference internal" href="#rstsetupalias"><span class="std std-ref">Set up alias</span></a> section.</p>
 </div>
 <p>LIRICAL will not download the files if they are already present unless the <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code> argument is passed. For
-instance, the following command would download the four files to a directory called <code class="docutils literal notranslate"><span class="pre">datafiles</span></code> and would
+instance, the following command would download all files to a directory called <code class="docutils literal notranslate"><span class="pre">datafiles</span></code> and would
 overwrite any previously downloaded files:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lirical</span> <span class="n">download</span> <span class="o">-</span><span class="n">d</span> <span class="n">datafiles</span> <span class="o">--</span><span class="n">overwrite</span>
 </pre></div>
@@ -249,9 +229,10 @@ overwrite any previously downloaded files:</p>
 same directory and provide the path to the directory using the <cite>-d | –data</cite> option.</p>
 <p>The path to the LIRICAL data directory can be provided in two ways:</p>
 <ol class="arabic simple">
-<li><p>explicitly, using <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">|</span> <span class="pre">--data</span></code> option</p></li>
-<li><p>implicitly, if the <code class="docutils literal notranslate"><span class="pre">data</span></code> folder is located next to the LIRICAL JAR file</p></li>
+<li><p>using <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">|</span> <span class="pre">--data</span></code> CLI option (explicitly)</p></li>
+<li><p>using the <code class="docutils literal notranslate"><span class="pre">data</span></code> folder is located next to the LIRICAL JAR file (implicitly)</p></li>
 </ol>
+<p>Using <code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">|</span> <span class="pre">--data</span></code> option will override using the <code class="docutils literal notranslate"><span class="pre">data</span></code> folder located next to the LIRICAL JAR file.</p>
 </section>
 </section>
 
@@ -266,7 +247,7 @@ same directory and provide the path to the directory using the <cite>-d | –dat
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Peter Robinson.</p>
+    <p>&#169; Copyright 2025, Peter Robinson.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

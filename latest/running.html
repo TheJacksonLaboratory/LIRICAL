@@ -1,24 +1,22 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Running LIRICAL &mdash; LIRICAL 2.0.3-SNAPSHOT documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+  <title>Running LIRICAL &mdash; LIRICAL 2.1.1-SNAPSHOT documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=4f4a63b5"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=df23db06"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -37,9 +35,6 @@
           <a href="index.html" class="icon icon-home">
             LIRICAL
           </a>
-              <div class="version">
-                2.0
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -54,7 +49,10 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Running LIRICAL</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#shared-cli-options">Shared CLI options</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#resources">Resources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#resources">Resources</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#changes-from-the-previous-lirical-versions">Changes from the previous LIRICAL versions</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#configuration-options">Configuration options</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#output-options">Output options</a></li>
 </ul>
@@ -114,9 +112,9 @@ or NGS gene-panel sequencing.</p>
   <span class="o">-</span><span class="n">V</span><span class="p">,</span> <span class="o">--</span><span class="n">version</span>   <span class="n">Print</span> <span class="n">version</span> <span class="n">information</span> <span class="ow">and</span> <span class="n">exit</span><span class="o">.</span>
 <span class="n">Commands</span><span class="p">:</span>
   <span class="n">download</span><span class="p">,</span> <span class="n">D</span>     <span class="n">Download</span> <span class="n">files</span> <span class="k">for</span> <span class="n">LIRICAL</span><span class="o">.</span>
-  <span class="n">prioritize</span><span class="p">,</span> <span class="n">R</span>   <span class="n">Run</span> <span class="n">LIRICAL</span> <span class="kn">from</span> <span class="nn">CLI</span> <span class="n">arguments</span><span class="o">.</span>
-  <span class="n">phenopacket</span><span class="p">,</span> <span class="n">P</span>  <span class="n">Run</span> <span class="n">LIRICAL</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">Phenopacket</span><span class="o">.</span>
-  <span class="n">yaml</span><span class="p">,</span> <span class="n">Y</span>         <span class="n">Run</span> <span class="n">LIRICAL</span> <span class="kn">from</span> <span class="nn">a</span> <span class="n">YAML</span> <span class="n">file</span><span class="o">.</span>
+  <span class="n">prioritize</span><span class="p">,</span> <span class="n">R</span>   <span class="n">Run</span> <span class="n">LIRICAL</span> <span class="kn">from</span><span class="w"> </span><span class="nn">CLI</span> <span class="n">arguments</span><span class="o">.</span>
+  <span class="n">phenopacket</span><span class="p">,</span> <span class="n">P</span>  <span class="n">Run</span> <span class="n">LIRICAL</span> <span class="kn">from</span><span class="w"> </span><span class="nn">a</span> <span class="n">Phenopacket</span><span class="o">.</span>
+  <span class="n">yaml</span><span class="p">,</span> <span class="n">Y</span>         <span class="n">Run</span> <span class="n">LIRICAL</span> <span class="kn">from</span><span class="w"> </span><span class="nn">a</span> <span class="n">YAML</span> <span class="n">file</span><span class="o">.</span>
 
 <span class="n">See</span> <span class="n">the</span> <span class="n">full</span> <span class="n">documentation</span> <span class="n">at</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">lirical</span><span class="o">.</span><span class="n">readthedocs</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">en</span><span class="o">/</span><span class="n">master</span>
 </pre></div>
@@ -148,15 +146,37 @@ and where results should be written. We describe the shared CLI arguments in thi
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">-d</span> <span class="pre">|</span> <span class="pre">--data</span></code>: path to LIRICAL data directory.
 Required if the <code class="docutils literal notranslate"><span class="pre">data</span></code> folder is not set up next to the LIRICAL JAR file.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">-e19</span> <span class="pre">|</span> <span class="pre">--exomiser-hg19</span></code>: path to Exomiser variant database for <em>hg19</em>.
+<li><p><code class="docutils literal notranslate"><span class="pre">-ed19</span> <span class="pre">|</span> <span class="pre">--exomiser-hg19-dir</span></code>: path to Exomiser data directory for <em>hg19</em>.
 Required if the analysis is run with exome/genome sequencing files and <code class="docutils literal notranslate"><span class="pre">--assembly</span></code> is set to <em>hg19</em>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">-e38</span> <span class="pre">|</span> <span class="pre">--exomiser-hg38</span></code>: path to Exomiser variant database for <em>hg38</em>.
+<li><p><code class="docutils literal notranslate"><span class="pre">-ed38</span> <span class="pre">|</span> <span class="pre">--exomiser-hg38-dir</span></code>: path to Exomiser data directory for <em>hg38</em>.
 Required if the analysis is run with exome/genome sequencing files and <code class="docutils literal notranslate"><span class="pre">--assembly</span></code> is set to <em>hg38</em>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">-b</span> <span class="pre">|</span> <span class="pre">--background</span></code>: path to file with background variant frequencies for genes.
 This option should not be used unless there is a very good reason to do that.
 The background variant frequencies are bundled with the LIRICAL code. See <a class="reference internal" href="genotype-score.html#rstbg-var-freqs"><span class="std std-ref">Background variant frequencies</span></a> for more info.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--parallelism</span></code>: the number of workers/threads to use. The value must be a positive integer (default: <code class="docutils literal notranslate"><span class="pre">1</span></code>).</p></li>
 </ul>
+<section id="changes-from-the-previous-lirical-versions">
+<h4>Changes from the previous LIRICAL versions<a class="headerlink" href="#changes-from-the-previous-lirical-versions" title="Link to this heading"></a></h4>
+<p>In previous versions, LIRICAL required the Exomiser variant database to be provided as a path to a single file,
+either via <code class="docutils literal notranslate"><span class="pre">-e38</span> <span class="pre">|</span> <span class="pre">--exomiser-hg38</span></code> or via <code class="docutils literal notranslate"><span class="pre">-e19</span> <span class="pre">|</span> <span class="pre">--exomiser-hg19</span></code> option.
+A single database file contained the allele annotations (frequencies, in silico pathogenicity, etc.)
+together with ClinVar variant annotations.
+However, starting from Exomiser data release <code class="docutils literal notranslate"><span class="pre">2406</span></code>, the annotations are distributed as several files.
+Exomiser release pipeline uses the following naming scheme for the files:
+<code class="docutils literal notranslate"><span class="pre">2406_hg38_variants.mv.db</span></code> for the database with allele info for GRCh38 variants of the <cite>2406</cite> data release,
+and <code class="docutils literal notranslate"><span class="pre">2406_hg38_clinvar.mv.db</span></code> for the ClinVar annotations.</p>
+<p>LIRICAL <cite>2.1.0</cite> adds support for the new database format. This is a breaking change and the CLI invocation
+must be updated.</p>
+<p>The simplest way to update the CLI is to use the new <code class="docutils literal notranslate"><span class="pre">-ed38</span> <span class="pre">|</span> <span class="pre">--exomiser-hg38-dir</span></code> option,
+that takes path to Exomiser data directory. LIRICAL will find the allele and ClinVar database files automatically.</p>
+<p>Alternatively, paths to the database files can be provided manually:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-e38</span> <span class="pre">|</span> <span class="pre">--exomiser-hg38</span> <span class="pre">|</span> <span class="pre">--exomiser-hg38-variants</span></code> for the allele infos</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-c38</span> <span class="pre">|</span> <span class="pre">--exomiser-hg38-clinvar</span></code> for the ClinVar annotations</p></li>
+</ul>
+<p>If both path to Exomiser data directory and the paths to individual database files are provided,
+the paths to individual files will override the files found in Exomiser data directory.</p>
+</section>
 </section>
 <section id="configuration-options">
 <h3>Configuration options<a class="headerlink" href="#configuration-options" title="Link to this heading"></a></h3>
@@ -170,6 +190,10 @@ Only applicable to the HTML and TSV reports when running with a VCF file (genoty
 The JSON report will include <em>all</em> diseases all the time.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--transcript-db</span></code>: transcript database (default: <code class="docutils literal notranslate"><span class="pre">RefSeq</span></code>), see <a class="reference internal" href="genotype-score.html#rsttx-dbs"><span class="std std-ref">Transcript databases</span></a> for more info.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--use-orphanet</span></code>: use <a class="reference external" href="https://www.orpha.net/consor/cgi-bin/index.php">Orphanet</a> annotations (default: <code class="docutils literal notranslate"><span class="pre">false</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--target-diseases</span></code>: limit the analysis to the provided disease IDs.
+Expecting a comma-separated list of disease IDs, such as <cite>OMIM:614102,OMIM:619340</cite>.
+The <code class="docutils literal notranslate"><span class="pre">--use-orphanet</span></code> option is ignored if at least one disease ID is provided.
+All diseases are analyzed by default.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--strict</span></code>: use strict penalties if the genotype does not match the disease model
 in terms of number of called pathogenic alleles (default: <code class="docutils literal notranslate"><span class="pre">false</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--pathogenicity-threshold</span></code>: Variants with greater pathogenicity score is considered deleterious (default: <code class="docutils literal notranslate"><span class="pre">0.8</span></code>).</p></li>
@@ -226,7 +250,8 @@ an open standard for sharing disease and phenotype information.
 This is a new standard of the <a class="reference external" href="https://www.ga4gh.org/">Global Alliance for Genomics and Health</a> that
 links detailed phenotype descriptions with disease, patient, and genetic information.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="_images/hpo-textmining.png"><img alt="PhenopacketGenerator" src="_images/hpo-textmining.png" style="width: 75%;" /></a>
+<a class="reference internal image-reference" href="_images/hpo-textmining.png"><img alt="PhenopacketGenerator" src="_images/hpo-textmining.png" style="width: 75%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">For convenience, we provide a tool called
 <a class="reference external" href="https://github.com/TheJacksonLaboratory/PhenopacketGenerator">PhenopacketGenerator</a> that can be used
@@ -329,7 +354,7 @@ of the VCF file on your file system. Then, the analysis is run as:</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Peter Robinson.</p>
+    <p>&#169; Copyright 2025, Peter Robinson.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

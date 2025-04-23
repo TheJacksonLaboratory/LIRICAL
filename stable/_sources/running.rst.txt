@@ -44,12 +44,14 @@ Run LIRICAL with a specific command with the ``-h`` option to get information ab
 LIRICAL has four main commands, ``download``, ``prioritize``, ``phenopacket``, and ``yaml``.
 We will *not* discuss the ``download`` command since it has already been covered in the :ref:`rstdownload` section
 
+
 Shared CLI options
 ^^^^^^^^^^^^^^^^^^
 
 LIRICAL offers several commands for receiving phenotype and genotype inputs via CLI, phenopacket, or a YAML file.
 However the commands share many CLI arguments for setting up the resource paths, the analysis configuration,
 and where results should be written. We describe the shared CLI arguments in this section.
+
 
 Resources
 ~~~~~~~~~
@@ -58,14 +60,42 @@ The options from this group set up resources required for LIRICAL analysis.
 
 * ``-d | --data``: path to LIRICAL data directory.
   Required if the ``data`` folder is not set up next to the LIRICAL JAR file.
-* ``-e19 | --exomiser-hg19``: path to Exomiser variant database for *hg19*.
+* ``-ed19 | --exomiser-hg19-dir``: path to Exomiser data directory for *hg19*.
   Required if the analysis is run with exome/genome sequencing files and ``--assembly`` is set to *hg19*.
-* ``-e38 | --exomiser-hg38``: path to Exomiser variant database for *hg38*.
+* ``-ed38 | --exomiser-hg38-dir``: path to Exomiser data directory for *hg38*.
   Required if the analysis is run with exome/genome sequencing files and ``--assembly`` is set to *hg38*.
 * ``-b | --background``: path to file with background variant frequencies for genes.
   This option should not be used unless there is a very good reason to do that.
   The background variant frequencies are bundled with the LIRICAL code. See :ref:`rstbg-var-freqs` for more info.
 * ``--parallelism``: the number of workers/threads to use. The value must be a positive integer (default: ``1``).
+
+
+Changes from the previous LIRICAL versions
+******************************************
+
+In previous versions, LIRICAL required the Exomiser variant database to be provided as a path to a single file,
+either via ``-e38 | --exomiser-hg38`` or via ``-e19 | --exomiser-hg19`` option.
+A single database file contained the allele annotations (frequencies, in silico pathogenicity, etc.)
+together with ClinVar variant annotations.
+However, starting from Exomiser data release ``2406``, the annotations are distributed as several files.
+Exomiser release pipeline uses the following naming scheme for the files:
+``2406_hg38_variants.mv.db`` for the database with allele info for GRCh38 variants of the `2406` data release,
+and ``2406_hg38_clinvar.mv.db`` for the ClinVar annotations.
+
+LIRICAL `2.1.0` adds support for the new database format. This is a breaking change and the CLI invocation
+must be updated.
+
+The simplest way to update the CLI is to use the new ``-ed38 | --exomiser-hg38-dir`` option,
+that takes path to Exomiser data directory. LIRICAL will find the allele and ClinVar database files automatically.
+
+Alternatively, paths to the database files can be provided manually:
+
+* ``-e38 | --exomiser-hg38 | --exomiser-hg38-variants`` for the allele infos
+* ``-c38 | --exomiser-hg38-clinvar`` for the ClinVar annotations
+
+If both path to Exomiser data directory and the paths to individual database files are provided,
+the paths to individual files will override the files found in Exomiser data directory.
+
 
 Configuration options
 ~~~~~~~~~~~~~~~~~~~~~
@@ -80,6 +110,10 @@ The configuration options tweak the analysis.
   The JSON report will include *all* diseases all the time.
 * ``--transcript-db``: transcript database (default: ``RefSeq``), see :ref:`rsttx-dbs` for more info.
 * ``--use-orphanet``: use `Orphanet <https://www.orpha.net/consor/cgi-bin/index.php>`_ annotations (default: ``false``).
+* ``--target-diseases``: limit the analysis to the provided disease IDs.
+  Expecting a comma-separated list of disease IDs, such as `OMIM:614102,OMIM:619340`.
+  The ``--use-orphanet`` option is ignored if at least one disease ID is provided.
+  All diseases are analyzed by default.
 * ``--strict``: use strict penalties if the genotype does not match the disease model
   in terms of number of called pathogenic alleles (default: ``false``).
 * ``--pathogenicity-threshold``: Variants with greater pathogenicity score is considered deleterious (default: ``0.8``).
@@ -87,6 +121,7 @@ The configuration options tweak the analysis.
   Choose from `MINIMAL`, `LENIENT`, `STRICT` (default ``MINIMAL``).
 * ``--dry-run``: check if the inputs meet the validation policy requirements, report any issues,
   and exit without running the analysis (default: ``false``).
+
 
 Output options
 ~~~~~~~~~~~~~~

@@ -1,23 +1,21 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tutorial &mdash; LIRICAL 2.0.2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+  <title>Tutorial &mdash; LIRICAL 2.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=c2377ec0"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=20623aea"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -36,9 +34,6 @@
           <a href="index.html" class="icon icon-home">
             LIRICAL
           </a>
-              <div class="version">
-                2.0
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -135,11 +130,13 @@ After a moment, the ontology will load and “Enter HPO terms” will be clickab
 clicking “Enter HPO term”. Paste the clinical description above into the text-mining window of PhenopacketGenerator,
 click “Analyze”, select HPO terms, click “Add selected terms”, then “Confirm and Close”.</p>
 <figure class="align-center">
-<a class="reference internal image-reference" href="_images/hpo-textmining-lds.png"><img alt="LDS2 text mining" src="_images/hpo-textmining-lds.png" style="width: 75%;" /></a>
+<a class="reference internal image-reference" href="_images/hpo-textmining-lds.png"><img alt="LDS2 text mining" src="_images/hpo-textmining-lds.png" style="width: 75%;" />
+</a>
 </figure>
 <p>Then, select the location of the VCF file that you saved in the previous step, and enter the Genome assembly (<code class="docutils literal notranslate"><span class="pre">hg19</span></code>).</p>
 <figure class="align-center">
-<a class="reference internal image-reference" href="_images/phenopacketgenerator.png"><img alt="LDS2 text mining" src="_images/phenopacketgenerator.png" style="width: 75%;" /></a>
+<a class="reference internal image-reference" href="_images/phenopacketgenerator.png"><img alt="LDS2 text mining" src="_images/phenopacketgenerator.png" style="width: 75%;" />
+</a>
 </figure>
 <p>You can now export the phenopacket. Use the filename <code class="docutils literal notranslate"><span class="pre">LDS2.json</span></code>
 (or choose another name and adjust the following command accordingly).</p>
@@ -148,8 +145,8 @@ click “Analyze”, select HPO terms, click “Add selected terms”, then “C
 <h2>Running LIRICAL<a class="headerlink" href="#running-lirical" title="Link to this heading"></a></h2>
 <p>Run LIRICAL as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lirical</span> <span class="n">phenopacket</span> \
-<span class="o">--</span><span class="n">exomiser</span><span class="o">-</span><span class="n">hg19</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="mi">2302</span><span class="n">_hg19_variants</span><span class="o">.</span><span class="n">mv</span><span class="o">.</span><span class="n">db</span> \
 <span class="o">--</span><span class="n">assembly</span> <span class="n">hg19</span> \
+<span class="o">--</span><span class="n">exomiser</span><span class="o">-</span><span class="n">hg19</span><span class="o">-</span><span class="nb">dir</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="mi">2406</span><span class="n">_hg19</span> \
 <span class="o">--</span><span class="n">phenopacket</span> <span class="n">LDS2</span><span class="o">.</span><span class="n">v2</span><span class="o">.</span><span class="n">json</span> \
 <span class="o">--</span><span class="n">vcf</span> <span class="n">LDS2</span><span class="o">.</span><span class="n">vcf</span><span class="o">.</span><span class="n">gz</span> \
 <span class="o">--</span><span class="n">prefix</span> <span class="n">LDS2</span>
@@ -159,6 +156,10 @@ click “Analyze”, select HPO terms, click “Add selected terms”, then “C
 <p class="admonition-title">Note</p>
 <p>We assume the LIRICAL alias was set as described in the <a class="reference internal" href="setup.html#rstsetupalias"><span class="std std-ref">Set up alias</span></a> section.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We assume that <code class="docutils literal notranslate"><span class="pre">/path/to/2406_hg19</span></code> points to a folder with the <code class="docutils literal notranslate"><span class="pre">2406</span></code> Exomiser data release files.</p>
+</div>
 </section>
 <section id="viewing-the-results">
 <h2>Viewing the results<a class="headerlink" href="#viewing-the-results" title="Link to this heading"></a></h2>
@@ -166,7 +167,8 @@ click “Analyze”, select HPO terms, click “Add selected terms”, then “C
 Open this file in a web browser. The top of the page shows some information about the input files and a list of observed
 and excluded HPO terms. The next section shows summarized representations of the top candidates.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="_images/lirical-sparkline-lds2.png"><img alt="LIRICAL sparkline" src="_images/lirical-sparkline-lds2.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="_images/lirical-sparkline-lds2.png"><img alt="LIRICAL sparkline" src="_images/lirical-sparkline-lds2.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Summary view of the top candidates.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
@@ -180,7 +182,8 @@ in the same order.</p>
 variants and the phenotypic profile. Hovering over the graphic shows information about the likelihood ratio and the type of the
 match.</p>
 <figure class="align-center" id="id2">
-<a class="reference internal image-reference" href="_images/lirical-detailed-TGFBR2.png"><img alt="LIRICAL sparkline" src="_images/lirical-detailed-TGFBR2.png" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="_images/lirical-detailed-TGFBR2.png"><img alt="LIRICAL sparkline" src="_images/lirical-detailed-TGFBR2.png" style="width: 100%;" />
+</a>
 <figcaption>
 <p><span class="caption-text">Detailed view of the top candidate Loeys-Dietz syndrome type 2.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
 </figcaption>
@@ -201,7 +204,7 @@ diseases analyzed. The bottom of the page includes explanations and documents th
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Peter Robinson.</p>
+    <p>&#169; Copyright 2025, Peter Robinson.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

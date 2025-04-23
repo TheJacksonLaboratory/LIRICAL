@@ -114,37 +114,22 @@ Exomiser database files
 
 LIRICAL uses data files from the `Exomiser <https://github.com/exomiser/Exomiser>`_
 to annotate the VCF file and support variant interpretation.
-We recommend that always the latest version of these files be used.
+
 The Exomiser data files can be obtained from the
-`Exomiser download site <https://exomiser.monarchinitiative.org/exomiser/download>`_.
-You may need to scroll (right hand side) to see the subdirectory ``latest``, which includes the current version of
-these files. Download either ``2302_hg19.zip`` (for the hg19/GRCh37 genome assembly)  or ``2302_hg38.zip`` for the
-hg38/GRCh38 assembly). Of course, the datafile you use should match the assembly used to align and call
-the exome/genome data you want to analyze with LIRICAL.
+`Data release <https://github.com/exomiser/Exomiser/discussions/categories/data-release>`_ section of Exomiser discussions.
+We recommend that always the latest version of these files be used.
 
 .. note::
-  LIRICAL was tested for compatibility with `2302` Exomiser data version.
 
-Unpack the ZIP file, e.g.::
+    Starting from LIRICAL `v2.1.0`, only the database files compatible with Exomiser `14.0.0` (or newer) are supported.
+    These include the `2406 data release <https://github.com/exomiser/Exomiser/discussions/562>`_
+    or newer.
 
-  unzip 2302_hg19.zip
+Download either ``2406_hg19.zip`` (for the hg19/GRCh37 genome assembly)  or ``2406_hg38.zip`` for the
+hg38/GRCh38 assembly) and unpack the archive(s).
 
-LIRICAL uses the variant database file that is present in the data folder. The database file is named as
-``<release>_<genome-build>_variants.mv.db``, where
-
-* ``release`` is the release identifier (e.g. `2302`)
-* ``genome-build`` is the identifier of the genome build (e.g. `hg38`)
-
-Remember the path, since it will be needed to run LIRICAL with exome/genome data. We will use the CLI options:
-
-* ``-e19 | --exomiser-hg19`` `/some/path/2302_hg19_variants.mv.db`, or
-* ``-e38 | --exomiser-hg38`` `/some/path/2302_hg19_variants.mv.db`
-
-to set path to the Exomiser variant database.
-
-.. note::
-  The ``-e`` option that used to point to Exomiser data directory in the previous LIRICAL has been deprecated
-  and will *not* work in v2.
+LIRICAL needs the ``2406_hg38_variants.mv.db`` and ``2406_hg38_clinvar.mv.db`` database files to extract
+allele frequencies, in silico pathogenicity predictions, and ClinVar pathogenicity metadata for variants.
 
 
 .. _rstdownload:
@@ -158,19 +143,23 @@ LIRICAL requires some additional files to run.
 2. ``phenotype.hpoa`` The main annotation file with all HPO disease models
 3. ``hgnc_complete_set.txt`` A text file from HUGO Gene Nomenclature Committee (HGNC) with information about human genes
 4. ``mim2gene_medgen`` A file from the NCBI medgen project with OMIM-derived links between genes and diseases
-5. Jannovar transcript annotation files with definitions of transcripts and genes:
+5. ``en_product6.xml`` A file with links between Orpha disease IDs and the genes
+6. Jannovar transcript annotation files with definitions of transcripts and genes:
 
+  * ``hg19_ensembl.ser``
   * ``hg19_refseq.ser``
+  * ``hg19_refseq_curated.ser``
   * ``hg19_ucsc.ser``
+  * ``hg38_ensembl.ser``
   * ``hg38_refseq.ser``
+  * ``hg38_refseq_curated.ser``
   * ``hg38_ucsc.ser``
 
 
 LIRICAL offers a convenience function to download all files to a local directory.
 By default, LIRICAL will download all files into a newly created subdirectory called ``data``
-in the current working directory. You can change this default with the ``-d`` or ``--data`` options
-(If you change this, then you will need to pass the location of your directory to all other LIRICAL commands
-using the ``-d`` flag).
+in the current working directory. You can change this default with the ``-d | --data`` CLI option
+(If you change this, then you will need to pass the location of your directory to all other LIRICAL commands).
 
 Download the files into the ``data`` folder located next to the LIRICAL JAR file by running:
 
@@ -184,7 +173,7 @@ This will ensure LIRICAL finds the data folder automatically (see below).
   We assume the LIRICAL alias was set as described in the :ref:`rstsetupalias` section.
 
 LIRICAL will not download the files if they are already present unless the ``--overwrite`` argument is passed. For
-instance, the following command would download the four files to a directory called ``datafiles`` and would
+instance, the following command would download all files to a directory called ``datafiles`` and would
 overwrite any previously downloaded files::
 
   lirical download -d datafiles --overwrite
@@ -194,5 +183,7 @@ same directory and provide the path to the directory using the `-d | --data` opt
 
 The path to the LIRICAL data directory can be provided in two ways:
 
-1. explicitly, using ``-d | --data`` option
-2. implicitly, if the ``data`` folder is located next to the LIRICAL JAR file
+1. using ``-d | --data`` CLI option (explicitly)
+2. using the ``data`` folder is located next to the LIRICAL JAR file (implicitly)
+
+Using ``-d | --data`` option will override using the ``data`` folder located next to the LIRICAL JAR file.

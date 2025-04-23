@@ -1,23 +1,21 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LIRICAL’s Genotype Score &mdash; LIRICAL 2.0.2 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+  <title>LIRICAL’s Genotype Score &mdash; LIRICAL 2.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=c2377ec0"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=20623aea"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -36,9 +34,6 @@
           <a href="index.html" class="icon icon-home">
             LIRICAL
           </a>
-              <div class="version">
-                2.0
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -115,9 +110,16 @@ to the clinical manifestations observed in the proband. See the manuscript for a
 <p>The following genotype configuration options can be set on top of the phenotype-only analysis.</p>
 <section id="transcript-databases">
 <span id="rsttx-dbs"></span><h3>Transcript databases<a class="headerlink" href="#transcript-databases" title="Link to this heading"></a></h3>
-<p>LIRICAL can use transcript data from UCSC or RefSeq.
-The default is <a class="reference external" href="https://www.ncbi.nlm.nih.gov/refseq/">RefSeq</a>,
-but transcript definitions from <a class="reference external" href="http://genome.ucsc.edu/">UCSC</a> can also be used.</p>
+<p>LIRICAL can use transcript data from four transcript databases:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.ncbi.nlm.nih.gov/refseq/">RefSeq</a> - including curated transcripts (<code class="docutils literal notranslate"><span class="pre">NM_</span></code>)
+as well as the transcripts that are based on gene predictions (<code class="docutils literal notranslate"><span class="pre">XM_</span></code>)</p></li>
+<li><p>RefSeq curated - including curated transcripts (<code class="docutils literal notranslate"><span class="pre">NM_</span></code>) only,
+and <em>NOT</em> the transcripts that are based on gene predictions (<code class="docutils literal notranslate"><span class="pre">XM_</span></code>)</p></li>
+<li><p><a class="reference external" href="http://genome.ucsc.edu/">UCSC</a></p></li>
+<li><p><a class="reference external" href="https://www.ensembl.org/info/data">Ensembl</a></p></li>
+</ul>
+<p>RefSeq transcripts are used by default.</p>
 </section>
 <section id="background-variant-frequencies">
 <span id="rstbg-var-freqs"></span><h3>Background variant frequencies<a class="headerlink" href="#background-variant-frequencies" title="Link to this heading"></a></h3>
@@ -147,7 +149,7 @@ whether a disease gene is known for a disease or whether the gene is found to ha
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Peter Robinson.</p>
+    <p>&#169; Copyright 2025, Peter Robinson.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
