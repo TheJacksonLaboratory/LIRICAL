@@ -112,7 +112,7 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         public boolean showDiseasesWithNoDeleteriousVariants = false;
 
         @CommandLine.Option(names = {"--transcript-db"},
-                paramLabel = "{REFSEQ,UCSC}",
+                paramLabel = "{REFSEQ,REFSEQ_CURATED,UCSC,ENSEMBL}",
                 description = "Transcript database (default: ${DEFAULT-VALUE}).")
         public TranscriptDatabase transcriptDb = TranscriptDatabase.REFSEQ;
 
@@ -163,10 +163,10 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
     protected List<String> checkInput() {
         List<String> errors = new ArrayList<>();
 
-        Path codeHomeParent = codeHomeDir();
         // resources
         if (dataSection.liricalDataDirectory == null) {
             LOGGER.debug("Data directory is unset, searching next to the LIRICAL file");
+            Path codeHomeParent = codeHomeDir();
             Path codeHomeDataDir = codeHomeParent.resolve("data");
             if (Files.isDirectory(codeHomeDataDir)) {
                 dataSection.liricalDataDirectory = codeHomeDataDir;
@@ -440,11 +440,13 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         return builder.build();
     }
 
-    protected static SampleIdAndGenesAndGenotypes readVariantsFromVcfFile(String sampleId,
-                                                                          Path vcfPath,
-                                                                          GenomeBuild genomeBuild,
-                                                                          TranscriptDatabase transcriptDatabase,
-                                                                          VariantParserFactory parserFactory) throws LiricalParseException {
+    protected static SampleIdAndGenesAndGenotypes readVariantsFromVcfFile(
+            String sampleId,
+            Path vcfPath,
+            GenomeBuild genomeBuild,
+            TranscriptDatabase transcriptDatabase,
+            VariantParserFactory parserFactory
+    ) throws LiricalParseException {
         LOGGER.debug("Getting variant parser to parse a VCF file using {} assembly and {} transcripts", genomeBuild, transcriptDatabase);
         Optional<VariantParser> parser = parserFactory.forPath(vcfPath, genomeBuild, transcriptDatabase);
         if (parser.isEmpty()) {

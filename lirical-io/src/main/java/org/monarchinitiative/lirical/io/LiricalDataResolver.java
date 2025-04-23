@@ -42,8 +42,11 @@ public class LiricalDataResolver {
 
     private void checkV1Resources() throws LiricalDataException {
         boolean error = false;
-        List<Path> requiredFiles = List.of(hpoJson(), hgncCompleteSet(), mim2geneMedgen(), phenotypeAnnotations(),
-                hg19RefseqTxDatabase(), hg19UcscTxDatabase(), hg38RefseqTxDatabase(), hg38UcscTxDatabase());
+        List<Path> requiredFiles = List.of(
+                hpoJson(), hgncCompleteSet(), mim2geneMedgen(), phenotypeAnnotations(),
+                hg19RefseqTxDatabase(), hg19RefseqCuratedTxDatabase(), hg19EnsemblTxDatabase(), hg19UcscTxDatabase(),
+                hg38RefseqTxDatabase(), hg38RefseqCuratedTxDatabase(), hg38EnsemblTxDatabase(), hg38UcscTxDatabase()
+        );
         // Note: we do not require `orpha2gene` in all analyses, hence it is not required!
         for (Path file : requiredFiles) {
             if (!Files.isRegularFile(file)) {
@@ -88,23 +91,43 @@ public class LiricalDataResolver {
         return dataDirectory.resolve("hg19_refseq.ser");
     }
 
-    public Path hg38RefseqTxDatabase() {
-        return dataDirectory.resolve("hg38_refseq.ser");
+    public Path hg19RefseqCuratedTxDatabase() {
+        return dataDirectory.resolve("hg19_refseq_curated.ser");
+    }
+
+    public Path hg19EnsemblTxDatabase() {
+        return dataDirectory.resolve("hg19_ensembl.ser");
     }
 
     public Path hg38UcscTxDatabase() {
         return dataDirectory.resolve("hg38_ucsc.ser");
     }
 
+    public Path hg38RefseqTxDatabase() {
+        return dataDirectory.resolve("hg38_refseq.ser");
+    }
+
+    public Path hg38RefseqCuratedTxDatabase() {
+        return dataDirectory.resolve("hg38_refseq_curated.ser");
+    }
+
+    public Path hg38EnsemblTxDatabase() {
+        return dataDirectory.resolve("hg38_ensembl.ser");
+    }
+
     public Path transcriptCacheFor(GenomeBuild genomeBuild, TranscriptDatabase txDb) {
         return switch (genomeBuild) {
             case HG19 -> switch (txDb) {
                 case UCSC -> hg19UcscTxDatabase();
+                case ENSEMBL -> hg19EnsemblTxDatabase();
                 case REFSEQ -> hg19RefseqTxDatabase();
+                case REFSEQ_CURATED -> hg19RefseqCuratedTxDatabase();
             };
             case HG38 -> switch (txDb) {
                 case UCSC -> hg38UcscTxDatabase();
+                case ENSEMBL -> hg38EnsemblTxDatabase();
                 case REFSEQ -> hg38RefseqTxDatabase();
+                case REFSEQ_CURATED -> hg38RefseqCuratedTxDatabase();
             };
         };
     }

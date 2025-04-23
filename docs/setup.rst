@@ -146,17 +146,20 @@ LIRICAL requires some additional files to run.
 5. ``en_product6.xml`` A file with links between Orpha disease IDs and the genes
 6. Jannovar transcript annotation files with definitions of transcripts and genes:
 
+  * ``hg19_ensembl.ser``
   * ``hg19_refseq.ser``
+  * ``hg19_refseq_curated.ser``
   * ``hg19_ucsc.ser``
+  * ``hg38_ensembl.ser``
   * ``hg38_refseq.ser``
+  * ``hg38_refseq_curated.ser``
   * ``hg38_ucsc.ser``
 
 
 LIRICAL offers a convenience function to download all files to a local directory.
 By default, LIRICAL will download all files into a newly created subdirectory called ``data``
-in the current working directory. You can change this default with the ``-d`` or ``--data`` options
-(If you change this, then you will need to pass the location of your directory to all other LIRICAL commands
-using the ``-d`` flag).
+in the current working directory. You can change this default with the ``-d | --data`` CLI option
+(If you change this, then you will need to pass the location of your directory to all other LIRICAL commands).
 
 Download the files into the ``data`` folder located next to the LIRICAL JAR file by running:
 
@@ -170,7 +173,7 @@ This will ensure LIRICAL finds the data folder automatically (see below).
   We assume the LIRICAL alias was set as described in the :ref:`rstsetupalias` section.
 
 LIRICAL will not download the files if they are already present unless the ``--overwrite`` argument is passed. For
-instance, the following command would download the four files to a directory called ``datafiles`` and would
+instance, the following command would download all files to a directory called ``datafiles`` and would
 overwrite any previously downloaded files::
 
   lirical download -d datafiles --overwrite
@@ -180,5 +183,7 @@ same directory and provide the path to the directory using the `-d | --data` opt
 
 The path to the LIRICAL data directory can be provided in two ways:
 
-1. explicitly, using ``-d | --data`` option
-2. implicitly, if the ``data`` folder is located next to the LIRICAL JAR file
+1. using ``-d | --data`` CLI option (explicitly)
+2. using the ``data`` folder is located next to the LIRICAL JAR file (implicitly)
+
+Using ``-d | --data`` option will override using the ``data`` folder located next to the LIRICAL JAR file.

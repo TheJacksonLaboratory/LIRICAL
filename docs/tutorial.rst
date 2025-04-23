@@ -83,14 +83,19 @@ Running LIRICAL
 Run LIRICAL as follows::
 
   lirical phenopacket \
-  --exomiser-hg19 /path/to/2302_hg19_variants.mv.db \
   --assembly hg19 \
+  --exomiser-hg19-dir /path/to/2406_hg19 \
   --phenopacket LDS2.v2.json \
   --vcf LDS2.vcf.gz \
   --prefix LDS2
 
 .. note::
-  We assume the LIRICAL alias was set as described in the :ref:`rstsetupalias` section.
+
+    We assume the LIRICAL alias was set as described in the :ref:`rstsetupalias` section.
+
+.. note::
+
+    We assume that ``/path/to/2406_hg19`` points to a folder with the ``2406`` Exomiser data release files.
 
 
 Viewing the results
