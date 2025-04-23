@@ -808,7 +808,7 @@
     <span id="tooltip" style="position: absolute; display: none;"></span>
 </main>
 <footer>
-    <p>LIRICAL ${resultsMeta.liricalVersion!""} &copy; 2023</p>
+    <p>LIRICAL ${resultsMeta.liricalVersion!""} &copy; 2025</p>
 </footer>
 
 <script>
