@@ -181,23 +181,23 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
         LOGGER.debug("Analysis input validation policy: {}", runConfiguration.validationPolicy.name());
 
         Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
-        if (genomeBuild.isEmpty()) {
-            // We must have genome build!
-            String msg = "Genome build must be set";
-            errors.add(msg);
-        } else {
+        if (genomeBuild.isPresent()) {
             // Check Exomiser resources match the genome build.
             switch (genomeBuild.get()) {
                 case HG19 -> {
-                    if (dataSection.exomiserHg19DataDirectory == null
-                            && (dataSection.exomiserHg19Database == null || dataSection.exomiserHg19ClinVarDatabase == null)
+                    if (!exomiserResourcesAppearUsable(
+                            dataSection.exomiserHg19DataDirectory,
+                            dataSection.exomiserHg19Database,
+                            dataSection.exomiserHg19ClinVarDatabase)
                     ) {
                         errors.add("Genome build set to HG19 but Exomiser resources are unset");
                     }
                 }
                 case HG38 -> {
-                    if (dataSection.exomiserHg38DataDirectory == null
-                            && (dataSection.exomiserHg38Database == null || dataSection.exomiserHg38ClinVarDatabase == null)
+                    if (!exomiserResourcesAppearUsable(
+                            dataSection.exomiserHg38DataDirectory,
+                            dataSection.exomiserHg38Database,
+                            dataSection.exomiserHg38ClinVarDatabase)
                     ) {
                         errors.add("Genome build set to HG38 but Exomiser resources are unset");
                     }
@@ -224,41 +224,77 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
     }
 
     /**
-     * Build {@link Lirical} for a {@link GenomeBuild} based on {@link DataSection} and {@link RunConfiguration} sections.
+     * Build {@link Lirical} for a {@link GenomeBuild} based on {@link DataSection}
+     * and {@link RunConfiguration} sections, or in phenotype-only mode if {@code genomeBuild} is {@code null}.
      */
     protected Lirical bootstrapLirical(GenomeBuild genomeBuild) throws LiricalDataException {
         LiricalBuilder builder = LiricalBuilder.builder(dataSection.liricalDataDirectory);
 
-        // Deal with Exomiser resources.
-        ExomiserResources resources = switch (genomeBuild) {
-            case HG19 -> loadExomiserResources(
-                    GenomeBuild.HG19,
-                    dataSection.exomiserHg19DataDirectory,
-                    dataSection.exomiserHg19Database,
-                    dataSection.exomiserHg19ClinVarDatabase
-            );
-            case HG38 -> loadExomiserResources(
-                    GenomeBuild.HG38,
-                    dataSection.exomiserHg38DataDirectory,
-                    dataSection.exomiserHg38Database,
-                    dataSection.exomiserHg38ClinVarDatabase
-            );
-        };
-        builder.exomiserResources(genomeBuild, resources);
+        if (genomeBuild == null)
+            genomeBuild = inferGenomeBuildFromExomiser();
 
-        // Background variant frequencies
-        if (dataSection.backgroundFrequencyFile != null) {
-            LOGGER.debug("Using custom deleterious variant background frequency file at {} for {}",
-                    dataSection.backgroundFrequencyFile.toAbsolutePath(),
-                    genomeBuild);
-            Map<GenomeBuild, Path> backgroundFrequencies = Map.of(genomeBuild, dataSection.backgroundFrequencyFile);
-            CustomBackgroundVariantFrequencyServiceFactory backgroundFreqFactory = CustomBackgroundVariantFrequencyServiceFactory.of(backgroundFrequencies);
-            builder.backgroundVariantFrequencyServiceFactory(backgroundFreqFactory);
+        if (genomeBuild != null) {
+            // Deal with Exomiser resources.
+            ExomiserResources resources = switch (genomeBuild) {
+                case HG19 -> loadExomiserResources(
+                        GenomeBuild.HG19,
+                        dataSection.exomiserHg19DataDirectory,
+                        dataSection.exomiserHg19Database,
+                        dataSection.exomiserHg19ClinVarDatabase
+                );
+                case HG38 -> loadExomiserResources(
+                        GenomeBuild.HG38,
+                        dataSection.exomiserHg38DataDirectory,
+                        dataSection.exomiserHg38Database,
+                        dataSection.exomiserHg38ClinVarDatabase
+                );
+            };
+            builder.exomiserResources(genomeBuild, resources);
+
+            // Background variant frequencies
+            if (dataSection.backgroundFrequencyFile != null) {
+                LOGGER.debug("Using custom deleterious variant background frequency file at {} for {}",
+                        dataSection.backgroundFrequencyFile.toAbsolutePath(),
+                        genomeBuild);
+                Map<GenomeBuild, Path> backgroundFrequencies = Map.of(genomeBuild, dataSection.backgroundFrequencyFile);
+                CustomBackgroundVariantFrequencyServiceFactory backgroundFreqFactory = CustomBackgroundVariantFrequencyServiceFactory.of(backgroundFrequencies);
+                builder.backgroundVariantFrequencyServiceFactory(backgroundFreqFactory);
+            }
         }
 
         return builder.shouldLoadOrpha2Gene(runConfiguration.useOrphanet)
                 .parallelism(dataSection.parallelism)
                 .build();
+    }
+
+    private GenomeBuild inferGenomeBuildFromExomiser() {
+        boolean couldProceedWithHg19 = exomiserResourcesAppearUsable(
+                dataSection.exomiserHg19DataDirectory,
+                dataSection.exomiserHg19Database,
+                dataSection.exomiserHg19ClinVarDatabase);
+        boolean couldProceedWithHg38 = exomiserResourcesAppearUsable(
+                dataSection.exomiserHg38DataDirectory,
+                dataSection.exomiserHg38Database,
+                dataSection.exomiserHg38ClinVarDatabase);
+
+        if (couldProceedWithHg38) {
+            //noinspection LoggingSimilarMessage
+            LOGGER.info("Genome build was inferred to {} based on provided Exomiser data resources", GenomeBuild.HG38);
+            return GenomeBuild.HG38; // Use hg38 even if both hg19 and hg38 are set.
+        } else if (couldProceedWithHg19) {
+            LOGGER.info("Genome build was inferred to {} based on provided Exomiser data resources", GenomeBuild.HG19);
+            return GenomeBuild.HG19;
+        } else {
+            return null;
+        }
+    }
+
+    private static boolean exomiserResourcesAppearUsable(
+            Path exomiserDataDirectory,
+            Path exomiserAlleleDatabasePath,
+            Path exomiserClinVarDatabasePath
+    ) {
+        return exomiserDataDirectory != null || (exomiserAlleleDatabasePath != null && exomiserClinVarDatabasePath != null);
     }
 
     /**
@@ -272,10 +308,10 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
      * @throws LiricalDataException if one or both database paths are <code>null</code> or do not point to readable file.
      */
     private static ExomiserResources loadExomiserResources(
-            GenomeBuild genomeBuild,
-            Path exomiserDataDirectory,
-            Path exomiserAlleleDatabasePath,
-            Path exomiserClinVarDatabasePath
+        GenomeBuild genomeBuild,
+        Path exomiserDataDirectory,
+        Path exomiserAlleleDatabasePath,
+        Path exomiserClinVarDatabasePath
     ) throws LiricalDataException {
         // At the end of the function, we need to possess path to allele DB and ClinVar DB files.
         //
@@ -371,14 +407,11 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
 
     protected abstract String getGenomeBuild();
 
-    protected GenomeBuild parseGenomeBuild(String genomeBuild) throws LiricalDataException {
-        Optional<GenomeBuild> genomeBuildOptional = GenomeBuild.parse(genomeBuild);
-        if (genomeBuildOptional.isEmpty())
-            throw new LiricalDataException("Unknown genome build: '" + genomeBuild + "'");
-        return genomeBuildOptional.get();
-    }
-
-    protected AnalysisOptions prepareAnalysisOptions(Lirical lirical, GenomeBuild genomeBuild, TranscriptDatabase transcriptDb) {
+    protected AnalysisOptions prepareAnalysisOptions(
+        Lirical lirical,
+        GenomeBuild genomeBuild,
+        TranscriptDatabase transcriptDb
+    ) {
         AnalysisOptions.Builder builder = AnalysisOptions.builder();
 
         // Genome build

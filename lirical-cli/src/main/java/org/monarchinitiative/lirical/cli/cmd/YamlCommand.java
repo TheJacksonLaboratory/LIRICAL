@@ -32,8 +32,8 @@ public class YamlCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"--assembly"},
             paramLabel = "{hg19,hg38}",
-            description = "Genome build (default: ${DEFAULT-VALUE}).")
-    public String genomeBuild = "hg38";
+            description = "Genome build (default: unset).")
+    public String genomeBuild = null;
 
     @Override
     protected String getGenomeBuild() {

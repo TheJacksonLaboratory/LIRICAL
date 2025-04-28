@@ -1,7 +1,6 @@
 package org.monarchinitiative.lirical.core.analysis.impl;
 
 import org.monarchinitiative.lirical.core.analysis.*;
-import org.monarchinitiative.lirical.core.analysis.LiricalAnalysisException;
 import org.monarchinitiative.lirical.core.likelihoodratio.*;
 import org.monarchinitiative.lirical.core.model.Gene2Genotype;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
@@ -30,9 +29,11 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
     private final PhenotypeLikelihoodRatio phenotypeLrEvaluator;
     private final ExecutorService pool;
 
-    public static LiricalAnalysisRunnerImpl of(PhenotypeService phenotypeService,
-                                               BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory,
-                                               int parallelism) {
+    public static LiricalAnalysisRunnerImpl of(
+            PhenotypeService phenotypeService,
+            BackgroundVariantFrequencyServiceFactory backgroundVariantFrequencyServiceFactory,
+            int parallelism
+    ) {
         return new LiricalAnalysisRunnerImpl(phenotypeService,
                 backgroundVariantFrequencyServiceFactory,
                 parallelism);
@@ -52,20 +53,19 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
     public AnalysisResults run(AnalysisData data, AnalysisOptions options) throws LiricalAnalysisException {
         Map<TermId, List<Gene2Genotype>> diseaseToGenotype = groupDiseasesByGene(data.genes());
 
-        Optional<GenotypeLikelihoodRatio> genotypeLikelihoodRatio = configureGenotypeLikelihoodRatio(options.genomeBuild(),
+        GenotypeLikelihoodRatio glr = configureGenotypeLikelihoodRatio(
+                options.genomeBuild(),
                 options.variantDeleteriousnessThreshold(),
                 options.defaultVariantBackgroundFrequency(),
-                options.useStrictPenalties());
-        if (genotypeLikelihoodRatio.isEmpty()) {
-            throw new LiricalAnalysisException("Cannot configure genotype LR for %s".formatted(options.genomeBuild()));
-        }
+                options.useStrictPenalties()
+        );
 
         ProgressReporter progressReporter = new ProgressReporter(1_000, "diseases");
         Stream<TestResult> testResultStream = phenotypeService.diseases().hpoDiseases()
                 .parallel() // why not?
                 .filter(prepareDiseaseFilter(options.diseaseDatabases(), options.targetDiseases()))
                 .peek(d -> progressReporter.log())
-                .map(disease -> analyzeDisease(genotypeLikelihoodRatio.get(), disease, data, options, diseaseToGenotype))
+                .map(disease -> analyzeDisease(glr, disease, data, options, diseaseToGenotype.getOrDefault(disease.id(), List.of())))
                 .flatMap(Optional::stream);
 
         try {
@@ -101,7 +101,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         for (Gene2Genotype gene : genes) {
             Collection<TermId> diseaseIds = geneToDisease.getOrDefault(gene.geneId().id(), List.of());
             for (TermId diseaseId : diseaseIds) {
-                diseaseToGenotype.computeIfAbsent(diseaseId, k -> new LinkedList<>())
+                diseaseToGenotype.computeIfAbsent(diseaseId, k -> new ArrayList<>())
                         .add(gene);
             }
         }
@@ -109,11 +109,13 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         return diseaseToGenotype;
     }
 
-    private Optional<TestResult> analyzeDisease(GenotypeLikelihoodRatio genotypeLikelihoodRatio,
-                                                HpoDisease disease,
-                                                AnalysisData analysisData,
-                                                AnalysisOptions options,
-                                                Map<TermId, List<Gene2Genotype>> diseaseToGenotype) {
+    private Optional<TestResult> analyzeDisease(
+            GenotypeLikelihoodRatio glr,
+            HpoDisease disease,
+            AnalysisData analysisData,
+            AnalysisOptions options,
+            List<Gene2Genotype> genotypes
+    ) {
         Optional<Double> pretestOptional = options.pretestDiseaseProbability().pretestProbability(disease.id());
         if (pretestOptional.isEmpty()) {
             LOGGER.warn("Missing pretest probability for {} ({})", disease.diseaseName(), disease.id());
@@ -121,19 +123,17 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         }
         double pretestProbability = pretestOptional.get();
 
-        List<Gene2Genotype> genotypes = diseaseToGenotype.getOrDefault(disease.id(), List.of());
-
         InducedDiseaseGraph idg = InducedDiseaseGraph.create(disease, phenotypeService.hpo());
         List<LrWithExplanation> observed = observedPhenotypesLikelihoodRatios(analysisData.presentPhenotypeTerms(), idg);
         List<LrWithExplanation> excluded = excludedPhenotypesLikelihoodRatios(analysisData.negatedPhenotypeTerms(), idg);
 
-        // The GT LR stays `null` if no genotype data is available.
+        // The GT LR stays `null` if we run phenotype only (`glr==null`).
         GenotypeLrWithExplanation bestGenotypeLr = null;
-        if (!diseaseToGenotype.isEmpty()) {
+        if (glr != null) {
             // The variant/genotype data is available for the individual
             boolean noPredictedDeleteriousVariantsWereFound = true;
             for (Gene2Genotype g2g : genotypes) { // Find the gene with the best LR match
-                GenotypeLrWithExplanation candidate = genotypeLikelihoodRatio.evaluateGenotype(analysisData.sampleId(), g2g, disease.modesOfInheritance());
+                GenotypeLrWithExplanation candidate = glr.evaluateGenotype(analysisData.sampleId(), g2g, disease.modesOfInheritance());
                 bestGenotypeLr = takeNonNullOrGreaterLr(bestGenotypeLr, candidate);
 
                 if (!options.includeDiseasesWithNoDeleteriousVariants()) {
@@ -189,15 +189,25 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
                 : candidate;
     }
 
-    private Optional<GenotypeLikelihoodRatio> configureGenotypeLikelihoodRatio(GenomeBuild genomeBuild,
-                                                                     float deleteriousnessThreshold,
-                                                                     double defaultVariantBackgroundFrequency,
-                                                                     boolean strict) {
-        return bgFreqFactory.forGenomeBuild(genomeBuild, defaultVariantBackgroundFrequency)
+    private GenotypeLikelihoodRatio configureGenotypeLikelihoodRatio(
+            GenomeBuild genomeBuild,
+            float deleteriousnessThreshold,
+            double defaultVariantBackgroundFrequency,
+            boolean strict
+    ) {
+        if (genomeBuild == null)
+            return null;
+
+        Optional<GenotypeLikelihoodRatio> genotypeLikelihoodRatio = bgFreqFactory.forGenomeBuild(genomeBuild, defaultVariantBackgroundFrequency)
                 .map(bgFreqService -> {
                     GenotypeLikelihoodRatio.Options options = new GenotypeLikelihoodRatio.Options(deleteriousnessThreshold, strict);
                     return new GenotypeLikelihoodRatio(bgFreqService, options);
                 });
+        if (genotypeLikelihoodRatio.isEmpty())
+            LOGGER.warn("Could not configure genotype likelihood ratio for {}", genomeBuild);
+
+        return genotypeLikelihoodRatio
+                .orElse(null);
     }
 
     @Override

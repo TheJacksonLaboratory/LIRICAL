@@ -20,12 +20,14 @@ public interface AnalysisOptions {
     }
 
     /**
-     * @return genomic build that should be used in this analysis.
+     * @return genomic build that should be used in this analysis
+     * or {@code null} if the analysis should be run in phenotype only mode.
      */
     GenomeBuild genomeBuild();
 
     /**
-     * @return the transcript database that should be used in this analysis.
+     * @return the transcript database that should be used in this analysis
+     * or {@code null} if the analysis should be run in phenotype only mode.
      */
     TranscriptDatabase transcriptDatabase();
 
@@ -86,7 +88,7 @@ public interface AnalysisOptions {
     class Builder {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(Builder.class);
-        private GenomeBuild genomeBuild = GenomeBuild.HG38;
+        private GenomeBuild genomeBuild = null;
         private TranscriptDatabase transcriptDatabase = TranscriptDatabase.REFSEQ;
         private final Set<DiseaseDatabase> diseaseDatabases = new HashSet<>(List.of(DiseaseDatabase.OMIM, DiseaseDatabase.DECIPHER));
         private Set<TermId> targetDiseases = null;  // null = test all diseases
@@ -101,10 +103,6 @@ public interface AnalysisOptions {
         }
 
         public Builder genomeBuild(GenomeBuild genomeBuild) {
-            if (genomeBuild == null) {
-                LOGGER.warn("Cannot set genome build to `null`. Retaining {}", this.genomeBuild);
-                return this;
-            }
             this.genomeBuild = genomeBuild;
             return this;
         }

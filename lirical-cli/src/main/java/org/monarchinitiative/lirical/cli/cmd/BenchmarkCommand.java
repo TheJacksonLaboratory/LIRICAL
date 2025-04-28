@@ -63,8 +63,8 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
 
     @CommandLine.Option(names = {"--assembly"},
             paramLabel = "{hg19,hg38}",
-            description = "Genome build (default: ${DEFAULT-VALUE}).")
-    protected String genomeBuild = "hg38";
+            description = "Genome build (default: unset).")
+    protected String genomeBuild = null;
 
     @Override
     public Integer execute() {
@@ -80,15 +80,15 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
         }
 
         try {
-            GenomeBuild genomeBuild = parseGenomeBuild(getGenomeBuild());
+            Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
             TranscriptDatabase transcriptDb = runConfiguration.transcriptDb;
 
             // 1 - bootstrap LIRICAL.
-            Lirical lirical = bootstrapLirical(genomeBuild);
+            Lirical lirical = bootstrapLirical(genomeBuild.orElse(null));
 
             // 2 - prepare the simulation data shared by all phenopackets.
-            AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, transcriptDb);
-            List<LiricalVariant> backgroundVariants = readBackgroundVariants(lirical, genomeBuild, transcriptDb);
+            AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild.orElse(null), transcriptDb);
+            List<LiricalVariant> backgroundVariants = readBackgroundVariants(lirical, genomeBuild.orElse(null), transcriptDb);
 
             List<DataAndSanitationResultsAndPath> sanitationResults = sanitizePhenopackets(phenopacketPaths,
                     lirical.phenotypeService().hpo());
@@ -121,7 +121,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                     LOGGER.info("Starting the analysis of [{}/{}] {}", i + 1, sanitationResults.size(),
                             result.path().toFile().getName());
                     // 3 - prepare benchmark data per phenopacket
-                    BenchmarkData benchmarkData = prepareBenchmarkData(lirical, genomeBuild, transcriptDb, backgroundVariants, result);
+                    BenchmarkData benchmarkData = prepareBenchmarkData(lirical, genomeBuild.orElse(null), transcriptDb, backgroundVariants, result);
 
                     // 4 - run the analysis.
                     AnalysisResults results = analysisRunner.run(benchmarkData.analysisData(), analysisOptions);

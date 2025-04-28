@@ -14,6 +14,9 @@ public enum GenomeBuild {
     private static final Pattern HG = Pattern.compile("hg(?<release>\\d{2})");
 
     public static Optional<GenomeBuild> parse(String payload) {
+        if (payload == null)
+            return Optional.empty();
+
         Matcher grchMatcher = GRCH.matcher(payload);
         if (grchMatcher.matches()) {
             return switch (grchMatcher.group("release")) {

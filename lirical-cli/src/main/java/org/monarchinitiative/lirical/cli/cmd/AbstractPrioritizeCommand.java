@@ -43,8 +43,12 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
         }
 
         try {
-            GenomeBuild genomeBuild = parseGenomeBuild(getGenomeBuild());
-            LOGGER.debug("Using genome build {}", genomeBuild);
+            Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
+            if (genomeBuild.isPresent()) {
+                LOGGER.debug("Using genome build {}", genomeBuild);
+            } else {
+                LOGGER.debug("Genome build is unset, LIRICAL will be run in phenotype only mode");
+            }
 
             LOGGER.debug("Using {} transcripts", runConfiguration.transcriptDb);
             TranscriptDatabase transcriptDb = runConfiguration.transcriptDb;
@@ -54,7 +58,7 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
 
             // 1 - bootstrap the app
             LOGGER.info("Bootstrapping LIRICAL");
-            Lirical lirical = bootstrapLirical(genomeBuild);
+            Lirical lirical = bootstrapLirical(genomeBuild.orElse(null));
             LOGGER.info("Configured LIRICAL {}", lirical.version()
                     .map("v%s"::formatted)
                     .orElse(UNKNOWN_VERSION_PLACEHOLDER));
@@ -94,10 +98,10 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
             }
 
             // 3 - prepare analysis data
-            AnalysisData analysisData = prepareAnalysisData(lirical, genomeBuild, transcriptDb, result.sanitizedInputs());
+            AnalysisData analysisData = prepareAnalysisData(lirical, genomeBuild.orElse(null), transcriptDb, result.sanitizedInputs());
 
             // 4 - run the analysis
-            AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, transcriptDb);
+            AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild.orElse(null), transcriptDb);
             LOGGER.info("Starting the analysis");
             AnalysisResults results;
             try (LiricalAnalysisRunner analysisRunner = lirical.analysisRunner()) {
@@ -143,18 +147,22 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
     protected abstract SanitationInputs procureSanitationInputs() throws LiricalParseException;
 
     private static AnalysisData prepareAnalysisData(
-            Lirical lirical,
-            GenomeBuild genomeBuild,
-            TranscriptDatabase transcriptDb,
-            SanitizedInputs inputs
+        Lirical lirical,
+        GenomeBuild genomeBuild,
+        TranscriptDatabase transcriptDb,
+        SanitizedInputs inputs
     ) throws LiricalParseException {
         // Read VCF file if present.
         String sampleId;
         GenesAndGenotypes genes;
-        if (inputs.vcf() == null) {
-            // Use placeholder, because the user did not provide sample ID,
-            // and we're running phenotype-only analysis.
-            sampleId = "subject";
+        if (genomeBuild == null) {
+            if (inputs.sampleId() == null) {
+                // Use placeholder, because the user did not provide sample ID,
+                // and we're running phenotype-only analysis.
+                sampleId = "subject";
+            } else {
+                sampleId = inputs.sampleId();
+            }
             genes = GenesAndGenotypes.empty();
         } else {
             SampleIdAndGenesAndGenotypes sampleAndGenotypes = readVariantsFromVcfFile(inputs.sampleId(),
