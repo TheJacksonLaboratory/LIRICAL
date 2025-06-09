@@ -11,7 +11,7 @@ or NGS gene-panel sequencing.
 On typical computers, LIRICAL will run from about 15 to 60 seconds in phenotype-only mode,
 ~5 minutes with a typical exome file, or longer if a whole-genome file is used as input.
 
-To get help, run LIRICAL with a command or with the option "-h"::
+To get help, run LIRICAL with a command or with the option ``-h``::
 
   lirical --help
   LIkelihood Ratio Interpretation of Clinical AbnormaLities
@@ -157,7 +157,8 @@ The ``prioritize`` command takes the following options:
   that correspond to the phenotype terms observed in the proband.
 * ``-n | --negated-phenotypes``: a comma-separated IDs of HPO IDs
   that correspond to the phenotype terms negated/excluded in the proband.
-* ``--assembly`` genome build, choose from `hg19` or `hg38`, must be provided if ``--vcf`` is used (default: ``hg38``).
+* ``--assembly`` genome build, choose from `hg19` or `hg38`, must be provided if ``--vcf`` is used.
+  If unset, the analysis will be run in phenotype-only mode.
 * ``--vcf``: path to VCF file with exome/genome sequencing results. The file can be compressed.
 * ``--sample-id``: proband's identifier, must be provided if running with a multi-sample VCF file (default: `subject`).
 * ``--age``: proband's age as an ISO8601 duration.
