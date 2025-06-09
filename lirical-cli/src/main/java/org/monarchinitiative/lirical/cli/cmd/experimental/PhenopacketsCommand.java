@@ -34,11 +34,6 @@ public class PhenopacketsCommand extends OutputCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PhenopacketsCommand.class);
 
-    @CommandLine.Option(names = {"--assembly"},
-            paramLabel = "{hg19,hg38}",
-            description = "Genome build (default: unset).")
-    public String genomeBuild = null;
-
     @CommandLine.Parameters(
             paramLabel = "phenopacket file(s)",
             description = {
@@ -49,7 +44,7 @@ public class PhenopacketsCommand extends OutputCommand {
 
     @Override
     protected String getGenomeBuild() {
-        return genomeBuild;
+        return null;  // experimental phenopackets subcommand is phenotype-only
     }
 
     @Override
@@ -65,17 +60,10 @@ public class PhenopacketsCommand extends OutputCommand {
         }
 
         Lirical lirical;
-        Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
-        if (genomeBuild.isPresent()) {
-            LOGGER.debug("Using genome build {}", genomeBuild.get());
-        } else {
-            LOGGER.debug("Processing phenopackets in phenotype-only mode");
-        }
+        GenomeBuild genomeBuild = null;
         try {
-            LOGGER.debug("Using {} transcripts", runConfiguration.transcriptDb);
-
             // 1 - bootstrap the app
-            lirical = bootstrapLirical(genomeBuild.orElse(null));
+            lirical = bootstrapLirical(genomeBuild);
             LOGGER.info("Configured LIRICAL {}", lirical.version()
                     .map("v%s"::formatted)
                     .orElse(UNKNOWN_VERSION_PLACEHOLDER));
@@ -101,7 +89,7 @@ public class PhenopacketsCommand extends OutputCommand {
 
         // 3 - process phenopackets
         LOGGER.info("Processing phenopackets");
-        AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild.orElse(null), runConfiguration.transcriptDb);
+        AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, runConfiguration.transcriptDb);
 
         try (LiricalAnalysisRunner analysisRunner = lirical.analysisRunner()) {
             for (SanitationResultsAndPath result : sanitationResults) {

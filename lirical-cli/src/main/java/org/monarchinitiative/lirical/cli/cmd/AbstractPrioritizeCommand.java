@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.cli.cmd;
 import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.analysis.*;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
+import org.monarchinitiative.lirical.core.io.VariantParserFactory;
 import org.monarchinitiative.lirical.core.model.FilteringStats;
 import org.monarchinitiative.lirical.core.model.GenesAndGenotypes;
 import org.monarchinitiative.lirical.core.model.GenomeBuild;
@@ -45,16 +46,13 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
         try {
             Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
             if (genomeBuild.isPresent()) {
-                LOGGER.debug("Using genome build {}", genomeBuild);
+                LOGGER.debug("Using genome build {}", genomeBuild.get());
+
+                LOGGER.debug("Using {} transcripts", runConfiguration.transcriptDb);
             } else {
-                LOGGER.debug("Genome build is unset, LIRICAL will be run in phenotype only mode");
+                LOGGER.debug("Running a phenotype-only analysis");
             }
-
-            LOGGER.debug("Using {} transcripts", runConfiguration.transcriptDb);
             TranscriptDatabase transcriptDb = runConfiguration.transcriptDb;
-
-            LOGGER.info("Parsing the analysis inputs");
-            SanitationInputs inputs = procureSanitationInputs();
 
             // 1 - bootstrap the app
             LOGGER.info("Bootstrapping LIRICAL");
@@ -62,6 +60,9 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
             LOGGER.info("Configured LIRICAL {}", lirical.version()
                     .map("v%s"::formatted)
                     .orElse(UNKNOWN_VERSION_PLACEHOLDER));
+
+            LOGGER.info("Parsing the analysis inputs");
+            SanitationInputs inputs = procureSanitationInputs();
 
             // 2 - sanitize inputs
             InputSanitizerFactory sanitizerFactory = new InputSanitizerFactory(lirical.phenotypeService().hpo());
@@ -98,10 +99,19 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
             }
 
             // 3 - prepare analysis data
-            AnalysisData analysisData = prepareAnalysisData(lirical, genomeBuild.orElse(null), transcriptDb, result.sanitizedInputs());
+            AnalysisData analysisData = prepareAnalysisData(
+                    lirical.variantParserFactory(),
+                    genomeBuild.orElse(null),
+                    transcriptDb,
+                    result.sanitizedInputs()
+        );
 
             // 4 - run the analysis
-            AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild.orElse(null), transcriptDb);
+            AnalysisOptions analysisOptions = prepareAnalysisOptions(
+                    lirical,
+                    genomeBuild.orElse(null),
+                    transcriptDb
+            );
             LOGGER.info("Starting the analysis");
             AnalysisResults results;
             try (LiricalAnalysisRunner analysisRunner = lirical.analysisRunner()) {
@@ -146,30 +156,32 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
 
     protected abstract SanitationInputs procureSanitationInputs() throws LiricalParseException;
 
+    /**
+     * Read the analysis data for a sample.
+     *
+     * @param genomeBuild build or {@code null} if we're performing a phenotype-only run.
+     * @throws LiricalParseException if reading
+     */
     private static AnalysisData prepareAnalysisData(
-        Lirical lirical,
-        GenomeBuild genomeBuild,
-        TranscriptDatabase transcriptDb,
-        SanitizedInputs inputs
+            VariantParserFactory variantParserFactory,
+            GenomeBuild genomeBuild,
+            TranscriptDatabase transcriptDb,
+            SanitizedInputs inputs
     ) throws LiricalParseException {
         // Read VCF file if present.
         String sampleId;
         GenesAndGenotypes genes;
-        if (genomeBuild == null) {
-            if (inputs.sampleId() == null) {
-                // Use placeholder, because the user did not provide sample ID,
-                // and we're running phenotype-only analysis.
-                sampleId = "subject";
-            } else {
-                sampleId = inputs.sampleId();
-            }
+        if (genomeBuild == null || inputs.vcf() == null) {
+            // Use placeholder, because the user did not provide sample ID,
+            // and we're running phenotype-only analysis.
+            sampleId = "subject";
             genes = GenesAndGenotypes.empty();
         } else {
             SampleIdAndGenesAndGenotypes sampleAndGenotypes = readVariantsFromVcfFile(inputs.sampleId(),
                     inputs.vcf(),
                     genomeBuild,
                     transcriptDb,
-                    lirical.variantParserFactory());
+                    variantParserFactory);
             sampleId = sampleAndGenotypes.sampleId();
             genes = sampleAndGenotypes.genesAndGenotypes();
         }

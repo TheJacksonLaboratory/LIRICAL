@@ -53,7 +53,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
     public AnalysisResults run(AnalysisData data, AnalysisOptions options) throws LiricalAnalysisException {
         Map<TermId, List<Gene2Genotype>> diseaseToGenotype = groupDiseasesByGene(data.genes());
 
-        GenotypeLikelihoodRatio glr = configureGenotypeLikelihoodRatio(
+        GenotypeLikelihoodRatio genotypeLikelihoodRatio = configureGenotypeLikelihoodRatio(
                 options.genomeBuild(),
                 options.variantDeleteriousnessThreshold(),
                 options.defaultVariantBackgroundFrequency(),
@@ -65,7 +65,7 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
                 .parallel() // why not?
                 .filter(prepareDiseaseFilter(options.diseaseDatabases(), options.targetDiseases()))
                 .peek(d -> progressReporter.log())
-                .map(disease -> analyzeDisease(glr, disease, data, options, diseaseToGenotype.getOrDefault(disease.id(), List.of())))
+                .map(disease -> analyzeDisease(genotypeLikelihoodRatio, disease, data, options, diseaseToGenotype))
                 .flatMap(Optional::stream);
 
         try {
@@ -110,11 +110,11 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
     }
 
     private Optional<TestResult> analyzeDisease(
-            GenotypeLikelihoodRatio glr,
+            GenotypeLikelihoodRatio genotypeLikelihoodRatio,
             HpoDisease disease,
             AnalysisData analysisData,
             AnalysisOptions options,
-            List<Gene2Genotype> genotypes
+            Map<TermId, List<Gene2Genotype>> diseaseToGenotype
     ) {
         Optional<Double> pretestOptional = options.pretestDiseaseProbability().pretestProbability(disease.id());
         if (pretestOptional.isEmpty()) {
@@ -127,13 +127,15 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
         List<LrWithExplanation> observed = observedPhenotypesLikelihoodRatios(analysisData.presentPhenotypeTerms(), idg);
         List<LrWithExplanation> excluded = excludedPhenotypesLikelihoodRatios(analysisData.negatedPhenotypeTerms(), idg);
 
-        // The GT LR stays `null` if we run phenotype only (`glr==null`).
+        // The GT LR stays `null` if no genotype data is available.
         GenotypeLrWithExplanation bestGenotypeLr = null;
-        if (glr != null) {
-            // The variant/genotype data is available for the individual
+        if (genotypeLikelihoodRatio != null && !diseaseToGenotype.isEmpty()) {
+            // The variant/genotype data is available for the individual,
+            // and we do *not* run a phenotype-only analysis.
             boolean noPredictedDeleteriousVariantsWereFound = true;
-            for (Gene2Genotype g2g : genotypes) { // Find the gene with the best LR match
-                GenotypeLrWithExplanation candidate = glr.evaluateGenotype(analysisData.sampleId(), g2g, disease.modesOfInheritance());
+            for (Gene2Genotype g2g : diseaseToGenotype.getOrDefault(disease.id(), List.of())) {
+                // Find the gene with the best LR match
+                GenotypeLrWithExplanation candidate = genotypeLikelihoodRatio.evaluateGenotype(analysisData.sampleId(), g2g, disease.modesOfInheritance());
                 bestGenotypeLr = takeNonNullOrGreaterLr(bestGenotypeLr, candidate);
 
                 if (!options.includeDiseasesWithNoDeleteriousVariants()) {
@@ -196,18 +198,14 @@ public class LiricalAnalysisRunnerImpl implements LiricalAnalysisRunner {
             boolean strict
     ) {
         if (genomeBuild == null)
+            // We're running a phenotype-only analysis.
             return null;
 
-        Optional<GenotypeLikelihoodRatio> genotypeLikelihoodRatio = bgFreqFactory.forGenomeBuild(genomeBuild, defaultVariantBackgroundFrequency)
+        return bgFreqFactory.forGenomeBuild(genomeBuild, defaultVariantBackgroundFrequency)
                 .map(bgFreqService -> {
                     GenotypeLikelihoodRatio.Options options = new GenotypeLikelihoodRatio.Options(deleteriousnessThreshold, strict);
                     return new GenotypeLikelihoodRatio(bgFreqService, options);
-                });
-        if (genotypeLikelihoodRatio.isEmpty())
-            LOGGER.warn("Could not configure genotype likelihood ratio for {}", genomeBuild);
-
-        return genotypeLikelihoodRatio
-                .orElse(null);
+                }).orElse(null);
     }
 
     @Override

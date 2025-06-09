@@ -24,7 +24,11 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"--assembly"},
             paramLabel = "{hg19,hg38}",
-            description = "Genome build (default: unset).")
+            description = {
+                    "Genome build.",
+                    "Leave unset to run in phenotype-only mode.",
+                    "Default: ${DEFAULT-VALUE}"
+            })
     public String genomeBuild = null;
 
     @CommandLine.Option(names = {"--vcf"},

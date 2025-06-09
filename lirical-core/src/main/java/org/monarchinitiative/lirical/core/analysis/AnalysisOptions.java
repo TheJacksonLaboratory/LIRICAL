@@ -20,14 +20,13 @@ public interface AnalysisOptions {
     }
 
     /**
-     * @return genomic build that should be used in this analysis
-     * or {@code null} if the analysis should be run in phenotype only mode.
+     * @return genome build to use in the analysis
+     * or {@code null} to run a phenotype-only analysis.
      */
     GenomeBuild genomeBuild();
 
     /**
-     * @return the transcript database that should be used in this analysis
-     * or {@code null} if the analysis should be run in phenotype only mode.
+     * @return the transcript database that should be used in this analysis.
      */
     TranscriptDatabase transcriptDatabase();
 
