@@ -5,6 +5,7 @@ import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Run LIRICAL from a Phenopacket -- with or without accompanying VCF file.
@@ -58,6 +59,18 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
                 data.age(),
                 data.sex(),
                 vcf);
+    }
+
+    @Override
+    protected List<String> checkInput() {
+        List<String> errors = super.checkInput();
+        if (genomeBuild == null && vcfPath != null) {
+            String msg = "The --vcf is set but --assembly is not specified. "
+                    + "Proceed either with genotype-aware analysis with both --vcf and --assembly options, "
+                    + "or run a phenotype-only analysis without the --vcf and --assembly options.";
+            errors.add(msg);
+        }
+        return errors;
     }
 
 }

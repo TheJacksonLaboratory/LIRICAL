@@ -75,4 +75,15 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
         return new SanitationInputsDefault(sampleId, presentTerms, excludedTerms, age, sex, vcfPath);
     }
 
+    @Override
+    protected List<String> checkInput() {
+        List<String> errors = super.checkInput();
+        if (genomeBuild == null && vcfPath != null) {
+            String msg = "The --vcf is set but --assembly is not specified. "
+                    + "Proceed either with genotype-aware analysis with both --vcf and --assembly options, "
+                    + "or run a phenotype-only analysis without the --vcf and --assembly options.";
+            errors.add(msg);
+        }
+        return errors;
+    }
 }
