@@ -7,6 +7,12 @@ latest
 -------------------
 
 -------------------
+v2.2.0 (2025-06-17)
+-------------------
+
+- Fix CLI bug that prevented running a phenotype-only analysis without providing Exomiser resources
+
+-------------------
 v2.1.0 (2025-04-23)
 -------------------
 
