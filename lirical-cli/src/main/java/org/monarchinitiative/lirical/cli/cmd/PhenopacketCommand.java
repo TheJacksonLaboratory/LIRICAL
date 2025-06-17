@@ -36,7 +36,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"--vcf"},
             description = "Path to a VCF file. This path has priority over any VCF files described in phenopacket.")
-    public String vcfPath;
+    public Path vcfPath;
 
     @Override
     protected String getGenomeBuild() {
@@ -49,7 +49,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
         // a greater priority
         SanitationInputs data = PhenopacketUtil.readPhenopacketData(phenopacketPath);
 
-        String vcf = vcfPath != null
+        Path vcf = vcfPath != null
                 ? vcfPath
                 : data.vcf();
 
@@ -64,12 +64,9 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
     @Override
     protected List<String> checkInput() {
         List<String> errors = super.checkInput();
-        if (genomeBuild == null && vcfPath != null) {
-            String msg = "The --vcf is set but --assembly is not specified. "
-                    + "Proceed either with genotype-aware analysis with both --vcf and --assembly options, "
-                    + "or run a phenotype-only analysis without the --vcf and --assembly options.";
-            errors.add(msg);
-        }
+        String vcfAndAssemblyCheckResult = checkVcfAndAssembly(vcfPath, genomeBuild);
+        if (vcfAndAssemblyCheckResult != null)
+            errors.add(vcfAndAssemblyCheckResult);
         return errors;
     }
 

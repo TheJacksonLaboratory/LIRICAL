@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.cli.cmd;
 import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 import picocli.CommandLine;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +34,7 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"--vcf"},
             description = "Path to VCF file (optional).")
-    public String vcfPath = null;
+    public Path vcfPath = null;
 
     @CommandLine.Option(names = {"--sample-id"},
             description = "Proband's identifier (default: ${DEFAULT-VALUE}).")
@@ -78,12 +79,9 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
     @Override
     protected List<String> checkInput() {
         List<String> errors = super.checkInput();
-        if (genomeBuild == null && vcfPath != null) {
-            String msg = "The --vcf is set but --assembly is not specified. "
-                    + "Proceed either with genotype-aware analysis with both --vcf and --assembly options, "
-                    + "or run a phenotype-only analysis without the --vcf and --assembly options.";
-            errors.add(msg);
-        }
+        String vcfAndAssemblyCheckResult = checkVcfAndAssembly(vcfPath, genomeBuild);
+        if (vcfAndAssemblyCheckResult != null)
+            errors.add(vcfAndAssemblyCheckResult);
         return errors;
     }
 }

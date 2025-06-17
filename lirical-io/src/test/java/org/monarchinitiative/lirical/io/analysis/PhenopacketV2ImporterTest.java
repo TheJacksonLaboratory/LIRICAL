@@ -12,6 +12,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Path;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -49,7 +50,7 @@ public class PhenopacketV2ImporterTest {
 
         assertThat(data.diseaseIds().stream().map(TermId::getValue).toList(), hasItems("OMIM:191100"));
 
-        assertThat(data.vcf(), equalTo("file:/path/to/Pfeiffer.vcf"));
+        assertThat(data.vcf(), equalTo(Path.of("file:/path/to/Pfeiffer.vcf")));
 
         assertThat(data.genomeAssembly().isPresent(), equalTo(true));
         assertThat(data.genomeAssembly().get(), equalTo("GRCh37"));

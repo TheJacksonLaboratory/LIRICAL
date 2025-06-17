@@ -13,7 +13,7 @@ hs_err_pid*
 target/
 *.iml
 *.log
-data/
+/data
 results/
 dependency-reduced-pom.xml
 .settings

@@ -2,6 +2,7 @@ package org.monarchinitiative.lirical.cli.cmd;
 
 import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 
+import java.nio.file.Path;
 import java.util.List;
 
 record SanitationInputsDefault(
@@ -10,6 +11,6 @@ record SanitationInputsDefault(
         List<String> excludedHpoTerms,
         String age,
         String sex,
-        String vcf
+        Path vcf
 ) implements SanitationInputs {
 }

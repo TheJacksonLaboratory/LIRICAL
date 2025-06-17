@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -193,5 +194,20 @@ abstract class AbstractPrioritizeCommand extends OutputCommand {
                 inputs.presentHpoTerms(),
                 inputs.excludedHpoTerms(),
                 genes);
+    }
+
+    protected static String checkVcfAndAssembly(Path vcfPath, String genomeBuild) {
+        if (vcfPath == null ^ genomeBuild == null) {
+            StringBuilder builder = new StringBuilder();
+            if (vcfPath == null)
+                builder.append("The --assembly is set but --vcf is not specified.");
+            else
+                builder.append("The --vcf is set but --assembly is not specified.");
+            builder.append(" ");
+            builder.append("Proceed either with genotype-aware analysis with both --vcf and --assembly options, or run a phenotype-only analysis without the --vcf and --assembly options.");
+            return builder.toString();
+        } else {
+            return null;
+        }
     }
 }

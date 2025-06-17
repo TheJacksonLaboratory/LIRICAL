@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -136,7 +137,7 @@ public class PhenopacketV1ImporterTest {
 
     @Test
     public void testGetVcfFile() {
-        assertEquals("file:/home/user/example.vcf", data.vcf());
+        assertEquals(Path.of("file:/home/user/example.vcf"), data.vcf());
 
         Optional<String> assembly = data.genomeAssembly();
         assertThat(assembly.isPresent(), equalTo(true));
