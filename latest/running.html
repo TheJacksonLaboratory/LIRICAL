@@ -103,7 +103,7 @@ LIRICAL can be run both with and without genomic data in form of a VCF file from
 or NGS gene-panel sequencing.</p>
 <p>On typical computers, LIRICAL will run from about 15 to 60 seconds in phenotype-only mode,
 ~5 minutes with a typical exome file, or longer if a whole-genome file is used as input.</p>
-<p>To get help, run LIRICAL with a command or with the option “-h”:</p>
+<p>To get help, run LIRICAL with a command or with the option <code class="docutils literal notranslate"><span class="pre">-h</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lirical</span> <span class="o">--</span><span class="n">help</span>
 <span class="n">LIkelihood</span> <span class="n">Ratio</span> <span class="n">Interpretation</span> <span class="n">of</span> <span class="n">Clinical</span> <span class="n">AbnormaLities</span>
 
@@ -233,7 +233,9 @@ as Nextflow or Snakemake.</p>
 that correspond to the phenotype terms observed in the proband.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">|</span> <span class="pre">--negated-phenotypes</span></code>: a comma-separated IDs of HPO IDs
 that correspond to the phenotype terms negated/excluded in the proband.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--assembly</span></code> genome build, choose from <cite>hg19</cite> or <cite>hg38</cite>, must be provided if <code class="docutils literal notranslate"><span class="pre">--vcf</span></code> is used (default: <code class="docutils literal notranslate"><span class="pre">hg38</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--assembly</span></code> genome build, choose from <cite>hg19</cite> or <cite>hg38</cite>.
+The assembly must be provided if <code class="docutils literal notranslate"><span class="pre">--vcf</span></code> is used. If both <code class="docutils literal notranslate"><span class="pre">--assembly</span></code> and <code class="docutils literal notranslate"><span class="pre">--vcf</span></code> are unset,
+the analysis will be run in phenotype-only mode.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--vcf</span></code>: path to VCF file with exome/genome sequencing results. The file can be compressed.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--sample-id</span></code>: proband’s identifier, must be provided if running with a multi-sample VCF file (default: <cite>subject</cite>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--age</span></code>: proband’s age as an ISO8601 duration.
@@ -309,15 +311,21 @@ results of gene panel, exome, or genome sequencing.</p>
 </div>
 <p>Save the file above as <code class="docutils literal notranslate"><span class="pre">pfeiffer.json</span></code>.</p>
 <p><strong>Running LIRICAL with clinical data</strong></p>
-<p>LIRICAL will perform phenotype-only analysis if the <code class="docutils literal notranslate"><span class="pre">phenopacket</span></code> command incantation does not contain a <code class="docutils literal notranslate"><span class="pre">--vcf</span></code> option.
+<p>LIRICAL will perform phenotype-only analysis if the <code class="docutils literal notranslate"><span class="pre">phenopacket</span></code> command incantation does not contain
+the <code class="docutils literal notranslate"><span class="pre">--assembly</span></code> and <code class="docutils literal notranslate"><span class="pre">--vcf</span></code> options.
 In this case, the only required argument is the phenopacket:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lirical</span> <span class="n">phenopacket</span> <span class="o">-</span><span class="n">p</span> <span class="n">pfeiffer</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
 <p><strong>Running LIRICAL with a VCF file</strong></p>
-<p>Alternatively, LIRICAL can include the VCF file if the path is provided using <code class="docutils literal notranslate"><span class="pre">--vcf</span></code> option.
-Note, we must also provide <code class="docutils literal notranslate"><span class="pre">--assembly</span></code> and <code class="docutils literal notranslate"><span class="pre">-e19</span></code> (or <code class="docutils literal notranslate"><span class="pre">-e38</span></code>) options to indicate the genome assembly and path to Exomiser variant database:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lirical</span> <span class="n">phenopacket</span> <span class="o">-</span><span class="n">p</span> <span class="n">pfeiffer</span><span class="o">.</span><span class="n">json</span> <span class="o">--</span><span class="n">vcf</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">pfeiffer</span><span class="o">.</span><span class="n">vcf</span><span class="o">.</span><span class="n">gz</span> <span class="o">--</span><span class="n">assembly</span> <span class="n">hg19</span> <span class="o">-</span><span class="n">e19</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">exomiser</span><span class="o">/</span><span class="mi">2302</span><span class="n">_hg19_variants</span><span class="o">.</span><span class="n">mv</span><span class="o">.</span><span class="n">db</span>
+<p>Alternatively, LIRICAL can use a VCF file if the path is provided using <code class="docutils literal notranslate"><span class="pre">--vcf</span></code> option.
+Note, the <code class="docutils literal notranslate"><span class="pre">--assembly</span></code> and <code class="docutils literal notranslate"><span class="pre">-ed19</span></code> (or <code class="docutils literal notranslate"><span class="pre">-ed38</span></code>) options to indicate the genome assembly
+and path to Exomiser data directory must also be provided:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lirical</span> <span class="n">phenopacket</span> \
+  <span class="o">--</span><span class="n">assembly</span> <span class="n">hg19</span> \
+  <span class="o">--</span><span class="n">vcf</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">pfeiffer</span><span class="o">.</span><span class="n">vcf</span><span class="o">.</span><span class="n">gz</span> \
+  <span class="o">-</span><span class="n">ed19</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">exomiser</span><span class="o">/</span><span class="n">datadir</span> \
+  <span class="o">-</span><span class="n">p</span> <span class="n">pfeiffer</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
 </section>
@@ -332,7 +340,7 @@ would be simply:</p>
 <p>This will run the phenotype-only analysis of the <em>Patient 4</em>.</p>
 <p>To run the genotype-aware analysis, modify the YAML file such that the <code class="docutils literal notranslate"><span class="pre">vcf</span></code> field points to the location
 of the VCF file on your file system. Then, the analysis is run as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lirical</span> <span class="n">yaml</span> <span class="o">-</span><span class="n">y</span> <span class="n">example</span><span class="o">.</span><span class="n">yml</span> <span class="o">--</span><span class="n">assembly</span> <span class="n">hg19</span> <span class="o">-</span><span class="n">e19</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">exomiser</span><span class="o">/</span><span class="mi">2302</span><span class="n">_hg19_variants</span><span class="o">.</span><span class="n">mv</span><span class="o">.</span><span class="n">db</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lirical</span> <span class="n">yaml</span> <span class="o">-</span><span class="n">y</span> <span class="n">example</span><span class="o">.</span><span class="n">yml</span> <span class="o">--</span><span class="n">assembly</span> <span class="n">hg19</span> <span class="o">-</span><span class="n">ed19</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">exomiser</span><span class="o">/</span><span class="n">datadir</span>
 </pre></div>
 </div>
 </section>
