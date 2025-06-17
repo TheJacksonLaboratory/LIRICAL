@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,6 +83,7 @@ class PhenopacketV2Importer implements PhenopacketImporter {
                 .filter(file -> "vcf".equalsIgnoreCase(file.getFileAttributesOrDefault("fileFormat", "")))
                 .findFirst();
         Path firstVcfPath = firstVcf.map(File::getUri)
+                .map(URI::create)
                 .map(Path::of)
                 .orElse(null);
         String genomeAssembly = firstVcf.map(f -> f.getFileAttributesOrDefault("genomeAssembly", null))

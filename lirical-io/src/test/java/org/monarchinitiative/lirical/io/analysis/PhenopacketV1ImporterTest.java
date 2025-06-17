@@ -137,7 +137,7 @@ public class PhenopacketV1ImporterTest {
 
     @Test
     public void testGetVcfFile() {
-        assertEquals(Path.of("file:/home/user/example.vcf"), data.vcf());
+        assertEquals(Path.of("/home/user/example.vcf"), data.vcf());
 
         Optional<String> assembly = data.genomeAssembly();
         assertThat(assembly.isPresent(), equalTo(true));

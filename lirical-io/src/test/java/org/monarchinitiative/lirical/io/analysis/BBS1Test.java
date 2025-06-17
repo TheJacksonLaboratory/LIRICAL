@@ -49,7 +49,7 @@ public class BBS1Test {
     public void testGetVcfPhenopacket() {
         Path vcfPath = DATA.vcf();
         assertThat(vcfPath, is(notNullValue()));
-        assertThat(vcfPath, equalTo(Path.of("file:/path/to/examples/BBS1.vcf")));
+        assertThat(vcfPath, equalTo(Path.of("/path/to/examples/BBS1.vcf")));
     }
 
     @Test
