@@ -22,10 +22,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPOutputStream;
 
@@ -57,14 +62,24 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
             description = "Where to write the benchmark results CSV file. The CSV is compressed if the path has the '.gz' suffix")
     protected Path outputPath;
 
+    // TODO: remove in 3.0.0
+    @Deprecated(
+            since = "2.1.1",
+            forRemoval = true
+    )
     @CommandLine.Option(names = {"--phenotype-only"},
             description = "Run the benchmark with phenotypes only (default: ${DEFAULT-VALUE})")
     protected boolean phenotypeOnly = false;
 
-    @CommandLine.Option(names = {"--assembly"},
+    @CommandLine.Option(
+            names = {"--assembly"},
             paramLabel = "{hg19,hg38}",
-            description = "Genome build (default: ${DEFAULT-VALUE}).")
-    protected String genomeBuild = "hg38";
+            description = {
+                    "Genome build.",
+                    "Leave unset if the benchmark should be run in phenotype-only mode.",
+                    "Default: ${DEFAULT-VALUE}"
+            })
+    protected String genomeBuild = null;
 
     @Override
     public Integer execute() {
@@ -79,16 +94,24 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
             return 1;
         }
 
+        if (phenotypeOnly && genomeBuild != null) {
+            LOGGER.error(
+                    "`--phenotype-only` option has been deprecated. "
+                    + "Do not use the `--assembly` option to run in a phenotype-only mode"
+            );
+            return 1;
+        }
+
         try {
-            GenomeBuild genomeBuild = parseGenomeBuild(getGenomeBuild());
+            Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
             TranscriptDatabase transcriptDb = runConfiguration.transcriptDb;
 
             // 1 - bootstrap LIRICAL.
-            Lirical lirical = bootstrapLirical(genomeBuild);
+            Lirical lirical = bootstrapLirical(genomeBuild.orElse(null));
 
             // 2 - prepare the simulation data shared by all phenopackets.
-            AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild, transcriptDb);
-            List<LiricalVariant> backgroundVariants = readBackgroundVariants(lirical, genomeBuild, transcriptDb);
+            AnalysisOptions analysisOptions = prepareAnalysisOptions(lirical, genomeBuild.orElse(null), transcriptDb);
+            List<LiricalVariant> backgroundVariants = readBackgroundVariants(lirical, genomeBuild.orElse(null), transcriptDb);
 
             List<DataAndSanitationResultsAndPath> sanitationResults = sanitizePhenopackets(phenopacketPaths,
                     lirical.phenotypeService().hpo());
@@ -121,7 +144,13 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                     LOGGER.info("Starting the analysis of [{}/{}] {}", i + 1, sanitationResults.size(),
                             result.path().toFile().getName());
                     // 3 - prepare benchmark data per phenopacket
-                    BenchmarkData benchmarkData = prepareBenchmarkData(lirical, genomeBuild, transcriptDb, backgroundVariants, result);
+                    BenchmarkData benchmarkData = prepareBenchmarkData(
+                            lirical,
+                            genomeBuild.orElse(null),
+                            transcriptDb,
+                            backgroundVariants,
+                            result
+                    );
 
                     // 4 - run the analysis.
                     AnalysisResults results = analysisRunner.run(benchmarkData.analysisData(), analysisOptions);
@@ -191,16 +220,19 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
         }
     }
 
-    private BenchmarkData prepareBenchmarkData(Lirical lirical,
-                                               GenomeBuild genomeBuild,
-                                               TranscriptDatabase transcriptDatabase,
-                                               List<LiricalVariant> backgroundVariants,
-                                               DataAndSanitationResultsAndPath resultsAndPath) {
+    private BenchmarkData prepareBenchmarkData(
+            Lirical lirical,
+            GenomeBuild genomeBuild,
+            TranscriptDatabase transcriptDatabase,
+            List<LiricalVariant> backgroundVariants,
+            DataAndSanitationResultsAndPath resultsAndPath
+    ) {
         GenesAndGenotypes genes;
-        if (phenotypeOnly) {
+        if (genomeBuild == null) {
+            // Phenotype-only mode.
             // We omit the VCF even if provided.
             if (!backgroundVariants.isEmpty())
-                LOGGER.warn("The provided VCF file will not be used in `--phenotype-only` mode");
+                LOGGER.warn("The provided VCF file is ignored in phenotype-only benchmark");
             genes = GenesAndGenotypes.empty();
         } else {
             if (backgroundVariants.isEmpty()) // None or empty VCF file.

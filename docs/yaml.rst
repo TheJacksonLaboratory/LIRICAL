@@ -33,7 +33,8 @@ indicate the start of the contents of the file.
 5. ``sex`` sex of the individual, either ``MALE`` or ``FEMALE``.
 6. ``vcf`` is the path to the file we want to analyze.
    Note that the VCF file must contain the sample corresponding to ``sampleId`` and
-   the CLI must include ``--assembly`` and ``-e19 | -e38`` options to run with a VCF file.
+   the CLI must include ``--assembly`` and ``-ed19 | -ed38`` options to leverage the VCF file
+to run a genotype-aware analysis.
 
 You can use the example file as a starting point for your own configuration file.
 An example YAML file can also be found

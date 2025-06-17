@@ -11,7 +11,7 @@ or NGS gene-panel sequencing.
 On typical computers, LIRICAL will run from about 15 to 60 seconds in phenotype-only mode,
 ~5 minutes with a typical exome file, or longer if a whole-genome file is used as input.
 
-To get help, run LIRICAL with a command or with the option "-h"::
+To get help, run LIRICAL with a command or with the option ``-h``::
 
   lirical --help
   LIkelihood Ratio Interpretation of Clinical AbnormaLities
@@ -157,7 +157,9 @@ The ``prioritize`` command takes the following options:
   that correspond to the phenotype terms observed in the proband.
 * ``-n | --negated-phenotypes``: a comma-separated IDs of HPO IDs
   that correspond to the phenotype terms negated/excluded in the proband.
-* ``--assembly`` genome build, choose from `hg19` or `hg38`, must be provided if ``--vcf`` is used (default: ``hg38``).
+* ``--assembly`` genome build, choose from `hg19` or `hg38`.
+  The assembly must be provided if ``--vcf`` is used. If both ``--assembly`` and ``--vcf`` are unset,
+  the analysis will be run in phenotype-only mode.
 * ``--vcf``: path to VCF file with exome/genome sequencing results. The file can be compressed.
 * ``--sample-id``: proband's identifier, must be provided if running with a multi-sample VCF file (default: `subject`).
 * ``--age``: proband's age as an ISO8601 duration.
@@ -241,7 +243,8 @@ Save the file above as ``pfeiffer.json``.
 **Running LIRICAL with clinical data**
 
 
-LIRICAL will perform phenotype-only analysis if the ``phenopacket`` command incantation does not contain a ``--vcf`` option.
+LIRICAL will perform phenotype-only analysis if the ``phenopacket`` command incantation does not contain
+the ``--assembly`` and ``--vcf`` options.
 In this case, the only required argument is the phenopacket::
 
   lirical phenopacket -p pfeiffer.json
@@ -249,10 +252,15 @@ In this case, the only required argument is the phenopacket::
 
 **Running LIRICAL with a VCF file**
 
-Alternatively, LIRICAL can include the VCF file if the path is provided using ``--vcf`` option.
-Note, we must also provide ``--assembly`` and ``-e19`` (or ``-e38``) options to indicate the genome assembly and path to Exomiser variant database::
+Alternatively, LIRICAL can use a VCF file if the path is provided using ``--vcf`` option.
+Note, the ``--assembly`` and ``-ed19`` (or ``-ed38``) options to indicate the genome assembly
+and path to Exomiser data directory must also be provided::
 
-  lirical phenopacket -p pfeiffer.json --vcf path/to/pfeiffer.vcf.gz --assembly hg19 -e19 /path/to/exomiser/2302_hg19_variants.mv.db
+  lirical phenopacket \
+    --assembly hg19 \
+    --vcf path/to/pfeiffer.vcf.gz \
+    -ed19 /path/to/exomiser/datadir \
+    -p pfeiffer.json
 
 
 ``yaml`` - running LIRICAL with a YAML file
@@ -270,7 +278,7 @@ This will run the phenotype-only analysis of the *Patient 4*.
 To run the genotype-aware analysis, modify the YAML file such that the ``vcf`` field points to the location
 of the VCF file on your file system. Then, the analysis is run as::
 
- lirical yaml -y example.yml --assembly hg19 -e19 /path/to/exomiser/2302_hg19_variants.mv.db
+ lirical yaml -y example.yml --assembly hg19 -ed19 /path/to/exomiser/datadir
 
 
 Choosing between YAML and Phenopacket input formats

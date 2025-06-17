@@ -1,5 +1,6 @@
 package org.monarchinitiative.lirical.core.sanitize;
 
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -33,7 +34,7 @@ public interface SanitationInputs {
     String sex();
 
     /**
-     * @return a string with the path of the VCF file with variants or {@code null} if not available.
+     * @return a path with the path of the VCF file with variants or {@code null} if not available.
      */
-    String vcf();
+    Path vcf();
 }

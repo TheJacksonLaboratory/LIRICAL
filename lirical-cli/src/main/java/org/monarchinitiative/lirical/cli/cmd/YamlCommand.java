@@ -1,7 +1,7 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
-import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.cli.yaml.YamlParser;
+import org.monarchinitiative.lirical.core.analysis.LiricalParseException;
 import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +32,12 @@ public class YamlCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"--assembly"},
             paramLabel = "{hg19,hg38}",
-            description = "Genome build (default: ${DEFAULT-VALUE}).")
-    public String genomeBuild = "hg38";
+            description = {
+                    "Genome build.",
+                    "Leave unset to run in phenotype-only mode.",
+                    "Default: ${DEFAULT-VALUE}"
+            })
+    public String genomeBuild = null;
 
     @Override
     protected String getGenomeBuild() {

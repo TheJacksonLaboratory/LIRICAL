@@ -16,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +93,9 @@ class PhenopacketV1Importer implements PhenopacketImporter {
                 .flatMap(Optional::stream)
                 .toList();
 
-        String vcfPath = firstVcf.map(HtsFile::getUri)
+        Path vcfPath = firstVcf.map(HtsFile::getUri)
+                .map(URI::create)
+                .map(Path::of)
                 .orElse(null);
 
         return new PhenopacketData(genomeBuild,
