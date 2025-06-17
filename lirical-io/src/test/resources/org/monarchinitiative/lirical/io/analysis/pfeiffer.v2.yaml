@@ -94,7 +94,7 @@ diseases:
     label: "TUBEROUS SCLEROSIS 1; TSC1"
   excluded: false
 files:
-- uri: "file:///path/to/Pfeiffer.vcf"
+- uri: "file:/path/to/Pfeiffer.vcf"
   fileAttributes:
     genomeAssembly: "GRCh37"
     fileFormat: "vcf"

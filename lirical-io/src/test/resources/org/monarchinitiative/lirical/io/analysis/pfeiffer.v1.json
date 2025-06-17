@@ -216,7 +216,7 @@
     "genomeAssembly": "GRCh37",
     "individualToSampleIdentifiers": {
     },
-    "uri": "file:///path/to/Pfeiffer.vcf"
+    "uri": "file:/path/to/Pfeiffer.vcf"
   }],
   "metaData": {
     "createdBy": "HPO:lccarmody",

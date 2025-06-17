@@ -136,7 +136,7 @@
     "excluded": false
   }],
   "files": [{
-    "uri": "file:///path/to/Pfeiffer.vcf",
+    "uri": "file:/path/to/Pfeiffer.vcf",
     "fileAttributes": {
       "genomeAssembly": "GRCh37",
       "fileFormat": "vcf",
