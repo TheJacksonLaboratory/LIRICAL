@@ -78,14 +78,7 @@ public class YamlConfig implements SanitationInputs {
         return sex;
     }
 
-    public String vcf() {
-        return vcf;
+    public Path vcf() {
+        return Path.of(vcf);
     }
-
-    public Optional<Path> vcfPath() {
-        return vcf == null ?
-                Optional.empty()
-                : Optional.of(Path.of(vcf));
-    }
-
 }

@@ -1,5 +1,6 @@
 package org.monarchinitiative.lirical.core.model;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -24,5 +25,10 @@ public class GenomeBuildTest {
         Optional<GenomeBuild> optionalGb = GenomeBuild.parse(payload);
         assertThat(optionalGb.isPresent(), equalTo(true));
         assertThat(optionalGb.get(), equalTo(expected));
+    }
+
+    @Test
+    public void parsingNullReturnsAnEmptyOptional() {
+        assertThat(GenomeBuild.parse(null).isEmpty(), equalTo(true));
     }
 }

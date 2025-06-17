@@ -3,6 +3,7 @@ package org.monarchinitiative.lirical.cli.cmd;
 import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 import picocli.CommandLine;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,12 +25,16 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"--assembly"},
             paramLabel = "{hg19,hg38}",
-            description = "Genome build (default: ${DEFAULT-VALUE}).")
-    public String genomeBuild = "hg38";
+            description = {
+                    "Genome build.",
+                    "Leave unset to run in phenotype-only mode.",
+                    "Default: ${DEFAULT-VALUE}"
+            })
+    public String genomeBuild = null;
 
     @CommandLine.Option(names = {"--vcf"},
             description = "Path to VCF file (optional).")
-    public String vcfPath = null;
+    public Path vcfPath = null;
 
     @CommandLine.Option(names = {"--sample-id"},
             description = "Proband's identifier (default: ${DEFAULT-VALUE}).")
@@ -71,4 +76,12 @@ public class PrioritizeCommand extends AbstractPrioritizeCommand {
         return new SanitationInputsDefault(sampleId, presentTerms, excludedTerms, age, sex, vcfPath);
     }
 
+    @Override
+    protected List<String> checkInput() {
+        List<String> errors = super.checkInput();
+        String vcfAndAssemblyCheckResult = checkVcfAndAssembly(vcfPath, genomeBuild);
+        if (vcfAndAssemblyCheckResult != null)
+            errors.add(vcfAndAssemblyCheckResult);
+        return errors;
+    }
 }

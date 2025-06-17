@@ -6,6 +6,7 @@ import org.monarchinitiative.lirical.core.model.GenotypedVariant;
 import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
+import java.nio.file.Path;
 import java.time.Period;
 import java.util.List;
 import java.util.Objects;
@@ -25,7 +26,7 @@ public class PhenopacketData implements SanitationInputs {
     private final String age;
     private final String sex;
     private final List<TermId> diseaseIds;
-    private final String vcfPath;
+    private final Path vcfPath;
 
     PhenopacketData(String genomeAssembly,
                     String sampleId,
@@ -35,7 +36,7 @@ public class PhenopacketData implements SanitationInputs {
                     String sex,
                     List<TermId> diseaseIds,
                     List<GenotypedVariant> variants,
-                    String vcfPath) {
+                    Path vcfPath) {
         this.genomeAssembly = genomeAssembly;
         this.sampleId = Objects.requireNonNull(sampleId);
         this.hpoTerms = Objects.requireNonNull(hpoTerms);
@@ -103,7 +104,7 @@ public class PhenopacketData implements SanitationInputs {
     }
 
     @Override
-    public String vcf() {
+    public Path vcf() {
         return vcfPath;
     }
 

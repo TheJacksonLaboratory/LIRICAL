@@ -30,7 +30,7 @@ class SanitationResultNotRun implements SanitationResult {
                 inputs.excludedHpoTerms().stream().map(TermId::of).toList(),
                 parseAge(inputs.age()),
                 Sex.valueOf(inputs.sex()),
-                inputs.vcf() == null ? null : Path.of(inputs.vcf())
+                inputs.vcf() == null ? null : inputs.vcf()
         );
     }
 

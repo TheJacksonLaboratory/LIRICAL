@@ -35,7 +35,7 @@ public final class SanitizedInputs {
                     Age age,
                     Sex sex,
                     Path vcf) {
-        this.sampleId = sampleId;
+        this.sampleId = sampleId; // nullable
         this.presentHpoTerms.addAll(present);
         this.excludedHpoTerms.addAll(excluded);
         this.age = age; // nullable

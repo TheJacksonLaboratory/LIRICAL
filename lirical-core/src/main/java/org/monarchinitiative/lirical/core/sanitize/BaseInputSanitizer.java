@@ -69,14 +69,13 @@ abstract class BaseInputSanitizer implements InputSanitizer {
         }
     }
 
-    protected void checkVcf(String vcf, SanitizedInputs sanitized, List<SanityIssue> issues) {
+    protected void checkVcf(Path vcf, SanitizedInputs sanitized, List<SanityIssue> issues) {
         if (vcf != null) {
-            Path path = Path.of(vcf);
-            if (Files.isRegularFile(path) && Files.isReadable(path)) {
-                sanitized.setVcf(path);
+            if (Files.isRegularFile(vcf) && Files.isReadable(vcf)) {
+                sanitized.setVcf(vcf);
             } else {
                 issues.add(SanityIssue.error(
-                        "VCF path is set but %s does not point to a readable file".formatted(path.toAbsolutePath()),
+                        "VCF path is set but %s does not point to a readable file".formatted(vcf.toAbsolutePath()),
                         "Update the path or the file permissions"));
             }
 

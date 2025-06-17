@@ -5,7 +5,6 @@ import org.monarchinitiative.lirical.core.model.Sex;
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 
 import java.time.Period;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 

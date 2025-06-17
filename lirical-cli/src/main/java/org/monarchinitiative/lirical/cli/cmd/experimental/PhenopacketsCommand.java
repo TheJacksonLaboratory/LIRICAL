@@ -34,11 +34,6 @@ public class PhenopacketsCommand extends OutputCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PhenopacketsCommand.class);
 
-    @CommandLine.Option(names = {"--assembly"},
-            paramLabel = "{hg19,hg38}",
-            description = "Genome build (default: ${DEFAULT-VALUE}).")
-    public String genomeBuild = "hg38";
-
     @CommandLine.Parameters(
             paramLabel = "phenopacket file(s)",
             description = {
@@ -49,7 +44,7 @@ public class PhenopacketsCommand extends OutputCommand {
 
     @Override
     protected String getGenomeBuild() {
-        return genomeBuild;
+        return null;  // experimental phenopackets subcommand is phenotype-only
     }
 
     @Override
@@ -65,12 +60,8 @@ public class PhenopacketsCommand extends OutputCommand {
         }
 
         Lirical lirical;
-        GenomeBuild genomeBuild;
+        GenomeBuild genomeBuild = null;
         try {
-            genomeBuild = parseGenomeBuild(getGenomeBuild());
-            LOGGER.debug("Using genome build {}", genomeBuild);
-            LOGGER.debug("Using {} transcripts", runConfiguration.transcriptDb);
-
             // 1 - bootstrap the app
             lirical = bootstrapLirical(genomeBuild);
             LOGGER.info("Configured LIRICAL {}", lirical.version()

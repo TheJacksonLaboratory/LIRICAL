@@ -5,6 +5,7 @@ import org.monarchinitiative.lirical.core.sanitize.SanitationInputs;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Run LIRICAL from a Phenopacket -- with or without accompanying VCF file.
@@ -21,8 +22,12 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"--assembly"},
             paramLabel = "{hg19,hg38}",
-            description = "Genome build (default: ${DEFAULT-VALUE}).")
-    public String genomeBuild = "hg38";
+            description = {
+                    "Genome build.",
+                    "Leave unset to run in phenotype-only mode.",
+                    "Default: ${DEFAULT-VALUE}"
+            })
+    public String genomeBuild = null;
 
     @CommandLine.Option(names = {"-p", "--phenopacket"},
             required = true,
@@ -31,7 +36,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
 
     @CommandLine.Option(names = {"--vcf"},
             description = "Path to a VCF file. This path has priority over any VCF files described in phenopacket.")
-    public String vcfPath;
+    public Path vcfPath;
 
     @Override
     protected String getGenomeBuild() {
@@ -44,7 +49,7 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
         // a greater priority
         SanitationInputs data = PhenopacketUtil.readPhenopacketData(phenopacketPath);
 
-        String vcf = vcfPath != null
+        Path vcf = vcfPath != null
                 ? vcfPath
                 : data.vcf();
 
@@ -54,6 +59,15 @@ public class PhenopacketCommand extends AbstractPrioritizeCommand {
                 data.age(),
                 data.sex(),
                 vcf);
+    }
+
+    @Override
+    protected List<String> checkInput() {
+        List<String> errors = super.checkInput();
+        String vcfAndAssemblyCheckResult = checkVcfAndAssembly(vcfPath, genomeBuild);
+        if (vcfAndAssemblyCheckResult != null)
+            errors.add(vcfAndAssemblyCheckResult);
+        return errors;
     }
 
 }

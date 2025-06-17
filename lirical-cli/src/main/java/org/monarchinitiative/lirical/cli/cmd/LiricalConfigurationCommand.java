@@ -85,7 +85,9 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
                 description = {
                         "The number of workers/threads to use.",
                         "The value must be a positive integer.",
-                        "Default: ${DEFAULT-VALUE}"})
+                        "Default: ${DEFAULT-VALUE}"
+                }
+        )
         public int parallelism = 1;
     }
 
@@ -180,30 +182,29 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
 
         LOGGER.debug("Analysis input validation policy: {}", runConfiguration.validationPolicy.name());
 
-        Optional<GenomeBuild> genomeBuild = GenomeBuild.parse(getGenomeBuild());
-        if (genomeBuild.isEmpty()) {
-            // We must have genome build!
-            String msg = "Genome build must be set";
-            errors.add(msg);
-        } else {
-            // Check Exomiser resources match the genome build.
-            switch (genomeBuild.get()) {
+        GenomeBuild.parse(getGenomeBuild()).ifPresent(genomeBuild -> {
+            // Check if the Exomiser resources match the genome build.
+            switch (genomeBuild) {
                 case HG19 -> {
-                    if (dataSection.exomiserHg19DataDirectory == null
-                            && (dataSection.exomiserHg19Database == null || dataSection.exomiserHg19ClinVarDatabase == null)
+                    if (exomiserResourcesAppearMisconfigured(
+                            dataSection.exomiserHg19DataDirectory,
+                            dataSection.exomiserHg19Database,
+                            dataSection.exomiserHg19ClinVarDatabase)
                     ) {
                         errors.add("Genome build set to HG19 but Exomiser resources are unset");
                     }
                 }
                 case HG38 -> {
-                    if (dataSection.exomiserHg38DataDirectory == null
-                            && (dataSection.exomiserHg38Database == null || dataSection.exomiserHg38ClinVarDatabase == null)
+                    if (exomiserResourcesAppearMisconfigured(
+                            dataSection.exomiserHg38DataDirectory,
+                            dataSection.exomiserHg38Database,
+                            dataSection.exomiserHg38ClinVarDatabase)
                     ) {
                         errors.add("Genome build set to HG38 but Exomiser resources are unset");
                     }
                 }
             }
-        }
+        });
 
         if (dataSection.parallelism <= 0) {
             String msg = "Parallelism must be a positive integer but was %d".formatted(dataSection.parallelism);
@@ -225,40 +226,59 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
 
     /**
      * Build {@link Lirical} for a {@link GenomeBuild} based on {@link DataSection} and {@link RunConfiguration} sections.
+     *
+     * @param genomeBuild the target build or {@code null} if LIRICAL should be configured in phenotype-only mode.
      */
     protected Lirical bootstrapLirical(GenomeBuild genomeBuild) throws LiricalDataException {
         LiricalBuilder builder = LiricalBuilder.builder(dataSection.liricalDataDirectory);
 
-        // Deal with Exomiser resources.
-        ExomiserResources resources = switch (genomeBuild) {
-            case HG19 -> loadExomiserResources(
-                    GenomeBuild.HG19,
-                    dataSection.exomiserHg19DataDirectory,
-                    dataSection.exomiserHg19Database,
-                    dataSection.exomiserHg19ClinVarDatabase
-            );
-            case HG38 -> loadExomiserResources(
-                    GenomeBuild.HG38,
-                    dataSection.exomiserHg38DataDirectory,
-                    dataSection.exomiserHg38Database,
-                    dataSection.exomiserHg38ClinVarDatabase
-            );
-        };
-        builder.exomiserResources(genomeBuild, resources);
+        if (genomeBuild != null) {
+            // Deal with the Exomiser resources.
+            ExomiserResources resources = switch (genomeBuild) {
+                case HG19 -> loadExomiserResources(
+                        GenomeBuild.HG19,
+                        dataSection.exomiserHg19DataDirectory,
+                        dataSection.exomiserHg19Database,
+                        dataSection.exomiserHg19ClinVarDatabase
+                );
+                case HG38 -> loadExomiserResources(
+                        GenomeBuild.HG38,
+                        dataSection.exomiserHg38DataDirectory,
+                        dataSection.exomiserHg38Database,
+                        dataSection.exomiserHg38ClinVarDatabase
+                );
+            };
+            builder.exomiserResources(genomeBuild, resources);
+        }
 
         // Background variant frequencies
         if (dataSection.backgroundFrequencyFile != null) {
-            LOGGER.debug("Using custom deleterious variant background frequency file at {} for {}",
-                    dataSection.backgroundFrequencyFile.toAbsolutePath(),
-                    genomeBuild);
-            Map<GenomeBuild, Path> backgroundFrequencies = Map.of(genomeBuild, dataSection.backgroundFrequencyFile);
-            CustomBackgroundVariantFrequencyServiceFactory backgroundFreqFactory = CustomBackgroundVariantFrequencyServiceFactory.of(backgroundFrequencies);
-            builder.backgroundVariantFrequencyServiceFactory(backgroundFreqFactory);
+            if (genomeBuild == null) {
+                LOGGER.warn(
+                        "Ignoring custom variant background frequency file at {} because genome build is unset",
+                        dataSection.backgroundFrequencyFile.toAbsolutePath()
+                );
+            } else {
+                LOGGER.debug("Using custom deleterious variant background frequency file at {} for {}",
+                        dataSection.backgroundFrequencyFile.toAbsolutePath(),
+                        genomeBuild);
+                Map<GenomeBuild, Path> backgroundFrequencies = Map.of(genomeBuild, dataSection.backgroundFrequencyFile);
+                CustomBackgroundVariantFrequencyServiceFactory backgroundFreqFactory = CustomBackgroundVariantFrequencyServiceFactory.of(backgroundFrequencies);
+                builder.backgroundVariantFrequencyServiceFactory(backgroundFreqFactory);
+            }
         }
 
         return builder.shouldLoadOrpha2Gene(runConfiguration.useOrphanet)
                 .parallelism(dataSection.parallelism)
                 .build();
+    }
+
+    private static boolean exomiserResourcesAppearMisconfigured(
+            Path exomiserDataDirectory,
+            Path exomiserAlleleDatabasePath,
+            Path exomiserClinVarDatabasePath
+    ) {
+        return exomiserDataDirectory == null && (exomiserAlleleDatabasePath == null || exomiserClinVarDatabasePath == null);
     }
 
     /**
@@ -371,14 +391,16 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
 
     protected abstract String getGenomeBuild();
 
-    protected GenomeBuild parseGenomeBuild(String genomeBuild) throws LiricalDataException {
-        Optional<GenomeBuild> genomeBuildOptional = GenomeBuild.parse(genomeBuild);
-        if (genomeBuildOptional.isEmpty())
-            throw new LiricalDataException("Unknown genome build: '" + genomeBuild + "'");
-        return genomeBuildOptional.get();
-    }
-
-    protected AnalysisOptions prepareAnalysisOptions(Lirical lirical, GenomeBuild genomeBuild, TranscriptDatabase transcriptDb) {
+    /**
+     * Prepare the options for parametrizing the analysis.
+     *
+     * @param genomeBuild a build or {@code null} if running in phenotype-only mode.
+     */
+    protected AnalysisOptions prepareAnalysisOptions(
+            Lirical lirical,
+            GenomeBuild genomeBuild,
+            TranscriptDatabase transcriptDb
+    ) {
         AnalysisOptions.Builder builder = AnalysisOptions.builder();
 
         // Genome build
@@ -560,19 +582,18 @@ abstract class LiricalConfigurationCommand extends BaseCommand {
     }
 
     protected static void reportElapsedTime(long startTime, long stopTime) {
-        int elapsedTime = (int)((stopTime - startTime)*(1.0)/1000);
+        int elapsedTime = (int) ((stopTime - startTime) * (1.0) / 1000);
         if (elapsedTime > 3599) {
             int elapsedSeconds = elapsedTime % 60;
-            int elapsedMinutes = (elapsedTime/60) % 60;
-            int elapsedHours = elapsedTime/3600;
-            LOGGER.info(String.format("Elapsed time %d:%2d%2d",elapsedHours,elapsedMinutes,elapsedSeconds));
-        }
-        else if (elapsedTime>59) {
+            int elapsedMinutes = (elapsedTime / 60) % 60;
+            int elapsedHours = elapsedTime / 3600;
+            LOGGER.info(String.format("Elapsed time %d:%2d%2d", elapsedHours, elapsedMinutes, elapsedSeconds));
+        } else if (elapsedTime > 59) {
             int elapsedSeconds = elapsedTime % 60;
-            int elapsedMinutes = (elapsedTime/60) % 60;
-            LOGGER.info(String.format("Elapsed time %d min, %d sec",elapsedMinutes,elapsedSeconds));
+            int elapsedMinutes = (elapsedTime / 60) % 60;
+            LOGGER.info(String.format("Elapsed time %d min, %d sec", elapsedMinutes, elapsedSeconds));
         } else {
-            LOGGER.info("Elapsed time " + (stopTime - startTime) * (1.0) / 1000 + " seconds.");
+            LOGGER.info("Elapsed time {} seconds", (stopTime - startTime) * (1.0) / 1000);
         }
     }
 
