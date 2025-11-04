@@ -220,8 +220,8 @@ public class GenotypeLikelihoodRatio {
                     returnvalue,
                     maxInheritanceMode,
                     lambda_background,
-                    B,
                     D,
+                    B,
                     observedWeightedDeleteriousVariantCount);
         }
     }
