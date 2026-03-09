@@ -10,11 +10,6 @@ import java.util.Optional;
  */
 public enum TranscriptDatabase {
     /**
-     * Transcripts sourced from <a href="https://hgdownload.soe.ucsc.edu/downloads.html">UCSC</a> Genome Browser.
-     */
-    UCSC,
-
-    /**
      * Transcripts sourced from <a href="https://www.ensembl.org/info/data/index.html">ENSEMBL</a>.
      */
     ENSEMBL,
@@ -36,7 +31,6 @@ public enum TranscriptDatabase {
     @Override
     public String toString() {
         return switch (this) {
-            case UCSC -> "UCSC";
             case ENSEMBL -> "Ensembl";
             case REFSEQ -> "RefSeq";
             case REFSEQ_CURATED -> "RefSeq curated";
@@ -45,7 +39,6 @@ public enum TranscriptDatabase {
 
     public static Optional<TranscriptDatabase> parse(String value) {
         return switch (value.toLowerCase()) {
-            case "ucsc" -> Optional.of(UCSC);
             case "ensembl" -> Optional.of(ENSEMBL);
             case "refseq" -> Optional.of(REFSEQ);
             case "refseq_curated" -> Optional.of(REFSEQ_CURATED);

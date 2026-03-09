@@ -65,6 +65,5 @@ effectively means that LIRICAL will not further analyze these variants. If any s
 be shown in a section called ``Gene symbols that could not be annotated``. If the section is not present, then
 all variants were annotated. In practice, the gene symbols that cannot be linked to an NCBI ID represent accession numbers
 that are not confirmed genes, e.g., CR627135, AX746851, AK096159, .... We have found that using refseq as the transcript option
-means that all genes also have a Gene ID, but UCSC includes transcripts that do not have a Gene ID, and so users can
-experiment with both options. This information is provided for completeness' sake, but it is not diagnostically important.
+means that all genes also have a Gene ID. This information is provided for completeness' sake, but it is not diagnostically important.
 

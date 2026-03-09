@@ -38,9 +38,9 @@ public class BackgroundFrequencyCommand implements Callable<Integer> {
             description = "string representing the genome assembly (default: ${DEFAULT-VALUE})")
     private String genomeAssemblyString="hg38";
     @CommandLine.Option(names={"--transcriptdb"},
-            paramLabel = "{REFSEQ,UCSC}",
+            paramLabel = "{REFSEQ,REFSEQ_CURATED,ENSEMBL}",
             description = "transcript database (default: ${DEFAULT-VALUE})")
-    protected TranscriptDatabase transcriptDb = TranscriptDatabase.UCSC;
+    protected TranscriptDatabase transcriptDb = TranscriptDatabase.REFSEQ_CURATED;
     /** If true, calculate the distribution of ClinVar pathogenicity scores. */
     @CommandLine.Option(names="--clinvar", description = "determine distribution of ClinVar pathogenicity scores")
     private boolean doClinvar;
