@@ -149,11 +149,9 @@ LIRICAL requires some additional files to run.
   * ``hg19_ensembl.ser``
   * ``hg19_refseq.ser``
   * ``hg19_refseq_curated.ser``
-  * ``hg19_ucsc.ser``
   * ``hg38_ensembl.ser``
   * ``hg38_refseq.ser``
   * ``hg38_refseq_curated.ser``
-  * ``hg38_ucsc.ser``
 
 
 LIRICAL offers a convenience function to download all files to a local directory.
