@@ -76,8 +76,6 @@ public class JannovarFunctionalVariantAnnotatorService implements FunctionalVari
 
     private static Map<GenomeBuild, Set<TranscriptDatabase>> initializeAnnotators(LiricalDataResolver liricalDataResolver) {
         Map<GenomeBuild, Set<TranscriptDatabase>> annotators = new HashMap<>();
-        if (Files.isReadable(liricalDataResolver.hg19UcscTxDatabase()))
-            annotators.computeIfAbsent(GenomeBuild.HG19, gb -> new HashSet<>()).add(TranscriptDatabase.UCSC);
         if (Files.isReadable(liricalDataResolver.hg19EnsemblTxDatabase()))
             annotators.computeIfAbsent(GenomeBuild.HG19, gb -> new HashSet<>()).add(TranscriptDatabase.ENSEMBL);
         if (Files.isReadable(liricalDataResolver.hg19RefseqTxDatabase()))
@@ -85,8 +83,6 @@ public class JannovarFunctionalVariantAnnotatorService implements FunctionalVari
         if (Files.isReadable(liricalDataResolver.hg19RefseqCuratedTxDatabase()))
             annotators.computeIfAbsent(GenomeBuild.HG19, gb -> new HashSet<>()).add(TranscriptDatabase.REFSEQ_CURATED);
 
-        if (Files.isReadable(liricalDataResolver.hg38UcscTxDatabase()))
-            annotators.computeIfAbsent(GenomeBuild.HG38, gb -> new HashSet<>()).add(TranscriptDatabase.UCSC);
         if (Files.isReadable(liricalDataResolver.hg38EnsemblTxDatabase()))
             annotators.computeIfAbsent(GenomeBuild.HG38, gb -> new HashSet<>()).add(TranscriptDatabase.ENSEMBL);
         if (Files.isReadable(liricalDataResolver.hg38RefseqTxDatabase()))
