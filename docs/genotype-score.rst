@@ -35,7 +35,6 @@ LIRICAL can use transcript data from four transcript databases:
   as well as the transcripts that are based on gene predictions (``XM_``)
 * RefSeq curated - including curated transcripts (``NM_``) only,
   and *NOT* the transcripts that are based on gene predictions (``XM_``)
-* `UCSC <http://genome.ucsc.edu/>`_
 * `Ensembl <https://www.ensembl.org/info/data>`_
 
 RefSeq transcripts are used by default.
