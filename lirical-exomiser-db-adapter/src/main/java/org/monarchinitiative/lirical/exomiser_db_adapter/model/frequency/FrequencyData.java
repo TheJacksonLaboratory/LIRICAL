@@ -19,7 +19,6 @@
  */
 package org.monarchinitiative.lirical.exomiser_db_adapter.model.frequency;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -151,7 +150,6 @@ public class FrequencyData {
         return i >= 0;
     }
 
-    @Nullable
     public Frequency frequency(FrequencySource source) {
         int i = frequencySourceIndex(source);
         return i < 0 ? null : frequency(i);
@@ -308,7 +306,6 @@ public class FrequencyData {
      * @return The maximum {@link Frequency} or null
      * @since 13.1.0
      */
-    @Nullable
     public Frequency maxFrequency() {
         return this.size == 0 ? null : frequency(maxSource);
     }

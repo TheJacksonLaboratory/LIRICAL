@@ -138,6 +138,9 @@ class ExomiserMvStoreMetadataService implements VariantMetadataService {
             case PROTECTIVE -> ClinvarClnSig.PROTECTIVE;
             case RISK_FACTOR -> ClinvarClnSig.RISK_FACTOR;
 
+            case UNCERTAIN_RISK_ALLELE -> ClinvarClnSig.UNCERTAIN_RISK_ALLELE;
+            case LIKELY_RISK_ALLELE -> ClinvarClnSig.LIKELY_RISK_ALLELE;
+            case ESTABLISHED_RISK_ALLELE -> ClinvarClnSig.ESTABLISHED_RISK_ALLELE;
             case OTHER, UNRECOGNIZED -> ClinvarClnSig.OTHER;
             case NOT_PROVIDED -> ClinvarClnSig.NOT_PROVIDED;
         };
