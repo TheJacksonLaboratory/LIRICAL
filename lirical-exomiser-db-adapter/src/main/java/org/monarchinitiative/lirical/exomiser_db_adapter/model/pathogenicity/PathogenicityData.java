@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.lirical.exomiser_db_adapter.model.pathogenicity;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -163,7 +162,6 @@ public class PathogenicityData {
     /**
      * @return The most pathogenic score or null if there are no predicted scores
      */
-    @Nullable
     public PathogenicityScore mostPathogenicScore() {
         // Add filter step using PathogenicityScore::isPredictedPathogenic?
         // n.b. here min() is referring to the *first* element in a sorted list, rather than the minimum numeric value

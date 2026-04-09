@@ -186,9 +186,9 @@ public class GenicIntoleranceCalculator {
                     // there are also three categories that we will regard as "benign".
                     // We org.monarchinitiative.lirical.output the pathogenicity scores and the interpretation with the goal of visualizing
                     // the distributions of benign and pathogenic variant pathogenicity scores.
-                    if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation()) ||
-                            BENIGN_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.getPrimaryInterpretation())) {
-                        cvwriter.write(pathogenicity + "\t"+clinVarData.getPrimaryInterpretation()+"\n");
+                    if (PATHOGENIC_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.primaryInterpretation()) ||
+                            BENIGN_CLINVAR_PRIMARY_INTERPRETATIONS.contains(clinVarData.primaryInterpretation())) {
+                        cvwriter.write(pathogenicity + "\t"+clinVarData.primaryInterpretation()+"\n");
                         i++;
                         if (i%10==0) {
                             System.out.print("\rAdding clinvar variant "+i);
