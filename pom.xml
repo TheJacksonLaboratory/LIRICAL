@@ -35,7 +35,7 @@
         <phenopacket-schema.version>2.0.2</phenopacket-schema.version>
         <phenopacket-tools.version>1.0.0-RC3</phenopacket-tools.version>
         <!-- Exomiser 14.0.0 uses `protobuf==3.21.12` -->
-        <protobuf.version>[3.21.12, 4)</protobuf.version>
+        <protobuf.version>[3.21.12, 5)</protobuf.version>
         <snakeyaml.version>[2.0,3.0)</snakeyaml.version>
 
         <junit-jupiter.version>5.9.2</junit-jupiter.version>
@@ -69,7 +69,7 @@
                 <artifactId>jannovar-core</artifactId>
                 <version>${jannovar.version}</version>
                 <exclusions>
-                    <!-- We do not use parts of Jannovar that use the following libs: -->
+                    <!-- We do not use the Jannovar parts that use the following libs: -->
                     <exclusion>
                         <groupId>commons-compress</groupId>
                         <artifactId>commons-compress</artifactId>
@@ -138,7 +138,7 @@
             <dependency>
                 <groupId>info.picocli</groupId>
                 <artifactId>picocli</artifactId>
-                <version>4.7.3</version>
+                <version>4.7.7</version>
             </dependency>
             <dependency>
                 <groupId>org.freemarker</groupId>
@@ -213,7 +213,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>33.0.0-jre</version>
+                <version>33.5.0-jre</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -240,13 +240,13 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.7.0</version>
+                <version>5.23.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-core</artifactId>
-                <version>2.2</version>
+                <artifactId>hamcrest</artifactId>
+                <version>3.0</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -270,7 +270,7 @@
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
+            <artifactId>hamcrest</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -339,23 +339,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        <profile>
-            <!-- Enable using snapshots in the `dev` mode. -->
-            <id>dev</id>
-            <repositories>
-                <repository>
-                    <id>sonatype-nexus-snapshots</id>
-                    <name>Sonatype Nexus Snapshots</name>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-                    <releases>
-                        <enabled>false</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
-            </repositories>
         </profile>
     </profiles>
 
