@@ -18,8 +18,8 @@ import java.util.stream.Stream;
 public class CreateTestMVStoresTest {
 
     private static final Path TESTDATA_DIR = Path.of("src/test/resources/testdata");
-    private static final Path CLINVAR_DB = TESTDATA_DIR.resolve("9999_hg38_clinvar.mv.db");
-    private static final Path VARIANTS_DB = TESTDATA_DIR.resolve("9999_hg38_variants.mv.db");
+    private static final Path CLINVAR_DB = TESTDATA_DIR.resolve("2512_hg38_clinvar.mini.mv.db");
+    private static final Path VARIANTS_DB = TESTDATA_DIR.resolve("2512_hg38_variants.mini.mv.db");
 
     @Test
     public void createVariantDatabase() {
@@ -48,7 +48,7 @@ public class CreateTestMVStoresTest {
 
     @Test
     public void createClinvarDatabase() {
-        // Add path to the real variants database
+        // Add path to the real clinvar database
         Path source = Path.of("");
 
         try (MVStore sourceAlleleStore = new MVStore.Builder()
