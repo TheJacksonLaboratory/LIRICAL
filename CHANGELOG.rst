@@ -7,6 +7,24 @@ latest
 -------------------
 
 -------------------
+v2.4.1 (2026-06-18)
+-------------------
+
+- Bundle ``runtime`` *and* ``compile``-scoped dependencies into the distribution archive
+
+-------------------
+v2.4.0 (2026-04-09)
+-------------------
+
+- Update the dependencies and the Exomiser DB adapter
+
+-------------------
+v2.3.0 (2026-03-31)
+-------------------
+
+- **BREAKING** Remove support for the UCSC transcripts
+
+-------------------
 v2.2.1 (2025-11-04)
 -------------------
 
