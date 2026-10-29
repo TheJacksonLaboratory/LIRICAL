@@ -1,5 +1,6 @@
 package org.monarchinitiative.lirical.cli.cmd;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -8,6 +9,7 @@ import org.monarchinitiative.lirical.core.Lirical;
 import org.monarchinitiative.lirical.core.analysis.*;
 import org.monarchinitiative.lirical.core.exception.LiricalException;
 import org.monarchinitiative.lirical.core.io.VariantParser;
+import org.monarchinitiative.lirical.core.likelihoodratio.LrWithExplanation;
 import org.monarchinitiative.lirical.core.model.*;
 import org.monarchinitiative.lirical.core.sanitize.InputSanitizer;
 import org.monarchinitiative.lirical.core.sanitize.InputSanitizerFactory;
@@ -27,10 +29,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPOutputStream;
 
@@ -48,6 +47,7 @@ import java.util.zip.GZIPOutputStream;
 public class BenchmarkCommand extends LiricalConfigurationCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkCommand.class);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @CommandLine.Parameters(arity = "1..*",
             description = "Path(s) to phenopacket JSON file(s).")
@@ -97,7 +97,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
         if (phenotypeOnly && genomeBuild != null) {
             LOGGER.error(
                     "`--phenotype-only` option has been deprecated. "
-                    + "Do not use the `--assembly` option to run in a phenotype-only mode"
+                            + "Do not use the `--assembly` option to run in a phenotype-only mode"
             );
             return 1;
         }
@@ -284,11 +284,16 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                                      String backgroundVcfName,
                                      BenchmarkData benchmarkData,
                                      AnalysisResults results,
-                                     CSVPrinter printer) {
+                                     CSVPrinter printer) throws IOException {
         AtomicInteger rankCounter = new AtomicInteger();
         results.resultsWithDescendingPostTestProbability()
                 .forEachOrdered(result -> {
                     int rank = rankCounter.incrementAndGet();
+                    /*
+                    [
+                      "phenopacket","background_vcf","sample_id","rank","is_causal","disease_id","post_test_proba","explanations"
+                    ]
+                     */
                     try {
                         printer.print(phenopacketName);
                         printer.print(backgroundVcfName);
@@ -297,6 +302,9 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
                         printer.print(result.diseaseId().equals(benchmarkData.diseaseId()));
                         printer.print(result.diseaseId());
                         printer.print(result.posttestProbability());
+                        printer.print(MAPPER.writeValueAsString(result.results()
+                                .sorted((Comparator.comparing(LrWithExplanation::lr)))
+                                .toList()));
                         printer.println();
                     } catch (IOException e) {
                         LOGGER.error("Error writing results for {}: {}", result.diseaseId(), e.getMessage(), e);
