@@ -157,6 +157,7 @@ public class BenchmarkCommand extends LiricalConfigurationCommand {
 
                     // 5 - summarize the results.
                     String phenopacketName = result.path().toFile().getName();
+                    phenopacketName = phenopacketName.endsWith(".json") ? phenopacketName.substring(0, phenopacketName.length() - 5) : phenopacketName;
                     String backgroundVcf = vcfPath == null ? "" : vcfPath.toFile().getName();
                     writeResults(phenopacketName, backgroundVcf, benchmarkData, results, printer);
                 }
