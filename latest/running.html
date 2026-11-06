@@ -264,47 +264,47 @@ to create a Phenopacket with a list of HPO terms and the path to a VCF file with
 results of gene panel, exome, or genome sequencing.</p>
 <p>Let’s consider an example of an individual with <a class="reference external" href="https://omim.org/entry/101600">Pfeiffer syndrome</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;pfeiffer-example&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;example-1&quot;</span>
+  <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"pfeiffer-example"</span><span class="p">,</span>
+  <span class="s2">"subject"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"example-1"</span>
   <span class="p">},</span>
-  <span class="s2">&quot;phenotypicFeatures&quot;</span><span class="p">:</span> <span class="p">[{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;HP:0000244&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Turribrachycephaly&quot;</span>
+  <span class="s2">"phenotypicFeatures"</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"HP:0000244"</span><span class="p">,</span>
+      <span class="s2">"label"</span><span class="p">:</span> <span class="s2">"Turribrachycephaly"</span>
     <span class="p">}</span>
   <span class="p">},</span> <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;HP:0001363&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Craniosynostosis&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"HP:0001363"</span><span class="p">,</span>
+      <span class="s2">"label"</span><span class="p">:</span> <span class="s2">"Craniosynostosis"</span>
     <span class="p">}</span>
   <span class="p">},</span> <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;HP:0000453&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Choanal atresia&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"HP:0000453"</span><span class="p">,</span>
+      <span class="s2">"label"</span><span class="p">:</span> <span class="s2">"Choanal atresia"</span>
     <span class="p">}</span>
   <span class="p">},</span> <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;HP:0000327&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Hypoplasia of the maxilla&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"HP:0000327"</span><span class="p">,</span>
+      <span class="s2">"label"</span><span class="p">:</span> <span class="s2">"Hypoplasia of the maxilla"</span>
     <span class="p">}</span>
   <span class="p">},</span> <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;HP:0000238&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Hydrocephalus&quot;</span>
+    <span class="s2">"type"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"HP:0000238"</span><span class="p">,</span>
+      <span class="s2">"label"</span><span class="p">:</span> <span class="s2">"Hydrocephalus"</span>
    <span class="p">}</span>
   <span class="p">}],</span>
-  <span class="s2">&quot;metaData&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;createdBy&quot;</span><span class="p">:</span> <span class="s2">&quot;Peter R.&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;resources&quot;</span><span class="p">:</span> <span class="p">[{</span>
-      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;hp&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;human phenotype ontology&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;namespacePrefix&quot;</span><span class="p">:</span> <span class="s2">&quot;HP&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://purl.obolibrary.org/obo/hp.owl&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;2018-03-08&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;iriPrefix&quot;</span><span class="p">:</span> <span class="s2">&quot;http://purl.obolibrary.org/obo/HP_&quot;</span>
+  <span class="s2">"metaData"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">"createdBy"</span><span class="p">:</span> <span class="s2">"Peter R."</span><span class="p">,</span>
+    <span class="s2">"resources"</span><span class="p">:</span> <span class="p">[{</span>
+      <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"hp"</span><span class="p">,</span>
+      <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"human phenotype ontology"</span><span class="p">,</span>
+      <span class="s2">"namespacePrefix"</span><span class="p">:</span> <span class="s2">"HP"</span><span class="p">,</span>
+      <span class="s2">"url"</span><span class="p">:</span> <span class="s2">"http://purl.obolibrary.org/obo/hp.owl"</span><span class="p">,</span>
+      <span class="s2">"version"</span><span class="p">:</span> <span class="s2">"2018-03-08"</span><span class="p">,</span>
+      <span class="s2">"iriPrefix"</span><span class="p">:</span> <span class="s2">"http://purl.obolibrary.org/obo/HP_"</span>
     <span class="p">}],</span>
-    <span class="s2">&quot;phenopacketSchemaVersion&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0.0&quot;</span>
+    <span class="s2">"phenopacketSchemaVersion"</span><span class="p">:</span> <span class="s2">"2.0.0"</span>
   <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
