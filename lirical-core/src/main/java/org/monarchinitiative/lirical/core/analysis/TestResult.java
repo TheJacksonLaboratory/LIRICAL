@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class organizes information about the result of a test. The class is intended to be used together
@@ -115,6 +116,17 @@ public class TestResult implements Comparable<TestResult> {
     }
 
     /**
+     * @return a stream with {@link LrWithExplanation} for the query terms.
+     */
+    @JsonIgnore
+    public Stream<LrWithExplanation> results() {
+        return Stream.concat(
+                this.observedResults.stream(),
+                this.excludedResults.stream()
+        );
+    }
+
+    /**
      * @return the composite likelihood ratio (product of the LRs of the individual tests).
      */
     @JsonGetter
@@ -213,19 +225,14 @@ public class TestResult implements Comparable<TestResult> {
      */
     @JsonIgnore
     public double getMaximumIndividualLR() {
-        double m1 = this.observedResults.stream()
+        double m1 = this.results()
                 .map(LrWithExplanation::lr)
                 .map(Math::abs)
                 .max(Double::compare)
                 .orElse(0.0);
-        double m2 = this.excludedResults.stream()
-                .map(LrWithExplanation::lr)
-                .map(Math::abs)
-                .max(Double::compare)
-                .orElse(0.0);
-        double m3 = this.genotypeLr != null ? Math.abs(genotypeLr.lr()) : 0.0;
+        double m2 = this.genotypeLr != null ? Math.abs(genotypeLr.lr()) : 0.0;
 
-        return Math.max(m1, Math.max(m2, m3));
+        return Math.max(m1, m2);
     }
 
 

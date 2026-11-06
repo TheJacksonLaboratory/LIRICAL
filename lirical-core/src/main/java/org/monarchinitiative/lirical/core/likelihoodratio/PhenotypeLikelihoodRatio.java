@@ -46,7 +46,7 @@ public class PhenotypeLikelihoodRatio {
      * This is the probability of a finding if the disease is not annotated to it and there
      * is no common ancestor except the root. There are many possible causes of findings called
      * to be "false-positive". The annotations of the disease can be incomplete. A finding such
-     * as renal insufficiency can manifest with proteinuria etc, but the disease annotation might
+     * as renal insufficiency can manifest with proteinuria etc., but the disease annotation might
      * be renal insufficiency and the patient might just be reported to have proteinuria. Currently,
      * our software is not smart enough to make possible connections such as this. Finally, it
      * may be truly false positive because there is a secondary etiology. We assume arbitrary
@@ -129,7 +129,6 @@ public class PhenotypeLikelihoodRatio {
             boolean hasNonRootCommonAncestor = false;
             double maxF = 0f;
             TermId bestMatchTermId = null;
-            double denominatorForNonRootCommandAnc = getBackgroundFrequency(queryTid);
             for (HpoDiseaseAnnotation annotation : disease.annotations()) {
                 if (ontology.graph().isAncestorOf(annotation.id(), queryTid)){
                     double proportionalFrequency = getProportionInChildren(queryTid,annotation.id());
@@ -143,7 +142,9 @@ public class PhenotypeLikelihoodRatio {
                 }
             }
             if (hasNonRootCommonAncestor) {
-                double lr = Math.max(maxF,noCommonOrganProbability(queryTid))/denominatorForNonRootCommandAnc;
+                double numerator = Math.max(maxF,noCommonOrganProbability(queryTid));
+                double denominatorForNonRootCommandAnc = getBackgroundFrequency(queryTid);
+                double lr = numerator/denominatorForNonRootCommandAnc;
                 return explanationFactory.create(queryTid, bestMatchTermId,
                         LrMatchType.QUERY_TERM_SUBCLASS_OF_DISEASE_TERM,
                         lr);
@@ -276,8 +277,6 @@ public class PhenotypeLikelihoodRatio {
             return 1.0;
         }
         Set<TermId> children = ontology.graph().getChildren(diseaseTid);
-        if (children.isEmpty())
-            return 0.0;
 
         for (TermId tid : children) {
             if (queryTid.equals(tid)) {
@@ -287,8 +286,6 @@ public class PhenotypeLikelihoodRatio {
         // if we get here, there was no match
         return 0d;
     }
-    
-        
 
     /**
      * This function estimates the probability of a test finding (the HP term is present) given that the
