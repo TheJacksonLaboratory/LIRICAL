@@ -7,6 +7,12 @@ latest
 -------------------
 
 -------------------
+v2.4.2 (2026-11-06)
+-------------------
+
+- Small refactor of phenotype likelihood ratio code with no functionality change
+
+-------------------
 v2.4.1 (2026-06-18)
 -------------------
 
